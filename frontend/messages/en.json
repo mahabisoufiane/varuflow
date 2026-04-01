@@ -1,0 +1,82 @@
+{
+  "common": {
+    "appName": "Varuflow",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search...",
+    "noResults": "No results found",
+    "back": "Back"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "inventory": "Inventory",
+    "invoices": "Invoices",
+    "customers": "Customers",
+    "settings": "Settings",
+    "signOut": "Sign out"
+  },
+  "auth": {
+    "login": "Log in",
+    "signup": "Sign up",
+    "email": "Email address",
+    "password": "Password",
+    "magicLink": "Send magic link",
+    "magicLinkSent": "Check your email — we sent a magic link to {email}",
+    "orContinueWith": "Or sign in with password",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "forgotPassword": "Forgot password?",
+    "signInWithPassword": "Sign in",
+    "createAccount": "Create account",
+    "signUpDescription": "Start your free Varuflow trial.",
+    "loginDescription": "Sign in to your Varuflow account."
+  },
+  "onboarding": {
+    "title": "Set up your company",
+    "subtitle": "Tell us about your business to get started.",
+    "step1Title": "Company details",
+    "step2Title": "Upload logo",
+    "step2Skip": "Skip for now",
+    "step3Title": "You're all set!",
+    "companyName": "Company name",
+    "companyNamePlaceholder": "Svensson AB",
+    "orgNumber": "Organization number",
+    "orgNumberPlaceholder": "556000-0000",
+    "orgNumberHint": "Swedish organization number (XXXXXX-XXXX)",
+    "vatNumber": "VAT number",
+    "vatNumberPlaceholder": "SE556000000001",
+    "address": "Address",
+    "continue": "Continue",
+    "finish": "Go to dashboard",
+    "logoUpload": "Upload your company logo",
+    "logoHint": "PNG or JPG, max 2 MB. Shown on invoices."
+  },
+  "marketing": {
+    "hero": {
+      "title": "The operating system for Swedish wholesalers",
+      "subtitle": "Manage inventory, automate invoicing, and track cash flow — built for Swedish B2B businesses.",
+      "cta": "Join the waitlist"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome to Varuflow"
+  },
+  "inventory": {
+    "title": "Inventory"
+  },
+  "invoices": {
+    "title": "Invoices"
+  },
+  "customers": {
+    "title": "Customers"
+  },
+  "settings": {
+    "title": "Settings"
+  }
+}

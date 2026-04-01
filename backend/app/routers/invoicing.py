@@ -1,0 +1,535 @@
+"""Invoicing module: customers, invoices, payments, aging report, PDF."""
+import uuid
+from datetime import date, datetime
+from decimal import Decimal
+from io import BytesIO
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import mm
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from app.database import get_db
+from app.middleware.auth import get_current_member
+from app.models.invoicing import (
+    Customer,
+    Invoice,
+    InvoiceLineItem,
+    InvoiceStatus,
+    Payment,
+)
+from app.schemas.invoicing import (
+    AgingBucket,
+    AgingReport,
+    CustomerCreate,
+    CustomerOut,
+    CustomerUpdate,
+    InvoiceCreate,
+    InvoiceOut,
+    InvoiceStatusUpdate,
+    InvoiceSummary,
+    PaymentCreate,
+    PaymentOut,
+)
+
+router = APIRouter(prefix="/api/invoicing", tags=["invoicing"])
+
+NAVY = colors.HexColor("#1a2332")
+LIGHT_GRAY = colors.HexColor("#f3f4f6")
+
+
+def _org(ctx: tuple) -> uuid.UUID:
+    _, member = ctx
+    return member.org_id
+
+
+def _invoice_number(org_id: uuid.UUID, sequence: int) -> str:
+    year = datetime.utcnow().year
+    return f"INV-{year}-{sequence:04d}"
+
+
+# ── Customers ─────────────────────────────────────────────────────────────────
+
+@router.get("/customers", response_model=list[CustomerOut])
+async def list_customers(
+    search: Optional[str] = Query(None),
+    is_active: Optional[bool] = Query(None),
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    org_id = _org(ctx)
+    q = select(Customer).where(Customer.org_id == org_id)
+    if search:
+        like = f"%{search}%"
+        q = q.where(
+            Customer.company_name.ilike(like) | Customer.email.ilike(like)
+        )
+    if is_active is not None:
+        q = q.where(Customer.is_active == is_active)
+    q = q.order_by(Customer.company_name)
+    result = await db.execute(q)
+    return result.scalars().all()
+
+
+@router.post("/customers", response_model=CustomerOut, status_code=status.HTTP_201_CREATED)
+async def create_customer(
+    body: CustomerCreate,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    org_id = _org(ctx)
+    customer = Customer(org_id=org_id, **body.model_dump())
+    db.add(customer)
+    await db.commit()
+    await db.refresh(customer)
+    return customer
+
+
+@router.get("/customers/{customer_id}", response_model=CustomerOut)
+async def get_customer(
+    customer_id: uuid.UUID,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    org_id = _org(ctx)
+    c = await db.scalar(
+        select(Customer).where(Customer.id == customer_id, Customer.org_id == org_id)
+    )
+    if not c:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return c
+
+
+@router.put("/customers/{customer_id}", response_model=CustomerOut)
+async def update_customer(
+    customer_id: uuid.UUID,
+    body: CustomerUpdate,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    org_id = _org(ctx)
+    c = await db.scalar(
+        select(Customer).where(Customer.id == customer_id, Customer.org_id == org_id)
+    )
+    if not c:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    for k, v in body.model_dump().items():
+        setattr(c, k, v)
+    await db.commit()
+    await db.refresh(c)
+    return c
+
+
+@router.delete("/customers/{customer_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def deactivate_customer(
+    customer_id: uuid.UUID,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    org_id = _org(ctx)
+    c = await db.scalar(
+        select(Customer).where(Customer.id == customer_id, Customer.org_id == org_id)
+    )
+    if not c:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    c.is_active = False
+    await db.commit()
+
+
+# ── Invoices ──────────────────────────────────────────────────────────────────
+
+@router.get("/invoices", response_model=list[InvoiceSummary])
+async def list_invoices(
+    status: Optional[InvoiceStatus] = Query(None),
+    customer_id: Optional[uuid.UUID] = Query(None),
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    org_id = _org(ctx)
+    q = (
+        select(Invoice)
+        .options(selectinload(Invoice.customer))
+        .where(Invoice.org_id == org_id)
+    )
+    if status:
+        q = q.where(Invoice.status == status)
+    if customer_id:
+        q = q.where(Invoice.customer_id == customer_id)
+    q = q.order_by(Invoice.created_at.desc())
+    result = await db.execute(q)
+    return result.scalars().all()
+
+
+@router.post("/invoices", response_model=InvoiceOut, status_code=status.HTTP_201_CREATED)
+async def create_invoice(
+    body: InvoiceCreate,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    org_id = _org(ctx)
+
+    # Verify customer belongs to org
+    customer = await db.scalar(
+        select(Customer).where(Customer.id == body.customer_id, Customer.org_id == org_id)
+    )
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    # Generate invoice number from count
+    count_result = await db.scalar(
+        select(func.count()).where(Invoice.org_id == org_id)
+    )
+    inv_number = _invoice_number(org_id, (count_result or 0) + 1)
+
+    # Compute totals
+    subtotal = Decimal("0.00")
+    vat_amount = Decimal("0.00")
+    line_items = []
+    for li in body.items:
+        line_total = (li.quantity * li.unit_price).quantize(Decimal("0.01"))
+        vat = (line_total * li.tax_rate / 100).quantize(Decimal("0.01"))
+        subtotal += line_total
+        vat_amount += vat
+        line_items.append(
+            InvoiceLineItem(
+                product_id=li.product_id,
+                description=li.description,
+                quantity=li.quantity,
+                unit_price=li.unit_price,
+                tax_rate=li.tax_rate,
+                line_total=line_total,
+            )
+        )
+
+    invoice = Invoice(
+        org_id=org_id,
+        customer_id=body.customer_id,
+        invoice_number=inv_number,
+        issue_date=body.issue_date,
+        due_date=body.due_date,
+        status=InvoiceStatus.DRAFT,
+        subtotal=subtotal,
+        vat_amount=vat_amount,
+        total_sek=(subtotal + vat_amount).quantize(Decimal("0.01")),
+        notes=body.notes,
+        line_items=line_items,
+    )
+    db.add(invoice)
+    await db.commit()
+
+    result = await db.execute(
+        select(Invoice)
+        .options(selectinload(Invoice.customer), selectinload(Invoice.line_items))
+        .where(Invoice.id == invoice.id)
+    )
+    return result.scalar_one()
+
+
+@router.get("/invoices/{invoice_id}", response_model=InvoiceOut)
+async def get_invoice(
+    invoice_id: uuid.UUID,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    org_id = _org(ctx)
+    result = await db.execute(
+        select(Invoice)
+        .options(selectinload(Invoice.customer), selectinload(Invoice.line_items))
+        .where(Invoice.id == invoice_id, Invoice.org_id == org_id)
+    )
+    inv = result.scalar_one_or_none()
+    if not inv:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    return inv
+
+
+@router.patch("/invoices/{invoice_id}/status", response_model=InvoiceOut)
+async def update_invoice_status(
+    invoice_id: uuid.UUID,
+    body: InvoiceStatusUpdate,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    org_id = _org(ctx)
+    inv = await db.scalar(
+        select(Invoice).where(Invoice.id == invoice_id, Invoice.org_id == org_id)
+    )
+    if not inv:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    # Status transitions: DRAFT→SENT→PAID, or →OVERDUE
+    allowed: dict[InvoiceStatus, list[InvoiceStatus]] = {
+        InvoiceStatus.DRAFT: [InvoiceStatus.SENT],
+        InvoiceStatus.SENT: [InvoiceStatus.PAID, InvoiceStatus.OVERDUE],
+        InvoiceStatus.OVERDUE: [InvoiceStatus.PAID],
+        InvoiceStatus.PAID: [],
+    }
+    if body.status not in allowed[inv.status]:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Cannot transition from {inv.status} to {body.status}",
+        )
+    inv.status = body.status
+    await db.commit()
+
+    result = await db.execute(
+        select(Invoice)
+        .options(selectinload(Invoice.customer), selectinload(Invoice.line_items))
+        .where(Invoice.id == invoice_id)
+    )
+    return result.scalar_one()
+
+
+@router.delete("/invoices/{invoice_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_invoice(
+    invoice_id: uuid.UUID,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    org_id = _org(ctx)
+    inv = await db.scalar(
+        select(Invoice).where(Invoice.id == invoice_id, Invoice.org_id == org_id)
+    )
+    if not inv:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    if inv.status != InvoiceStatus.DRAFT:
+        raise HTTPException(status_code=422, detail="Only DRAFT invoices can be deleted")
+    await db.delete(inv)
+    await db.commit()
+
+
+# ── Payments ──────────────────────────────────────────────────────────────────
+
+@router.get("/invoices/{invoice_id}/payments", response_model=list[PaymentOut])
+async def list_payments(
+    invoice_id: uuid.UUID,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    org_id = _org(ctx)
+    inv = await db.scalar(
+        select(Invoice).where(Invoice.id == invoice_id, Invoice.org_id == org_id)
+    )
+    if not inv:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    result = await db.execute(
+        select(Payment).where(Payment.invoice_id == invoice_id).order_by(Payment.payment_date)
+    )
+    return result.scalars().all()
+
+
+@router.post(
+    "/invoices/{invoice_id}/payments",
+    response_model=PaymentOut,
+    status_code=status.HTTP_201_CREATED,
+)
+async def record_payment(
+    invoice_id: uuid.UUID,
+    body: PaymentCreate,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    org_id = _org(ctx)
+    inv = await db.scalar(
+        select(Invoice).where(Invoice.id == invoice_id, Invoice.org_id == org_id)
+    )
+    if not inv:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    if inv.status == InvoiceStatus.DRAFT:
+        raise HTTPException(status_code=422, detail="Cannot record payment on a DRAFT invoice")
+
+    payment = Payment(
+        org_id=org_id,
+        invoice_id=invoice_id,
+        **body.model_dump(),
+    )
+    db.add(payment)
+
+    # Auto-mark PAID if payment covers full amount
+    total_paid_result = await db.scalar(
+        select(func.coalesce(func.sum(Payment.amount), 0)).where(
+            Payment.invoice_id == invoice_id
+        )
+    )
+    total_paid = Decimal(str(total_paid_result)) + body.amount
+    if total_paid >= inv.total_sek:
+        inv.status = InvoiceStatus.PAID
+
+    await db.commit()
+    await db.refresh(payment)
+    return payment
+
+
+# ── Aging report ──────────────────────────────────────────────────────────────
+
+@router.get("/aging", response_model=AgingReport)
+async def aging_report(
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    org_id = _org(ctx)
+    today = date.today()
+
+    result = await db.execute(
+        select(Invoice)
+        .options(selectinload(Invoice.customer))
+        .where(
+            Invoice.org_id == org_id,
+            Invoice.status.in_([InvoiceStatus.SENT, InvoiceStatus.OVERDUE]),
+        )
+    )
+    invoices = result.scalars().all()
+
+    buckets: dict[str, list[AgingBucket]] = {
+        "current": [],
+        "days_1_30": [],
+        "days_31_60": [],
+        "days_61_90": [],
+        "days_90_plus": [],
+    }
+    total_outstanding = Decimal("0.00")
+
+    for inv in invoices:
+        days_overdue = (today - inv.due_date).days
+        bucket = AgingBucket(
+            customer=inv.customer.company_name,
+            invoice_number=inv.invoice_number,
+            invoice_id=inv.id,
+            total_sek=inv.total_sek,
+            due_date=inv.due_date,
+            days_overdue=max(0, days_overdue),
+        )
+        total_outstanding += inv.total_sek
+        if days_overdue <= 0:
+            buckets["current"].append(bucket)
+        elif days_overdue <= 30:
+            buckets["days_1_30"].append(bucket)
+        elif days_overdue <= 60:
+            buckets["days_31_60"].append(bucket)
+        elif days_overdue <= 90:
+            buckets["days_61_90"].append(bucket)
+        else:
+            buckets["days_90_plus"].append(bucket)
+
+    return AgingReport(**buckets, total_outstanding=total_outstanding)
+
+
+# ── PDF ───────────────────────────────────────────────────────────────────────
+
+@router.get("/invoices/{invoice_id}/pdf")
+async def download_invoice_pdf(
+    invoice_id: uuid.UUID,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    org_id = _org(ctx)
+    _, member = ctx
+    result = await db.execute(
+        select(Invoice)
+        .options(selectinload(Invoice.customer), selectinload(Invoice.line_items))
+        .where(Invoice.id == invoice_id, Invoice.org_id == org_id)
+    )
+    inv = result.scalar_one_or_none()
+    if not inv:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    pdf_bytes = _generate_invoice_pdf(inv)
+    filename = f"{inv.invoice_number}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+def _generate_invoice_pdf(inv: Invoice) -> bytes:
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        leftMargin=20 * mm,
+        rightMargin=20 * mm,
+        topMargin=20 * mm,
+        bottomMargin=20 * mm,
+    )
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle("T", parent=styles["Heading1"], textColor=NAVY, fontSize=18, spaceAfter=4)
+    sub_style = ParagraphStyle("S", parent=styles["Normal"], textColor=colors.gray, fontSize=9)
+    label_style = ParagraphStyle("L", parent=styles["Normal"], textColor=NAVY, fontSize=9, fontName="Helvetica-Bold")
+    body_style = ParagraphStyle("B", parent=styles["Normal"], fontSize=9)
+
+    c = inv.customer
+    elements = []
+
+    # Header
+    elements.append(Paragraph(f"Invoice {inv.invoice_number}", title_style))
+    elements.append(Paragraph(f"Issued: {inv.issue_date} · Due: {inv.due_date} · Status: {inv.status}", sub_style))
+    elements.append(Spacer(1, 8 * mm))
+
+    # Bill to
+    elements.append(Paragraph("Bill To", label_style))
+    elements.append(Paragraph(c.company_name, body_style))
+    if c.org_number:
+        elements.append(Paragraph(f"Org nr: {c.org_number}", body_style))
+    if c.vat_number:
+        elements.append(Paragraph(f"VAT: {c.vat_number}", body_style))
+    if c.address:
+        elements.append(Paragraph(c.address, body_style))
+    if c.email:
+        elements.append(Paragraph(c.email, body_style))
+    elements.append(Spacer(1, 8 * mm))
+
+    # Line items table
+    col_widths = [85 * mm, 20 * mm, 25 * mm, 20 * mm, 30 * mm]
+    table_data = [["Description", "Qty", "Unit price", "VAT %", "Total (SEK)"]]
+    for li in inv.line_items:
+        table_data.append([
+            li.description,
+            str(li.quantity),
+            f"{li.unit_price:.2f}",
+            f"{li.tax_rate:.0f}%",
+            f"{li.line_total:.2f}",
+        ])
+
+    # Subtotal / VAT / Total rows
+    table_data.append(["", "", "", "Subtotal", f"{inv.subtotal:.2f}"])
+    table_data.append(["", "", "", "VAT", f"{inv.vat_amount:.2f}"])
+    table_data.append(["", "", "", "Total (SEK)", f"{inv.total_sek:.2f}"])
+
+    n = len(table_data)
+    table = Table(table_data, colWidths=col_widths)
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), NAVY),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, 0), 9),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 6),
+        ("TOPPADDING", (0, 0), (-1, 0), 6),
+        ("FONTSIZE", (0, 1), (-1, -1), 9),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -(4)), [colors.white, LIGHT_GRAY]),
+        ("TOPPADDING", (0, 1), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 1), (-1, -1), 4),
+        # Summary rows bold
+        ("FONTNAME", (3, n - 3), (-1, n - 1), "Helvetica-Bold"),
+        ("LINEABOVE", (3, n - 3), (-1, n - 3), 0.5, colors.lightgrey),
+        ("LINEABOVE", (3, n - 1), (-1, n - 1), 1, NAVY),
+        ("GRID", (0, 0), (-1, -(4)), 0.3, colors.lightgrey),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+    ]))
+    elements.append(table)
+
+    if inv.notes:
+        elements.append(Spacer(1, 8 * mm))
+        elements.append(Paragraph("Notes", label_style))
+        elements.append(Paragraph(inv.notes, body_style))
+
+    doc.build(elements)
+    return buffer.getvalue()

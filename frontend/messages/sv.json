@@ -1,0 +1,82 @@
+{
+  "common": {
+    "appName": "Varuflow",
+    "loading": "Laddar...",
+    "error": "Något gick fel",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "delete": "Radera",
+    "edit": "Redigera",
+    "create": "Skapa",
+    "search": "Sök...",
+    "noResults": "Inga resultat hittades",
+    "back": "Tillbaka"
+  },
+  "nav": {
+    "dashboard": "Instrumentpanel",
+    "inventory": "Lager",
+    "invoices": "Fakturor",
+    "customers": "Kunder",
+    "settings": "Inställningar",
+    "signOut": "Logga ut"
+  },
+  "auth": {
+    "login": "Logga in",
+    "signup": "Registrera",
+    "email": "E-postadress",
+    "password": "Lösenord",
+    "magicLink": "Skicka magisk länk",
+    "magicLinkSent": "Kolla din e-post — vi skickade en magisk länk till {email}",
+    "orContinueWith": "Eller logga in med lösenord",
+    "noAccount": "Har du inget konto?",
+    "hasAccount": "Har du redan ett konto?",
+    "forgotPassword": "Glömt lösenordet?",
+    "signInWithPassword": "Logga in",
+    "createAccount": "Skapa konto",
+    "signUpDescription": "Starta din kostnadsfria Varuflow-testperiod.",
+    "loginDescription": "Logga in på ditt Varuflow-konto."
+  },
+  "onboarding": {
+    "title": "Konfigurera ditt företag",
+    "subtitle": "Berätta om ditt företag för att komma igång.",
+    "step1Title": "Företagsuppgifter",
+    "step2Title": "Ladda upp logotyp",
+    "step2Skip": "Hoppa över för nu",
+    "step3Title": "Allt är klart!",
+    "companyName": "Företagsnamn",
+    "companyNamePlaceholder": "Svensson AB",
+    "orgNumber": "Organisationsnummer",
+    "orgNumberPlaceholder": "556000-0000",
+    "orgNumberHint": "Svenskt organisationsnummer (XXXXXX-XXXX)",
+    "vatNumber": "Momsnummer",
+    "vatNumberPlaceholder": "SE556000000001",
+    "address": "Adress",
+    "continue": "Fortsätt",
+    "finish": "Gå till instrumentpanelen",
+    "logoUpload": "Ladda upp din logotyp",
+    "logoHint": "PNG eller JPG, max 2 MB. Visas på fakturor."
+  },
+  "marketing": {
+    "hero": {
+      "title": "Operativsystemet för svenska grossister",
+      "subtitle": "Hantera lager, automatisera fakturering och följ kassaflödet — byggt för svenska B2B-företag.",
+      "cta": "Gå med i väntelistan"
+    }
+  },
+  "dashboard": {
+    "title": "Instrumentpanel",
+    "welcome": "Välkommen till Varuflow"
+  },
+  "inventory": {
+    "title": "Lager"
+  },
+  "invoices": {
+    "title": "Fakturor"
+  },
+  "customers": {
+    "title": "Kunder"
+  },
+  "settings": {
+    "title": "Inställningar"
+  }
+}
