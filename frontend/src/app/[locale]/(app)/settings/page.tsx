@@ -5,17 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
-import { Check } from "lucide-react";
+import { Check, UserPlus, Trash2 } from "lucide-react";
 
-interface Org {
-  id: string; name: string; org_number: string | null;
-  vat_number: string | null; address: string | null; plan: string;
-}
+interface Org { id: string; name: string; org_number: string | null; vat_number: string | null; address: string | null; plan: string; }
 interface Me { email: string; role: string; organization: Org; }
+interface Member { id: string; user_id: string; role: string; created_at: string; }
+
+type Tab = "account" | "team";
 
 export default function SettingsPage() {
   const [me, setMe] = useState<Me | null>(null);
+  const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<Tab>("account");
 
   // Company form
   const [companyForm, setCompanyForm] = useState({ company_name: "", org_number: "", vat_number: "", address: "" });
@@ -24,28 +26,39 @@ export default function SettingsPage() {
   const [companyError, setCompanyError] = useState<string | null>(null);
 
   // Password form
-  const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" });
+  const [pwForm, setPwForm] = useState({ next: "", confirm: "" });
   const [pwSaving, setPwSaving] = useState(false);
   const [pwOk, setPwOk] = useState(false);
   const [pwError, setPwError] = useState<string | null>(null);
 
+  // Invite form
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("MEMBER");
+  const [inviting, setInviting] = useState(false);
+  const [inviteOk, setInviteOk] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+
+  async function loadMembers() {
+    try { setMembers(await api.get<Member[]>("/api/team")); } catch {}
+  }
+
   useEffect(() => {
-    api.get<Me>("/api/auth/me")
-      .then((data) => {
-        setMe(data);
-        setCompanyForm({
-          company_name: data.organization.name,
-          org_number: data.organization.org_number ?? "",
-          vat_number: data.organization.vat_number ?? "",
-          address: data.organization.address ?? "",
-        });
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    Promise.all([
+      api.get<Me>("/api/auth/me"),
+      api.get<Member[]>("/api/team"),
+    ]).then(([meData, teamData]) => {
+      setMe(meData);
+      setMembers(teamData);
+      setCompanyForm({
+        company_name: meData.organization.name,
+        org_number: meData.organization.org_number ?? "",
+        vat_number: meData.organization.vat_number ?? "",
+        address: meData.organization.address ?? "",
+      });
+    }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   function setC(f: string, v: string) { setCompanyForm((s) => ({ ...s, [f]: v })); }
-  function setP(f: string, v: string) { setPwForm((s) => ({ ...s, [f]: v })); }
 
   async function handleCompany(e: React.FormEvent) {
     e.preventDefault(); setCompanySaving(true); setCompanyError(null); setCompanyOk(false);
@@ -70,98 +83,205 @@ export default function SettingsPage() {
       const supabase = createClient();
       const { error } = await supabase.auth.updateUser({ password: pwForm.next });
       if (error) throw new Error(error.message);
-      setPwForm({ current: "", next: "", confirm: "" });
+      setPwForm({ next: "", confirm: "" });
       setPwOk(true);
       setTimeout(() => setPwOk(false), 3000);
     } catch (e: any) { setPwError(e.message); } finally { setPwSaving(false); }
+  }
+
+  async function handleInvite(e: React.FormEvent) {
+    e.preventDefault(); setInviting(true); setInviteError(null); setInviteOk(false);
+    try {
+      await api.post("/api/team/invite", { email: inviteEmail, role: inviteRole });
+      setInviteEmail(""); setInviteOk(true);
+      setTimeout(() => setInviteOk(false), 3000);
+      await loadMembers();
+    } catch (e: any) { setInviteError(e.message); } finally { setInviting(false); }
+  }
+
+  async function handleRemove(memberId: string) {
+    if (!confirm("Remove this team member?")) return;
+    try {
+      await api.delete(`/api/team/${memberId}`);
+      await loadMembers();
+    } catch (e: any) { setInviteError(e.message); }
+  }
+
+  async function handleRoleChange(memberId: string, role: string) {
+    try {
+      await api.patch(`/api/team/${memberId}/role`, { role });
+      await loadMembers();
+    } catch (e: any) { setInviteError(e.message); }
   }
 
   if (loading) return (
     <div className="space-y-4 animate-pulse max-w-2xl">
       <div className="h-8 w-32 rounded bg-gray-100" />
       <div className="h-48 rounded-xl bg-gray-100" />
-      <div className="h-48 rounded-xl bg-gray-100" />
     </div>
   );
 
+  const isOwner = me?.role === "OWNER";
+
   return (
-    <div className="max-w-2xl space-y-8">
+    <div className="max-w-2xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-[#1a2332]">Settings</h1>
         <p className="text-sm text-muted-foreground">Manage your account and organization</p>
       </div>
 
-      {/* Account info (read-only) */}
-      <div className="rounded-xl border bg-white p-6 space-y-4">
-        <h2 className="font-semibold text-gray-900">Account</h2>
-        <div className="space-y-1.5">
-          <Label>Email</Label>
-          <p className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
-            {me?.email}
-          </p>
-        </div>
-        <div className="space-y-1.5">
-          <Label>Role</Label>
-          <p className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600 capitalize">
-            {me?.role.toLowerCase()}
-          </p>
-        </div>
-        <div className="space-y-1.5">
-          <Label>Plan</Label>
-          <p className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600 capitalize">
-            {me?.organization.plan.toLowerCase()} {me?.organization.plan === "FREE" && "— Early access"}
-          </p>
-        </div>
+      {/* Tabs */}
+      <div className="flex gap-1 border-b">
+        {(["account", "team"] as Tab[]).map((t) => (
+          <button key={t} onClick={() => setTab(t)}
+            className={`px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px transition-colors ${
+              tab === t ? "border-[#1a2332] text-[#1a2332]" : "border-transparent text-muted-foreground hover:text-gray-900"
+            }`}>
+            {t}
+          </button>
+        ))}
       </div>
 
-      {/* Company details */}
-      <form onSubmit={handleCompany} className="rounded-xl border bg-white p-6 space-y-4">
-        <h2 className="font-semibold text-gray-900">Company details</h2>
-        <p className="text-xs text-muted-foreground">Shown on invoices and purchase orders.</p>
-        {[
-          { id: "company_name", label: "Company name *", placeholder: "Svensson AB", required: true },
-          { id: "org_number", label: "Org number", placeholder: "556000-0000" },
-          { id: "vat_number", label: "VAT number", placeholder: "SE556000000001" },
-          { id: "address", label: "Address", placeholder: "Storgatan 1, Stockholm" },
-        ].map(({ id, label, placeholder, required }) => (
-          <div key={id} className="space-y-1.5">
-            <Label htmlFor={id}>{label}</Label>
-            <input id={id} required={required} value={(companyForm as any)[id]}
-              onChange={(e) => setC(id, e.target.value)} placeholder={placeholder}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+      {tab === "account" && (
+        <>
+          {/* Account info */}
+          <div className="rounded-xl border bg-white p-6 space-y-4">
+            <h2 className="font-semibold text-gray-900">Account</h2>
+            <div className="space-y-1.5">
+              <Label>Email</Label>
+              <p className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">{me?.email}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Role</Label>
+                <p className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600 capitalize">{me?.role.toLowerCase()}</p>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Plan</Label>
+                <p className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600 capitalize">
+                  {me?.organization.plan.toLowerCase()} {me?.organization.plan === "FREE" && "— Early access"}
+                </p>
+              </div>
+            </div>
           </div>
-        ))}
-        {companyError && <p className="text-sm text-red-600">{companyError}</p>}
-        <div className="flex items-center gap-3">
-          <Button type="submit" disabled={companySaving} className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
-            {companySaving ? "Saving…" : "Save changes"}
-          </Button>
-          {companyOk && <span className="flex items-center gap-1 text-sm text-green-600"><Check className="h-4 w-4" />Saved</span>}
-        </div>
-      </form>
 
-      {/* Change password */}
-      <form onSubmit={handlePassword} className="rounded-xl border bg-white p-6 space-y-4">
-        <h2 className="font-semibold text-gray-900">Change password</h2>
-        {[
-          { id: "next", label: "New password", placeholder: "Min. 8 characters", type: "password" },
-          { id: "confirm", label: "Confirm new password", placeholder: "Repeat password", type: "password" },
-        ].map(({ id, label, placeholder, type }) => (
-          <div key={id} className="space-y-1.5">
-            <Label htmlFor={id}>{label}</Label>
-            <input id={id} type={type} required minLength={8} value={(pwForm as any)[id]}
-              onChange={(e) => setP(id, e.target.value)} placeholder={placeholder}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+          {/* Company details */}
+          <form onSubmit={handleCompany} className="rounded-xl border bg-white p-6 space-y-4">
+            <h2 className="font-semibold text-gray-900">Company details</h2>
+            <p className="text-xs text-muted-foreground">Shown on invoices and purchase orders.</p>
+            {[
+              { id: "company_name", label: "Company name *", placeholder: "Svensson AB", required: true },
+              { id: "org_number", label: "Org number", placeholder: "556000-0000" },
+              { id: "vat_number", label: "VAT number", placeholder: "SE556000000001" },
+              { id: "address", label: "Address", placeholder: "Storgatan 1, Stockholm" },
+            ].map(({ id, label, placeholder, required }) => (
+              <div key={id} className="space-y-1.5">
+                <Label htmlFor={id}>{label}</Label>
+                <input id={id} required={required} value={(companyForm as any)[id]}
+                  onChange={(e) => setC(id, e.target.value)} placeholder={placeholder}
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+              </div>
+            ))}
+            {companyError && <p className="text-sm text-red-600">{companyError}</p>}
+            <div className="flex items-center gap-3">
+              <Button type="submit" disabled={companySaving} className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                {companySaving ? "Saving…" : "Save changes"}
+              </Button>
+              {companyOk && <span className="flex items-center gap-1 text-sm text-green-600"><Check className="h-4 w-4" />Saved</span>}
+            </div>
+          </form>
+
+          {/* Change password */}
+          <form onSubmit={handlePassword} className="rounded-xl border bg-white p-6 space-y-4">
+            <h2 className="font-semibold text-gray-900">Change password</h2>
+            {[
+              { id: "next", label: "New password", placeholder: "Min. 8 characters" },
+              { id: "confirm", label: "Confirm new password", placeholder: "Repeat password" },
+            ].map(({ id, label, placeholder }) => (
+              <div key={id} className="space-y-1.5">
+                <Label htmlFor={id}>{label}</Label>
+                <input id={id} type="password" required minLength={8} value={(pwForm as any)[id]}
+                  onChange={(e) => setPwForm((s) => ({ ...s, [id]: e.target.value }))} placeholder={placeholder}
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+              </div>
+            ))}
+            {pwError && <p className="text-sm text-red-600">{pwError}</p>}
+            <div className="flex items-center gap-3">
+              <Button type="submit" disabled={pwSaving} className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                {pwSaving ? "Updating…" : "Update password"}
+              </Button>
+              {pwOk && <span className="flex items-center gap-1 text-sm text-green-600"><Check className="h-4 w-4" />Updated</span>}
+            </div>
+          </form>
+        </>
+      )}
+
+      {tab === "team" && (
+        <div className="space-y-6">
+          {/* Members list */}
+          <div className="rounded-xl border bg-white overflow-hidden">
+            <div className="px-6 py-4 border-b">
+              <h2 className="font-semibold text-gray-900">Team members</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">{members.length} member{members.length !== 1 ? "s" : ""}</p>
+            </div>
+            <div className="divide-y">
+              {members.map((m) => (
+                <div key={m.id} className="flex items-center justify-between px-6 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">User {m.user_id.slice(0, 8)}…</p>
+                    <p className="text-xs text-muted-foreground">Joined {new Date(m.created_at).toLocaleDateString("sv-SE")}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {isOwner ? (
+                      <select value={m.role}
+                        onChange={(e) => handleRoleChange(m.id, e.target.value)}
+                        className="rounded-md border border-gray-200 px-2 py-1 text-xs focus:border-[#1a2332] focus:outline-none">
+                        <option value="OWNER">Owner</option>
+                        <option value="ADMIN">Admin</option>
+                        <option value="MEMBER">Member</option>
+                      </select>
+                    ) : (
+                      <span className="rounded bg-gray-100 px-2 py-0.5 text-xs font-medium capitalize">{m.role.toLowerCase()}</span>
+                    )}
+                    {isOwner && (
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-red-400 hover:text-red-600"
+                        onClick={() => handleRemove(m.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-        {pwError && <p className="text-sm text-red-600">{pwError}</p>}
-        <div className="flex items-center gap-3">
-          <Button type="submit" disabled={pwSaving} className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
-            {pwSaving ? "Updating…" : "Update password"}
-          </Button>
-          {pwOk && <span className="flex items-center gap-1 text-sm text-green-600"><Check className="h-4 w-4" />Updated</span>}
+
+          {/* Invite form */}
+          {isOwner && (
+            <form onSubmit={handleInvite} className="rounded-xl border bg-white p-6 space-y-4">
+              <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+                <UserPlus className="h-4 w-4" />Invite team member
+              </h2>
+              <div className="flex gap-3">
+                <input type="email" required placeholder="colleague@company.se" value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)}
+                  className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                  <option value="MEMBER">Member</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+              </div>
+              {inviteError && <p className="text-sm text-red-600">{inviteError}</p>}
+              <div className="flex items-center gap-3">
+                <Button type="submit" disabled={inviting} className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                  {inviting ? "Inviting…" : "Send invite"}
+                </Button>
+                {inviteOk && <span className="flex items-center gap-1 text-sm text-green-600"><Check className="h-4 w-4" />Invited</span>}
+              </div>
+            </form>
+          )}
         </div>
-      </form>
+      )}
     </div>
   );
 }

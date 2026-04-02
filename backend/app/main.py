@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.database import engine
-from app.routers import auth, health, inventory, invoicing, waitlist
+from app.routers import analytics, auth, health, inventory, invoicing, recurring, team, waitlist
 
 
 @asynccontextmanager
@@ -34,3 +34,6 @@ app.include_router(auth.router)
 app.include_router(inventory.router)
 app.include_router(invoicing.router)
 app.include_router(waitlist.router)
+app.include_router(analytics.router)
+app.include_router(team.router)
+app.include_router(recurring.router)

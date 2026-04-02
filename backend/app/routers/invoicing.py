@@ -420,6 +420,50 @@ async def aging_report(
     return AgingReport(**buckets, total_outstanding=total_outstanding)
 
 
+# ── Send by email ─────────────────────────────────────────────────────────────
+
+@router.post("/invoices/{invoice_id}/send", status_code=status.HTTP_200_OK)
+async def send_invoice_email(
+    invoice_id: uuid.UUID,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    """Send the invoice PDF to the customer's email via Resend."""
+    from app.services.email import send_invoice_email as _send
+    from app.models.organization import Organization
+
+    org_id = _org(ctx)
+    result = await db.execute(
+        select(Invoice)
+        .options(selectinload(Invoice.customer), selectinload(Invoice.line_items))
+        .where(Invoice.id == invoice_id, Invoice.org_id == org_id)
+    )
+    inv = result.scalar_one_or_none()
+    if not inv:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    if not inv.customer.email:
+        raise HTTPException(status_code=422, detail="Customer has no email address")
+    if inv.status == InvoiceStatus.DRAFT:
+        raise HTTPException(status_code=422, detail="Cannot send a DRAFT invoice — mark it Sent first")
+
+    org = await db.get(Organization, org_id)
+    pdf_bytes = _generate_invoice_pdf(inv)
+
+    sent = await _send(
+        to_email=inv.customer.email,
+        customer_name=inv.customer.company_name,
+        invoice_number=inv.invoice_number,
+        total_sek=f"{inv.total_sek:.2f}",
+        due_date=str(inv.due_date),
+        pdf_bytes=pdf_bytes,
+        org_name=org.name if org else "Varuflow",
+    )
+
+    if not sent:
+        return {"status": "skipped", "reason": "Resend not configured — add RESEND_API_KEY to backend .env"}
+    return {"status": "sent", "to": inv.customer.email}
+
+
 # ── PDF ───────────────────────────────────────────────────────────────────────
 
 @router.get("/invoices/{invoice_id}/pdf")

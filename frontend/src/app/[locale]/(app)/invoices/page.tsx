@@ -4,7 +4,7 @@ import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FileText, Plus } from "lucide-react";
+import { FileText, Plus, AlertTriangle } from "lucide-react";
 
 interface Invoice {
   id: string;
@@ -42,6 +42,7 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [markingOverdue, setMarkingOverdue] = useState(false);
 
   async function load() {
     try { setInvoices(await api.get<Invoice[]>("/api/invoicing/invoices")); }
@@ -59,6 +60,14 @@ export default function InvoicesPage() {
       await api.patch(`/api/invoicing/invoices/${inv.id}/status`, { status: next });
       await load();
     } catch (e: any) { setError(e.message); } finally { setUpdating(null); }
+  }
+
+  async function handleMarkOverdue() {
+    setMarkingOverdue(true);
+    try {
+      const res = await api.post<{ marked: number }>("/api/recurring/mark-overdue", {});
+      if (res.marked > 0) await load();
+    } catch (e: any) { setError(e.message); } finally { setMarkingOverdue(false); }
   }
 
   function downloadPDF(id: string) {
@@ -79,9 +88,14 @@ export default function InvoicesPage() {
           <h1 className="text-2xl font-bold text-[#1a2332]">Invoices</h1>
           <p className="text-sm text-muted-foreground">{invoices.length} invoices</p>
         </div>
-        <Button asChild size="sm" className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
-          <Link href="/invoices/new"><Plus className="mr-1.5 h-3.5 w-3.5" />New invoice</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" disabled={markingOverdue} onClick={handleMarkOverdue}>
+            <AlertTriangle className="mr-1.5 h-3.5 w-3.5 text-red-500" />{markingOverdue ? "Checking…" : "Mark overdue"}
+          </Button>
+          <Button asChild size="sm" className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+            <Link href="/invoices/new"><Plus className="mr-1.5 h-3.5 w-3.5" />New invoice</Link>
+          </Button>
+        </div>
       </div>
 
       {invoices.length > 0 && (

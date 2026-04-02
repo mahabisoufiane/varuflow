@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Mail } from "lucide-react";
 
 interface LineItem { id: string; description: string; quantity: string; unit_price: string; tax_rate: string; line_total: string; }
 interface Payment { id: string; amount: string; payment_date: string; method: string; reference: string | null; }
@@ -37,6 +37,8 @@ export default function InvoiceDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendMsg, setSendMsg] = useState<string | null>(null);
   const [payOpen, setPayOpen] = useState(false);
   const [payForm, setPayForm] = useState({ amount: "", payment_date: new Date().toISOString().slice(0, 10), method: "BANK_TRANSFER", reference: "" });
   const [paying, setPaying] = useState(false);
@@ -79,6 +81,17 @@ export default function InvoiceDetailPage() {
     } catch (e: any) { setError(e.message); } finally { setPaying(false); }
   }
 
+  async function handleSendEmail() {
+    if (!invoice) return;
+    setSending(true); setSendMsg(null); setError(null);
+    try {
+      const res = await api.post<{ status: string; to?: string; reason?: string }>(
+        `/api/invoicing/invoices/${invoice.id}/send`, {}
+      );
+      setSendMsg(res.status === "sent" ? `Sent to ${res.to}` : res.reason ?? "Skipped");
+    } catch (e: any) { setError(e.message); } finally { setSending(false); }
+  }
+
   async function handleDelete() {
     if (!invoice || invoice.status !== "DRAFT") return;
     if (!confirm("Delete this draft invoice?")) return;
@@ -110,10 +123,15 @@ export default function InvoiceDetailPage() {
             <h1 className="text-2xl font-bold text-[#1a2332]">{invoice.invoice_number}</h1>
             <span className={`mt-1 inline-block rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[invoice.status]}`}>{invoice.status}</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="ghost" size="sm" onClick={() => window.open(api.downloadUrl(`/api/invoicing/invoices/${invoice.id}/pdf`), "_blank")}>
               PDF
             </Button>
+            {invoice.status !== "DRAFT" && invoice.customer.email && (
+              <Button variant="outline" size="sm" disabled={sending} onClick={handleSendEmail}>
+                <Mail className="mr-1.5 h-3.5 w-3.5" />{sending ? "Sending…" : "Email to customer"}
+              </Button>
+            )}
             {NEXT_STATUS[invoice.status] && (
               <Button size="sm" className="bg-[#1a2332] hover:bg-[#2a3342] text-white" disabled={updating} onClick={advanceStatus}>
                 {NEXT_LABEL[invoice.status]}
@@ -128,6 +146,7 @@ export default function InvoiceDetailPage() {
               <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700" onClick={handleDelete}>Delete</Button>
             )}
           </div>
+          {sendMsg && <p className="mt-1 text-xs text-green-600">{sendMsg}</p>}
         </div>
       </div>
 

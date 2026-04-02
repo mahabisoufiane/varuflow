@@ -3,27 +3,29 @@
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Link, usePathname } from "@/i18n/navigation";
-import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
+  BarChart3,
   FileText,
   LayoutDashboard,
   LogOut,
   Package,
+  RefreshCw,
   Settings,
   Users,
 } from "lucide-react";
 
 const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, labelKey: "dashboard" },
-  { href: "/inventory", icon: Package, labelKey: "inventory" },
-  { href: "/invoices", icon: FileText, labelKey: "invoices" },
-  { href: "/customers", icon: Users, labelKey: "customers" },
-  { href: "/settings", icon: Settings, labelKey: "settings" },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/analytics", icon: BarChart3, label: "Analytics" },
+  { href: "/inventory", icon: Package, label: "Inventory" },
+  { href: "/invoices", icon: FileText, label: "Invoices" },
+  { href: "/recurring", icon: RefreshCw, label: "Recurring" },
+  { href: "/customers", icon: Users, label: "Customers" },
+  { href: "/settings", icon: Settings, label: "Settings" },
 ] as const;
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const t = useTranslations("nav");
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -43,19 +45,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Nav */}
         <nav className="flex flex-1 flex-col gap-1 p-4">
-          {navItems.map(({ href, icon: Icon, labelKey }) => (
+          {navItems.map(({ href, icon: Icon, label }) => (
             <Link
               key={href}
               href={href}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                pathname === href
+                pathname === href || pathname.startsWith(href + "/")
                   ? "bg-white/10 text-white"
                   : "text-gray-400 hover:bg-white/5 hover:text-white"
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
-              {t(labelKey)}
+              {label}
             </Link>
           ))}
         </nav>
