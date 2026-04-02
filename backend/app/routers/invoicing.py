@@ -686,6 +686,137 @@ def _generate_peppol_xml(inv: Invoice, org) -> bytes:
     return xml.encode("utf-8")
 
 
+# ── Stripe payment link ────────────────────────────────────────────────────────
+
+class PaymentLinkOut(BaseModel):
+    url: str
+    status: str
+
+
+@router.post("/invoices/{invoice_id}/payment-link", response_model=PaymentLinkOut)
+async def create_payment_link(
+    invoice_id: uuid.UUID,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a Stripe Checkout session and email the payment link to the customer."""
+    from app.config import settings
+    from app.services.email import send_payment_link_email
+
+    if not settings.STRIPE_SECRET_KEY:
+        raise HTTPException(status_code=503, detail="Stripe not configured — add STRIPE_SECRET_KEY")
+
+    org_id = _org(ctx)
+    result = await db.execute(
+        select(Invoice)
+        .options(selectinload(Invoice.customer), selectinload(Invoice.line_items))
+        .where(Invoice.id == invoice_id, Invoice.org_id == org_id)
+    )
+    inv = result.scalar_one_or_none()
+    if not inv:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    if inv.status == InvoiceStatus.PAID:
+        raise HTTPException(status_code=422, detail="Invoice is already paid")
+    if not inv.customer.email:
+        raise HTTPException(status_code=422, detail="Customer has no email address")
+
+    import stripe
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+
+    amount_ore = int(inv.total_sek * 100)  # SEK → öre
+    session = stripe.checkout.Session.create(
+        mode="payment",
+        currency="sek",
+        line_items=[{
+            "price_data": {
+                "currency": "sek",
+                "unit_amount": amount_ore,
+                "product_data": {
+                    "name": f"Invoice {inv.invoice_number}",
+                    "description": f"Due {inv.due_date}",
+                },
+            },
+            "quantity": 1,
+        }],
+        customer_email=inv.customer.email,
+        metadata={"invoice_id": str(inv.id), "org_id": str(org_id)},
+        success_url=f"http://localhost:3000/invoices/{inv.id}?paid=1",
+        cancel_url=f"http://localhost:3000/invoices/{inv.id}",
+    )
+
+    inv.stripe_checkout_session_id = session.id
+    inv.stripe_payment_link_url = session.url
+    inv.stripe_payment_link_status = "pending"
+    await db.commit()
+
+    # Email the payment link
+    await send_payment_link_email(
+        to_email=inv.customer.email,
+        customer_name=inv.customer.company_name,
+        invoice_number=inv.invoice_number,
+        total_sek=f"{inv.total_sek:.2f}",
+        payment_url=session.url,
+    )
+
+    return PaymentLinkOut(url=session.url, status="pending")
+
+
+@router.get("/invoices/{invoice_id}/payment-link", response_model=PaymentLinkOut)
+async def get_payment_link(
+    invoice_id: uuid.UUID,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    org_id = _org(ctx)
+    result = await db.execute(
+        select(Invoice).where(Invoice.id == invoice_id, Invoice.org_id == org_id)
+    )
+    inv = result.scalar_one_or_none()
+    if not inv or not inv.stripe_payment_link_url:
+        raise HTTPException(status_code=404, detail="No payment link found")
+    return PaymentLinkOut(url=inv.stripe_payment_link_url, status=inv.stripe_payment_link_status or "pending")
+
+
+# ── Stripe webhook (invoice payment) ──────────────────────────────────────────
+
+@router.post("/webhooks/stripe", status_code=200)
+async def stripe_invoice_webhook(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """Handle Stripe payment.succeeded → auto-mark invoice as PAID."""
+    from app.config import settings
+
+    if not settings.STRIPE_WEBHOOK_SECRET:
+        raise HTTPException(status_code=503, detail="Webhook secret not configured")
+
+    import stripe
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    payload = await request.body()
+    sig = request.headers.get("stripe-signature", "")
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig, settings.STRIPE_WEBHOOK_SECRET)
+    except stripe.error.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Invalid signature")
+
+    if event["type"] == "checkout.session.completed":
+        session_obj = event["data"]["object"]
+        invoice_id_str = session_obj.get("metadata", {}).get("invoice_id")
+        if invoice_id_str:
+            try:
+                inv_id = uuid.UUID(invoice_id_str)
+            except ValueError:
+                return {"received": True}
+            inv = await db.get(Invoice, inv_id)
+            if inv:
+                inv.status = InvoiceStatus.PAID
+                inv.stripe_payment_link_status = "paid"
+                await db.commit()
+
+    return {"received": True}
+
+
 def _xml_escape(text: str) -> str:
     return (
         str(text)

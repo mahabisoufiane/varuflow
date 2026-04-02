@@ -90,6 +90,8 @@ class InvoiceOut(BaseModel):
     vat_amount: Decimal
     total_sek: Decimal
     notes: str | None
+    stripe_payment_link_url: str | None = None
+    stripe_payment_link_status: str | None = None
     created_at: datetime
     line_items: list[InvoiceLineItemOut]
 

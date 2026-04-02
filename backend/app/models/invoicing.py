@@ -108,6 +108,10 @@ class Invoice(Base):
         Numeric(14, 2), default=Decimal("0.00"), nullable=False
     )
     notes: Mapped[str | None] = mapped_column(Text)
+    # Stripe payment link
+    stripe_payment_link_url: Mapped[str | None] = mapped_column(String(500))
+    stripe_payment_link_status: Mapped[str | None] = mapped_column(String(20))  # pending / paid / expired
+    stripe_checkout_session_id: Mapped[str | None] = mapped_column(String(200))
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

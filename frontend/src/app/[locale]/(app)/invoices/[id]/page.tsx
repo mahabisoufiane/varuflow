@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Mail } from "lucide-react";
+import { ArrowLeft, Mail, Link2, CheckCircle2, Clock } from "lucide-react";
 
 interface LineItem { id: string; description: string; quantity: string; unit_price: string; tax_rate: string; line_total: string; }
 interface Payment { id: string; amount: string; payment_date: string; method: string; reference: string | null; }
@@ -15,6 +15,8 @@ interface Invoice {
   id: string; invoice_number: string; status: string;
   issue_date: string; due_date: string; notes: string | null;
   subtotal: string; vat_amount: string; total_sek: string;
+  stripe_payment_link_url: string | null;
+  stripe_payment_link_status: string | null;
   customer: { company_name: string; org_number: string | null; vat_number: string | null; email: string | null; address: string | null; };
   line_items: LineItem[];
 }
@@ -39,6 +41,7 @@ export default function InvoiceDetailPage() {
   const [updating, setUpdating] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendMsg, setSendMsg] = useState<string | null>(null);
+  const [linkSending, setLinkSending] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
   const [payForm, setPayForm] = useState({ amount: "", payment_date: new Date().toISOString().slice(0, 10), method: "BANK_TRANSFER", reference: "" });
   const [paying, setPaying] = useState(false);
@@ -92,6 +95,15 @@ export default function InvoiceDetailPage() {
     } catch (e: any) { setError(e.message); } finally { setSending(false); }
   }
 
+  async function handleSendPaymentLink() {
+    if (!invoice) return;
+    setLinkSending(true); setError(null);
+    try {
+      await api.post(`/api/invoicing/invoices/${invoice.id}/payment-link`, {});
+      await load();
+    } catch (e: any) { setError(e.message); } finally { setLinkSending(false); }
+  }
+
   async function handleDelete() {
     if (!invoice || invoice.status !== "DRAFT") return;
     if (!confirm("Delete this draft invoice?")) return;
@@ -134,6 +146,30 @@ export default function InvoiceDetailPage() {
               <Button variant="outline" size="sm" disabled={sending} onClick={handleSendEmail}>
                 <Mail className="mr-1.5 h-3.5 w-3.5" />{sending ? "Sending…" : "Email to customer"}
               </Button>
+            )}
+            {(invoice.status === "SENT" || invoice.status === "OVERDUE") && invoice.customer.email && (
+              invoice.stripe_payment_link_url && invoice.stripe_payment_link_status !== "expired" ? (
+                <div className="flex items-center gap-1.5">
+                  {invoice.stripe_payment_link_status === "paid" ? (
+                    <span className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-green-100 text-green-700">
+                      <CheckCircle2 className="h-3 w-3" />Paid via link
+                    </span>
+                  ) : (
+                    <>
+                      <span className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-700">
+                        <Clock className="h-3 w-3" />Link sent
+                      </span>
+                      <Button variant="ghost" size="sm" onClick={() => window.open(invoice.stripe_payment_link_url!, "_blank")}>
+                        <Link2 className="mr-1 h-3.5 w-3.5" />Open
+                      </Button>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <Button variant="outline" size="sm" disabled={linkSending} onClick={handleSendPaymentLink}>
+                  <Link2 className="mr-1.5 h-3.5 w-3.5" />{linkSending ? "Creating…" : "Send payment link"}
+                </Button>
+              )
             )}
             {NEXT_STATUS[invoice.status] && (
               <Button size="sm" className="bg-[#1a2332] hover:bg-[#2a3342] text-white" disabled={updating} onClick={advanceStatus}>
