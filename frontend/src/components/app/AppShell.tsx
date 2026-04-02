@@ -11,6 +11,7 @@ import CommandPalette from "@/components/app/CommandPalette";
 import AiChat from "@/components/app/AiChat";
 import {
   BarChart3,
+  Bot,
   FileText,
   LayoutDashboard,
   LogOut,
@@ -26,6 +27,7 @@ import {
 const NAV = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/analytics", icon: BarChart3, label: "Analytics" },
+  { href: "/ai", icon: Bot, label: "AI Advisor" },
   { href: "/inventory", icon: Package, label: "Inventory" },
   { href: "/invoices", icon: FileText, label: "Invoices" },
   { href: "/recurring", icon: RefreshCw, label: "Recurring" },

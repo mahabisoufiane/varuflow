@@ -7,6 +7,7 @@ import {
   AlertTriangle, ArrowRight, ArrowUpRight, FileText,
   Package, Plus, ShoppingCart, TrendingUp,
 } from "lucide-react";
+import AiActionCards from "@/components/app/AiActionCards";
 
 interface StockLevel { product: { name: string; sku: string }; warehouse: { name: string }; quantity: number; min_threshold: number; }
 interface Invoice { id: string; invoice_number: string; customer: { company_name: string }; total_sek: string; due_date: string; status: string; }
@@ -170,6 +171,9 @@ export default function DashboardPage() {
           ))}
         </Panel>
       </div>
+
+      {/* AI Action Cards */}
+      <AiActionCards />
 
       {/* Recent movements */}
       {recentMovements.length > 0 && (

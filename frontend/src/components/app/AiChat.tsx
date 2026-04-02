@@ -10,10 +10,12 @@ interface Message {
 }
 
 const QUICK_PROMPTS = [
-  "Which invoices are overdue?",
-  "What products are low on stock?",
-  "Show revenue summary",
-  "Generate purchase order for low stock",
+  "Which invoices are overdue and need follow-up?",
+  "What products are at stockout risk this week?",
+  "Which customers haven't ordered in 45+ days?",
+  "Which products have the worst profit margins?",
+  "Summarize my cash flow situation",
+  "Who are my top 5 customers by revenue?",
 ];
 
 const STORAGE_KEY = "varuflow_ai_history";
