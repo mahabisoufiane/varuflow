@@ -20,6 +20,11 @@ function stripLocale(pathname: string): string {
 }
 
 export async function middleware(request: NextRequest) {
+  // Portal routes are standalone — skip i18n and Supabase auth entirely
+  if (request.nextUrl.pathname.startsWith("/portal")) {
+    return NextResponse.next();
+  }
+
   // Run next-intl routing first to get the correctly localised response
   const intlResponse = handleI18nRouting(request);
 

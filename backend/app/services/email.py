@@ -54,6 +54,48 @@ async def send_invoice_email(
     return res.status_code in (200, 201)
 
 
+async def send_magic_link_email(
+    to_email: str,
+    customer_name: str,
+    magic_url: str,
+    org_name: str,
+) -> bool:
+    """Send a portal magic-link email. Returns True on success, False if not configured."""
+    if not settings.RESEND_API_KEY:
+        return False
+
+    payload = {
+        "from": f"{org_name} <portal@varuflow.app>",
+        "to": [to_email],
+        "subject": f"Your secure login link — {org_name} portal",
+        "html": f"""
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+          <h2 style="color:#1a2332">Sign in to your portal</h2>
+          <p>Hi {customer_name},</p>
+          <p>Click below to securely access your invoices. This link expires in 15 minutes.</p>
+          <p style="margin:24px 0">
+            <a href="{magic_url}" style="background:#1a2332;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600">
+              Open portal
+            </a>
+          </p>
+          <p style="color:#888;font-size:12px">
+            If you didn't request this link, you can safely ignore this email.<br>
+            Sent via Varuflow
+          </p>
+        </div>
+        """,
+    }
+
+    async with httpx.AsyncClient(timeout=15) as client:
+        res = await client.post(
+            RESEND_URL,
+            json=payload,
+            headers={"Authorization": f"Bearer {settings.RESEND_API_KEY}"},
+        )
+
+    return res.status_code in (200, 201)
+
+
 async def send_payment_link_email(
     to_email: str,
     customer_name: str,

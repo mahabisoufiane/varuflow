@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     FORTNOX_CLIENT_SECRET: str = ""
     FORTNOX_REDIRECT_URI: str = "http://localhost:8000/api/integrations/fortnox/callback"
     OPENAI_API_KEY: str = ""
+    PORTAL_JWT_SECRET: str = "portal-secret-change-in-production-32chars"
+    PORTAL_BASE_URL: str = "http://localhost:3000"
     ENV: str = "development"
     DEBUG: bool = True
 
