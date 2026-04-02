@@ -12,7 +12,7 @@ interface Org { id: string; name: string; org_number: string | null; vat_number:
 interface Me { email: string; role: string; organization: Org; }
 interface Member { id: string; user_id: string; role: string; created_at: string; }
 
-type Tab = "account" | "team" | "billing" | "integrations";
+type Tab = "account" | "team" | "billing" | "integrations" | "notifications";
 
 export default function SettingsPage() {
   const [me, setMe] = useState<Me | null>(null);
@@ -133,7 +133,7 @@ export default function SettingsPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b">
-        {(["account", "team", "billing", "integrations"] as Tab[]).map((t) => (
+        {(["account", "team", "billing", "integrations", "notifications"] as Tab[]).map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px transition-colors ${
               tab === t ? "border-[#1a2332] text-[#1a2332]" : "border-transparent text-muted-foreground hover:text-gray-900"
@@ -289,6 +289,8 @@ export default function SettingsPage() {
       )}
 
       {tab === "integrations" && <IntegrationsTab />}
+
+      {tab === "notifications" && <NotificationsTab />}
     </div>
   );
 }
@@ -458,6 +460,103 @@ function IntegrationsTab() {
             </Button>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function NotificationsTab() {
+  const [permission, setPermission] = useState<NotificationPermission | "unsupported">(
+    typeof Notification === "undefined" ? "unsupported" : Notification.permission
+  );
+  const [requesting, setRequesting] = useState(false);
+
+  async function handleEnable() {
+    if (typeof Notification === "undefined") return;
+    setRequesting(true);
+    try {
+      const result = await Notification.requestPermission();
+      setPermission(result);
+      if (result === "granted") {
+        // Register SW push subscription
+        const reg = await navigator.serviceWorker.getRegistration("/sw.js");
+        if (reg) {
+          toast.success("Notifications enabled");
+        }
+      }
+    } finally {
+      setRequesting(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border bg-white p-6 space-y-5">
+        <div>
+          <h2 className="font-semibold text-gray-900">Push notifications</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Get notified about overdue invoices, low stock alerts, and payment confirmations.
+          </p>
+        </div>
+
+        {permission === "unsupported" && (
+          <div className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+            Your browser doesn&apos;t support push notifications.
+          </div>
+        )}
+
+        {permission === "granted" && (
+          <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
+              <Check className="h-4 w-4 text-green-600" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-green-900">Notifications enabled</p>
+              <p className="text-xs text-green-700">You&apos;ll receive alerts for key events.</p>
+            </div>
+          </div>
+        )}
+
+        {permission === "denied" && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            Notifications are blocked. To enable them, click the lock icon in your browser&apos;s address bar and allow notifications.
+          </div>
+        )}
+
+        {permission === "default" && (
+          <Button
+            onClick={handleEnable}
+            disabled={requesting}
+            className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+          >
+            {requesting ? "Requesting…" : "Enable notifications"}
+          </Button>
+        )}
+
+        <div className="space-y-3 pt-2 border-t">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">What you&apos;ll be notified about</p>
+          {[
+            "Invoice overdue (past due date)",
+            "Invoice paid via Stripe payment link",
+            "Product stock below minimum threshold",
+          ].map((label) => (
+            <div key={label} className="flex items-center gap-2 text-sm text-gray-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#1a2332]" />
+              {label}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-xl border bg-white p-6 space-y-3">
+        <h2 className="font-semibold text-gray-900">Install app</h2>
+        <p className="text-sm text-muted-foreground">
+          Add Varuflow to your home screen for a native-like experience with offline access.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          On Chrome/Edge: look for the install icon (⊕) in the address bar.<br />
+          On iOS Safari: tap Share → Add to Home Screen.
+        </p>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import AppShell from "@/components/app/AppShell";
+import PwaInstallBanner from "@/components/app/PwaInstallBanner";
 
 const SUPABASE_CONFIGURED = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL &&
@@ -24,5 +25,10 @@ export default async function AppLayout({
     }
   }
 
-  return <AppShell>{children}</AppShell>;
+  return (
+    <>
+      <AppShell>{children}</AppShell>
+      <PwaInstallBanner />
+    </>
+  );
 }
