@@ -3,9 +3,10 @@
 import { api } from "@/lib/api-client";
 const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 import { Button } from "@/components/ui/button";
+import BarcodeScanner from "@/components/app/BarcodeScanner";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Barcode, Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
+import { Barcode, Camera, Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -73,7 +74,7 @@ export default function PosPage() {
   const [tendered, setTendered] = useState("");
   const [processing, setProcessing] = useState(false);
   const [lastSale, setLastSale] = useState<Sale | null>(null);
-  
+  const [cameraOpen, setCameraOpen] = useState(false);
   const barcodeRef = useRef<HTMLInputElement>(null);
 
   // Open or resume session on mount
@@ -169,12 +170,27 @@ export default function PosPage() {
   const { subtotal, vat, total } = cartTotals(cart);
   const change = payment === "CASH" && tendered ? Number(tendered) - total : null;
 
+  async function handleCameraScan(code: string) {
+    setCameraOpen(false);
+    try {
+      const p = await api.get<Product>(`/api/pos/lookup?barcode=${encodeURIComponent(code)}`);
+      addToCart(p);
+      toast.success(`Added: ${p.name}`);
+    } catch {
+      toast.error(`Barcode not found: ${code}`);
+    }
+  }
+
   return (
+    <>
+      {cameraOpen && (
+        <BarcodeScanner onResult={handleCameraScan} onClose={() => setCameraOpen(false)} />
+      )}
     <div className="flex h-[calc(100vh-6rem)] gap-4">
       {/* Left: product search + grid */}
       <div className="flex flex-1 flex-col gap-3 overflow-hidden">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-[#1a2332]">Cash Register</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Cash Register</h1>
           {session && (
             <div className="flex items-center gap-3 text-sm text-gray-500">
               <span>{session.sale_count} sales today</span>
@@ -183,7 +199,7 @@ export default function PosPage() {
           )}
         </div>
 
-        {/* Barcode input (focus it for scanner) */}
+        {/* Barcode input (focus it for USB scanner) + camera button */}
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Barcode className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -193,14 +209,22 @@ export default function PosPage() {
               onChange={(e) => setBarcodeInput(e.target.value)}
               onKeyDown={handleBarcodeScan}
               placeholder="Scan barcode or type EAN…"
-              className="w-full rounded-md border border-gray-300 pl-9 pr-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="w-full rounded-md border border-gray-300 pl-9 pr-3 py-2 text-sm focus:border-[#0f1724] focus:outline-none focus:ring-1 focus:ring-[#0f1724]"
             />
           </div>
+          <button
+            onClick={() => setCameraOpen(true)}
+            title="Use camera to scan"
+            className="flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            <Camera className="h-4 w-4" />
+            <span className="hidden sm:inline">Camera</span>
+          </button>
           <input
             value={searchQ}
             onChange={(e) => setSearchQ(e.target.value)}
             placeholder="Search products…"
-            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#0f1724] focus:outline-none focus:ring-1 focus:ring-[#0f1724]"
           />
         </div>
 
@@ -339,5 +363,6 @@ export default function PosPage() {
         )}
       </div>
     </div>
+    </>
   );
 }

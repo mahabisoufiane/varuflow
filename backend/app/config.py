@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     STRIPE_SECRET_KEY: str = ""
     STRIPE_WEBHOOK_SECRET: str = ""
     STRIPE_PRO_PRICE_ID: str = ""
+    FORTNOX_CLIENT_ID: str = ""
+    FORTNOX_CLIENT_SECRET: str = ""
+    FORTNOX_REDIRECT_URI: str = "http://localhost:8000/api/integrations/fortnox/callback"
+    OPENAI_API_KEY: str = ""
     ENV: str = "development"
     DEBUG: bool = True
 

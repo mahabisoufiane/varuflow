@@ -1,12 +1,14 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import CommandPalette from "@/components/app/CommandPalette";
+import AiChat from "@/components/app/AiChat";
 import {
   BarChart3,
   FileText,
@@ -37,11 +39,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const supabase = createClient();
   const [email, setEmail] = useState<string | null>(null);
+  const [fortnoxConnected, setFortnoxConnected] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setEmail(data.user?.email ?? null);
     });
+    api.get<{ connected: boolean }>("/api/integrations/fortnox/status")
+      .then((s: { connected: boolean }) => setFortnoxConnected(s.connected))
+      .catch(() => {});
   }, []);
 
   async function handleSignOut() {
@@ -53,6 +59,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <CommandPalette />
+      <AiChat />
       <div className="flex min-h-screen bg-gray-50">
         {/* Sidebar */}
         <aside className="flex w-60 flex-col bg-[#0f1724] text-white shrink-0">
@@ -62,6 +69,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <Zap className="h-4 w-4 text-white" />
             </div>
             <span className="text-[15px] font-semibold tracking-tight">Varuflow</span>
+            {fortnoxConnected && (
+              <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+                <span className="h-1 w-1 rounded-full bg-emerald-400" />FX
+              </span>
+            )}
           </div>
 
           {/* Search trigger */}

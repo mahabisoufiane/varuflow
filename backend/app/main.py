@@ -10,7 +10,7 @@ from slowapi.util import get_remote_address
 
 from app.config import settings
 from app.database import engine
-from app.routers import analytics, auth, billing, health, inventory, invoicing, pos, recurring, team, waitlist
+from app.routers import analytics, auth, billing, health, integrations, inventory, invoicing, pos, recurring, team, waitlist
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
 
@@ -50,3 +50,4 @@ app.include_router(team.router)
 app.include_router(recurring.router)
 app.include_router(pos.router)
 app.include_router(billing.router)
+app.include_router(integrations.router)

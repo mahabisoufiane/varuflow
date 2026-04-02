@@ -33,6 +33,9 @@ class Organization(Base):
         Enum(OrgPlan, name="org_plan"), default=OrgPlan.FREE, nullable=False
     )
     stripe_customer_id: Mapped[str | None] = mapped_column(String(100))
+    fortnox_access_token: Mapped[str | None] = mapped_column(String(2000))
+    fortnox_refresh_token: Mapped[str | None] = mapped_column(String(2000))
+    fortnox_token_expiry: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False

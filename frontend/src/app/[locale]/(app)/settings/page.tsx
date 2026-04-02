@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
-import { Check, CreditCard, UserPlus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { Check, CreditCard, Link2, Link2Off, RefreshCw, UserPlus, Trash2 } from "lucide-react";
 
 interface Org { id: string; name: string; org_number: string | null; vat_number: string | null; address: string | null; plan: string; }
 interface Me { email: string; role: string; organization: Org; }
 interface Member { id: string; user_id: string; role: string; created_at: string; }
 
-type Tab = "account" | "team" | "billing";
+type Tab = "account" | "team" | "billing" | "integrations";
 
 export default function SettingsPage() {
   const [me, setMe] = useState<Me | null>(null);
@@ -132,7 +133,7 @@ export default function SettingsPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b">
-        {(["account", "team", "billing"] as Tab[]).map((t) => (
+        {(["account", "team", "billing", "integrations"] as Tab[]).map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px transition-colors ${
               tab === t ? "border-[#1a2332] text-[#1a2332]" : "border-transparent text-muted-foreground hover:text-gray-900"
@@ -286,6 +287,8 @@ export default function SettingsPage() {
       {tab === "billing" && (
         <BillingTab plan={me?.organization.plan ?? "FREE"} />
       )}
+
+      {tab === "integrations" && <IntegrationsTab />}
     </div>
   );
 }
@@ -359,6 +362,102 @@ function BillingTab({ plan }: { plan: string }) {
         )}
 
         {error && <p className="text-sm text-red-600">{error}</p>}
+      </div>
+    </div>
+  );
+}
+
+function IntegrationsTab() {
+  const [status, setStatus] = useState<{ connected: boolean; token_expiry?: string } | null>(null);
+  const [syncing, setSyncing] = useState<"invoices" | "customers" | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get<{ connected: boolean; token_expiry?: string }>("/api/integrations/fortnox/status")
+      .then(setStatus).catch(() => setStatus({ connected: false })).finally(() => setLoading(false));
+  }, []);
+
+  async function handleConnect() {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/integrations/fortnox/connect`;
+  }
+
+  async function handleDisconnect() {
+    if (!confirm("Disconnect Fortnox?")) return;
+    try {
+      await api.delete("/api/integrations/fortnox/disconnect");
+      setStatus({ connected: false });
+      toast.success("Fortnox disconnected");
+    } catch (e: any) { toast.error(e.message); }
+  }
+
+  async function handleSync(type: "invoices" | "customers") {
+    setSyncing(type);
+    try {
+      const res = await api.post<{ synced: number; errors: string[] }>(
+        `/api/integrations/fortnox/sync-${type}`, {}
+      );
+      toast.success(`Synced ${res.synced} ${type}${res.errors.length ? ` (${res.errors.length} errors)` : ""}`);
+    } catch (e: any) { toast.error(e.message); }
+    finally { setSyncing(null); }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+              <span className="text-lg font-bold text-blue-700">F</span>
+            </div>
+            <div>
+              <h2 className="font-semibold text-gray-900">Fortnox</h2>
+              <p className="text-xs text-gray-400">Swedish accounting software</p>
+            </div>
+          </div>
+          {loading ? (
+            <div className="h-8 w-24 animate-pulse rounded-lg bg-gray-100" />
+          ) : status?.connected ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Connected
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-500">
+              Not connected
+            </span>
+          )}
+        </div>
+
+        {status?.connected ? (
+          <div className="space-y-3">
+            <p className="text-sm text-gray-500">
+              Sync your data between Varuflow and Fortnox.
+              {status.token_expiry && ` Token expires: ${new Date(status.token_expiry).toLocaleDateString("sv-SE")}`}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" disabled={syncing === "invoices"} onClick={() => handleSync("invoices")}>
+                <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${syncing === "invoices" ? "animate-spin" : ""}`} />
+                {syncing === "invoices" ? "Syncing…" : "Push invoices → Fortnox"}
+              </Button>
+              <Button variant="outline" size="sm" disabled={syncing === "customers"} onClick={() => handleSync("customers")}>
+                <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${syncing === "customers" ? "animate-spin" : ""}`} />
+                {syncing === "customers" ? "Syncing…" : "Pull customers ← Fortnox"}
+              </Button>
+              <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50 ml-auto" onClick={handleDisconnect}>
+                <Link2Off className="mr-1.5 h-3.5 w-3.5" />Disconnect
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-gray-500">
+              Connect Fortnox to automatically sync invoices and import customers.
+              Requires a Fortnox account with the bookkeeping add-on.
+            </p>
+            <Button onClick={handleConnect} className="bg-[#0f1724] hover:bg-[#1a2840] text-white">
+              <Link2 className="mr-1.5 h-4 w-4" />Connect Fortnox
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
