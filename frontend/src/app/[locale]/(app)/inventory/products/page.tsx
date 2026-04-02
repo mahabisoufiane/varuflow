@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Package, Pencil, Plus, Search, Upload } from "lucide-react";
 
 interface Product {
@@ -25,8 +26,6 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function fetchProducts(q = "") {
@@ -40,7 +39,7 @@ export default function ProductsPage() {
       setProducts(data.items);
       setTotal(data.total);
     } catch (e: any) {
-      setError(e.message);
+      toast.error(e.message);
     } finally {
       setLoading(false);
     }
@@ -59,20 +58,15 @@ export default function ProductsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setImporting(true);
-    setImportResult(null);
     try {
       const result = await api.upload<{ created: number; updated: number; errors: string[] }>(
         "/api/inventory/products/import",
         file
       );
-      setImportResult(
-        `Imported: ${result.created} created, ${result.updated} updated${
-          result.errors.length ? `. ${result.errors.length} errors.` : "."
-        }`
-      );
+      toast.success(`Imported: ${result.created} created, ${result.updated} updated${result.errors.length ? `. ${result.errors.length} errors.` : "."}`);
       fetchProducts();
     } catch (e: any) {
-      setError(e.message);
+      toast.error(e.message);
     } finally {
       setImporting(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -103,7 +97,7 @@ export default function ProductsPage() {
             <Upload className="mr-1.5 h-3.5 w-3.5" />
             {importing ? "Importing…" : "Import CSV"}
           </Button>
-          <Button asChild size="sm" className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+          <Button asChild size="sm" className="bg-[#0f1724] hover:bg-[#1a2840] text-white">
             <Link href="/inventory/products/new">
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               New product
@@ -111,17 +105,6 @@ export default function ProductsPage() {
           </Button>
         </div>
       </div>
-
-      {importResult && (
-        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-2 text-sm text-green-700">
-          {importResult}
-        </div>
-      )}
-      {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-          {error}
-        </div>
-      )}
 
       {/* Search */}
       <form onSubmit={handleSearch} className="flex gap-2">
@@ -132,7 +115,7 @@ export default function ProductsPage() {
             placeholder="Search by name or SKU…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+            className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-[#0f1724] focus:outline-none focus:ring-1 focus:ring-[#0f1724]"
           />
         </div>
         <Button type="submit" variant="outline" size="sm">Search</Button>
@@ -220,7 +203,7 @@ function EmptyProducts() {
       <p className="mt-1 text-sm text-muted-foreground">
         Create your first product or import from a CSV file.
       </p>
-      <Button asChild size="sm" className="mt-4 bg-[#1a2332] hover:bg-[#2a3342] text-white">
+      <Button asChild size="sm" className="mt-4 bg-[#0f1724] hover:bg-[#1a2840] text-white">
         <Link href="/inventory/products/new">
           <Plus className="mr-1.5 h-3.5 w-3.5" />
           New product

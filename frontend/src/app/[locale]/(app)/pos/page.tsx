@@ -4,6 +4,7 @@ import { api } from "@/lib/api-client";
 const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Barcode, Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -72,12 +73,12 @@ export default function PosPage() {
   const [tendered, setTendered] = useState("");
   const [processing, setProcessing] = useState(false);
   const [lastSale, setLastSale] = useState<Sale | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  
   const barcodeRef = useRef<HTMLInputElement>(null);
 
   // Open or resume session on mount
   useEffect(() => {
-    api.post<Session>("/api/pos/sessions").then(setSession).catch(console.error);
+    api.post<Session>("/api/pos/sessions", {}).then(setSession).catch(console.error);
   }, []);
 
   // Load product grid
@@ -98,7 +99,7 @@ export default function PosPage() {
       const p = await api.get<Product>(`/api/pos/lookup?barcode=${encodeURIComponent(code)}`);
       addToCart(p);
     } catch {
-      setError(`Barcode not found: ${code}`);
+      toast.error(`Barcode not found: ${code}`);
     }
   }
 
@@ -135,7 +136,6 @@ export default function PosPage() {
   async function checkout() {
     if (!session || cart.length === 0) return;
     setProcessing(true);
-    setError(null);
     try {
       const sale = await api.post<Sale>("/api/pos/sales", {
         session_id: session.id,
@@ -147,8 +147,9 @@ export default function PosPage() {
       setCart([]);
       setTendered("");
       setSession((s) => s ? { ...s, sale_count: s.sale_count + 1 } : s);
+      toast.success(`Sale ${sale.sale_number} complete`);
     } catch (e: any) {
-      setError(e.message);
+      toast.error(e.message);
     } finally {
       setProcessing(false);
     }
@@ -161,7 +162,7 @@ export default function PosPage() {
       setSession(null);
       setCart([]);
     } catch (e: any) {
-      setError(e.message);
+      toast.error(e.message);
     }
   }
 
@@ -311,12 +312,12 @@ export default function PosPage() {
           </div>
         )}
 
-        {error && <p className="rounded-md bg-red-50 px-2 py-1.5 text-xs text-red-600">{error}</p>}
+
 
         <Button
           onClick={checkout}
           disabled={processing || cart.length === 0 || !session}
-          className="w-full bg-[#1a2332] hover:bg-[#2a3342] text-white"
+          className="w-full bg-[#0f1724] hover:bg-[#1a2840] text-white"
         >
           {processing ? "Processing…" : `Charge ${fmt(total)} kr`}
         </Button>
