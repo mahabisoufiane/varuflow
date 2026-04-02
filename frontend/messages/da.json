@@ -1,0 +1,82 @@
+{
+  "common": {
+    "appName": "Varuflow",
+    "loading": "Indlæser...",
+    "error": "Noget gik galt",
+    "save": "Gem",
+    "cancel": "Annuller",
+    "delete": "Slet",
+    "edit": "Rediger",
+    "create": "Opret",
+    "search": "Søg...",
+    "noResults": "Ingen resultater fundet",
+    "back": "Tilbage"
+  },
+  "nav": {
+    "dashboard": "Oversigt",
+    "inventory": "Lager",
+    "invoices": "Fakturaer",
+    "customers": "Kunder",
+    "settings": "Indstillinger",
+    "signOut": "Log ud"
+  },
+  "auth": {
+    "login": "Log ind",
+    "signup": "Tilmeld",
+    "email": "E-mailadresse",
+    "password": "Adgangskode",
+    "magicLink": "Send magisk link",
+    "magicLinkSent": "Tjek din e-mail — vi sendte et magisk link til {email}",
+    "orContinueWith": "Eller log ind med adgangskode",
+    "noAccount": "Har du ikke en konto?",
+    "hasAccount": "Har du allerede en konto?",
+    "forgotPassword": "Glemt adgangskode?",
+    "signInWithPassword": "Log ind",
+    "createAccount": "Opret konto",
+    "signUpDescription": "Start din gratis Varuflow-prøveperiode.",
+    "loginDescription": "Log ind på din Varuflow-konto."
+  },
+  "onboarding": {
+    "title": "Konfigurer din virksomhed",
+    "subtitle": "Fortæl os om din virksomhed for at komme i gang.",
+    "step1Title": "Virksomhedsoplysninger",
+    "step2Title": "Upload logo",
+    "step2Skip": "Spring over for nu",
+    "step3Title": "Alt er klar!",
+    "companyName": "Virksomhedsnavn",
+    "companyNamePlaceholder": "Hansen A/S",
+    "orgNumber": "CVR-nummer",
+    "orgNumberPlaceholder": "12345678",
+    "orgNumberHint": "Dansk CVR-nummer (8 cifre)",
+    "vatNumber": "Momsnummer",
+    "vatNumberPlaceholder": "DK12345678",
+    "address": "Adresse",
+    "continue": "Fortsæt",
+    "finish": "Gå til oversigten",
+    "logoUpload": "Upload dit logo",
+    "logoHint": "PNG eller JPG, maks 2 MB. Vises på fakturaer."
+  },
+  "marketing": {
+    "hero": {
+      "title": "Operativsystemet for danske grossister",
+      "subtitle": "Administrer lager, automatiser fakturering og følg pengestrømmen — bygget til danske B2B-virksomheder.",
+      "cta": "Tilmeld ventelisten"
+    }
+  },
+  "dashboard": {
+    "title": "Oversigt",
+    "welcome": "Velkommen til Varuflow"
+  },
+  "inventory": {
+    "title": "Lager"
+  },
+  "invoices": {
+    "title": "Fakturaer"
+  },
+  "customers": {
+    "title": "Kunder"
+  },
+  "settings": {
+    "title": "Indstillinger"
+  }
+}

@@ -15,8 +15,12 @@ const PROTECTED_SEGMENTS = [
 ];
 
 function stripLocale(pathname: string): string {
-  // Remove leading /en or /sv
-  return pathname.replace(/^\/(en|sv)(\/|$)/, "/");
+  return pathname.replace(/^\/(en|sv|no|da)(\/|$)/, "/");
+}
+
+function getLocalePrefix(pathname: string): string {
+  const match = pathname.match(/^\/(sv|no|da)(\/|$)/);
+  return match ? `/${match[1]}` : "";
 }
 
 export async function middleware(request: NextRequest) {
@@ -74,17 +78,15 @@ export async function middleware(request: NextRequest) {
 
   // Unauthenticated user trying to reach a protected page → login
   if (isProtected && !user) {
-    const loginUrl = new URL(
-      request.nextUrl.pathname.startsWith("/sv") ? "/sv/auth/login" : "/auth/login",
-      request.url
-    );
+    const prefix = getLocalePrefix(request.nextUrl.pathname);
+    const loginUrl = new URL(`${prefix}/auth/login`, request.url);
     loginUrl.searchParams.set("next", request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
 
   // Authenticated user visiting auth pages → dashboard
   if (user && isAuth) {
-    const prefix = request.nextUrl.pathname.startsWith("/sv") ? "/sv" : "";
+    const prefix = getLocalePrefix(request.nextUrl.pathname);
     return NextResponse.redirect(new URL(`${prefix}/dashboard`, request.url));
   }
 

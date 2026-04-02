@@ -1,0 +1,82 @@
+{
+  "common": {
+    "appName": "Varuflow",
+    "loading": "Laster...",
+    "error": "Noe gikk galt",
+    "save": "Lagre",
+    "cancel": "Avbryt",
+    "delete": "Slett",
+    "edit": "Rediger",
+    "create": "Opprett",
+    "search": "Søk...",
+    "noResults": "Ingen resultater funnet",
+    "back": "Tilbake"
+  },
+  "nav": {
+    "dashboard": "Oversikt",
+    "inventory": "Lager",
+    "invoices": "Fakturaer",
+    "customers": "Kunder",
+    "settings": "Innstillinger",
+    "signOut": "Logg ut"
+  },
+  "auth": {
+    "login": "Logg inn",
+    "signup": "Registrer",
+    "email": "E-postadresse",
+    "password": "Passord",
+    "magicLink": "Send magisk lenke",
+    "magicLinkSent": "Sjekk e-posten din — vi sendte en magisk lenke til {email}",
+    "orContinueWith": "Eller logg inn med passord",
+    "noAccount": "Har du ikke en konto?",
+    "hasAccount": "Har du allerede en konto?",
+    "forgotPassword": "Glemt passordet?",
+    "signInWithPassword": "Logg inn",
+    "createAccount": "Opprett konto",
+    "signUpDescription": "Start din gratis Varuflow-prøveperiode.",
+    "loginDescription": "Logg inn på din Varuflow-konto."
+  },
+  "onboarding": {
+    "title": "Sett opp bedriften din",
+    "subtitle": "Fortell oss om virksomheten din for å komme i gang.",
+    "step1Title": "Bedriftsdetaljer",
+    "step2Title": "Last opp logo",
+    "step2Skip": "Hopp over for nå",
+    "step3Title": "Alt er klart!",
+    "companyName": "Bedriftsnavn",
+    "companyNamePlaceholder": "Hansen AS",
+    "orgNumber": "Organisasjonsnummer",
+    "orgNumberPlaceholder": "123456789",
+    "orgNumberHint": "Norsk organisasjonsnummer (9 siffer)",
+    "vatNumber": "MVA-nummer",
+    "vatNumberPlaceholder": "NO123456789MVA",
+    "address": "Adresse",
+    "continue": "Fortsett",
+    "finish": "Gå til oversikten",
+    "logoUpload": "Last opp logoen din",
+    "logoHint": "PNG eller JPG, maks 2 MB. Vises på fakturaer."
+  },
+  "marketing": {
+    "hero": {
+      "title": "Operativsystemet for norske grossister",
+      "subtitle": "Administrer lager, automatiser fakturering og følg kontantstrømmen — bygget for norske B2B-bedrifter.",
+      "cta": "Bli med på ventelisten"
+    }
+  },
+  "dashboard": {
+    "title": "Oversikt",
+    "welcome": "Velkommen til Varuflow"
+  },
+  "inventory": {
+    "title": "Lager"
+  },
+  "invoices": {
+    "title": "Fakturaer"
+  },
+  "customers": {
+    "title": "Kunder"
+  },
+  "settings": {
+    "title": "Innstillinger"
+  }
+}

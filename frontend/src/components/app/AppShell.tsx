@@ -3,8 +3,8 @@
 import { createClient } from "@/lib/supabase/client";
 import { api } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
-import { Link, usePathname } from "@/i18n/navigation";
-import { useRouter } from "next/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { useLocale } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import CommandPalette from "@/components/app/CommandPalette";
@@ -34,9 +34,17 @@ const NAV = [
   { href: "/settings", icon: Settings, label: "Settings" },
 ] as const;
 
+const LOCALES = [
+  { code: "en", flag: "🇬🇧", label: "EN" },
+  { code: "sv", flag: "🇸🇪", label: "SV" },
+  { code: "no", flag: "🇳🇴", label: "NO" },
+  { code: "da", flag: "🇩🇰", label: "DA" },
+] as const;
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const locale = useLocale();
   const supabase = createClient();
   const [email, setEmail] = useState<string | null>(null);
   const [fortnoxConnected, setFortnoxConnected] = useState(false);
@@ -116,8 +124,29 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
+          {/* Locale switcher */}
+          <div className="border-t border-white/5 px-3 pt-2 pb-1">
+            <div className="flex gap-0.5">
+              {LOCALES.map(({ code, flag, label }) => (
+                <button
+                  key={code}
+                  onClick={() => router.replace(pathname, { locale: code })}
+                  title={label}
+                  className={cn(
+                    "flex-1 rounded py-1 text-[11px] font-medium transition-colors",
+                    locale === code
+                      ? "bg-white/15 text-white"
+                      : "text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                  )}
+                >
+                  {flag}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* User footer */}
-          <div className="border-t border-white/5 px-3 py-3">
+          <div className="px-3 pb-3">
             <button
               onClick={handleSignOut}
               className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] transition-colors hover:bg-white/5 group"

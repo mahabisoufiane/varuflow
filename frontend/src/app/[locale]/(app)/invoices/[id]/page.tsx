@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import { ArrowLeft, Mail, Link2, CheckCircle2, Clock } from "lucide-react";
 
 interface LineItem { id: string; description: string; quantity: string; unit_price: string; tax_rate: string; line_total: string; }
@@ -34,6 +35,7 @@ const NEXT_LABEL: Record<string, string> = { DRAFT: "Mark Sent", SENT: "Mark Pai
 export default function InvoiceDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const locale = useLocale();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,6 +144,11 @@ export default function InvoiceDetailPage() {
             <Button variant="ghost" size="sm" onClick={() => window.open(api.downloadUrl(`/api/invoicing/invoices/${invoice.id}/peppol`), "_blank")}>
               Peppol XML
             </Button>
+            {locale === "no" && (
+              <Button variant="ghost" size="sm" onClick={() => window.open(api.downloadUrl(`/api/invoicing/invoices/${invoice.id}/ehf`), "_blank")}>
+                EHF XML
+              </Button>
+            )}
             {invoice.status !== "DRAFT" && invoice.customer.email && (
               <Button variant="outline" size="sm" disabled={sending} onClick={handleSendEmail}>
                 <Mail className="mr-1.5 h-3.5 w-3.5" />{sending ? "Sending…" : "Email to customer"}

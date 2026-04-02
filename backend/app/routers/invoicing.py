@@ -817,6 +817,116 @@ async def stripe_invoice_webhook(
     return {"received": True}
 
 
+# ── Norwegian EHF 3.0 XML export ─────────────────────────────────────────────
+
+@router.get("/invoices/{invoice_id}/ehf")
+async def download_ehf_xml(
+    invoice_id: uuid.UUID,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    """Export invoice as Norwegian EHF Billing 3.0 (Peppol BIS/PEPPOL-BIS-3 for Norway)."""
+    from app.models.organization import Organization
+
+    org_id = _org(ctx)
+    result = await db.execute(
+        select(Invoice)
+        .options(selectinload(Invoice.customer), selectinload(Invoice.line_items))
+        .where(Invoice.id == invoice_id, Invoice.org_id == org_id)
+    )
+    inv = result.scalar_one_or_none()
+    if not inv:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    org = await db.get(Organization, org_id)
+    xml_bytes = _generate_ehf_xml(inv, org)
+    filename = f"{inv.invoice_number}-ehf.xml"
+    return Response(
+        content=xml_bytes,
+        media_type="application/xml",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+def _generate_ehf_xml(inv: Invoice, org) -> bytes:
+    """Generate Norwegian EHF Billing 3.0 XML (NOK currency, NO VAT scheme)."""
+    c = inv.customer
+    org_name = _xml_escape(org.name if org else "Varuflow")
+    org_vat = org.vat_number if org and org.vat_number else "NO000000000MVA"
+    currency = "NOK"
+
+    lines_xml = ""
+    for idx, li in enumerate(inv.line_items, start=1):
+        vat_amount = (li.line_total * li.tax_rate / 100).quantize(Decimal("0.01"))
+        lines_xml += f"""
+  <cac:InvoiceLine>
+    <cbc:ID>{idx}</cbc:ID>
+    <cbc:InvoicedQuantity unitCode="C62">{li.quantity}</cbc:InvoicedQuantity>
+    <cbc:LineExtensionAmount currencyID="{currency}">{li.line_total:.2f}</cbc:LineExtensionAmount>
+    <cac:Item>
+      <cbc:Name>{_xml_escape(li.description)}</cbc:Name>
+      <cac:ClassifiedTaxCategory>
+        <cbc:ID>S</cbc:ID>
+        <cbc:Percent>{li.tax_rate:.2f}</cbc:Percent>
+        <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
+      </cac:ClassifiedTaxCategory>
+    </cac:Item>
+    <cac:Price>
+      <cbc:PriceAmount currencyID="{currency}">{li.unit_price:.2f}</cbc:PriceAmount>
+    </cac:Price>
+  </cac:InvoiceLine>"""
+
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+  xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+  xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+  <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0</cbc:CustomizationID>
+  <cbc:ProfileID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</cbc:ProfileID>
+  <cbc:ID>{_xml_escape(inv.invoice_number)}</cbc:ID>
+  <cbc:IssueDate>{inv.issue_date}</cbc:IssueDate>
+  <cbc:DueDate>{inv.due_date}</cbc:DueDate>
+  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>
+  <cbc:DocumentCurrencyCode>{currency}</cbc:DocumentCurrencyCode>
+  <cac:AccountingSupplierParty>
+    <cac:Party>
+      <cbc:EndpointID schemeID="0192">{org_vat.replace('NO','').replace('MVA','').strip()}</cbc:EndpointID>
+      <cac:PartyName><cbc:Name>{org_name}</cbc:Name></cac:PartyName>
+      <cac:PartyTaxScheme>
+        <cbc:CompanyID>{org_vat}</cbc:CompanyID>
+        <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
+      </cac:PartyTaxScheme>
+    </cac:Party>
+  </cac:AccountingSupplierParty>
+  <cac:AccountingCustomerParty>
+    <cac:Party>
+      <cac:PartyName><cbc:Name>{_xml_escape(c.company_name)}</cbc:Name></cac:PartyName>
+      {f'<cac:PostalAddress><cbc:StreetName>{_xml_escape(c.address)}</cbc:StreetName><cac:Country><cbc:IdentificationCode>NO</cbc:IdentificationCode></cac:Country></cac:PostalAddress>' if c.address else ''}
+      {f'<cac:PartyTaxScheme><cbc:CompanyID>{_xml_escape(c.vat_number)}</cbc:CompanyID><cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:PartyTaxScheme>' if c.vat_number else ''}
+    </cac:Party>
+  </cac:AccountingCustomerParty>
+  <cac:TaxTotal>
+    <cbc:TaxAmount currencyID="{currency}">{inv.vat_amount:.2f}</cbc:TaxAmount>
+    <cac:TaxSubtotal>
+      <cbc:TaxableAmount currencyID="{currency}">{inv.subtotal:.2f}</cbc:TaxableAmount>
+      <cbc:TaxAmount currencyID="{currency}">{inv.vat_amount:.2f}</cbc:TaxAmount>
+      <cac:TaxCategory>
+        <cbc:ID>S</cbc:ID>
+        <cbc:Percent>25.00</cbc:Percent>
+        <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
+      </cac:TaxCategory>
+    </cac:TaxSubtotal>
+  </cac:TaxTotal>
+  <cac:LegalMonetaryTotal>
+    <cbc:LineExtensionAmount currencyID="{currency}">{inv.subtotal:.2f}</cbc:LineExtensionAmount>
+    <cbc:TaxExclusiveAmount currencyID="{currency}">{inv.subtotal:.2f}</cbc:TaxExclusiveAmount>
+    <cbc:TaxInclusiveAmount currencyID="{currency}">{inv.total_sek:.2f}</cbc:TaxInclusiveAmount>
+    <cbc:PayableAmount currencyID="{currency}">{inv.total_sek:.2f}</cbc:PayableAmount>
+  </cac:LegalMonetaryTotal>
+  {lines_xml}
+</Invoice>"""
+    return xml.encode("utf-8")
+
+
 def _xml_escape(text: str) -> str:
     return (
         str(text)
