@@ -53,6 +53,7 @@ class Product(Base):
     tax_rate: Mapped[Decimal] = mapped_column(
         Numeric(5, 2), default=Decimal("25.00"), nullable=False
     )
+    barcode: Mapped[str | None] = mapped_column(String(50), index=True)  # EAN-13/EAN-8/Code128
     description: Mapped[str | None] = mapped_column(Text)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[DateTime] = mapped_column(

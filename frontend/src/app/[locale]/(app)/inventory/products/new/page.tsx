@@ -19,7 +19,7 @@ export default function NewProductPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
-    name: "", sku: "", category: "", unit: "st",
+    name: "", sku: "", barcode: "", category: "", unit: "st",
     purchase_price: "", sell_price: "", tax_rate: "25", description: "",
   });
 
@@ -35,6 +35,7 @@ export default function NewProductPage() {
       await api.post("/api/inventory/products", {
         name: form.name,
         sku: form.sku,
+        barcode: form.barcode || null,
         category: form.category || null,
         unit: form.unit,
         purchase_price: form.purchase_price,
@@ -65,8 +66,12 @@ export default function NewProductPage() {
           <Field id="sku" label="SKU *" value={form.sku} onChange={(v) => set("sku", v)} placeholder="HAV-001" required />
         </div>
         <div className="grid grid-cols-2 gap-4">
+          <Field id="barcode" label="Barcode (EAN)" value={form.barcode} onChange={(v) => set("barcode", v)} placeholder="7310865085313" />
           <Field id="category" label="Category" value={form.category} onChange={(v) => set("category", v)} placeholder="Spannmål" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
           <Field id="unit" label="Unit" value={form.unit} onChange={(v) => set("unit", v)} placeholder="kg" />
+          <div />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <Field id="purchase_price" label="Purchase price (SEK) *" type="number" step="0.01" value={form.purchase_price} onChange={(v) => set("purchase_price", v)} placeholder="12.50" required />

@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Link, usePathname } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
   BarChart3,
@@ -12,6 +13,7 @@ import {
   Package,
   RefreshCw,
   Settings,
+  ShoppingCart,
   Users,
 } from "lucide-react";
 
@@ -21,11 +23,13 @@ const navItems = [
   { href: "/inventory", icon: Package, label: "Inventory" },
   { href: "/invoices", icon: FileText, label: "Invoices" },
   { href: "/recurring", icon: RefreshCw, label: "Recurring" },
+  { href: "/pos", icon: ShoppingCart, label: "Cash Register" },
   { href: "/customers", icon: Users, label: "Customers" },
   { href: "/settings", icon: Settings, label: "Settings" },
 ] as const;
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("nav");
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();

@@ -19,6 +19,8 @@ httpx = ">=0.26"
 python-jose = {extras = ["cryptography"], version = ">=3.3"}
 python-multipart = ">=0.0.9"
 reportlab = ">=4.1"
+slowapi = ">=0.1.9"
+stripe = ">=9.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.0"

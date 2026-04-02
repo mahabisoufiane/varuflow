@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_KEY: str = ""
     SUPABASE_JWT_SECRET: str = ""
     RESEND_API_KEY: str = ""
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    STRIPE_PRO_PRICE_ID: str = ""
     ENV: str = "development"
     DEBUG: bool = True
 

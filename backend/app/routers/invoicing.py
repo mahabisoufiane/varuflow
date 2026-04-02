@@ -577,3 +577,121 @@ def _generate_invoice_pdf(inv: Invoice) -> bytes:
 
     doc.build(elements)
     return buffer.getvalue()
+
+
+# ── Peppol UBL 2.1 XML export ─────────────────────────────────────────────────
+
+@router.get("/invoices/{invoice_id}/peppol")
+async def download_peppol_xml(
+    invoice_id: uuid.UUID,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    """Export invoice as Peppol BIS Billing 3.0 (UBL 2.1) XML."""
+    from app.models.organization import Organization
+
+    org_id = _org(ctx)
+    result = await db.execute(
+        select(Invoice)
+        .options(selectinload(Invoice.customer), selectinload(Invoice.line_items))
+        .where(Invoice.id == invoice_id, Invoice.org_id == org_id)
+    )
+    inv = result.scalar_one_or_none()
+    if not inv:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    org = await db.get(Organization, org_id)
+    xml_bytes = _generate_peppol_xml(inv, org)
+    filename = f"{inv.invoice_number}-peppol.xml"
+    return Response(
+        content=xml_bytes,
+        media_type="application/xml",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+def _generate_peppol_xml(inv: Invoice, org) -> bytes:
+    """Generate a Peppol BIS Billing 3.0 compliant UBL 2.1 XML invoice."""
+    c = inv.customer
+    org_name = org.name if org else "Varuflow"
+    org_vat = org.vat_number if org and org.vat_number else "SE000000000001"
+
+    lines_xml = ""
+    for idx, li in enumerate(inv.line_items, start=1):
+        vat_amount = (li.line_total * li.tax_rate / 100).quantize(Decimal("0.01"))
+        lines_xml += f"""
+    <cac:InvoiceLine>
+      <cbc:ID>{idx}</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="C62">{li.quantity}</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="SEK">{li.line_total:.2f}</cbc:LineExtensionAmount>
+      <cac:Item>
+        <cbc:Name>{_xml_escape(li.description)}</cbc:Name>
+        <cac:ClassifiedTaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>{li.tax_rate:.2f}</cbc:Percent>
+          <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
+        </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="SEK">{li.unit_price:.2f}</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>"""
+
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<ubl:Invoice xmlns:ubl="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+  xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+  xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+  <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0</cbc:CustomizationID>
+  <cbc:ProfileID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</cbc:ProfileID>
+  <cbc:ID>{_xml_escape(inv.invoice_number)}</cbc:ID>
+  <cbc:IssueDate>{inv.issue_date}</cbc:IssueDate>
+  <cbc:DueDate>{inv.due_date}</cbc:DueDate>
+  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>
+  <cbc:DocumentCurrencyCode>SEK</cbc:DocumentCurrencyCode>
+  <cac:AccountingSupplierParty>
+    <cac:Party>
+      <cac:PartyName><cbc:Name>{_xml_escape(org_name)}</cbc:Name></cac:PartyName>
+      <cac:PartyTaxScheme>
+        <cbc:CompanyID>{_xml_escape(org_vat)}</cbc:CompanyID>
+        <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
+      </cac:PartyTaxScheme>
+    </cac:Party>
+  </cac:AccountingSupplierParty>
+  <cac:AccountingCustomerParty>
+    <cac:Party>
+      <cac:PartyName><cbc:Name>{_xml_escape(c.company_name)}</cbc:Name></cac:PartyName>
+      {f'<cac:PartyTaxScheme><cbc:CompanyID>{_xml_escape(c.vat_number)}</cbc:CompanyID><cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:PartyTaxScheme>' if c.vat_number else ''}
+    </cac:Party>
+  </cac:AccountingCustomerParty>
+  <cac:TaxTotal>
+    <cbc:TaxAmount currencyID="SEK">{inv.vat_amount:.2f}</cbc:TaxAmount>
+    <cac:TaxSubtotal>
+      <cbc:TaxableAmount currencyID="SEK">{inv.subtotal:.2f}</cbc:TaxableAmount>
+      <cbc:TaxAmount currencyID="SEK">{inv.vat_amount:.2f}</cbc:TaxAmount>
+      <cac:TaxCategory>
+        <cbc:ID>S</cbc:ID>
+        <cbc:Percent>25</cbc:Percent>
+        <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
+      </cac:TaxCategory>
+    </cac:TaxSubtotal>
+  </cac:TaxTotal>
+  <cac:LegalMonetaryTotal>
+    <cbc:LineExtensionAmount currencyID="SEK">{inv.subtotal:.2f}</cbc:LineExtensionAmount>
+    <cbc:TaxExclusiveAmount currencyID="SEK">{inv.subtotal:.2f}</cbc:TaxExclusiveAmount>
+    <cbc:TaxInclusiveAmount currencyID="SEK">{inv.total_sek:.2f}</cbc:TaxInclusiveAmount>
+    <cbc:PayableAmount currencyID="SEK">{inv.total_sek:.2f}</cbc:PayableAmount>
+  </cac:LegalMonetaryTotal>
+  {lines_xml}
+</ubl:Invoice>"""
+    return xml.encode("utf-8")
+
+
+def _xml_escape(text: str) -> str:
+    return (
+        str(text)
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&apos;")
+    )

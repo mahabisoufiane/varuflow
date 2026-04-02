@@ -127,6 +127,9 @@ export default function InvoiceDetailPage() {
             <Button variant="ghost" size="sm" onClick={() => window.open(api.downloadUrl(`/api/invoicing/invoices/${invoice.id}/pdf`), "_blank")}>
               PDF
             </Button>
+            <Button variant="ghost" size="sm" onClick={() => window.open(api.downloadUrl(`/api/invoicing/invoices/${invoice.id}/peppol`), "_blank")}>
+              Peppol XML
+            </Button>
             {invoice.status !== "DRAFT" && invoice.customer.email && (
               <Button variant="outline" size="sm" disabled={sending} onClick={handleSendEmail}>
                 <Mail className="mr-1.5 h-3.5 w-3.5" />{sending ? "Sending…" : "Email to customer"}

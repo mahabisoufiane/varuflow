@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
-import { Check, UserPlus, Trash2 } from "lucide-react";
+import { Check, CreditCard, UserPlus, Trash2 } from "lucide-react";
 
 interface Org { id: string; name: string; org_number: string | null; vat_number: string | null; address: string | null; plan: string; }
 interface Me { email: string; role: string; organization: Org; }
 interface Member { id: string; user_id: string; role: string; created_at: string; }
 
-type Tab = "account" | "team";
+type Tab = "account" | "team" | "billing";
 
 export default function SettingsPage() {
   const [me, setMe] = useState<Me | null>(null);
@@ -132,7 +132,7 @@ export default function SettingsPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b">
-        {(["account", "team"] as Tab[]).map((t) => (
+        {(["account", "team", "billing"] as Tab[]).map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px transition-colors ${
               tab === t ? "border-[#1a2332] text-[#1a2332]" : "border-transparent text-muted-foreground hover:text-gray-900"
@@ -282,6 +282,84 @@ export default function SettingsPage() {
           )}
         </div>
       )}
+
+      {tab === "billing" && (
+        <BillingTab plan={me?.organization.plan ?? "FREE"} />
+      )}
+    </div>
+  );
+}
+
+function BillingTab({ plan }: { plan: string }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleUpgrade() {
+    setLoading(true); setError(null);
+    try {
+      const res = await api.post<{ url: string }>("/api/billing/checkout", {});
+      window.location.href = res.url;
+    } catch (e: any) {
+      setError(e.message ?? "Failed to open checkout");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handlePortal() {
+    setLoading(true); setError(null);
+    try {
+      const res = await api.post<{ url: string }>("/api/billing/portal", {});
+      window.location.href = res.url;
+    } catch (e: any) {
+      setError(e.message ?? "Failed to open portal");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border bg-white p-6 space-y-4">
+        <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+          <CreditCard className="h-4 w-4" />Subscription
+        </h2>
+
+        <div className="flex items-center gap-3">
+          <span className={`rounded-full px-3 py-1 text-sm font-medium ${
+            plan === "PRO" ? "bg-[#1a2332] text-white" : "bg-gray-100 text-gray-700"
+          }`}>
+            {plan === "PRO" ? "PRO" : "Free"}
+          </span>
+          {plan === "PRO" && (
+            <span className="text-sm text-gray-500">All features unlocked</span>
+          )}
+        </div>
+
+        {plan === "FREE" && (
+          <div className="rounded-lg border border-[#1a2332]/20 bg-[#1a2332]/5 p-4 space-y-3">
+            <p className="text-sm font-medium text-[#1a2332]">Upgrade to Varuflow PRO</p>
+            <ul className="space-y-1 text-sm text-gray-600">
+              {["Unlimited invoices", "Team members", "Peppol XML export", "Analytics", "Priority support"].map((f) => (
+                <li key={f} className="flex items-center gap-2">
+                  <Check className="h-3.5 w-3.5 text-green-500 shrink-0" />{f}
+                </li>
+              ))}
+            </ul>
+            <Button onClick={handleUpgrade} disabled={loading} className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              {loading ? "Loading…" : "Upgrade now"}
+            </Button>
+          </div>
+        )}
+
+        {plan === "PRO" && (
+          <Button variant="outline" onClick={handlePortal} disabled={loading}>
+            {loading ? "Loading…" : "Manage subscription"}
+          </Button>
+        )}
+
+        {error && <p className="text-sm text-red-600">{error}</p>}
+      </div>
     </div>
   );
 }

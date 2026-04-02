@@ -15,9 +15,9 @@ const TAX_RATES = [
 ];
 
 interface Product {
-  id: string; name: string; sku: string; category: string | null;
-  unit: string; purchase_price: string; sell_price: string;
-  tax_rate: string; description: string | null; is_active: boolean;
+  id: string; name: string; sku: string; barcode: string | null;
+  category: string | null; unit: string; purchase_price: string;
+  sell_price: string; tax_rate: string; description: string | null; is_active: boolean;
 }
 
 export default function EditProductPage() {
@@ -28,7 +28,7 @@ export default function EditProductPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
-    name: "", sku: "", category: "", unit: "st",
+    name: "", sku: "", barcode: "", category: "", unit: "st",
     purchase_price: "", sell_price: "", tax_rate: "25", description: "",
   });
 
@@ -39,9 +39,9 @@ export default function EditProductPage() {
   useEffect(() => {
     api.get<Product>(`/api/inventory/products/${id}`)
       .then((p) => setForm({
-        name: p.name, sku: p.sku, category: p.category ?? "",
-        unit: p.unit, purchase_price: p.purchase_price,
-        sell_price: p.sell_price,
+        name: p.name, sku: p.sku, barcode: p.barcode ?? "",
+        category: p.category ?? "", unit: p.unit,
+        purchase_price: p.purchase_price, sell_price: p.sell_price,
         tax_rate: String(Math.round(Number(p.tax_rate))),
         description: p.description ?? "",
       }))
@@ -56,6 +56,7 @@ export default function EditProductPage() {
     try {
       await api.put(`/api/inventory/products/${id}`, {
         name: form.name, sku: form.sku,
+        barcode: form.barcode || null,
         category: form.category || null, unit: form.unit,
         purchase_price: form.purchase_price, sell_price: form.sell_price,
         tax_rate: form.tax_rate, description: form.description || null,
@@ -107,8 +108,12 @@ export default function EditProductPage() {
           <Field id="sku" label="SKU *" value={form.sku} onChange={(v) => set("sku", v)} required />
         </div>
         <div className="grid grid-cols-2 gap-4">
+          <Field id="barcode" label="Barcode (EAN)" value={form.barcode} onChange={(v) => set("barcode", v)} placeholder="7310865085313" />
           <Field id="category" label="Category" value={form.category} onChange={(v) => set("category", v)} />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
           <Field id="unit" label="Unit" value={form.unit} onChange={(v) => set("unit", v)} />
+          <div />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <Field id="purchase_price" label="Purchase price (SEK) *" type="number" step="0.01" value={form.purchase_price} onChange={(v) => set("purchase_price", v)} required />

@@ -18,4 +18,5 @@ from app.models.invoicing import (  # noqa: F401
     Payment,
     RecurringInvoice,
 )
+from app.models.pos import PosSession, PosSale, PosSaleItem  # noqa: F401
 from app.models.waitlist import Waitlist  # noqa: F401
