@@ -14,8 +14,12 @@
   },
   "nav": {
     "dashboard": "Dashboard",
+    "analytics": "Analytics",
+    "aiAdvisor": "AI Advisor",
     "inventory": "Inventory",
     "invoices": "Invoices",
+    "recurring": "Recurring",
+    "cashRegister": "Cash Register",
     "customers": "Customers",
     "settings": "Settings",
     "signOut": "Sign out"

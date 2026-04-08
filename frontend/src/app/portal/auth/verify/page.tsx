@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { portalApi, PORTAL_TOKEN_KEY, PORTAL_CUSTOMER_KEY } from "@/lib/portal-client";
 
-export default function PortalVerifyPage() {
+function VerifyInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [status, setStatus] = useState<"verifying" | "error">("verifying");
@@ -58,5 +58,18 @@ export default function PortalVerifyPage() {
       <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[#1a2332] border-t-transparent" />
       <p className="text-sm text-muted-foreground">Signing you in…</p>
     </div>
+  );
+}
+
+export default function PortalVerifyPage() {
+  return (
+    <Suspense fallback={
+      <div className="rounded-xl border bg-white p-8 text-center space-y-3">
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[#1a2332] border-t-transparent" />
+        <p className="text-sm text-muted-foreground">Loading…</p>
+      </div>
+    }>
+      <VerifyInner />
+    </Suspense>
   );
 }

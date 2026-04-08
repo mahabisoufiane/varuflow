@@ -96,7 +96,7 @@ function ModuleStatsBar({ cards, activeModule, onSelect }: {
 
 export default function AiAdvisorPage() {
   const [data, setData] = useState<CardsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [executing, setExecuting] = useState<string | null>(null);
   const [activeModule, setActiveModule] = useState<number | null>(null);
@@ -145,7 +145,7 @@ export default function AiAdvisorPage() {
   function toggleExpand(id: string) {
     setExpandedCards((s) => {
       const next = new Set(s);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
       return next;
     });
   }

@@ -1,10 +1,12 @@
 services:
+  # ── Database ───────────────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: varuflow
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
     volumes:
@@ -15,6 +17,30 @@ services:
       timeout: 5s
       retries: 5
 
+  # ── Supabase (local auth) ──────────────────────────────────────────────────
+  supabase:
+    image: supabase/gotrue:v2.143.0
+    environment:
+      GOTRUE_API_HOST: "0.0.0.0"
+      GOTRUE_API_PORT: "9999"
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: "postgres://postgres:postgres@postgres:5432/varuflow?search_path=auth"
+      GOTRUE_SITE_URL: "http://localhost:3000"
+      GOTRUE_URI_ALLOW_LIST: "http://localhost:3000,http://localhost:3001"
+      GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
+      GOTRUE_JWT_EXP: "3600"
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: "authenticated"
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+      API_EXTERNAL_URL: "http://localhost:9999"
+    ports:
+      - "9999:9999"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ── Backend ────────────────────────────────────────────────────────────────
   backend:
     build:
       context: ./backend
@@ -27,13 +53,19 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/varuflow
-      CORS_ORIGINS: '["http://localhost:3000"]'
+      CORS_ORIGINS: '["http://localhost:3000","http://localhost:3001","http://localhost:3002"]'
+      SUPABASE_URL: http://supabase:9999
+      SUPABASE_SERVICE_KEY: ""
+      SUPABASE_JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
       ENV: development
       DEBUG: "true"
+      PORTAL_JWT_SECRET: "portal-secret-change-in-production-32chars"
+      PORTAL_BASE_URL: "http://localhost:3000"
     depends_on:
       postgres:
         condition: service_healthy
 
+  # ── Frontend ───────────────────────────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
@@ -50,10 +82,43 @@ services:
     environment:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_SUPABASE_URL: ""
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ""
     depends_on:
       - backend
+
+  # ── n8n (automation engine) ────────────────────────────────────────────────
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=varuflow
+      - DB_POSTGRESDB_USER=postgres
+      - DB_POSTGRESDB_PASSWORD=postgres
+      - N8N_ENCRYPTION_KEY=your-very-long-secret-32-characters
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=your-n8n-password
+      - EXECUTIONS_MODE=queue
+      - QUEUE_BULL_REDIS_HOST=redis
+    ports:
+      - "5678:5678"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+  # ── Redis (for n8n queue mode) ─────────────────────────────────────────────
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
 
 volumes:
   pgdata:
   frontend_node_modules:
   frontend_next:
+  n8n_data:

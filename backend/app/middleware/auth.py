@@ -1,8 +1,8 @@
 """JWT authentication dependency for FastAPI routes.
 
 Verifies Supabase-issued JWTs and resolves the current user + org context.
-In local dev (SUPABASE_JWT_SECRET is empty) the token is decoded without
-signature verification so the app works without a live Supabase project.
+In local dev (ENV=development) requests without a token are served as the
+built-in dev user, so the app works end-to-end without a live Supabase project.
 """
 import uuid
 
@@ -14,9 +14,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
-from app.models.organization import Organization, OrganizationMember
+from app.models.organization import Organization, OrganizationMember, OrgRole
 
-_bearer = HTTPBearer(auto_error=True)
+# auto_error=False so we can return a 401 ourselves (and allow dev bypass)
+_bearer = HTTPBearer(auto_error=False)
+
+# Stable dev identities — only used when ENV=development and no token is sent
+DEV_USER_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
+DEV_ORG_ID  = uuid.UUID("00000000-0000-0000-0000-000000000002")
 
 
 def _decode_token(token: str) -> dict:
@@ -38,12 +43,30 @@ def _decode_token(token: str) -> dict:
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(_bearer),
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
 ) -> dict:
-    """Return basic user info from the JWT payload."""
+    """Return basic user info from the JWT payload.
+
+    In development mode (ENV=development or DEBUG=True):
+    - No token → dev user
+    - Invalid/expired token → dev user (handles stale localStorage sessions)
+    """
+    is_dev = settings.ENV == "development" or settings.DEBUG
+
+    if not credentials:
+        if is_dev:
+            return {"user_id": DEV_USER_ID, "email": "dev@varuflow.local"}
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
     try:
         payload = _decode_token(credentials.credentials)
     except JWTError:
+        # In dev, fall through to dev user rather than blocking everything
+        if is_dev:
+            return {"user_id": DEV_USER_ID, "email": "dev@varuflow.local"}
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
@@ -68,7 +91,7 @@ async def get_current_member(
 ) -> tuple[dict, OrganizationMember]:
     """Return user info + their OrganizationMember row.
 
-    Raises 404 if the user hasn't completed onboarding yet.
+    In development mode, auto-creates the dev org + member on first request.
     """
     result = await db.execute(
         select(OrganizationMember).where(
@@ -76,9 +99,28 @@ async def get_current_member(
         )
     )
     member = result.scalar_one_or_none()
+
     if not member:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Organization not found. Complete onboarding first.",
-        )
+        if settings.ENV == "development" and current_user["user_id"] == DEV_USER_ID:
+            # First-run: seed the dev organization and owner member
+            org = Organization(
+                id=DEV_ORG_ID,
+                name="Varuflow Demo AB",
+                org_number="556123-4567",
+            )
+            member = OrganizationMember(
+                org_id=DEV_ORG_ID,
+                user_id=DEV_USER_ID,
+                role=OrgRole.OWNER,
+            )
+            db.add(org)
+            db.add(member)
+            await db.commit()
+            await db.refresh(member)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Organization not found. Complete onboarding first.",
+            )
+
     return current_user, member

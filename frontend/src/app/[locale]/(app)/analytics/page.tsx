@@ -55,9 +55,9 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
-  const { from: defaultFrom, to: defaultTo } = defaultRange();
-  const [fromDate, setFromDate] = useState(defaultFrom);
-  const [toDate, setToDate] = useState(defaultTo);
+  // Initialize with empty strings to avoid SSR/CSR mismatch from new Date()
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   const load = useCallback((from: string, to: string) => {
     setLoading(true);
@@ -68,7 +68,12 @@ export default function AnalyticsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { load(fromDate, toDate); }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const { from, to } = defaultRange();
+    setFromDate(from);
+    setToDate(to);
+    load(from, to);
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleApply() { load(fromDate, toDate); }
 
@@ -204,7 +209,7 @@ export default function AnalyticsPage() {
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="month" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-            <Tooltip formatter={(v: number) => [`${fmt(v)} SEK`]} />
+            <Tooltip formatter={(v) => [`${fmt(Number(v))} SEK`]} />
             <Legend />
             <Area type="monotone" dataKey="Invoiced" stroke="#1a2332" fill="url(#gInvoiced)" strokeWidth={2} />
             <Area type="monotone" dataKey="Collected" stroke="#22c55e" fill="url(#gCollected)" strokeWidth={2} />
@@ -238,7 +243,7 @@ export default function AnalyticsPage() {
                       <Cell key={entry.name} fill={STATUS_COLORS[entry.name] ?? PIE_COLORS[i % PIE_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v: number, name: string) => [`${v} invoices`, name]} />
+                  <Tooltip formatter={(v, name) => [`${v} invoices`, String(name)]} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="flex-1 space-y-2">
@@ -300,7 +305,7 @@ export default function AnalyticsPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
               <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
               <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={140} />
-              <Tooltip formatter={(v: number) => [`${fmt(v)} SEK`, "Revenue"]} />
+              <Tooltip formatter={(v) => [`${fmt(Number(v))} SEK`, "Revenue"]} />
               <Bar dataKey="Revenue" fill="#1a2332" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>

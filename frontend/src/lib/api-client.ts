@@ -1,19 +1,33 @@
 /**
  * Authenticated API client for the Varuflow backend.
  * Automatically attaches the Supabase session token to every request.
+ *
+ * In local dev (NEXT_PUBLIC_SUPABASE_URL is empty), no token is sent.
+ * The backend auth middleware detects ENV=development and falls back to
+ * the built-in dev user (DEV_USER_ID), so everything works without Supabase.
  */
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
-  const supabase = createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // Skip token lookup entirely in dev — backend uses dev-user bypass
+  if (!isSupabaseConfigured) return {};
 
-  if (!session) return {};
-  return { Authorization: `Bearer ${session.access_token}` };
+  try {
+    const supabase = createClient();
+    const result = await Promise.race([
+      supabase.auth.getSession(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("auth timeout")), 3000)
+      ),
+    ]);
+    const session = (result as Awaited<ReturnType<typeof supabase.auth.getSession>>).data?.session;
+    if (!session) return {};
+    return { Authorization: `Bearer ${session.access_token}` };
+  } catch {
+    return {};
+  }
 }
 
 async function request<T>(
@@ -22,14 +36,23 @@ async function request<T>(
 ): Promise<T> {
   const authHeaders = await getAuthHeaders();
 
-  const res = await fetch(`${BASE}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeaders,
-      ...options.headers,
-    },
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+
+  let res!: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders,
+        ...options.headers,
+      },
+    });
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -55,11 +78,19 @@ export const api = {
     const authHeaders = await getAuthHeaders();
     const form = new FormData();
     form.append(fieldName, file);
-    const res = await fetch(`${BASE}${path}`, {
-      method: "POST",
-      headers: authHeaders,
-      body: form,
-    });
+    const uploadController = new AbortController();
+    const uploadTimer = setTimeout(() => uploadController.abort(), 30000);
+    let res!: Response;
+    try {
+      res = await fetch(`${BASE}${path}`, {
+        method: "POST",
+        signal: uploadController.signal,
+        headers: authHeaders,
+        body: form,
+      });
+    } finally {
+      clearTimeout(uploadTimer);
+    }
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       throw new Error(body.detail ?? `Upload error ${res.status}`);

@@ -14,8 +14,12 @@
   },
   "nav": {
     "dashboard": "Instrumentpanel",
+    "analytics": "Analys",
+    "aiAdvisor": "AI-rådgivare",
     "inventory": "Lager",
     "invoices": "Fakturor",
+    "recurring": "Återkommande",
+    "cashRegister": "Kassaregister",
     "customers": "Kunder",
     "settings": "Inställningar",
     "signOut": "Logga ut"

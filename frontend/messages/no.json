@@ -14,8 +14,12 @@
   },
   "nav": {
     "dashboard": "Oversikt",
+    "analytics": "Analyse",
+    "aiAdvisor": "AI-rådgiver",
     "inventory": "Lager",
     "invoices": "Fakturaer",
+    "recurring": "Gjentakende",
+    "cashRegister": "Kassaapparat",
     "customers": "Kunder",
     "settings": "Innstillinger",
     "signOut": "Logg ut"

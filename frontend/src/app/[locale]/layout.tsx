@@ -49,7 +49,7 @@ export default async function LocaleLayout({
         <meta name="theme-color" content="#1a2332" />
         <link rel="apple-touch-icon" href="/icon.svg" />
       </head>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased" suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
           {children}
           <Toaster position="bottom-right" richColors />

@@ -20,7 +20,7 @@ export default function RecurringPage() {
   const [items, setItems] = useState<Recurring[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ customer_id: "", frequency: "MONTHLY", next_run_date: "", template_invoice_id: "" });
   const [saving, setSaving] = useState(false);

@@ -22,8 +22,15 @@ export default function NewInvoicePage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [customerId, setCustomerId] = useState("");
-  const [issueDate, setIssueDate] = useState(todayStr());
-  const [dueDate, setDueDate] = useState(addDays(todayStr(), 30));
+  const [issueDate, setIssueDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
+
+  // Set dates client-side only to avoid SSR/CSR mismatch
+  useEffect(() => {
+    const t = todayStr();
+    setIssueDate(t);
+    setDueDate(addDays(t, 30));
+  }, []);
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<LineItem[]>([{ description: "", product_id: "", quantity: "1", unit_price: "", tax_rate: "25" }]);
   const [saving, setSaving] = useState(false);

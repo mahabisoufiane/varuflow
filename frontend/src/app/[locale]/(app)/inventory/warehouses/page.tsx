@@ -13,7 +13,7 @@ interface WarehouseItem {
 
 export default function WarehousesPage() {
   const [warehouses, setWarehouses] = useState<WarehouseItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<WarehouseItem | null>(null);
   const [name, setName] = useState("");

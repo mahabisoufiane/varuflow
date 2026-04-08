@@ -38,14 +38,14 @@ export default function InvoiceDetailPage() {
   const locale = useLocale();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendMsg, setSendMsg] = useState<string | null>(null);
   const [linkSending, setLinkSending] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
-  const [payForm, setPayForm] = useState({ amount: "", payment_date: new Date().toISOString().slice(0, 10), method: "BANK_TRANSFER", reference: "" });
+  const [payForm, setPayForm] = useState({ amount: "", payment_date: "", method: "BANK_TRANSFER", reference: "" });
   const [paying, setPaying] = useState(false);
 
   async function load() {
@@ -184,7 +184,7 @@ export default function InvoiceDetailPage() {
               </Button>
             )}
             {(invoice.status === "SENT" || invoice.status === "OVERDUE") && (
-              <Button variant="outline" size="sm" onClick={() => { setPayForm((f) => ({ ...f, amount: String(balance.toFixed(2)) })); setPayOpen(true); }}>
+              <Button variant="outline" size="sm" onClick={() => { setPayForm((f) => ({ ...f, amount: String(balance.toFixed(2)), payment_date: new Date().toISOString().slice(0, 10) })); setPayOpen(true); }}>
                 Record payment
               </Button>
             )}

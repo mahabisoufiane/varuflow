@@ -33,5 +33,17 @@ pgdata/
 .DS_Store
 Thumbs.db
 
+# Linux kernel pseudo-files (WSL artifacts — never real files)
+backend/pipe:*
+backend/socket:*
+backend/anon_inode:*
+backend/temp
+
+# Duplicate scaffold left by early dev
+frontend/frontend/
+
+# Root-level package.json artifact
+/package.json
+
 # Claude
 .claude/

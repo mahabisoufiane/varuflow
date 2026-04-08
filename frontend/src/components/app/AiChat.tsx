@@ -71,6 +71,7 @@ export default function AiChat() {
       {/* Floating button */}
       {!open && (
         <button
+          suppressHydrationWarning
           onClick={() => setOpen(true)}
           className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#0f1724] text-white shadow-lg hover:bg-[#1a2840] transition-all hover:scale-105"
           title="Ask Varuflow AI"

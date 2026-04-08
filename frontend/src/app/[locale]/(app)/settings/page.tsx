@@ -17,7 +17,7 @@ type Tab = "account" | "team" | "billing" | "integrations" | "notifications";
 export default function SettingsPage() {
   const [me, setMe] = useState<Me | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState<Tab>("account");
 
   // Company form
@@ -372,7 +372,7 @@ function BillingTab({ plan }: { plan: string }) {
 function IntegrationsTab() {
   const [status, setStatus] = useState<{ connected: boolean; token_expiry?: string } | null>(null);
   const [syncing, setSyncing] = useState<"invoices" | "customers" | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     api.get<{ connected: boolean; token_expiry?: string }>("/api/integrations/fortnox/status")

@@ -24,7 +24,7 @@ export default function EditProductPage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
