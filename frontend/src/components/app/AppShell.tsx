@@ -57,7 +57,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         if (userEmail && process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID && typeof window !== "undefined") {
           const w = window as unknown as Record<string, unknown>;
           if (w.$crisp) {
-            (w.$crisp as string[][]).push(["set", "user:email", [userEmail]]);
+            (w.$crisp as string[][]).push(["set", "user:email", userEmail]);
           }
         }
       });
