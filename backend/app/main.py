@@ -1,3 +1,5 @@
+import logging
+import logging.config
 from contextlib import asynccontextmanager
 
 import sentry_sdk
@@ -10,6 +12,24 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
+
+# Structured JSON-style logging
+logging.config.dictConfig({
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "json": {
+            "format": '{"time":"%(asctime)s","level":"%(levelname)s","logger":"%(name)s","msg":%(message)r}',
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json",
+        }
+    },
+    "root": {"level": "INFO", "handlers": ["console"]},
+})
 
 from app.config import settings
 from app.database import engine
@@ -55,6 +75,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+log = logging.getLogger(__name__)
+
+
+@app.middleware("http")
+async def _log_requests(request: Request, call_next):
+    response = await call_next(request)
+    log.info(
+        '"method":"%s","path":"%s","status":%d',
+        request.method, request.url.path, response.status_code,
+    )
+    return response
 
 
 # Catch all unhandled exceptions so they stay inside the middleware stack

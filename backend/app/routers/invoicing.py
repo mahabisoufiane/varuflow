@@ -741,8 +741,8 @@ async def create_payment_link(
         }],
         customer_email=inv.customer.email,
         metadata={"invoice_id": str(inv.id), "org_id": str(org_id)},
-        success_url=f"http://localhost:3000/invoices/{inv.id}?paid=1",
-        cancel_url=f"http://localhost:3000/invoices/{inv.id}",
+        success_url=f"{settings.PORTAL_BASE_URL}/invoices/{inv.id}?paid=1",
+        cancel_url=f"{settings.PORTAL_BASE_URL}/invoices/{inv.id}",
     )
 
     inv.stripe_checkout_session_id = session.id

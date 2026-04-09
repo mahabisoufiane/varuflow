@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     PORTAL_JWT_SECRET: str = "portal-secret-change-in-production-32chars"
     PORTAL_BASE_URL: str = "https://varuflow.se"
+    FRONTEND_URL: str = "https://varuflow.se"
     SENTRY_DSN: str = ""
     ENV: str = "development"
     DEBUG: bool = True

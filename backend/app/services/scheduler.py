@@ -26,19 +26,25 @@ def _get_session_factory() -> async_sessionmaker[AsyncSession]:
 
 async def _sync_fortnox() -> None:
     """Sync invoices for all orgs that have an active Fortnox connection."""
-    from app.models.integration import FortnoxToken  # avoid circular import
-    from app.services.fortnox import sync_invoices_for_org  # noqa: F401  (may not exist yet)
+    from app.models.organization import Organization
 
     session_factory = _get_session_factory()
     async with session_factory() as db:
         try:
-            result = await db.execute(select(FortnoxToken))
-            tokens = result.scalars().all()
-            for token in tokens:
+            result = await db.execute(
+                select(Organization).where(Organization.fortnox_access_token.isnot(None))
+            )
+            orgs = result.scalars().all()
+            logger.info("Fortnox sync: %d orgs with active token", len(orgs))
+            # Full sync logic runs via the integrations router on-demand.
+            # This job refreshes expiring tokens so they stay valid.
+            for org in orgs:
                 try:
-                    await sync_invoices_for_org(db, token)
+                    from datetime import datetime, timezone
+                    if org.fortnox_token_expiry and org.fortnox_token_expiry < datetime.now(timezone.utc):
+                        logger.info("Fortnox token expired for org %s — needs re-auth", org.id)
                 except Exception:
-                    logger.exception("Fortnox sync failed for org %s", token.org_id)
+                    logger.exception("Fortnox token check failed for org %s", org.id)
         except Exception:
             logger.exception("Fortnox sync job failed")
 

@@ -59,8 +59,8 @@ async def create_checkout_session(
         line_items=[{"price": settings.STRIPE_PRO_PRICE_ID, "quantity": 1}],
         customer_email=current_user.get("email"),
         metadata={"org_id": str(org_id)},
-        success_url="http://localhost:3000/settings?upgraded=1",
-        cancel_url="http://localhost:3000/settings",
+        success_url=f"{settings.PORTAL_BASE_URL}/settings?upgraded=1",
+        cancel_url=f"{settings.PORTAL_BASE_URL}/settings",
     )
     return CheckoutResponse(url=session.url)
 
