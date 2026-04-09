@@ -7,7 +7,7 @@ export default function SentryInit() {
   useEffect(() => {
     const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
     if (!dsn) return;
-    const w = window as Record<string, unknown>;
+    const w = window as unknown as Record<string, unknown>;
     if (typeof w.Sentry !== "object" || !w.Sentry) return;
     const Sentry = w.Sentry as {
       init: (cfg: object) => void;

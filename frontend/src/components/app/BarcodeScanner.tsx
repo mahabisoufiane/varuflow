@@ -139,7 +139,7 @@ function ScannerShell({
   errorMsg,
   onClose,
 }: {
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
   status: "loading" | "scanning" | "error";
   errorMsg: string;
   onClose: () => void;
