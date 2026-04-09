@@ -1,26 +1,25 @@
-# Multi-stage: Frontend + Backend
-FROM node:20-alpine AS frontend-builder
-WORKDIR /app/frontend
-COPY frontend/package*.json ./
-RUN npm ci
-COPY frontend ./
-RUN npm run build
+# Root Dockerfile — builds the backend only (used by Railway)
+# Frontend is deployed separately on Vercel.
 
-FROM python:3.12-slim AS backend-builder
-WORKDIR /app/backend
-COPY backend/pyproject.toml backend/poetry.lock ./
-RUN pip install poetry && poetry config virtualenvs.create false && poetry install --no-dev
-COPY backend ./
+FROM python:3.11-slim AS builder
 
-# Production image
-FROM node:20-alpine
+RUN pip install poetry==1.8.2
+
+WORKDIR /build
+COPY backend/pyproject.toml backend/poetry.lock* ./
+RUN poetry export -f requirements.txt -o requirements.txt --without dev --no-interaction
+
+FROM python:3.11-slim
+
 WORKDIR /app
 
-# Copy built frontend
-COPY --from=frontend-builder /app/frontend/.next/standalone ./
-COPY --from=frontend-builder /app/frontend/public ./public
-COPY --from=frontend-builder /app/frontend/next.config.mjs ./
+COPY --from=builder /build/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 3000
-ENV PORT=3000
-CMD ["npm", "start"]
+COPY backend/app/ app/
+COPY backend/migrations/ migrations/
+COPY backend/alembic.ini .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
