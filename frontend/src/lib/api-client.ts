@@ -6,7 +6,7 @@
  * The backend auth middleware detects ENV=development and falls back to
  * the built-in dev user (DEV_USER_ID), so everything works without Supabase.
  */
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -15,7 +15,6 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   if (!isSupabaseConfigured) return {};
 
   try {
-    const supabase = createClient();
     const result = await Promise.race([
       supabase.auth.getSession(),
       new Promise<never>((_, reject) =>

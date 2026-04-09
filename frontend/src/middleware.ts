@@ -1,9 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import createIntlMiddleware from "next-intl/middleware";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { routing } from "./i18n/routing";
 
 const handleI18nRouting = createIntlMiddleware(routing);
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || "";
 
 // Paths under (app) that require authentication
 const PROTECTED_SEGMENTS = [
@@ -12,59 +15,58 @@ const PROTECTED_SEGMENTS = [
   "invoices",
   "customers",
   "settings",
+  "analytics",
+  "ai",
+  "pos",
+  "recurring",
 ];
 
 function stripLocale(pathname: string): string {
-  return pathname.replace(/^\/(en|sv|no|da)(\/|$)/, "/");
+  return pathname.replace(/^\/(sv|en)(\/|$)/, "/");
 }
 
 function getLocalePrefix(pathname: string): string {
-  const match = pathname.match(/^\/(sv|no|da)(\/|$)/);
+  const match = pathname.match(/^\/(en)(\/|$)/);
   return match ? `/${match[1]}` : "";
 }
 
 export async function middleware(request: NextRequest) {
-  // Portal routes are standalone — skip i18n and Supabase auth entirely
+  // Portal routes are standalone — skip i18n and auth entirely
   if (request.nextUrl.pathname.startsWith("/portal")) {
     return NextResponse.next();
   }
 
-  // Run next-intl routing first to get the correctly localised response
+  // Run next-intl routing first
   const intlResponse = handleI18nRouting(request);
 
-  // Build a mutable response so Supabase can write session cookies
-  const response = NextResponse.next({
-    request: { headers: request.headers },
-  });
-
-  // Only create the Supabase client when the env vars are configured
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  ) {
+  // Skip Supabase session refresh if not configured (local dev without auth)
+  if (!supabaseUrl || !supabaseKey) {
     return intlResponse;
   }
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value);
-            response.cookies.set(name, value, options);
-            intlResponse.cookies.set(name, value, options);
-          });
-        },
-      },
-    }
-  );
+  // Build a mutable response for Supabase to write session cookies into
+  let supabaseResponse = NextResponse.next({ request: { headers: request.headers } });
 
-  // Refresh the session (IMPORTANT: use getUser, not getSession, for security)
+  const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        supabaseResponse = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) =>
+          supabaseResponse.cookies.set(name, value, options)
+        );
+        // Mirror cookies onto the intl response too
+        cookiesToSet.forEach(({ name, value, options }) =>
+          intlResponse.cookies.set(name, value, options)
+        );
+      },
+    },
+  });
+
+  // Refresh the session — IMPORTANT: use getUser (not getSession) for security
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -73,7 +75,6 @@ export async function middleware(request: NextRequest) {
   const firstSegment = bare.split("/")[1] ?? "";
 
   const isProtected = PROTECTED_SEGMENTS.includes(firstSegment);
-  const isOnboarding = firstSegment === "onboarding";
   const isAuth = firstSegment === "auth";
 
   // Unauthenticated user trying to reach a protected page → login

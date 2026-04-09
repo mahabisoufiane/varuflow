@@ -1,4 +1,4 @@
-const CACHE = 'varuflow-v1';
+const CACHE = 'varuflow-v2';
 
 const PRECACHE = [
   '/offline.html',
@@ -35,21 +35,9 @@ self.addEventListener('fetch', (e) => {
   // API calls: network-only, no caching
   if (url.pathname.startsWith('/api/')) return;
 
-  // _next/static: cache-first (immutable hashed filenames)
-  if (url.pathname.startsWith('/_next/static/')) {
-    e.respondWith(
-      caches.match(request).then(
-        (cached) =>
-          cached ||
-          fetch(request).then((res) => {
-            const clone = res.clone();
-            caches.open(CACHE).then((c) => c.put(request, clone));
-            return res;
-          })
-      )
-    );
-    return;
-  }
+  // _next/ chunks: always network-only. Next.js sets immutable Cache-Control
+  // headers itself; SW caching these causes stale-chunk errors when HMR runs.
+  if (url.pathname.startsWith('/_next/')) return;
 
   // Navigation: network-first → cached page → offline fallback
   if (request.mode === 'navigate') {

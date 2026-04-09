@@ -65,7 +65,7 @@ services:
       postgres:
         condition: service_healthy
 
-  # ── Frontend ───────────────────────────────────────────────────────────────
+    # ── Frontend ───────────────────────────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
@@ -82,8 +82,8 @@ services:
     environment:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: http://localhost:8000
-      NEXT_PUBLIC_SUPABASE_URL: ""
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ""
+      NEXT_PUBLIC_SUPABASE_URL: https://tmizvegzdlwpqceavvwh.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY: sb_publishable_R9YSA5I3KRsLqXifnuGRAQ_J9YMEywy
     depends_on:
       - backend
 

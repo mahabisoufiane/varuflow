@@ -1,6 +1,6 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -20,8 +20,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [magicSent, setMagicSent] = useState(false);
-
-  const supabase = createClient();
 
   async function handleMagicLink(e: React.FormEvent) {
     e.preventDefault();
@@ -105,9 +103,14 @@ export default function LoginPage() {
           {/* Password (only in password mode) */}
           {mode === "password" && (
             <div className="space-y-1">
-              <label htmlFor="password" className="text-sm font-medium text-gray-700">
-                {t("password")}
-              </label>
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                  {t("password")}
+                </label>
+                <Link href="/auth/forgot-password" className="text-xs text-[#1a2332] hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 id="password"
                 type="password"

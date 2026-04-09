@@ -1,8 +1,11 @@
 from contextlib import asynccontextmanager
 
+import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -11,13 +14,26 @@ from slowapi.util import get_remote_address
 from app.config import settings
 from app.database import engine
 from app.routers import ai_engine, analytics, auth, billing, health, integrations, inventory, invoicing, portal, pos, recurring, team, waitlist
+from app.services.scheduler import create_scheduler
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
+
+if settings.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        environment=settings.ENV,
+        integrations=[FastApiIntegration(), SqlalchemyIntegration()],
+        traces_sample_rate=0.2,
+        send_default_pii=False,
+    )
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    scheduler = create_scheduler()
+    scheduler.start()
     yield
+    scheduler.shutdown(wait=False)
     await engine.dispose()
 
 
@@ -39,6 +55,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Catch all unhandled exceptions so they stay inside the middleware stack
+# (not handled by ServerErrorMiddleware which is outside CORSMiddleware).
+# Without this, 500s reach the browser without Access-Control-Allow-Origin.
+@app.exception_handler(Exception)
+async def _global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 app.include_router(health.router)
 app.include_router(auth.router)

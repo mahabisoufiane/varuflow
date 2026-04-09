@@ -1,6 +1,6 @@
 "use client";
 
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { api } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
@@ -31,18 +31,14 @@ const NAV = [
 ] as const;
 
 const LOCALES = [
-  { code: "en", label: "EN" },
   { code: "sv", label: "SV" },
-  { code: "no", label: "NO" },
-  { code: "da", label: "DA" },
+  { code: "en", label: "EN" },
 ] as const;
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname  = usePathname();
   const router    = useRouter();
   const locale    = useLocale();
-  const supabase  = createClient();
-
   // isClient: false on server → all nav items render inactive (no mismatch)
   // becomes true after first paint → correct active item shown
   const t = useTranslations("nav");
@@ -54,7 +50,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setIsClient(true);
     if (isSupabaseConfigured) {
-      supabase.auth.getUser().then((res: Awaited<ReturnType<typeof supabase.auth.getUser>>) => setEmail(res.data.user?.email ?? null));
+      supabase.auth.getUser().then((res: Awaited<ReturnType<typeof supabase.auth.getUser>>) => {
+        const userEmail = res.data.user?.email ?? null;
+        setEmail(userEmail);
+        // Boot Crisp with user identity once we know who's logged in
+        if (userEmail && process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID && typeof window !== "undefined") {
+          const w = window as Record<string, unknown>;
+          if (w.$crisp) {
+            (w.$crisp as string[][]).push(["set", "user:email", [userEmail]]);
+          }
+        }
+      });
     }
     api.get<{ connected: boolean }>("/api/integrations/fortnox/status")
       .then((s) => setFortnoxConnected(s.connected))
@@ -75,6 +81,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+    {/* Crisp support chat — only loads when NEXT_PUBLIC_CRISP_WEBSITE_ID is set */}
+    {process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID && (
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.$crisp=[];window.CRISP_WEBSITE_ID="${process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID}";
+            (function(){var d=document;var s=d.createElement("script");
+            s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();
+          `,
+        }}
+      />
+    )}
     <div className="flex min-h-screen bg-[#f4f5f7]">
 
         {/* ── Sidebar ───────────────────────────────────────────────── */}

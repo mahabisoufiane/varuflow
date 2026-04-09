@@ -19,7 +19,8 @@ export default function SettingsPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState<Tab>("account");
-
+  const supabase = createClient();
+  
   // Company form
   const [companyForm, setCompanyForm] = useState({ company_name: "", org_number: "", vat_number: "", address: "" });
   const [companySaving, setCompanySaving] = useState(false);
@@ -81,7 +82,6 @@ export default function SettingsPage() {
     if (pwForm.next.length < 8) { setPwError("Minimum 8 characters"); return; }
     setPwSaving(true);
     try {
-      const supabase = createClient();
       const { error } = await supabase.auth.updateUser({ password: pwForm.next });
       if (error) throw new Error(error.message);
       setPwForm({ next: "", confirm: "" });

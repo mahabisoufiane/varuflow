@@ -68,6 +68,7 @@ class SaleIn(BaseModel):
     items: list[SaleItemIn]
     payment_method: PosPaymentMethod = PosPaymentMethod.CASH
     amount_tendered: Decimal | None = None
+    customer_id: uuid.UUID | None = None
 
 
 class SaleItemOut(BaseModel):
@@ -90,6 +91,9 @@ class SaleOut(BaseModel):
     payment_method: PosPaymentMethod
     amount_tendered: Decimal | None
     change_due: Decimal | None
+    customer_id: uuid.UUID | None
+    is_refunded: bool
+    refunded_at: datetime | None
     created_at: datetime
     items: list[SaleItemOut]
     model_config = {"from_attributes": True}
@@ -335,6 +339,7 @@ async def create_sale(
         payment_method=body.payment_method,
         amount_tendered=body.amount_tendered,
         change_due=change,
+        customer_id=body.customer_id,
         items=sale_items,
     )
     db.add(sale)
@@ -449,6 +454,182 @@ def _generate_receipt(sale: PosSale, org_name: str) -> bytes:
     elements.append(Paragraph(f"Paid by: {sale.payment_method}", small))
     elements.append(Spacer(1, 4*mm))
     elements.append(Paragraph("Thank you!", center))
+
+    doc.build(elements)
+    return buffer.getvalue()
+
+
+# ── Refund ────────────────────────────────────────────────────────────────────
+
+@router.post("/sales/{sale_id}/refund", response_model=SaleOut)
+async def refund_sale(
+    sale_id: uuid.UUID,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    """Mark a sale as refunded and restore stock levels."""
+    org_id = _org(ctx)
+
+    result = await db.execute(
+        select(PosSale).options(selectinload(PosSale.items))
+        .where(PosSale.id == sale_id, PosSale.org_id == org_id)
+    )
+    sale = result.scalar_one_or_none()
+    if not sale:
+        raise HTTPException(status_code=404, detail="Sale not found")
+    if sale.is_refunded:
+        raise HTTPException(status_code=409, detail="Sale already refunded")
+
+    sale.is_refunded = True
+    sale.refunded_at = datetime.utcnow()
+
+    # Restore stock for each item
+    wh = await db.scalar(
+        select(Warehouse).where(Warehouse.org_id == org_id, Warehouse.is_active == True)
+        .order_by(Warehouse.created_at)
+    )
+    if wh:
+        for item in sale.items:
+            if item.product_id:
+                db.add(StockMovement(
+                    org_id=org_id,
+                    product_id=item.product_id,
+                    warehouse_id=wh.id,
+                    type=StockMovementType.IN,
+                    quantity=int(item.quantity),
+                    reference=sale.sale_number,
+                    note="POS refund",
+                ))
+                sl = await db.scalar(
+                    select(StockLevel).where(
+                        StockLevel.product_id == item.product_id,
+                        StockLevel.warehouse_id == wh.id,
+                    )
+                )
+                if sl:
+                    sl.quantity += int(item.quantity)
+
+    await db.commit()
+
+    result = await db.execute(
+        select(PosSale).options(selectinload(PosSale.items)).where(PosSale.id == sale.id)
+    )
+    return result.scalar_one()
+
+
+# ── Z-Report PDF ──────────────────────────────────────────────────────────────
+
+@router.get("/sessions/{session_id}/zreport")
+async def download_zreport(
+    session_id: uuid.UUID,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate a Z-report PDF for a closed POS session."""
+    org_id = _org(ctx)
+    from app.models.organization import Organization
+
+    result = await db.execute(
+        select(PosSession)
+        .options(selectinload(PosSession.sales).selectinload(PosSale.items))
+        .where(PosSession.id == session_id, PosSession.org_id == org_id)
+    )
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    org = await db.get(Organization, org_id)
+    pdf = _generate_zreport(session, org.name if org else "Varuflow")
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="zreport-{session_id}.pdf"'},
+    )
+
+
+def _generate_zreport(session: PosSession, org_name: str) -> bytes:
+    from reportlab.lib.pagesizes import A4
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4,
+        leftMargin=20*mm, rightMargin=20*mm, topMargin=20*mm, bottomMargin=20*mm)
+
+    styles = getSampleStyleSheet()
+    h1 = ParagraphStyle("H1", parent=styles["Normal"], fontSize=16, fontName="Helvetica-Bold", textColor=NAVY)
+    h2 = ParagraphStyle("H2", parent=styles["Normal"], fontSize=11, fontName="Helvetica-Bold", textColor=NAVY)
+    normal = ParagraphStyle("N", parent=styles["Normal"], fontSize=9)
+    small = ParagraphStyle("S", parent=styles["Normal"], fontSize=8, textColor=colors.gray)
+
+    sales = [s for s in session.sales if not s.is_refunded]
+    refunds = [s for s in session.sales if s.is_refunded]
+
+    total_revenue = sum(s.total for s in sales)
+    total_vat = sum(s.vat_amount for s in sales)
+    total_refunds = sum(s.total for s in refunds)
+    net_revenue = total_revenue - total_refunds
+
+    # Payment method breakdown
+    by_method: dict = {}
+    for s in sales:
+        by_method[s.payment_method] = by_method.get(s.payment_method, Decimal("0")) + s.total
+
+    opened = session.opened_at.strftime("%Y-%m-%d %H:%M") if session.opened_at else "—"
+    closed = session.closed_at.strftime("%Y-%m-%d %H:%M") if session.closed_at else "Open"
+
+    elements = [
+        Paragraph(org_name, h1),
+        Paragraph("Z-Report / End of Day", h2),
+        Spacer(1, 3*mm),
+        Paragraph(f"Session: {session.id}", small),
+        Paragraph(f"Opened: {opened}  |  Closed: {closed}", small),
+        Spacer(1, 6*mm),
+        Paragraph("Summary", h2),
+        Spacer(1, 2*mm),
+    ]
+
+    summary_rows = [
+        ["Metric", "Amount (SEK)"],
+        ["Total sales", f"{total_revenue:,.2f}"],
+        ["Total VAT", f"{total_vat:,.2f}"],
+        ["Refunds", f"-{total_refunds:,.2f}"],
+        ["Net revenue", f"{net_revenue:,.2f}"],
+        ["Sale count", str(len(sales))],
+        ["Refund count", str(len(refunds))],
+    ]
+    t = Table(summary_rows, colWidths=[80*mm, 60*mm])
+    t.setStyle(TableStyle([
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f1f5f9")),
+        ("LINEBELOW", (0, 0), (-1, 0), 0.5, colors.black),
+        ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
+        ("LINEABOVE", (0, -1), (-1, -1), 0.5, colors.black),
+        ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+        ("TOPPADDING", (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+    ]))
+    elements.append(t)
+    elements.append(Spacer(1, 6*mm))
+
+    if by_method:
+        elements.append(Paragraph("Payment methods", h2))
+        elements.append(Spacer(1, 2*mm))
+        pm_rows = [["Method", "Amount (SEK)"]] + [
+            [m, f"{v:,.2f}"] for m, v in by_method.items()
+        ]
+        pt = Table(pm_rows, colWidths=[80*mm, 60*mm])
+        pt.setStyle(TableStyle([
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 9),
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f1f5f9")),
+            ("LINEBELOW", (0, 0), (-1, 0), 0.5, colors.black),
+            ("ALIGN", (1, 0), (-1, -1), "RIGHT"),
+            ("TOPPADDING", (0, 0), (-1, -1), 3),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ]))
+        elements.append(pt)
+        elements.append(Spacer(1, 6*mm))
+
+    elements.append(Paragraph(f"Generated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M')} UTC", small))
 
     doc.build(elements)
     return buffer.getvalue()

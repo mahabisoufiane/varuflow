@@ -63,6 +63,9 @@ class PosSale(Base):
     )
     amount_tendered: Mapped[Decimal | None] = mapped_column(Numeric(14, 2))  # cash given
     change_due: Mapped[Decimal | None] = mapped_column(Numeric(14, 2))
+    customer_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True, index=True)
+    is_refunded: Mapped[bool] = mapped_column(default=False, nullable=False)
+    refunded_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     session: Mapped["PosSession"] = relationship("PosSession", back_populates="sales")
