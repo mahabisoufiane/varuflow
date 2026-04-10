@@ -109,7 +109,7 @@ export default function CustomersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[22px] font-bold tracking-tight text-slate-100">Customers</h1>
+          <h1 className="text-xl font-bold tracking-tight text-slate-100">Customers</h1>
           <p className="text-xs text-slate-600 mt-0.5">{customers.length} active customers</p>
         </div>
         <button onClick={openCreate} className="vf-btn text-xs px-3 py-1.5 h-auto">

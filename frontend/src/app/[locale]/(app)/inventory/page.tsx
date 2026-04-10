@@ -69,7 +69,7 @@ export default function InventoryPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[22px] font-bold tracking-tight text-slate-100">Inventory</h1>
+          <h1 className="text-xl font-bold tracking-tight text-slate-100">Inventory</h1>
           <p className="text-xs text-slate-600 mt-0.5">Stock levels across all warehouses</p>
         </div>
         <Link href="/inventory/products/new" className="vf-btn text-xs px-3 py-1.5 h-auto">

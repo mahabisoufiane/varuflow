@@ -4,7 +4,6 @@
 
 @layer base {
   :root {
-    /* Dark theme as default */
     --background: 222 47% 5%;
     --foreground: 210 40% 96%;
     --card: 225 20% 9%;
@@ -16,7 +15,7 @@
     --secondary: 220 20% 13%;
     --secondary-foreground: 210 40% 96%;
     --muted: 220 20% 13%;
-    --muted-foreground: 215 20% 55%;
+    --muted-foreground: 215 20% 50%;
     --accent: 220 20% 16%;
     --accent-foreground: 210 40% 96%;
     --destructive: 0 72% 51%;
@@ -42,69 +41,88 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.1);
-    border-radius: 3px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.18);
-  }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.09); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
 }
 
-/* Skeleton shimmer */
 @layer components {
+
+  /* ── Skeleton ──────────────────────────────────────────────────── */
   .skeleton {
-    @apply relative overflow-hidden bg-white/5 rounded-lg;
+    @apply relative overflow-hidden bg-white/[0.05] rounded-lg;
   }
   .skeleton::after {
     content: "";
     @apply absolute inset-0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
-    animation: shimmer 1.5s infinite;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+    animation: shimmer 1.4s infinite;
+    transform: translateX(-100%);
   }
 
-  /* Glass card */
-  .glass {
-    background: rgba(99, 102, 241, 0.05);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(99, 102, 241, 0.15);
+  /* ── Card ──────────────────────────────────────────────────────── */
+  /* Use this instead of spelling out rounded-xl border ... every time */
+  .vf-card {
+    @apply rounded-xl border border-white/[0.08] bg-vf-surface;
+  }
+  .vf-card-elevated {
+    @apply rounded-xl border border-white/[0.08] bg-vf-elevated shadow-elevated;
+  }
+  /* Card header divider */
+  .vf-card-header {
+    @apply flex items-center justify-between px-5 py-3.5 border-b border-white/[0.07];
   }
 
-  /* Status pills */
+  /* ── Status pills ──────────────────────────────────────────────── */
   .pill-paid    { @apply inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 text-[11px] font-semibold; }
   .pill-sent    { @apply inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-0.5 text-[11px] font-semibold; }
   .pill-overdue { @apply inline-flex items-center gap-1.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-0.5 text-[11px] font-semibold; }
-  .pill-draft   { @apply inline-flex items-center gap-1.5 rounded-full bg-white/5 text-slate-400 border border-white/10 px-2.5 py-0.5 text-[11px] font-semibold; }
+  .pill-draft   { @apply inline-flex items-center gap-1.5 rounded-full bg-white/5 text-slate-400 border border-white/[0.08] px-2.5 py-0.5 text-[11px] font-semibold; }
 
-  /* VF input */
+  /* ── Input ─────────────────────────────────────────────────────── */
   .vf-input {
-    @apply w-full rounded-lg border border-white/10 bg-[#13161E] px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-600
-    focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition;
+    @apply w-full rounded-lg border border-white/[0.09] bg-vf-surface px-3.5 py-2.5 text-sm text-slate-100
+      placeholder:text-slate-600 focus:border-indigo-500/70 focus:outline-none focus:ring-2
+      focus:ring-indigo-500/20 transition-all;
   }
 
-  /* VF button primary */
+  /* ── Buttons ───────────────────────────────────────────────────── */
   .vf-btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white
-    hover:bg-indigo-500 disabled:opacity-40 transition-colors;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5
+      text-sm font-semibold text-white hover:bg-indigo-500 active:scale-[0.98]
+      disabled:opacity-40 disabled:pointer-events-none transition-all;
   }
-
-  /* VF button ghost */
   .vf-btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 px-4 py-2.5 text-sm font-medium text-slate-400
-    hover:bg-white/5 hover:text-slate-200 disabled:opacity-40 transition-colors;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-white/[0.09]
+      px-4 py-2.5 text-sm font-medium text-slate-400 hover:bg-white/[0.05] hover:text-slate-200
+      active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none transition-all;
+  }
+  .vf-btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-red-600/80 px-4 py-2.5
+      text-sm font-semibold text-white hover:bg-red-600 active:scale-[0.98]
+      disabled:opacity-40 disabled:pointer-events-none transition-all;
   }
 
-  /* Page fade-in */
+  /* ── Table ─────────────────────────────────────────────────────── */
+  .vf-table {
+    @apply w-full text-sm;
+  }
+  .vf-table thead tr {
+    @apply border-b border-white/[0.07];
+  }
+  .vf-table thead th {
+    @apply px-4 py-3 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wide;
+  }
+  .vf-table tbody tr {
+    @apply border-b border-white/[0.04] hover:bg-white/[0.025] transition-colors;
+  }
+  .vf-table tbody td {
+    @apply px-4 py-3 text-slate-300;
+  }
+
+  /* ── Page enter animation ──────────────────────────────────────── */
   .page-enter {
-    animation: fade-in 0.2s ease-out both;
+    animation: fade-in 0.18s ease-out both;
   }
 }

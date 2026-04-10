@@ -102,7 +102,7 @@ export default function InvoicesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[22px] font-bold tracking-tight text-slate-100">Invoices</h1>
+          <h1 className="text-xl font-bold tracking-tight text-slate-100">Invoices</h1>
           <p className="text-xs text-slate-600 mt-0.5">{invoices.length} total invoices</p>
         </div>
         <div className="flex gap-2">

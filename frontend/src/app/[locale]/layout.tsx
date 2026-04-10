@@ -9,7 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 import SentryInit from "@/components/app/SentryInit";
 import "../globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: "Varuflow — Lagerstyrning för svenska företag",

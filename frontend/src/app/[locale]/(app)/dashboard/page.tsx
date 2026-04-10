@@ -176,7 +176,7 @@ export default function DashboardPage() {
           <p className="text-[11px] text-slate-600 capitalize tracking-widest" suppressHydrationWarning>
             {todayLabel}
           </p>
-          <h1 className="text-[22px] font-bold text-slate-100 tracking-tight">Overview</h1>
+          <h1 className="text-xl font-bold text-slate-100 tracking-tight">Overview</h1>
         </div>
         <div className="flex gap-2">
           <Link href="/inventory/products/new"
@@ -239,7 +239,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
         {/* Dark hero card */}
-        <div className="md:col-span-2 relative overflow-hidden rounded-xl border border-white/[0.06] bg-vf-surface p-6 shadow-elevated">
+        <div className="md:col-span-2 relative overflow-hidden rounded-xl border border-white/[0.08] bg-vf-surface p-6 shadow-elevated">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute -top-12 -right-12 h-56 w-56 rounded-full bg-indigo-600/10 blur-3xl" />
             <div className="absolute bottom-0 left-4 h-40 w-40 rounded-full bg-violet-600/8 blur-2xl" />
@@ -248,7 +248,7 @@ export default function DashboardPage() {
             <div className="flex items-start justify-between mb-5">
               <div>
                 <p className="text-[10px] text-slate-600 font-semibold uppercase tracking-[0.14em]">Total receivables</p>
-                <p className="mt-1.5 text-[38px] font-bold tracking-tight leading-none text-slate-100">
+                <p className="mt-1.5 text-[40px] font-bold tracking-tight leading-none text-white tabular-nums">
                   {fmt(outstanding)}
                   <span className="ml-1.5 text-xl font-normal text-slate-600">SEK</span>
                 </p>
@@ -296,7 +296,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick actions */}
-        <div className="rounded-xl border border-white/[0.06] bg-vf-surface p-4 flex flex-col">
+        <div className="rounded-xl border border-white/[0.08] bg-vf-surface p-4 flex flex-col">
           <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest mb-3">Quick actions</p>
           <div className="flex flex-col gap-[2px] flex-1">
             {[
@@ -323,8 +323,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         {/* Awaiting payment */}
-        <div className="rounded-xl border border-white/[0.06] bg-vf-surface overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
+        <div className="rounded-xl border border-white/[0.08] bg-vf-surface overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.08]">
             <h2 className="flex items-center gap-2 text-[13px] font-semibold text-slate-200">
               <FileText className="h-4 w-4 text-indigo-400" />Awaiting payment
             </h2>
@@ -366,8 +366,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Low stock */}
-        <div className="rounded-xl border border-white/[0.06] bg-vf-surface overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
+        <div className="rounded-xl border border-white/[0.08] bg-vf-surface overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.08]">
             <h2 className="flex items-center gap-2 text-[13px] font-semibold text-slate-200">
               <Package className="h-4 w-4 text-amber-400" />Low stock alerts
             </h2>
@@ -416,8 +416,8 @@ export default function DashboardPage() {
 
       {/* ── Recent movements ─────────────────────────────────────────────────── */}
       {recentMovements.length > 0 && (
-        <div className="rounded-xl border border-white/[0.06] bg-vf-surface overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
+        <div className="rounded-xl border border-white/[0.08] bg-vf-surface overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.08]">
             <h2 className="flex items-center gap-2 text-[13px] font-semibold text-slate-200">
               <Activity className="h-4 w-4 text-slate-600" />Recent movements
             </h2>
@@ -456,14 +456,14 @@ function KpiCard({ label, value, sub, trend, icon, iconCls, href, spark, sparkCo
 }) {
   return (
     <Link href={href}
-      className="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-vf-surface p-4 shadow-card hover:border-white/[0.10] hover:bg-vf-elevated transition-all duration-150">
+      className="group relative overflow-hidden rounded-xl border border-white/[0.08] bg-vf-surface p-4 shadow-card hover:border-white/[0.10] hover:bg-vf-elevated transition-all duration-150">
       <div className="flex items-start justify-between mb-3">
         <span className={cn("inline-flex h-8 w-8 items-center justify-center rounded-lg", iconCls)}>{icon}</span>
         {spark && spark.length > 1 && sparkColor && (
           <Sparkline data={spark} color={sparkColor} w={60} h={26} />
         )}
       </div>
-      <p className="text-xl font-bold text-slate-100 tracking-tight leading-tight">{value}</p>
+      <p className="text-2xl font-bold text-white tracking-tight leading-tight tabular-nums">{value}</p>
       {sub && <p className="text-xs text-slate-600 mt-0.5">{sub}</p>}
       {trend && (
         <p className={cn(
