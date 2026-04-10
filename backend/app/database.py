@@ -5,8 +5,14 @@ from sqlalchemy.orm import DeclarativeBase
 
 from app.config import settings
 
+# Convert postgresql:// to postgresql+asyncpg:// so SQLAlchemy uses the
+# async asyncpg driver instead of the synchronous psycopg2 driver.
+db_url = settings.DATABASE_URL
+if db_url.startswith("postgresql://"):
+    db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    db_url,
     echo=settings.DEBUG,
     pool_size=10,
     max_overflow=20,
