@@ -70,7 +70,7 @@ app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=settings.CORS_ORIGINS.split(","),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
@@ -92,12 +92,12 @@ async def _add_security_headers(request: Request, call_next):
 
 @app.middleware("http")
 async def _log_requests(request: Request, call_next):
-    try:
-        response = await call_next(request)
-    except Exception as exc:
-        log.error('"method":"%s","path":"%s","error":"%s"',
-                  request.method, request.url.path, str(exc))
-        return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+    # Do NOT catch exceptions here — this middleware is outermost (last decorator =
+    # outermost in Starlette's LIFO stack). Catching and re-raising a JSONResponse
+    # here would bypass CORSMiddleware (which is inner), stripping CORS headers from
+    # error responses and causing browser CORS errors. Let exceptions propagate so
+    # @app.exception_handler(Exception) fires inside ExceptionMiddleware (inside CORS).
+    response = await call_next(request)
     log.info(
         '"method":"%s","path":"%s","status":%d',
         request.method, request.url.path, response.status_code,

@@ -22,8 +22,8 @@ function MarketingHeader() {
           Varuflow
         </Link>
         <nav className="flex items-center gap-3">
-          <Link href="/sv" className="text-xs text-muted-foreground hover:text-foreground px-1">SV</Link>
-          <Link href="/en" className="text-xs text-muted-foreground hover:text-foreground px-1">EN</Link>
+          <Link href="/" locale="sv" className="text-xs text-muted-foreground hover:text-foreground px-1">SV</Link>
+          <Link href="/" locale="en" className="text-xs text-muted-foreground hover:text-foreground px-1">EN</Link>
           <Link
             href="/auth/login"
             className="text-sm font-medium text-gray-700 hover:text-[#1a2332]"

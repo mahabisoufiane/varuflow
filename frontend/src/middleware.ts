@@ -6,7 +6,11 @@ import { routing } from "./i18n/routing";
 const handleI18nRouting = createIntlMiddleware(routing);
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || "";
+// Support both the standard key name and the legacy publishable-key name
+const supabaseKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
+  "";
 
 // Paths under (app) that require authentication
 const PROTECTED_SEGMENTS = [
