@@ -112,7 +112,7 @@ async def _log_requests(request: Request, call_next):
 async def _global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
-app.include_router(health.router)
+app.include_router(health.router, prefix="/api")
 app.include_router(auth.router)
 app.include_router(inventory.router)
 app.include_router(invoicing.router)
