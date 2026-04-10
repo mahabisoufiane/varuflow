@@ -12,6 +12,7 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.models.organization import Organization
 from app.models.inventory import (
     Product,
     PurchaseOrder,
@@ -716,6 +717,7 @@ async def download_po_pdf(
             "line_total": item.line_total,
         })
 
+    org = await db.get(Organization, _org(ctx))
     pdf_bytes = generate_purchase_order_pdf({
         "id": po.id,
         "created_at": po.created_at,
@@ -728,7 +730,7 @@ async def download_po_pdf(
         "items": items_data,
         "total": po.total,
         "notes": po.notes,
-        "org_name": "Varuflow",  # TODO: use real org name from member context
+        "org_name": org.name if org else "Varuflow",
     })
 
     return Response(

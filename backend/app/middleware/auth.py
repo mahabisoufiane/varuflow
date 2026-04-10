@@ -72,6 +72,13 @@ async def get_current_user(
             detail="Invalid or expired token",
         )
 
+    # Block portal tokens from accessing internal routes
+    if payload.get("type") == "portal":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Portal tokens cannot be used on internal routes",
+        )
+
     user_id: str | None = payload.get("sub")
     if not user_id:
         raise HTTPException(

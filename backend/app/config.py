@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     STRIPE_PRO_PRICE_ID: str = ""
     FORTNOX_CLIENT_ID: str = ""
     FORTNOX_CLIENT_SECRET: str = ""
-    FORTNOX_REDIRECT_URI: str = "https://api.varuflow.se/api/integrations/fortnox/callback"
+    FORTNOX_REDIRECT_URI: str = "https://varuflow-production.up.railway.app/api/integrations/fortnox/callback"
     OPENAI_API_KEY: str = ""
     PORTAL_JWT_SECRET: str = "portal-secret-change-in-production-32chars"
     PORTAL_BASE_URL: str = "https://varuflow.se"

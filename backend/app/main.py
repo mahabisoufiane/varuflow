@@ -72,8 +72,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
+    max_age=3600,
 )
 
 
@@ -81,8 +82,22 @@ log = logging.getLogger(__name__)
 
 
 @app.middleware("http")
-async def _log_requests(request: Request, call_next):
+async def _add_security_headers(request: Request, call_next):
     response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
+
+@app.middleware("http")
+async def _log_requests(request: Request, call_next):
+    try:
+        response = await call_next(request)
+    except Exception as exc:
+        log.error('"method":"%s","path":"%s","error":"%s"',
+                  request.method, request.url.path, str(exc))
+        return JSONResponse(status_code=500, content={"detail": "Internal server error"})
     log.info(
         '"method":"%s","path":"%s","status":%d',
         request.method, request.url.path, response.status_code,

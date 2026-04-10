@@ -84,7 +84,7 @@ async def create_portal_session(
 
     session = stripe.billing_portal.Session.create(
         customer=org.stripe_customer_id,
-        return_url="http://localhost:3000/settings",
+        return_url=f"{settings.PORTAL_BASE_URL}/settings",
     )
     return PortalResponse(url=session.url)
 
