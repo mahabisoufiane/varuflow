@@ -1,9 +1,10 @@
 "use client";
 
 import { api } from "@/lib/api-client";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import {
   AlertTriangle, ArrowRight, CheckCircle2, Clock,
   FileText, Plus, Send, TrendingUp,
@@ -29,32 +30,17 @@ function fmt(n: number) {
 
 function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { label: string; cls: string; dot: string }> = {
-    DRAFT:   { label: "Draft",   cls: "bg-gray-100 text-gray-500 border-gray-200",            dot: "bg-gray-400" },
-    SENT:    { label: "Sent",    cls: "bg-blue-50 text-blue-600 border-blue-200",              dot: "bg-blue-500" },
-    PAID:    { label: "Paid",    cls: "bg-emerald-50 text-emerald-700 border-emerald-200",     dot: "bg-emerald-500" },
-    OVERDUE: { label: "Overdue", cls: "bg-red-50 text-red-600 border-red-200",                 dot: "bg-red-500" },
+    DRAFT:   { label: "Draft",   cls: "bg-white/5 text-slate-400 border-white/10",             dot: "bg-slate-500"    },
+    SENT:    { label: "Sent",    cls: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20", dot: "bg-indigo-400"   },
+    PAID:    { label: "Paid",    cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", dot: "bg-emerald-400" },
+    OVERDUE: { label: "Overdue", cls: "bg-red-500/10 text-red-400 border-red-500/20",           dot: "bg-red-400"     },
   };
   const s = cfg[status] ?? cfg.DRAFT;
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${s.cls}`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
+    <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold", s.cls)}>
+      <span className={cn("h-1.5 w-1.5 rounded-full", s.dot)} />
       {s.label}
     </span>
-  );
-}
-
-function KpiTile({ label, value, sub, accent, icon }: {
-  label: string; value: string; sub?: string; accent?: string; icon: React.ReactNode;
-}) {
-  return (
-    <div className={`rounded-2xl border bg-white p-5 shadow-sm ${accent ?? "border-gray-200"}`}>
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">{label}</p>
-        <span className="text-gray-300">{icon}</span>
-      </div>
-      <p className="text-3xl font-bold tracking-tight text-gray-900 tabular-nums">{value}</p>
-      {sub && <p className="mt-1 text-xs text-gray-400">{sub}</p>}
-    </div>
   );
 }
 
@@ -95,12 +81,9 @@ export default function InvoicesPage() {
     finally { setMarkingOverdue(false); }
   }
 
-  // Derived
-  const outstanding = invoices.filter(i => i.status === "SENT" || i.status === "OVERDUE")
-    .reduce((s, i) => s + Number(i.total_sek), 0);
-  const overdueAmt  = invoices.filter(i => i.status === "OVERDUE")
-    .reduce((s, i) => s + Number(i.total_sek), 0);
-  const paidCount   = invoices.filter(i => i.status === "PAID").length;
+  const outstanding  = invoices.filter(i => i.status === "SENT" || i.status === "OVERDUE").reduce((s, i) => s + Number(i.total_sek), 0);
+  const overdueAmt   = invoices.filter(i => i.status === "OVERDUE").reduce((s, i) => s + Number(i.total_sek), 0);
+  const paidCount    = invoices.filter(i => i.status === "PAID").length;
   const overdueCount = invoices.filter(i => i.status === "OVERDUE").length;
 
   const FILTERS: { key: Filter; label: string; count: number }[] = [
@@ -119,136 +102,111 @@ export default function InvoicesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[22px] font-bold tracking-tight text-gray-900">Invoices</h1>
-          <p className="text-xs text-gray-400 mt-0.5">{invoices.length} total invoices</p>
+          <h1 className="text-[22px] font-bold tracking-tight text-slate-100">Invoices</h1>
+          <p className="text-xs text-slate-600 mt-0.5">{invoices.length} total invoices</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={handleMarkOverdue}
             disabled={markingOverdue}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="vf-btn-ghost text-xs px-3 py-1.5 h-auto disabled:opacity-50"
           >
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+            <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
             {markingOverdue ? "Checking…" : "Flag overdue"}
           </button>
-          <Link
-            href="/invoices/new"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#0d1117] px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-[#161b22] transition-colors"
-          >
+          <Link href="/invoices/new" className="vf-btn text-xs px-3 py-1.5 h-auto">
             <Plus className="h-3.5 w-3.5" />New invoice
           </Link>
         </div>
       </div>
 
-      {/* KPI tiles */}
+      {/* KPI strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiTile
-          label="Outstanding"
-          value={`${fmt(outstanding)} kr`}
-          sub={`${invoices.filter(i => i.status === "SENT" || i.status === "OVERDUE").length} invoices`}
-          icon={<TrendingUp className="h-5 w-5" />}
-          accent="border-gray-200"
-        />
-        <KpiTile
-          label="Overdue"
-          value={`${fmt(overdueAmt)} kr`}
-          sub={overdueCount > 0 ? `${overdueCount} need action` : "All current"}
-          icon={<AlertTriangle className="h-5 w-5" />}
-          accent={overdueAmt > 0 ? "border-red-200 bg-red-50/30" : "border-gray-200"}
-        />
-        <KpiTile
-          label="Paid this month"
-          value={String(paidCount)}
-          sub="invoices collected"
-          icon={<CheckCircle2 className="h-5 w-5" />}
-          accent="border-gray-200"
-        />
-        <KpiTile
-          label="Draft"
-          value={String(invoices.filter(i => i.status === "DRAFT").length)}
-          sub="not yet sent"
-          icon={<Clock className="h-5 w-5" />}
-          accent="border-gray-200"
-        />
+        {[
+          { label: "Outstanding",  value: `${fmt(outstanding)} kr`,  sub: `${invoices.filter(i => i.status === "SENT" || i.status === "OVERDUE").length} invoices`, icon: <TrendingUp className="h-4 w-4" />, col: "text-indigo-400 bg-indigo-500/10" },
+          { label: "Overdue",      value: `${fmt(overdueAmt)} kr`,   sub: overdueCount > 0 ? `${overdueCount} need action` : "All current", icon: <AlertTriangle className="h-4 w-4" />, col: overdueAmt > 0 ? "text-red-400 bg-red-500/10" : "text-slate-500 bg-white/5" },
+          { label: "Paid",         value: String(paidCount),          sub: "invoices collected",   icon: <CheckCircle2 className="h-4 w-4" />, col: "text-emerald-400 bg-emerald-500/10" },
+          { label: "Draft",        value: String(invoices.filter(i => i.status === "DRAFT").length), sub: "not yet sent", icon: <Clock className="h-4 w-4" />, col: "text-slate-400 bg-white/5" },
+        ].map(({ label, value, sub, icon, col }) => (
+          <div key={label} className="rounded-xl border border-white/[0.06] bg-vf-surface p-4">
+            <div className={cn("inline-flex h-8 w-8 items-center justify-center rounded-lg mb-3", col)}>{icon}</div>
+            <p className="text-2xl font-bold tabular-nums text-slate-100">{value}</p>
+            <p className="text-xs text-slate-600 mt-0.5">{label}</p>
+            {sub && <p className="text-[11px] text-slate-700 mt-0.5">{sub}</p>}
+          </div>
+        ))}
       </div>
 
       {/* Filter tabs */}
-      <div className="flex items-center gap-1 border-b border-gray-200">
+      <div className="flex items-center gap-1 border-b border-white/[0.06]">
         {FILTERS.map(({ key, label, count }) => (
           <button
             key={key}
             onClick={() => setFilter(key)}
-            className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium transition-colors border-b-2 -mb-px",
               filter === key
-                ? "border-gray-900 text-gray-900"
-                : "border-transparent text-gray-400 hover:text-gray-700"
-            }`}
+                ? "border-indigo-500 text-slate-100"
+                : "border-transparent text-slate-600 hover:text-slate-300"
+            )}
           >
             {label}
-            <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-              filter === key ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500"
-            }`}>{count}</span>
+            <span className={cn(
+              "rounded-full px-1.5 py-0.5 text-[10px] font-bold",
+              filter === key ? "bg-indigo-500/20 text-indigo-400" : "bg-white/5 text-slate-600"
+            )}>{count}</span>
           </button>
         ))}
       </div>
 
       {/* Invoice list */}
       {visible.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-20 text-center">
-          <FileText className="mx-auto h-10 w-10 text-gray-200" />
-          <p className="mt-3 text-sm font-semibold text-gray-500">No invoices</p>
-          <p className="text-xs text-gray-400 mt-1">
+        <div className="rounded-xl border border-dashed border-white/[0.08] bg-vf-surface px-6 py-20 text-center">
+          <FileText className="mx-auto h-10 w-10 text-slate-700 mb-3" />
+          <p className="text-sm font-semibold text-slate-500">No invoices</p>
+          <p className="text-xs text-slate-700 mt-1">
             {filter === "ALL" ? "Create your first invoice to get started." : `No ${filter.toLowerCase()} invoices.`}
           </p>
           {filter === "ALL" && (
-            <Link
-              href="/invoices/new"
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#0d1117] px-4 py-2 text-sm font-medium text-white hover:bg-[#161b22]"
-            >
+            <Link href="/invoices/new" className="mt-4 inline-flex vf-btn text-xs px-4 py-2">
               <Plus className="h-3.5 w-3.5" />New invoice
             </Link>
           )}
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-[3px]">
           {visible.map((inv) => {
             const isOverdue = inv.status === "OVERDUE";
             const isPaid    = inv.status === "PAID";
             const isDraft   = inv.status === "DRAFT";
             const nextStatus = NEXT_STATUS[inv.status];
-            const amount = Number(inv.total_sek);
 
             return (
               <div
                 key={inv.id}
-                className={`group flex items-center gap-4 rounded-xl border bg-white px-5 py-4 shadow-sm transition-all hover:shadow-md ${
-                  isOverdue ? "border-red-200 hover:border-red-300" :
-                  isPaid    ? "border-emerald-100 hover:border-emerald-200" :
-                              "border-gray-200 hover:border-gray-300"
-                }`}
+                className={cn(
+                  "group flex items-center gap-4 rounded-xl border px-5 py-4 transition-all hover:bg-vf-elevated",
+                  isOverdue ? "border-red-500/15 bg-red-500/5" :
+                  isPaid    ? "border-emerald-500/10 bg-vf-surface" :
+                              "border-white/[0.06] bg-vf-surface"
+                )}
               >
-                {/* Left accent bar */}
-                <div className={`h-10 w-1 shrink-0 rounded-full ${
-                  isOverdue ? "bg-red-400" :
-                  isPaid    ? "bg-emerald-400" :
-                  isDraft   ? "bg-gray-200" : "bg-blue-400"
-                }`} />
+                {/* Accent bar */}
+                <div className={cn("h-10 w-[3px] shrink-0 rounded-full", isOverdue ? "bg-red-500" : isPaid ? "bg-emerald-500" : isDraft ? "bg-slate-700" : "bg-indigo-500")} />
 
-                {/* Invoice number + customer */}
+                {/* Invoice # + date */}
                 <div className="w-28 shrink-0">
-                  <Link
-                    href={`/invoices/${inv.id}`}
-                    className="font-mono text-sm font-bold text-gray-900 hover:text-blue-600 transition-colors"
-                  >
+                  <Link href={`/invoices/${inv.id}`}
+                    className="font-mono text-[13px] font-bold text-slate-200 hover:text-indigo-400 transition-colors">
                     {inv.invoice_number}
                   </Link>
-                  <p className="text-[11px] text-gray-400 mt-0.5">{inv.issue_date}</p>
+                  <p className="text-[11px] text-slate-600 mt-0.5">{inv.issue_date}</p>
                 </div>
 
                 {/* Customer */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{inv.customer.company_name}</p>
-                  <p className="text-xs text-gray-400">Due {inv.due_date}</p>
+                  <p className="text-[13px] font-semibold text-slate-200 truncate">{inv.customer.company_name}</p>
+                  <p className="text-xs text-slate-600">Due {inv.due_date}</p>
                 </div>
 
                 {/* Status */}
@@ -258,17 +216,17 @@ export default function InvoicesPage() {
 
                 {/* Amount */}
                 <div className="w-32 shrink-0 text-right">
-                  <p className={`tabular-nums text-base font-bold ${isOverdue ? "text-red-600" : isPaid ? "text-emerald-600" : "text-gray-900"}`}>
-                    {fmt(amount)}
+                  <p className={cn("tabular-nums text-[15px] font-bold", isOverdue ? "text-red-400" : isPaid ? "text-emerald-400" : "text-slate-100")}>
+                    {fmt(Number(inv.total_sek))}
                   </p>
-                  <p className="text-[11px] text-gray-400">SEK</p>
+                  <p className="text-[11px] text-slate-600">SEK</p>
                 </div>
 
                 {/* Actions */}
                 <div className="flex shrink-0 items-center gap-1.5">
                   <button
                     onClick={() => window.open(api.downloadUrl(`/api/invoicing/invoices/${inv.id}/pdf`), "_blank")}
-                    className="rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                    className="rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-white/5 hover:text-slate-300 transition-colors"
                   >
                     PDF
                   </button>
@@ -276,13 +234,14 @@ export default function InvoicesPage() {
                     <button
                       onClick={() => advanceStatus(inv)}
                       disabled={updating === inv.id}
-                      className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-colors disabled:opacity-50 ${
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-colors disabled:opacity-50",
                         isOverdue
-                          ? "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+                          ? "bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20"
                           : isDraft
-                          ? "bg-gray-900 text-white hover:bg-gray-700"
-                          : "bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200"
-                      }`}
+                          ? "bg-indigo-600 text-white hover:bg-indigo-500"
+                          : "bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20"
+                      )}
                     >
                       {updating === inv.id ? "…" : (
                         <>
@@ -292,10 +251,8 @@ export default function InvoicesPage() {
                       )}
                     </button>
                   )}
-                  <Link
-                    href={`/invoices/${inv.id}`}
-                    className="rounded-lg p-1.5 text-gray-300 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                  >
+                  <Link href={`/invoices/${inv.id}`}
+                    className="rounded-lg p-1.5 text-slate-700 hover:bg-white/5 hover:text-slate-400 transition-colors">
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>

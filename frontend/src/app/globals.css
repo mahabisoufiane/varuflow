@@ -4,48 +4,27 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 222 47% 11%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 222 47% 11%;
+    /* Dark theme as default */
+    --background: 222 47% 5%;
+    --foreground: 210 40% 96%;
+    --card: 225 20% 9%;
+    --card-foreground: 210 40% 96%;
+    --popover: 225 20% 9%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 20% 13%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 220 20% 13%;
+    --muted-foreground: 215 20% 55%;
+    --accent: 220 20% 16%;
+    --accent-foreground: 210 40% 96%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 15% 14%;
+    --input: 220 15% 14%;
+    --ring: 239 84% 67%;
     --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 212 27% 84%;
   }
 }
 
@@ -53,7 +32,79 @@
   * {
     @apply border-border;
   }
+  html {
+    color-scheme: dark;
+  }
   body {
-    @apply bg-background text-foreground;
+    background-color: #0D0F14;
+    color: #F1F5F9;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.18);
+  }
+}
+
+/* Skeleton shimmer */
+@layer components {
+  .skeleton {
+    @apply relative overflow-hidden bg-white/5 rounded-lg;
+  }
+  .skeleton::after {
+    content: "";
+    @apply absolute inset-0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Glass card */
+  .glass {
+    background: rgba(99, 102, 241, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+  }
+
+  /* Status pills */
+  .pill-paid    { @apply inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 text-[11px] font-semibold; }
+  .pill-sent    { @apply inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-0.5 text-[11px] font-semibold; }
+  .pill-overdue { @apply inline-flex items-center gap-1.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-0.5 text-[11px] font-semibold; }
+  .pill-draft   { @apply inline-flex items-center gap-1.5 rounded-full bg-white/5 text-slate-400 border border-white/10 px-2.5 py-0.5 text-[11px] font-semibold; }
+
+  /* VF input */
+  .vf-input {
+    @apply w-full rounded-lg border border-white/10 bg-[#13161E] px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-600
+    focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition;
+  }
+
+  /* VF button primary */
+  .vf-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white
+    hover:bg-indigo-500 disabled:opacity-40 transition-colors;
+  }
+
+  /* VF button ghost */
+  .vf-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 px-4 py-2.5 text-sm font-medium text-slate-400
+    hover:bg-white/5 hover:text-slate-200 disabled:opacity-40 transition-colors;
+  }
+
+  /* Page fade-in */
+  .page-enter {
+    animation: fade-in 0.2s ease-out both;
   }
 }

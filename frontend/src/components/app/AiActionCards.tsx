@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { api } from "@/lib/api-client";
 import { AlertTriangle, Lightbulb, Zap, BarChart3, Check, X, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface ActionCard {
   id: string;
@@ -24,18 +25,20 @@ interface CardsResponse {
   generated_at: string;
 }
 
-const CARD_STYLES: Record<string, { border: string; bg: string; badge: string; icon: React.ElementType }> = {
-  ALERT:      { border: "border-red-200",    bg: "bg-red-50",    badge: "bg-red-100 text-red-700",    icon: AlertTriangle },
-  SUGGESTION: { border: "border-amber-200",  bg: "bg-amber-50",  badge: "bg-amber-100 text-amber-700", icon: Lightbulb },
-  WORKFLOW:   { border: "border-blue-200",   bg: "bg-blue-50",   badge: "bg-blue-100 text-blue-700",   icon: Zap },
-  REPORT:     { border: "border-gray-200",   bg: "bg-gray-50",   badge: "bg-gray-100 text-gray-700",   icon: BarChart3 },
+const CARD_STYLES: Record<string, {
+  border: string; glow: string; badge: string; icon: React.ElementType; iconColor: string;
+}> = {
+  ALERT:      { border: "border-red-500/20",    glow: "bg-red-500/5",    badge: "bg-red-500/15 text-red-400 border-red-500/20",    icon: AlertTriangle, iconColor: "text-red-400"    },
+  SUGGESTION: { border: "border-amber-500/20",  glow: "bg-amber-500/5",  badge: "bg-amber-500/15 text-amber-400 border-amber-500/20", icon: Lightbulb,     iconColor: "text-amber-400"  },
+  WORKFLOW:   { border: "border-indigo-500/20", glow: "bg-indigo-500/5", badge: "bg-indigo-500/15 text-indigo-400 border-indigo-500/20", icon: Zap,        iconColor: "text-indigo-400" },
+  REPORT:     { border: "border-white/10",      glow: "bg-white/[0.02]", badge: "bg-white/5 text-slate-400 border-white/10",        icon: BarChart3,     iconColor: "text-slate-400"  },
 };
 
 const PRIORITY_BADGE: Record<string, string> = {
-  CRITICAL: "bg-red-600 text-white",
-  HIGH:     "bg-orange-500 text-white",
-  MEDIUM:   "bg-yellow-500 text-white",
-  LOW:      "bg-gray-400 text-white",
+  CRITICAL: "bg-red-600/80 text-white border-red-500/30",
+  HIGH:     "bg-orange-600/70 text-white border-orange-500/30",
+  MEDIUM:   "bg-yellow-600/60 text-white border-yellow-500/30",
+  LOW:      "bg-white/10 text-slate-400 border-white/10",
 };
 
 const MODULE_LABELS: Record<number, string> = {
@@ -85,8 +88,8 @@ export default function AiActionCards() {
         toast.success(res.message);
       }
       setDismissed((s) => new Set(s).add(card.id));
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      toast.error((e as Error).message);
     } finally {
       setExecuting(null);
     }
@@ -99,7 +102,7 @@ export default function AiActionCards() {
     return (
       <div className="space-y-2">
         {[1, 2].map((i) => (
-          <div key={i} className="h-20 animate-pulse rounded-xl bg-gray-100" />
+          <div key={i} className="h-20 skeleton rounded-xl" />
         ))}
       </div>
     );
@@ -113,20 +116,22 @@ export default function AiActionCards() {
       <div className="flex items-center justify-between">
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="flex items-center gap-2 text-sm font-semibold text-gray-900"
+          className="flex items-center gap-2 text-[13px] font-semibold text-slate-300 hover:text-slate-100 transition-colors"
         >
-          <Zap className="h-4 w-4 text-blue-500" />
+          <Zap className="h-4 w-4 text-indigo-400" />
           AI Insights
           {criticalCount > 0 && (
             <span className="rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
               {criticalCount}
             </span>
           )}
-          {expanded ? <ChevronUp className="h-3.5 w-3.5 text-gray-400" /> : <ChevronDown className="h-3.5 w-3.5 text-gray-400" />}
+          {expanded
+            ? <ChevronUp className="h-3.5 w-3.5 text-slate-600" />
+            : <ChevronDown className="h-3.5 w-3.5 text-slate-600" />}
         </button>
         <button
           onClick={load}
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-gray-900"
+          className="flex items-center gap-1 text-xs text-slate-600 hover:text-slate-300 transition-colors"
         >
           <RefreshCw className="h-3 w-3" />Refresh
         </button>
@@ -135,52 +140,60 @@ export default function AiActionCards() {
       {expanded && (
         <div className="space-y-2">
           {visibleCards.map((card) => {
-            const style = CARD_STYLES[card.card_type] ?? CARD_STYLES.ALERT;
+            const style = CARD_STYLES[card.card_type] ?? CARD_STYLES.REPORT;
             const Icon = style.icon;
             const isExecuting = executing === card.id;
 
             return (
               <div
                 key={card.id}
-                className={`rounded-xl border ${style.border} ${style.bg} p-4`}
+                className={cn(
+                  "relative overflow-hidden rounded-xl border p-4 backdrop-blur-sm",
+                  style.border, style.glow
+                )}
               >
-                <div className="flex items-start justify-between gap-3">
+                {/* Subtle glow blob */}
+                <div className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-indigo-500/5 blur-2xl" />
+
+                <div className="relative flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <Icon className="h-4 w-4 mt-0.5 shrink-0 text-gray-600" />
-                    <div className="min-w-0 flex-1 space-y-1">
+                    <div className={cn("mt-0.5 shrink-0 h-7 w-7 flex items-center justify-center rounded-lg bg-white/[0.04]")}>
+                      <Icon className={cn("h-3.5 w-3.5", style.iconColor)} />
+                    </div>
+                    <div className="min-w-0 flex-1 space-y-1.5">
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${PRIORITY_BADGE[card.priority]}`}>
+                        <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-bold", PRIORITY_BADGE[card.priority])}>
                           {card.priority}
                         </span>
-                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${style.badge}`}>
+                        <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium", style.badge)}>
                           {MODULE_LABELS[card.module] ?? `Module ${card.module}`}
                         </span>
                       </div>
-                      <p className="text-sm font-semibold text-gray-900 leading-snug">{card.title}</p>
-                      <p className="text-xs text-gray-600 leading-relaxed">{card.insight}</p>
-                      <div className="rounded-lg border border-white/60 bg-white/50 px-3 py-2 mt-2">
-                        <p className="text-xs font-medium text-gray-700">
-                          <span className="text-gray-400 uppercase tracking-wide text-[10px] mr-1">Action</span>
+                      <p className="text-[13px] font-semibold text-slate-100 leading-snug">{card.title}</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">{card.insight}</p>
+                      <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-2 mt-1">
+                        <p className="text-xs font-medium text-slate-300">
+                          <span className="text-slate-600 uppercase tracking-wide text-[10px] mr-1.5">Action</span>
                           {card.action}
                         </p>
-                        <p className="text-[11px] text-gray-500 mt-0.5">{card.impact_estimate}</p>
+                        <p className="text-[11px] text-slate-600 mt-0.5">{card.impact_estimate}</p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Action buttons */}
+                  {/* Buttons */}
                   <div className="flex shrink-0 flex-col gap-1.5">
                     <button
                       onClick={() => handleApprove(card)}
                       disabled={isExecuting}
-                      className="inline-flex items-center gap-1 rounded-lg bg-[#1a2332] px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-[#2a3342] disabled:opacity-60 transition-colors"
+                      className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 transition-colors"
                     >
                       <Check className="h-3 w-3" />
                       {isExecuting ? "Running…" : card.requires_approval ? "Approve" : "Execute"}
                     </button>
                     <button
                       onClick={() => setDismissed((s) => new Set(s).add(card.id))}
-                      className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+                      className="inline-flex items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.04] px-2.5 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white/[0.08] hover:text-slate-300 transition-colors"
                     >
                       <X className="h-3 w-3" />Dismiss
                     </button>
