@@ -1,6 +1,6 @@
 "use client";
 
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -47,6 +47,8 @@ function AuthLeft() {
 export default function LoginPage() {
   const t = useTranslations("auth");
   const searchParams = useSearchParams();
+  // Supabase client — created inside the component, never at module level
+  const supabase = createClient();
   const next = searchParams.get("next") ?? "/dashboard";
 
   const [mode, setMode] = useState<Mode>("magic");

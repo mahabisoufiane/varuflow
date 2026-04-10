@@ -1,7 +1,7 @@
 "use client";
 
 import { api } from "@/lib/api-client";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "@/i18n/navigation";
 import {
@@ -67,6 +67,7 @@ export default function AnalyticsPage() {
     setExporting(true);
     try {
       const url = `${process.env.NEXT_PUBLIC_API_URL}/api/analytics/export/pdf?from_date=${fromDate}&to_date=${toDate}`;
+      const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(url, { headers: session ? { Authorization: `Bearer ${session.access_token}` } : {} });
       const blob = await res.blob();

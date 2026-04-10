@@ -1,6 +1,6 @@
 "use client";
 
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, ArrowRight, Loader2, ShieldCheck } from "lucide-react";
@@ -18,6 +18,8 @@ function strengthScore(p: string): number {
 const STRENGTH_COLORS = ["", "bg-red-400", "bg-orange-400", "bg-yellow-400", "bg-emerald-400", "bg-emerald-500"];
 
 export default function ResetPasswordPage() {
+  // Supabase client — created inside the component, never at module level
+  const supabase = createClient();
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");

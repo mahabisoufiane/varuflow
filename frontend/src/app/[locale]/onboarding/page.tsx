@@ -1,6 +1,6 @@
 "use client";
 
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -21,6 +21,8 @@ const ORG_NUMBER_RE = /^\d{6}-?\d{4}$/;
 export default function OnboardingPage() {
   const t = useTranslations("onboarding");
   const router = useRouter();
+  // Supabase client — created inside the component, never at module level
+  const supabase = createClient();
 
   const [step, setStep] = useState<Step>(1);
   const [form, setForm] = useState<CompanyForm>({

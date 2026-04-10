@@ -1,6 +1,6 @@
 "use client";
 
-import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { api } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import {
   BarChart3, Bot, FileText, LayoutDashboard, LogOut,
   Package, RefreshCw, Search, Settings, ShoppingCart, Users, Zap,
-  Menu, X, Home, MoreHorizontal,
+  Menu, X, Home,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -70,6 +70,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
   const locale   = useLocale();
   const t        = useTranslations("nav");
+  // Supabase client — created inside the component, never at module level
+  const supabase = createClient();
 
   const [isClient,        setIsClient]        = useState(false);
   const [email,           setEmail]           = useState<string | null>(null);
@@ -80,12 +82,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setIsClient(true);
     if (isSupabaseConfigured) {
-      supabase.auth.getUser().then((res) => {
-        const userEmail = res.data.user?.email ?? null;
+      supabase.auth.getUser().then(({ data }) => {
+        const userEmail = data.user?.email ?? null;
         setEmail(userEmail);
         if (userEmail && process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID && typeof window !== "undefined") {
           const w = window as unknown as Record<string, unknown>;
-          if (w.$crisp) (w.$crisp as string[][]).push(["set", "user:email", userEmail]);
+          if (w.$crisp) (w.$crisp as unknown[][]).push(["set", "user:email", userEmail]);
         }
       });
     }

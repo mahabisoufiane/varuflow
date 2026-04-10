@@ -1,6 +1,6 @@
 "use client";
 
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
@@ -56,6 +56,8 @@ function AuthLeft() {
 
 export default function SignupPage() {
   const t = useTranslations("auth");
+  // Supabase client — created inside the component, never at module level
+  const supabase = createClient();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
