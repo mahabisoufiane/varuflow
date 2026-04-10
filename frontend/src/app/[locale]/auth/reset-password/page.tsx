@@ -3,17 +3,31 @@
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Eye, EyeOff, ArrowRight, Loader2, ShieldCheck } from "lucide-react";
+
+function strengthScore(p: string): number {
+  let s = 0;
+  if (p.length >= 8) s++;
+  if (p.length >= 12) s++;
+  if (/[A-Z]/.test(p)) s++;
+  if (/[0-9]/.test(p)) s++;
+  if (/[^A-Za-z0-9]/.test(p)) s++;
+  return s;
+}
+
+const STRENGTH_COLORS = ["", "bg-red-400", "bg-orange-400", "bg-yellow-400", "bg-emerald-400", "bg-emerald-500"];
 
 export default function ResetPasswordPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const [done, setDone] = useState(false);
 
-  // Supabase redirects here with an access_token fragment — exchange it for a session
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") setReady(true);
@@ -31,69 +45,144 @@ export default function ResetPasswordPage() {
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) return setError(error.message);
-    router.push("/dashboard");
+    setDone(true);
+    setTimeout(() => router.push("/dashboard"), 2000);
   }
+
+  const score = strengthScore(password);
+  const mismatch = confirm.length > 0 && confirm !== password;
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-        <div className="w-full max-w-sm space-y-4 rounded-xl border bg-white p-8 shadow-sm text-center">
-          <p className="text-sm text-muted-foreground">Verifying reset link…</p>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-6">
+        <div className="flex items-center gap-3 text-sm text-gray-500">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Verifying reset link…
+        </div>
+      </div>
+    );
+  }
+
+  if (done) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-6">
+        <div className="w-full max-w-sm space-y-4 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+            <ShieldCheck className="h-7 w-7" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-xl font-bold text-[#1a2332]">Password updated</h2>
+            <p className="text-sm text-gray-500">Redirecting you to the dashboard…</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm space-y-6 rounded-xl border bg-white p-8 shadow-sm">
-        <div className="text-center">
-          <span className="text-2xl font-bold text-[#1a2332]">Varuflow</span>
-          <p className="mt-1 text-sm text-muted-foreground">Choose a new password</p>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-6">
+      <div className="w-full max-w-sm space-y-8">
+        {/* Header */}
+        <div className="space-y-1">
+          <span className="text-xl font-bold tracking-tight text-[#1a2332]">Varuflow</span>
+          <h2 className="text-2xl font-bold text-[#1a2332]">Choose a new password</h2>
+          <p className="text-sm text-gray-500">Make it strong — you only have to do this once.</p>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <label htmlFor="password" className="text-sm font-medium text-gray-700">
               New password
             </label>
-            <input
-              id="password"
-              type="password"
-              required
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                required
+                autoComplete="new-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Create a strong password"
+                className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3.5 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition focus:border-[#1a2332] focus:outline-none focus:ring-2 focus:ring-[#1a2332]/10"
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {password.length > 0 && (
+              <div className="flex gap-1 pt-0.5">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div
+                    key={i}
+                    className={`h-1 flex-1 rounded-full transition-all ${
+                      i <= score ? STRENGTH_COLORS[score] : "bg-gray-200"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <label htmlFor="confirm" className="text-sm font-medium text-gray-700">
               Confirm password
             </label>
-            <input
-              id="confirm"
-              type="password"
-              required
-              minLength={8}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
-            />
+            <div className="relative">
+              <input
+                id="confirm"
+                type={showConfirm ? "text" : "password"}
+                required
+                autoComplete="new-password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                placeholder="Repeat your password"
+                className={`h-11 w-full rounded-lg border bg-white px-3.5 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition focus:outline-none focus:ring-2 ${
+                  mismatch
+                    ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+                    : "border-gray-200 focus:border-[#1a2332] focus:ring-[#1a2332]/10"
+                }`}
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowConfirm(!showConfirm)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+              >
+                {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {mismatch && (
+              <p className="text-xs text-red-500">Passwords do not match</p>
+            )}
           </div>
 
           {error && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+            <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-100 px-3.5 py-2.5 text-sm text-red-600">
+              <span className="mt-0.5 shrink-0">⚠</span>
+              {error}
+            </div>
           )}
 
-          <Button
+          <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-[#1a2332] hover:bg-[#2a3342] text-white"
+            disabled={loading || mismatch}
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#1a2332] text-sm font-semibold text-white transition hover:bg-[#263347] disabled:opacity-50"
           >
-            {loading ? "Saving..." : "Set new password"}
-          </Button>
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                Set new password
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
+          </button>
         </form>
       </div>
     </div>

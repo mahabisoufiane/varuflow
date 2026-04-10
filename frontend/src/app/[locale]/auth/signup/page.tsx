@@ -4,31 +4,72 @@ import { supabase } from "@/lib/supabase/client";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Check, X } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Loader2, Mail } from "lucide-react";
 
-const RULES = [
-  { label: "At least 8 characters", test: (p: string) => p.length >= 8 },
-  { label: "Uppercase letter (A–Z)", test: (p: string) => /[A-Z]/.test(p) },
-  { label: "Lowercase letter (a–z)", test: (p: string) => /[a-z]/.test(p) },
-  { label: "Number (0–9)", test: (p: string) => /[0-9]/.test(p) },
-  { label: "Special character (!@#$…)", test: (p: string) => /[^A-Za-z0-9]/.test(p) },
-];
+function strengthScore(p: string): number {
+  let s = 0;
+  if (p.length >= 8) s++;
+  if (p.length >= 12) s++;
+  if (/[A-Z]/.test(p)) s++;
+  if (/[0-9]/.test(p)) s++;
+  if (/[^A-Za-z0-9]/.test(p)) s++;
+  return s;
+}
+
+const STRENGTH_LABELS = ["", "Weak", "Fair", "Good", "Strong", "Very strong"];
+const STRENGTH_COLORS = ["", "bg-red-400", "bg-orange-400", "bg-yellow-400", "bg-emerald-400", "bg-emerald-500"];
+
+function AuthLeft() {
+  return (
+    <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-[#1a2332] p-12 text-white">
+      <div>
+        <span className="text-2xl font-bold tracking-tight">Varuflow</span>
+      </div>
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-4xl font-bold leading-tight">
+            Start managing your wholesale business smarter.
+          </h1>
+          <p className="mt-4 text-base text-white/60">
+            Join Nordic wholesalers who replaced spreadsheets with Varuflow.
+          </p>
+        </div>
+        <ul className="space-y-3">
+          {[
+            "Free to get started — no credit card required",
+            "Inventory, invoicing & POS in one place",
+            "Set up in under 10 minutes",
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-3 text-sm text-white/80">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs">
+                ✓
+              </span>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <p className="text-xs text-white/30">© {new Date().getFullYear()} Varuflow</p>
+    </div>
+  );
+}
 
 export default function SignupPage() {
   const t = useTranslations("auth");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
 
-  const allRulesMet = RULES.every((r) => r.test(password));
+  const score = strengthScore(password);
+  const canSubmit = score >= 3 && email.length > 0;
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
-    if (!allRulesMet) return;
+    if (!canSubmit) return;
     setLoading(true);
     setError(null);
 
@@ -47,95 +88,141 @@ export default function SignupPage() {
 
   if (sent) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-        <div className="w-full max-w-sm space-y-4 rounded-xl border bg-white p-8 shadow-sm text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-2xl">
-            ✉️
+      <div className="flex min-h-screen">
+        <AuthLeft />
+        <div className="flex w-full lg:w-1/2 items-center justify-center px-6 py-16">
+          <div className="w-full max-w-sm text-center space-y-6">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1a2332]/8 text-[#1a2332]">
+              <Mail className="h-7 w-7" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold text-[#1a2332]">Verify your email</h2>
+              <p className="text-sm text-gray-500">
+                We sent a confirmation link to{" "}
+                <span className="font-medium text-gray-800">{email}</span>.<br />
+                Click it to activate your account.
+              </p>
+            </div>
+            <Link href="/auth/login" className="text-sm text-[#1a2332] hover:underline underline-offset-4">
+              Back to sign in
+            </Link>
           </div>
-          <h2 className="text-lg font-semibold text-[#1a2332]">Verify your email</h2>
-          <p className="text-sm text-muted-foreground">
-            {t("magicLinkSent", { email })}
-          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm space-y-6 rounded-xl border bg-white p-8 shadow-sm">
-        {/* Logo */}
-        <div className="text-center">
-          <span className="text-2xl font-bold text-[#1a2332]">Varuflow</span>
-          <p className="mt-1 text-sm text-muted-foreground">{t("signUpDescription")}</p>
-        </div>
+    <div className="flex min-h-screen">
+      <AuthLeft />
 
-        <form onSubmit={handleSignup} className="space-y-4">
+      <div className="flex w-full lg:w-1/2 items-center justify-center px-6 py-16">
+        <div className="w-full max-w-sm space-y-8">
+          {/* Header */}
           <div className="space-y-1">
-            <label htmlFor="email" className="text-sm font-medium text-gray-700">
-              {t("email")}
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@company.se"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
-            />
+            <h2 className="text-2xl font-bold text-[#1a2332]">Create your account</h2>
+            <p className="text-sm text-gray-500">{t("signUpDescription")}</p>
           </div>
 
-          <div className="space-y-1">
-            <label htmlFor="password" className="text-sm font-medium text-gray-700">
-              {t("password")}
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Min. 8 characters"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
-            />
-            {password.length > 0 && (
-              <ul className="mt-2 space-y-1">
-                {RULES.map((rule) => {
-                  const ok = rule.test(password);
-                  return (
-                    <li key={rule.label} className={`flex items-center gap-2 text-xs ${ok ? "text-green-600" : "text-red-500"}`}>
-                      {ok ? <Check className="h-3 w-3 shrink-0" /> : <X className="h-3 w-3 shrink-0" />}
-                      {rule.label}
-                    </li>
-                  );
-                })}
-              </ul>
+          {/* Form */}
+          <form onSubmit={handleSignup} className="space-y-4">
+            <div className="space-y-1.5">
+              <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                Work email
+              </label>
+              <input
+                id="email"
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@company.se"
+                className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3.5 text-sm text-gray-900 placeholder:text-gray-400 transition focus:border-[#1a2332] focus:outline-none focus:ring-2 focus:ring-[#1a2332]/10"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Create a strong password"
+                  className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3.5 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition focus:border-[#1a2332] focus:outline-none focus:ring-2 focus:ring-[#1a2332]/10"
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+
+              {/* Strength bar */}
+              {password.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div
+                        key={i}
+                        className={`h-1 flex-1 rounded-full transition-all ${
+                          i <= score ? STRENGTH_COLORS[score] : "bg-gray-200"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className={`text-xs font-medium ${
+                    score <= 1 ? "text-red-500" :
+                    score === 2 ? "text-orange-500" :
+                    score === 3 ? "text-yellow-600" :
+                    "text-emerald-600"
+                  }`}>
+                    {STRENGTH_LABELS[score]}
+                    {score < 3 && " — add uppercase, numbers, or symbols"}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-100 px-3.5 py-2.5 text-sm text-red-600">
+                <span className="mt-0.5 shrink-0">⚠</span>
+                {error}
+              </div>
             )}
-          </div>
 
-          {error && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
-              {error}
-            </p>
-          )}
+            <button
+              type="submit"
+              disabled={loading || !canSubmit}
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#1a2332] text-sm font-semibold text-white transition hover:bg-[#263347] disabled:opacity-40"
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  Create account
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          </form>
 
-          <Button
-            type="submit"
-            disabled={loading || !allRulesMet}
-            className="w-full bg-[#1a2332] hover:bg-[#2a3342] text-white disabled:opacity-50"
-          >
-            {loading ? "..." : t("createAccount")}
-          </Button>
-        </form>
-
-        <p className="text-center text-sm text-muted-foreground">
-          {t("hasAccount")}{" "}
-          <Link href="/auth/login" className="font-medium text-[#1a2332] hover:underline">
-            {t("login")}
-          </Link>
-        </p>
+          <p className="text-center text-sm text-gray-500">
+            Already have an account?{" "}
+            <Link href="/auth/login" className="font-medium text-[#1a2332] hover:underline underline-offset-4">
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

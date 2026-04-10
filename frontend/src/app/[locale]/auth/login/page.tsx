@@ -5,9 +5,44 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Eye, EyeOff, ArrowRight, Loader2, Mail } from "lucide-react";
 
 type Mode = "magic" | "password";
+
+function AuthLeft() {
+  return (
+    <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-[#1a2332] p-12 text-white">
+      <div>
+        <span className="text-2xl font-bold tracking-tight">Varuflow</span>
+      </div>
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-4xl font-bold leading-tight">
+            The smart backoffice for Nordic wholesalers.
+          </h1>
+          <p className="mt-4 text-base text-white/60">
+            Inventory, invoicing, POS, and AI-driven insights — all in one platform.
+          </p>
+        </div>
+        <ul className="space-y-3">
+          {[
+            "Real-time inventory across all warehouses",
+            "Invoicing with Stripe & Fortnox integration",
+            "AI advisor that flags risks before they cost you",
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-3 text-sm text-white/80">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs">
+                ✓
+              </span>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <p className="text-xs text-white/30">© {new Date().getFullYear()} Varuflow</p>
+    </div>
+  );
+}
 
 export default function LoginPage() {
   const t = useTranslations("auth");
@@ -17,6 +52,7 @@ export default function LoginPage() {
   const [mode, setMode] = useState<Mode>("magic");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [magicSent, setMagicSent] = useState(false);
@@ -25,12 +61,10 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: `${location.origin}/auth/callback?next=${next}` },
     });
-
     setLoading(false);
     if (error) return setError(error.message);
     setMagicSent(true);
@@ -40,9 +74,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-
     setLoading(false);
     if (error) return setError(error.message);
     window.location.href = next;
@@ -50,118 +82,157 @@ export default function LoginPage() {
 
   if (magicSent) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-        <div className="w-full max-w-sm space-y-4 rounded-xl border bg-white p-8 shadow-sm text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-2xl">
-            ✉️
+      <div className="flex min-h-screen">
+        <AuthLeft />
+        <div className="flex w-full lg:w-1/2 items-center justify-center px-6 py-16">
+          <div className="w-full max-w-sm text-center space-y-6">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1a2332]/8 text-[#1a2332]">
+              <Mail className="h-7 w-7" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold text-[#1a2332]">Check your inbox</h2>
+              <p className="text-sm text-gray-500">
+                We sent a magic link to <span className="font-medium text-gray-800">{email}</span>.<br />
+                Click it to sign in — no password needed.
+              </p>
+            </div>
+            <button
+              onClick={() => { setMagicSent(false); setEmail(""); }}
+              className="text-sm text-[#1a2332] hover:underline underline-offset-4"
+            >
+              Use a different email
+            </button>
           </div>
-          <h2 className="text-lg font-semibold text-[#1a2332]">Check your inbox</h2>
-          <p className="text-sm text-muted-foreground">
-            {t("magicLinkSent", { email })}
-          </p>
-          <Button
-            variant="ghost"
-            className="text-sm"
-            onClick={() => setMagicSent(false)}
-          >
-            Use a different email
-          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm space-y-6 rounded-xl border bg-white p-8 shadow-sm">
-        {/* Logo */}
-        <div className="text-center">
-          <span className="text-2xl font-bold text-[#1a2332]">Varuflow</span>
-          <p className="mt-1 text-sm text-muted-foreground">{t("loginDescription")}</p>
-        </div>
+    <div className="flex min-h-screen">
+      <AuthLeft />
 
-        <form
-          onSubmit={mode === "magic" ? handleMagicLink : handlePassword}
-          className="space-y-4"
-        >
-          {/* Email */}
+      <div className="flex w-full lg:w-1/2 items-center justify-center px-6 py-16">
+        <div className="w-full max-w-sm space-y-8">
+          {/* Header */}
           <div className="space-y-1">
-            <label htmlFor="email" className="text-sm font-medium text-gray-700">
-              {t("email")}
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@company.se"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
-            />
+            <h2 className="text-2xl font-bold text-[#1a2332]">Welcome back</h2>
+            <p className="text-sm text-gray-500">{t("loginDescription")}</p>
           </div>
 
-          {/* Password (only in password mode) */}
-          {mode === "password" && (
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-sm font-medium text-gray-700">
-                  {t("password")}
-                </label>
-                <Link href="/auth/forgot-password" className="text-xs text-[#1a2332] hover:underline">
-                  Forgot password?
-                </Link>
-              </div>
+          {/* Mode tabs */}
+          <div className="flex rounded-lg bg-gray-100 p-1 text-sm font-medium">
+            <button
+              type="button"
+              onClick={() => { setMode("magic"); setError(null); }}
+              className={`flex-1 rounded-md py-1.5 transition-all ${
+                mode === "magic"
+                  ? "bg-white text-[#1a2332] shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Magic link
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMode("password"); setError(null); }}
+              className={`flex-1 rounded-md py-1.5 transition-all ${
+                mode === "password"
+                  ? "bg-white text-[#1a2332] shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Password
+            </button>
+          </div>
+
+          {/* Form */}
+          <form
+            onSubmit={mode === "magic" ? handleMagicLink : handlePassword}
+            className="space-y-4"
+          >
+            <div className="space-y-1.5">
+              <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                Work email
+              </label>
               <input
-                id="password"
-                type="password"
+                id="email"
+                type="email"
                 required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@company.se"
+                className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3.5 text-sm text-gray-900 placeholder:text-gray-400 transition focus:border-[#1a2332] focus:outline-none focus:ring-2 focus:ring-[#1a2332]/10"
               />
             </div>
-          )}
 
-          {error && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
-              {error}
-            </p>
-          )}
+            {mode === "password" && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <Link
+                    href="/auth/forgot-password"
+                    className="text-xs text-gray-500 hover:text-[#1a2332] transition"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3.5 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition focus:border-[#1a2332] focus:outline-none focus:ring-2 focus:ring-[#1a2332]/10"
+                  />
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+            )}
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[#1a2332] hover:bg-[#2a3342] text-white"
-          >
-            {loading
-              ? "..."
-              : mode === "magic"
-              ? t("magicLink")
-              : t("signInWithPassword")}
-          </Button>
-        </form>
+            {error && (
+              <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-100 px-3.5 py-2.5 text-sm text-red-600">
+                <span className="mt-0.5 shrink-0">⚠</span>
+                {error}
+              </div>
+            )}
 
-        {/* Toggle mode */}
-        <div className="text-center">
-          <button
-            type="button"
-            className="text-sm text-[#1a2332] underline-offset-4 hover:underline"
-            onClick={() => {
-              setMode(mode === "magic" ? "password" : "magic");
-              setError(null);
-            }}
-          >
-            {t("orContinueWith")}
-          </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#1a2332] text-sm font-semibold text-white transition hover:bg-[#263347] disabled:opacity-50"
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  {mode === "magic" ? "Send magic link" : "Sign in"}
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          </form>
+
+          <p className="text-center text-sm text-gray-500">
+            Don&apos;t have an account?{" "}
+            <Link href="/auth/signup" className="font-medium text-[#1a2332] hover:underline underline-offset-4">
+              Create one free
+            </Link>
+          </p>
         </div>
-
-        {/* Sign up link */}
-        <p className="text-center text-sm text-muted-foreground">
-          {t("noAccount")}{" "}
-          <Link href="/auth/signup" className="font-medium text-[#1a2332] hover:underline">
-            {t("createAccount")}
-          </Link>
-        </p>
       </div>
     </div>
   );
