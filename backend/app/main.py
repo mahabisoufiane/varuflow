@@ -1,7 +1,11 @@
+import asyncio
 import logging
 import logging.config
+import os
 from contextlib import asynccontextmanager
 
+import alembic.command
+import alembic.config
 import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -47,9 +51,30 @@ if settings.SENTRY_DSN:
         send_default_pii=False,
     )
 
+log = logging.getLogger(__name__)
+
+
+def _run_migrations() -> None:
+    """Run Alembic migrations synchronously (called from a thread executor)."""
+    ini_path = os.path.join(os.path.dirname(__file__), "..", "alembic.ini")
+    cfg = alembic.config.Config(os.path.abspath(ini_path))
+    alembic.command.upgrade(cfg, "head")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Run database migrations before the app starts serving requests.
+    # Executed in a thread executor because Alembic's online migration path
+    # calls asyncio.run() internally, which cannot be nested inside the
+    # already-running event loop.
+    loop = asyncio.get_running_loop()
+    try:
+        log.info("Running Alembic migrations…")
+        await loop.run_in_executor(None, _run_migrations)
+        log.info("Alembic migrations complete.")
+    except Exception:
+        log.exception("Alembic migration failed — continuing startup anyway.")
+
     scheduler = create_scheduler()
     scheduler.start()
     yield
@@ -76,9 +101,6 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
     max_age=3600,
 )
-
-
-log = logging.getLogger(__name__)
 
 
 @app.middleware("http")
