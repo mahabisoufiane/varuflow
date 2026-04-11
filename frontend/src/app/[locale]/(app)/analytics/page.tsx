@@ -115,7 +115,7 @@ export default function AnalyticsPage() {
       {/* Header + date range */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">Analytics</h1>
+          <h1 className="text-2xl font-bold vf-text-1">Analytics</h1>
           <p className="text-sm text-slate-600">{data.from_date} – {data.to_date}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -153,7 +153,7 @@ export default function AnalyticsPage() {
 
       {/* Revenue area chart */}
       <div className="rounded-xl border border-white/[0.06] bg-vf-surface p-6">
-        <h2 className="font-semibold text-slate-100 mb-6">Revenue — Invoiced vs Collected (SEK)</h2>
+        <h2 className="font-semibold vf-text-1 mb-6">Revenue — Invoiced vs Collected (SEK)</h2>
         <ResponsiveContainer width="100%" height={240}>
           <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
             <defs>
@@ -183,7 +183,7 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Invoice status pie */}
         <div className="rounded-xl border border-white/[0.06] bg-vf-surface p-6">
-          <h2 className="font-semibold text-slate-100 mb-4 flex items-center gap-2">
+          <h2 className="font-semibold vf-text-1 mb-4 flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-indigo-400" />Invoice status
           </h2>
           {pieData.length === 0 ? (
@@ -210,7 +210,7 @@ export default function AnalyticsPage() {
                       <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: STATUS_COLORS[b.name] ?? "#475569" }} />
                       <span className="text-slate-500">{b.name}</span>
                     </div>
-                    <span className="font-semibold text-slate-200">{b.value}</span>
+                    <span className="font-semibold vf-text-1">{b.value}</span>
                   </div>
                 ))}
               </div>
@@ -221,7 +221,7 @@ export default function AnalyticsPage() {
         {/* Top customers */}
         <div className="rounded-xl border border-white/[0.06] bg-vf-surface p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-slate-100 flex items-center gap-2">
+            <h2 className="font-semibold vf-text-1 flex items-center gap-2">
               <Users className="h-4 w-4 text-indigo-400" />Top customers
             </h2>
             <Link href="/customers" className="text-xs text-slate-600 hover:text-slate-300 transition-colors">
@@ -254,7 +254,7 @@ export default function AnalyticsPage() {
       {/* Top products bar */}
       {data.top_products.length > 0 && (
         <div className="rounded-xl border border-white/[0.06] bg-vf-surface p-6">
-          <h2 className="font-semibold text-slate-100 mb-6 flex items-center gap-2">
+          <h2 className="font-semibold vf-text-1 mb-6 flex items-center gap-2">
             <ShoppingBag className="h-4 w-4 text-emerald-400" />Top products by revenue (SEK)
           </h2>
           <ResponsiveContainer width="100%" height={Math.max(200, barData.length * 36)}>
@@ -275,7 +275,7 @@ export default function AnalyticsPage() {
       {/* Inventory + overdue */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-xl border border-white/[0.06] bg-vf-surface p-6 space-y-3">
-          <h2 className="font-semibold text-slate-100 flex items-center gap-2">
+          <h2 className="font-semibold vf-text-1 flex items-center gap-2">
             <Package className="h-4 w-4 text-indigo-400" />Inventory
           </h2>
           <div className="grid grid-cols-2 gap-3">
@@ -287,14 +287,14 @@ export default function AnalyticsPage() {
             ].map(({ label, value }) => (
               <div key={label} className="rounded-lg bg-white/[0.03] border border-white/[0.04] px-3 py-2">
                 <p className="text-xs text-slate-600">{label}</p>
-                <p className="font-semibold text-slate-200 mt-0.5">{value}</p>
+                <p className="font-semibold vf-text-1 mt-0.5">{value}</p>
               </div>
             ))}
           </div>
         </div>
 
         <div className="rounded-xl border border-white/[0.06] bg-vf-surface p-6 space-y-3">
-          <h2 className="font-semibold text-slate-100 flex items-center gap-2">
+          <h2 className="font-semibold vf-text-1 flex items-center gap-2">
             <AlertTriangle className={cn("h-4 w-4", data.overdue.overdue_count > 0 ? "text-red-400" : "text-slate-600")} />
             Overdue receivables
           </h2>
@@ -303,9 +303,9 @@ export default function AnalyticsPage() {
           ) : (
             <div className="space-y-2">
               {[
-                { label: "Overdue invoices", value: String(data.overdue.overdue_count),              cls: "text-slate-200" },
+                { label: "Overdue invoices", value: String(data.overdue.overdue_count),              cls: "vf-text-1" },
                 { label: "Total overdue",    value: `${fmt(Number(data.overdue.overdue_total))} SEK`, cls: "text-red-400" },
-                { label: "Oldest",           value: `${data.overdue.oldest_days} days`,               cls: "text-slate-200" },
+                { label: "Oldest",           value: `${data.overdue.oldest_days} days`,               cls: "vf-text-1" },
               ].map(({ label, value, cls }) => (
                 <div key={label} className="flex justify-between text-sm">
                   <span className="text-slate-500">{label}</span>

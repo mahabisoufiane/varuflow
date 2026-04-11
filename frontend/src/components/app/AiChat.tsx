@@ -85,7 +85,7 @@ export default function AiChat() {
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600">
                 <Bot className="h-3.5 w-3.5 text-white" />
               </div>
-              <span className="text-[13px] font-semibold text-slate-100">Ask Varuflow</span>
+              <span className="text-[13px] font-semibold vf-text-1">Ask Varuflow</span>
               <span className="rounded-full bg-indigo-500/20 border border-indigo-500/20 px-1.5 py-0.5 text-[10px] text-indigo-400">AI</span>
             </div>
             <div className="flex items-center gap-1">

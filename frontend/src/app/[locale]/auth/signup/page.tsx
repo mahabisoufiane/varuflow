@@ -5,7 +5,8 @@
 "use client";
 
 import { createClient, signInWithGoogle, signInWithMicrosoft } from "@/lib/supabase/client";
-import Link from "next/link";
+// Use next-intl Link so locale is injected automatically — never bare next/link
+import { Link } from "@/i18n/navigation";
 import { useState } from "react";
 import { Eye, EyeOff, Loader2, Mail, Zap, Check, X } from "lucide-react";
 import ThemeToggle from "@/components/ui/ThemeToggle";
@@ -187,7 +188,6 @@ export default function SignupPage() {
   const [oauthLoading, setOauthLoading]   = useState<"google" | "microsoft" | null>(null);
   const [error, setError]                 = useState<string | null>(null);
   const [sent, setSent]                   = useState(false);
-  const [resending, setResending]         = useState(false);
 
   const score        = strengthScore(password);
   const confirmMatch = confirm.length > 0 && confirm === password;
@@ -200,7 +200,7 @@ export default function SignupPage() {
     { label: "One number",            met: /[0-9]/.test(password) },
   ];
 
-  async function handleSignup(e: React.FormEvent) {
+  async function handleSignup(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!canSubmit) return;
     setLoading(true);
@@ -219,9 +219,7 @@ export default function SignupPage() {
   }
 
   async function handleResend() {
-    setResending(true);
     await supabase.auth.resend({ type: "signup", email });
-    setResending(false);
   }
 
   async function handleGoogle() {

@@ -109,7 +109,7 @@ export default function CustomersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-100">Customers</h1>
+          <h1 className="text-xl font-bold tracking-tight vf-text-1">Customers</h1>
           <p className="text-xs text-slate-600 mt-0.5">{customers.length} active customers</p>
         </div>
         <button onClick={openCreate} className="vf-btn text-xs px-3 py-1.5 h-auto">
@@ -161,7 +161,7 @@ export default function CustomersPage() {
               <Avatar name={c.company_name} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="font-semibold text-slate-100 leading-tight">{c.company_name}</p>
+                  <p className="font-semibold vf-text-1 leading-tight">{c.company_name}</p>
                   <span className="shrink-0 rounded-full bg-white/5 border border-white/[0.08] px-2 py-0.5 text-[10px] font-semibold text-slate-500">
                     Net {c.payment_terms_days}d
                   </span>
@@ -207,9 +207,9 @@ export default function CustomersPage() {
 
       {/* Modal */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md bg-vf-surface border-white/[0.08] text-slate-100">
+        <DialogContent className="sm:max-w-md bg-vf-surface vf-text-1" style={{ borderColor: "var(--vf-border)" }}>
           <DialogHeader>
-            <DialogTitle className="text-slate-100">
+            <DialogTitle className="vf-text-1">
               {editing ? `Edit ${editing.company_name}` : "New customer"}
             </DialogTitle>
           </DialogHeader>

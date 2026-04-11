@@ -82,5 +82,29 @@
   },
   "settings": {
     "title": "Settings"
+  },
+  "errors": {
+    "invalidCredentials": "Incorrect email or password. Please try again.",
+    "emailNotConfirmed": "Please confirm your email before signing in.",
+    "accountLocked": "Too many attempts. Please wait 15 minutes.",
+    "networkError": "Connection failed. Please check your internet.",
+    "sessionExpired": "Your session expired. Please sign in again.",
+    "unauthorized": "You don't have permission to do this.",
+    "serverError": "Something went wrong on our end. We're looking into it.",
+    "notFound": "This page doesn't exist.",
+    "validationError": "Please check the form for errors.",
+    "emailTaken": "This email is already registered.",
+    "passwordMismatch": "Passwords don't match.",
+    "weakPassword": "Password must be at least 8 characters.",
+    "planRequired": "This feature requires a higher plan.",
+    "upgradePlan": "Upgrade your plan to access this feature."
+  },
+  "success": {
+    "loggedIn": "Welcome back!",
+    "loggedOut": "You've been signed out.",
+    "signupComplete": "Account created! Check your email to confirm.",
+    "emailResent": "Confirmation email resent.",
+    "profileUpdated": "Profile saved.",
+    "passwordChanged": "Password updated successfully."
   }
 }

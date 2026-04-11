@@ -6,10 +6,12 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig = {
   output: "standalone",
   reactStrictMode: false,
-  // Explicitly bake NEXT_PUBLIC vars into the Turbopack client bundle at server
-  // startup time — prevents edge cases where Turbopack doesn't inline them.
+  // Bake NEXT_PUBLIC vars into the Turbopack client bundle at build time.
+  // NEXT_PUBLIC_SUPABASE_ANON_KEY is the canonical name — also keep the legacy
+  // PUBLISHABLE_DEFAULT_KEY for any remaining references.
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY:
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ?? "",
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? "",
@@ -21,6 +23,20 @@ const nextConfig = {
     resolveAlias: {
       "next-intl/config": "./src/i18n/request.ts",
     },
+  },
+  // Security headers applied to every response
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Frame-Options",          value: "DENY" },
+          { key: "X-Content-Type-Options",    value: "nosniff" },
+          { key: "Referrer-Policy",           value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy",        value: "camera=(), microphone=(), geolocation=()" },
+        ],
+      },
+    ];
   },
 };
 

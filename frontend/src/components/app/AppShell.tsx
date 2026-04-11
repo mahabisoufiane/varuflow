@@ -144,7 +144,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const SidebarContent = () => (
     <>
       {/* Logo */}
-      <div className="flex h-[57px] shrink-0 items-center gap-3 border-b border-white/[0.07] px-5">
+      <div className="flex h-[57px] shrink-0 items-center gap-3 border-b px-5" style={{ borderColor: "var(--vf-border)" }}>
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 shadow-glow shrink-0">
           <Zap className="h-3.5 w-3.5 text-white" />
         </div>
@@ -168,7 +168,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-2 py-3">
         {NAV_GROUPS.map((group, gi) => (
           <div key={group.label} className={cn(gi > 0 && "mt-3")}>
-            <p className="mb-0.5 px-3 text-[10px] font-medium text-slate-700 select-none">
+            <p className="mb-0.5 px-3 text-[10px] font-semibold text-slate-600 uppercase tracking-[0.08em] select-none">
               {group.label}
             </p>
             <div className="flex flex-col gap-[1px]">
@@ -180,17 +180,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     href={href}
                     onClick={() => setSidebarOpen(false)}
                     className={cn(
-                      "group relative flex items-center gap-2.5 rounded-lg px-3 py-[7px] text-[13px] font-medium transition-all duration-100",
+                      "group relative flex items-center gap-2.5 rounded-xl px-3 py-[7px] text-[13px] font-medium transition-all duration-100",
                       active
-                        ? "bg-indigo-500/[0.12] text-indigo-300"
+                        ? "bg-indigo-500/[0.15] text-indigo-300"
                         : "text-slate-500 hover:bg-white/[0.05] hover:text-slate-200"
                     )}
                   >
                     {active && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-0.5 rounded-r-full bg-indigo-400" />
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-indigo-400" />
                     )}
                     <Icon className={cn(
-                      "h-[15px] w-[15px] shrink-0 transition-colors",
+                      "h-5 w-5 shrink-0 transition-colors",
                       active ? "text-indigo-400" : "text-slate-600 group-hover:text-slate-400"
                     )} />
                     {t(key as Parameters<typeof t>[0])}
@@ -203,7 +203,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </nav>
 
       {/* Bottom: theme toggle + AI indicator + locale + sign out */}
-      <div className="shrink-0 border-t border-white/[0.07] px-2 py-3 space-y-1">
+      <div className="shrink-0 border-t px-2 py-3 space-y-1" style={{ borderColor: "var(--vf-border)" }}>
         {/* Theme toggle */}
         <div className="flex justify-end px-1 pb-1">
           <ThemeToggle />
@@ -274,7 +274,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      <div className="flex min-h-screen bg-vf-base">
+      <div className="flex min-h-screen" style={{ background: "var(--vf-bg-primary)" }}>
 
         {/* Mobile overlay */}
         {sidebarOpen && (
@@ -286,7 +286,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Sidebar */}
         <aside className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-[220px] shrink-0 flex-col border-r border-white/[0.07] bg-[#090C12] transition-transform duration-200 lg:static lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-[220px] shrink-0 flex-col border-r transition-transform duration-200 lg:static lg:translate-x-0",
+          "border-[var(--vf-border)] bg-[var(--vf-bg-primary)]",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}>
           <SidebarContent />
@@ -296,7 +297,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex flex-1 min-w-0 flex-col">
 
           {/* Mobile top bar */}
-          <header className="flex h-14 shrink-0 items-center gap-3 border-b border-white/[0.07] px-4 lg:hidden">
+          <header className="flex h-14 shrink-0 items-center gap-3 border-b px-4 lg:hidden" style={{ borderColor: "var(--vf-border)" }}>
             <button
               onClick={() => setSidebarOpen(true)}
               className="text-slate-500 hover:text-slate-300 transition-colors"
@@ -309,15 +310,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </header>
 
           {/* Desktop topbar */}
-          <header className="hidden lg:flex h-[57px] shrink-0 items-center justify-between gap-4 border-b border-white/[0.07] px-6">
-            <h1 className="text-[13px] font-semibold text-slate-300 tracking-tight">
+          <header className="hidden lg:flex h-[57px] shrink-0 items-center justify-between gap-4 border-b px-6" style={{ borderColor: "var(--vf-border)" }}>
+            <h1 className="text-[13px] font-semibold tracking-tight" style={{ color: "var(--vf-text-primary)" }}>
               {getPageTitle(pathname)}
             </h1>
             <div className="flex items-center gap-2">
               {/* ⌘K trigger */}
               <button
                 onClick={openSearch}
-                className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-[7px] text-xs text-slate-500 hover:bg-white/[0.06] hover:text-slate-300 transition-colors"
+                className="flex items-center gap-2 rounded-lg border px-3 py-[7px] text-xs transition-colors"
+                style={{ borderColor: "var(--vf-border)", background: "var(--vf-glass-bg)", color: "var(--vf-text-muted)" }}
               >
                 <Search className="h-3.5 w-3.5" />
                 <span className="hidden xl:inline">Search</span>
@@ -340,7 +342,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </main>
 
           {/* Mobile bottom nav */}
-          <nav className="lg:hidden flex border-t border-white/[0.07] bg-[#090C12] pb-safe">
+          <nav className="lg:hidden flex border-t pb-safe" style={{ borderColor: "var(--vf-border)", background: "var(--vf-bg-primary)" }}>
             {MOBILE_NAV.map(({ href, icon: Icon, label }) => {
               const active = isActive(href);
               return (
@@ -352,7 +354,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     active ? "text-indigo-400" : "text-slate-600 hover:text-slate-400"
                   )}
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-[20px] w-[20px]" />
                   {label}
                 </Link>
               );

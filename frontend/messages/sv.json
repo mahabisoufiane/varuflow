@@ -82,5 +82,29 @@
   },
   "settings": {
     "title": "Inställningar"
+  },
+  "errors": {
+    "invalidCredentials": "Felaktig e-post eller lösenord. Försök igen.",
+    "emailNotConfirmed": "Bekräfta din e-post innan du loggar in.",
+    "accountLocked": "För många försök. Vänta 15 minuter.",
+    "networkError": "Anslutningen misslyckades. Kontrollera din internetanslutning.",
+    "sessionExpired": "Din session har gått ut. Logga in igen.",
+    "unauthorized": "Du har inte behörighet att göra detta.",
+    "serverError": "Något gick fel. Vi undersöker saken.",
+    "notFound": "Den här sidan finns inte.",
+    "validationError": "Kontrollera formuläret för fel.",
+    "emailTaken": "Den här e-posten är redan registrerad.",
+    "passwordMismatch": "Lösenorden matchar inte.",
+    "weakPassword": "Lösenordet måste vara minst 8 tecken.",
+    "planRequired": "Den här funktionen kräver ett högre abonnemang.",
+    "upgradePlan": "Uppgradera ditt abonnemang för att få tillgång."
+  },
+  "success": {
+    "loggedIn": "Välkommen tillbaka!",
+    "loggedOut": "Du har loggats ut.",
+    "signupComplete": "Konto skapat! Kolla din e-post för bekräftelse.",
+    "emailResent": "Bekräftelsemail skickat igen.",
+    "profileUpdated": "Profil sparad.",
+    "passwordChanged": "Lösenord uppdaterat."
   }
 }

@@ -102,7 +102,7 @@ export default function InvoicesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-100">Invoices</h1>
+          <h1 className="text-xl font-bold tracking-tight vf-text-1">Invoices</h1>
           <p className="text-xs text-slate-600 mt-0.5">{invoices.length} total invoices</p>
         </div>
         <div className="flex gap-2">
@@ -130,7 +130,7 @@ export default function InvoicesPage() {
         ].map(({ label, value, sub, icon, col }) => (
           <div key={label} className="rounded-xl border border-white/[0.06] bg-vf-surface p-4">
             <div className={cn("inline-flex h-8 w-8 items-center justify-center rounded-lg mb-3", col)}>{icon}</div>
-            <p className="text-2xl font-bold tabular-nums text-slate-100">{value}</p>
+            <p className="text-2xl font-bold tabular-nums vf-text-1">{value}</p>
             <p className="text-xs text-slate-600 mt-0.5">{label}</p>
             {sub && <p className="text-[11px] text-slate-700 mt-0.5">{sub}</p>}
           </div>
@@ -146,7 +146,7 @@ export default function InvoicesPage() {
             className={cn(
               "flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium transition-colors border-b-2 -mb-px",
               filter === key
-                ? "border-indigo-500 text-slate-100"
+                ? "border-indigo-500 vf-text-1"
                 : "border-transparent text-slate-600 hover:text-slate-300"
             )}
           >
@@ -197,7 +197,7 @@ export default function InvoicesPage() {
                 {/* Invoice # + date */}
                 <div className="w-28 shrink-0">
                   <Link href={`/invoices/${inv.id}`}
-                    className="font-mono text-[13px] font-bold text-slate-200 hover:text-indigo-400 transition-colors">
+                    className="font-mono text-[13px] font-bold vf-text-1 hover:text-indigo-400 transition-colors">
                     {inv.invoice_number}
                   </Link>
                   <p className="text-[11px] text-slate-600 mt-0.5">{inv.issue_date}</p>
@@ -205,7 +205,7 @@ export default function InvoicesPage() {
 
                 {/* Customer */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold text-slate-200 truncate">{inv.customer.company_name}</p>
+                  <p className="text-[13px] font-semibold vf-text-1 truncate">{inv.customer.company_name}</p>
                   <p className="text-xs text-slate-600">Due {inv.due_date}</p>
                 </div>
 
@@ -216,7 +216,7 @@ export default function InvoicesPage() {
 
                 {/* Amount */}
                 <div className="w-32 shrink-0 text-right">
-                  <p className={cn("tabular-nums text-[15px] font-bold", isOverdue ? "text-red-400" : isPaid ? "text-emerald-400" : "text-slate-100")}>
+                  <p className={cn("tabular-nums text-[15px] font-bold", isOverdue ? "text-red-400" : isPaid ? "text-emerald-400" : "vf-text-1")}>
                     {fmt(Number(inv.total_sek))}
                   </p>
                   <p className="text-[11px] text-slate-600">SEK</p>

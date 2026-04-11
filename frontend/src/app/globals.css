@@ -266,4 +266,9 @@
 
   /* Page enter animation */
   .page-enter { animation: fade-in 0.18s ease-out both; }
+
+  /* Theme-aware text helpers — use instead of hardcoded text-slate-* */
+  .vf-text-1 { color: var(--vf-text-primary); }
+  .vf-text-2 { color: var(--vf-text-secondary); }
+  .vf-text-m { color: var(--vf-text-muted); }
 }

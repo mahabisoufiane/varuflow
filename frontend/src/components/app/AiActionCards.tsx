@@ -116,7 +116,7 @@ export default function AiActionCards() {
       <div className="flex items-center justify-between">
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="flex items-center gap-2 text-[13px] font-semibold text-slate-300 hover:text-slate-100 transition-colors"
+          className="flex items-center gap-2 text-[13px] font-semibold text-slate-300 hover:vf-text-1 transition-colors"
         >
           <Zap className="h-4 w-4 text-indigo-400" />
           AI Insights
@@ -169,7 +169,7 @@ export default function AiActionCards() {
                           {MODULE_LABELS[card.module] ?? `Module ${card.module}`}
                         </span>
                       </div>
-                      <p className="text-[13px] font-semibold text-slate-100 leading-snug">{card.title}</p>
+                      <p className="text-[13px] font-semibold vf-text-1 leading-snug">{card.title}</p>
                       <p className="text-xs text-slate-500 leading-relaxed">{card.insight}</p>
                       <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-2 mt-1">
                         <p className="text-xs font-medium text-slate-300">

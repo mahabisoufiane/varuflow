@@ -5,9 +5,11 @@
 "use client";
 
 import { createClient, signInWithGoogle, signInWithMicrosoft } from "@/lib/supabase/client";
-import Link from "next/link";
+// Use next-intl Link so locale is injected automatically — never bare next/link
+import { Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Eye, EyeOff, Loader2, Zap } from "lucide-react";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 
@@ -97,11 +99,34 @@ function MicrosoftIcon() {
   );
 }
 
+// Guard against open-redirect attacks — only allow relative paths from ?next=
+function safeNext(raw: string | null): string {
+  if (!raw) return "/dashboard";
+  // Reject anything that starts with // or contains :// (absolute URL)
+  if (raw.startsWith("//") || raw.includes("://")) return "/dashboard";
+  // Must start with / to be a valid relative path
+  return raw.startsWith("/") ? raw : "/dashboard";
+}
+
+// Map Supabase error messages to i18n translation keys
+function mapAuthError(msg: string, t: ReturnType<typeof useTranslations>): string {
+  const lower = msg.toLowerCase();
+  if (lower.includes("invalid login") || lower.includes("invalid credentials") || lower.includes("wrong password")) {
+    return t("errors.invalidCredentials");
+  }
+  if (lower.includes("email not confirmed")) return t("errors.emailNotConfirmed");
+  if (lower.includes("too many") || lower.includes("rate limit"))  return t("errors.accountLocked");
+  if (lower.includes("network") || lower.includes("fetch"))        return t("errors.networkError");
+  return t("errors.serverError");
+}
+
 /* ── Page ───────────────────────────────────────────────────────────────────── */
 export default function LoginPage() {
   const searchParams = useSearchParams();
+  const t = useTranslations();
+  // createClient() must be called inside the component body — never at module level
   const supabase = createClient();
-  const next = searchParams.get("next") ?? "/dashboard";
+  const next = safeNext(searchParams.get("next"));
 
   const [email, setEmail]               = useState("");
   const [password, setPassword]         = useState("");
@@ -110,13 +135,13 @@ export default function LoginPage() {
   const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
   const [error, setError]               = useState<string | null>(null);
 
-  async function handlePassword(e: React.FormEvent) {
+  async function handlePassword(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) return setError(error.message);
+    if (error) return setError(mapAuthError(error.message, t));
     window.location.href = next;
   }
 
@@ -124,14 +149,14 @@ export default function LoginPage() {
     setOauthLoading("google");
     setError(null);
     const { error } = await signInWithGoogle();
-    if (error) { setError(error.message); setOauthLoading(null); }
+    if (error) { setError(mapAuthError(error.message, t)); setOauthLoading(null); }
   }
 
   async function handleMicrosoft() {
     setOauthLoading("microsoft");
     setError(null);
     const { error } = await signInWithMicrosoft();
-    if (error) { setError(error.message); setOauthLoading(null); }
+    if (error) { setError(mapAuthError(error.message, t)); setOauthLoading(null); }
   }
 
   return (

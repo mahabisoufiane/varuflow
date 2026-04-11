@@ -29,7 +29,7 @@ function StockBar({ qty, min }: { qty: number; min: number }) {
       <div className="h-1.5 w-16 rounded-full bg-white/[0.08] overflow-hidden">
         <div className={cn("h-full rounded-full transition-all", color)} style={{ width: `${pct}%` }} />
       </div>
-      <span className="tabular-nums text-[13px] font-semibold text-slate-200">{qty}</span>
+      <span className="tabular-nums text-[13px] font-semibold vf-text-1">{qty}</span>
     </div>
   );
 }
@@ -69,7 +69,7 @@ export default function InventoryPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-100">Inventory</h1>
+          <h1 className="text-xl font-bold tracking-tight" style={{ color: "var(--vf-text-primary)" }}>Inventory</h1>
           <p className="text-xs text-slate-600 mt-0.5">Stock levels across all warehouses</p>
         </div>
         <Link href="/inventory/products/new" className="vf-btn text-xs px-3 py-1.5 h-auto">
@@ -87,7 +87,7 @@ export default function InventoryPage() {
         ].map(({ label, value, icon, col }) => (
           <div key={label} className="rounded-xl border border-white/[0.06] bg-vf-surface p-4">
             <div className={cn("inline-flex h-8 w-8 items-center justify-center rounded-lg mb-3", col)}>{icon}</div>
-            <p className="text-2xl font-bold tabular-nums text-slate-100">{loading ? "—" : value}</p>
+            <p className="text-2xl font-bold tabular-nums" style={{ color: "var(--vf-text-primary)" }}>{loading ? "—" : value}</p>
             <p className="text-xs text-slate-600 mt-0.5">{label}</p>
           </div>
         ))}
@@ -102,7 +102,7 @@ export default function InventoryPage() {
               <Icon className="h-4 w-4 text-slate-400 group-hover:text-slate-200 transition-colors" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-slate-200">{label}</p>
+              <p className="text-[13px] font-semibold" style={{ color: "var(--vf-text-primary)" }}>{label}</p>
               <p className="text-xs text-slate-600 truncate">{sub}</p>
             </div>
             <ArrowRight className="h-4 w-4 shrink-0 text-slate-700 group-hover:text-slate-500 transition-colors" />
@@ -125,7 +125,7 @@ export default function InventoryPage() {
                   <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold text-slate-200 truncate">{s.product.name}</p>
+                  <p className="text-[13px] font-semibold truncate" style={{ color: "var(--vf-text-primary)" }}>{s.product.name}</p>
                   <p className="text-xs text-slate-600">{s.product.sku} · {s.warehouse.name}</p>
                 </div>
                 <div className="text-right shrink-0">
@@ -145,7 +145,7 @@ export default function InventoryPage() {
       {/* Stock table */}
       <div className="rounded-xl border border-white/[0.06] bg-vf-surface overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
-          <h2 className="text-[13px] font-semibold text-slate-200">All stock levels</h2>
+          <h2 className="text-[13px] font-semibold" style={{ color: "var(--vf-text-primary)" }}>All stock levels</h2>
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -185,7 +185,7 @@ export default function InventoryPage() {
                 <tr key={s.id} className="hover:bg-white/[0.03] transition-colors">
                   <td className="px-5 py-3.5">
                     <Link href={`/inventory/products/${s.product_id}`}
-                      className="font-medium text-slate-200 hover:text-indigo-400 transition-colors">
+                      className="font-medium hover:text-indigo-400 transition-colors" style={{ color: "var(--vf-text-primary)" }}>
                       {s.product.name}
                     </Link>
                     {s.product.category && (

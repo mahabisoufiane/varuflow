@@ -176,7 +176,7 @@ export default function DashboardPage() {
           <p className="text-[11px] text-slate-600 capitalize tracking-widest" suppressHydrationWarning>
             {todayLabel}
           </p>
-          <h1 className="text-xl font-bold text-slate-100 tracking-tight">Overview</h1>
+          <h1 className="text-xl font-bold tracking-tight" style={{ color: "var(--vf-text-primary)" }}>Overview</h1>
         </div>
         <div className="flex gap-2">
           <Link href="/inventory/products/new"
@@ -248,7 +248,7 @@ export default function DashboardPage() {
             <div className="flex items-start justify-between mb-5">
               <div>
                 <p className="text-[10px] text-slate-600 font-semibold uppercase tracking-[0.14em]">Total receivables</p>
-                <p className="mt-1.5 text-[40px] font-bold tracking-tight leading-none text-white tabular-nums">
+                <p className="mt-1.5 text-[40px] font-bold tracking-tight leading-none tabular-nums" style={{ color: "var(--vf-text-primary)" }}>
                   {fmt(outstanding)}
                   <span className="ml-1.5 text-xl font-normal text-slate-600">SEK</span>
                 </p>
@@ -325,7 +325,7 @@ export default function DashboardPage() {
         {/* Awaiting payment */}
         <div className="rounded-xl border border-white/[0.08] bg-vf-surface overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.08]">
-            <h2 className="flex items-center gap-2 text-[13px] font-semibold text-slate-200">
+            <h2 className="flex items-center gap-2 text-[13px] font-semibold" style={{ color: "var(--vf-text-primary)" }}>
               <FileText className="h-4 w-4 text-indigo-400" />Awaiting payment
             </h2>
             <Link href="/invoices" className="flex items-center gap-1 text-xs text-slate-600 hover:text-slate-300 transition-colors">
@@ -349,13 +349,13 @@ export default function DashboardPage() {
                     }
                     <div className="flex-1 min-w-0">
                       <Link href={`/invoices/${inv.id}`}
-                        className="text-[13px] font-medium text-slate-200 hover:text-indigo-400 transition-colors">
+                        className="text-[13px] font-medium hover:text-indigo-400 transition-colors" style={{ color: "var(--vf-text-primary)" }}>
                         {inv.invoice_number}
                       </Link>
                       <p className="text-xs text-slate-600 truncate">{inv.customer.company_name}</p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="font-mono text-[13px] font-semibold text-slate-200">{fmt(Number(inv.total_sek))} kr</p>
+                      <p className="font-mono text-[13px] font-semibold" style={{ color: "var(--vf-text-primary)" }}>{fmt(Number(inv.total_sek))} kr</p>
                       <p className="text-[11px] text-slate-600">Due {inv.due_date}</p>
                     </div>
                   </div>
@@ -368,7 +368,7 @@ export default function DashboardPage() {
         {/* Low stock */}
         <div className="rounded-xl border border-white/[0.08] bg-vf-surface overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.08]">
-            <h2 className="flex items-center gap-2 text-[13px] font-semibold text-slate-200">
+            <h2 className="flex items-center gap-2 text-[13px] font-semibold" style={{ color: "var(--vf-text-primary)" }}>
               <Package className="h-4 w-4 text-amber-400" />Low stock alerts
             </h2>
             <Link href="/inventory" className="flex items-center gap-1 text-xs text-slate-600 hover:text-slate-300 transition-colors">
@@ -394,7 +394,7 @@ export default function DashboardPage() {
                       <AlertTriangle className={cn("h-3.5 w-3.5", urgent ? "text-red-400" : "text-amber-400")} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium text-slate-200 truncate">{sl.product.name}</p>
+                      <p className="text-[13px] font-medium truncate" style={{ color: "var(--vf-text-primary)" }}>{sl.product.name}</p>
                       <p className="text-xs text-slate-600">{sl.product.sku} · {sl.warehouse.name}</p>
                     </div>
                     <div className="text-right shrink-0">
@@ -418,8 +418,8 @@ export default function DashboardPage() {
       {recentMovements.length > 0 && (
         <div className="rounded-xl border border-white/[0.08] bg-vf-surface overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.08]">
-            <h2 className="flex items-center gap-2 text-[13px] font-semibold text-slate-200">
-              <Activity className="h-4 w-4 text-slate-600" />Recent movements
+            <h2 className="flex items-center gap-2 text-[13px] font-semibold" style={{ color: "var(--vf-text-primary)" }}>
+              <Activity className="h-4 w-4" style={{ color: "var(--vf-text-muted)" }} />Recent movements
             </h2>
             <Link href="/inventory/movements"
               className="flex items-center gap-1 text-xs text-slate-600 hover:text-slate-300 transition-colors">
@@ -434,8 +434,8 @@ export default function DashboardPage() {
                   m.type === "IN"  ? "bg-emerald-500/15 text-emerald-400" :
                   m.type === "OUT" ? "bg-red-500/15 text-red-400" : "bg-white/5 text-slate-500"
                 )}>{m.type}</span>
-                <span className="flex-1 min-w-0 truncate text-[13px] font-medium text-slate-300">{m.product.name}</span>
-                <span className="shrink-0 tabular-nums text-[13px] font-semibold text-slate-400">{m.quantity}</span>
+                <span className="flex-1 min-w-0 truncate text-[13px] font-medium" style={{ color: "var(--vf-text-secondary)" }}>{m.product.name}</span>
+                <span className="shrink-0 tabular-nums text-[13px] font-semibold" style={{ color: "var(--vf-text-secondary)" }}>{m.quantity}</span>
                 <span className="shrink-0 text-[11px] text-slate-600">{movementDates[m.id] ?? ""}</span>
               </div>
             ))}
@@ -463,7 +463,7 @@ function KpiCard({ label, value, sub, trend, icon, iconCls, href, spark, sparkCo
           <Sparkline data={spark} color={sparkColor} w={60} h={26} />
         )}
       </div>
-      <p className="text-2xl font-bold text-white tracking-tight leading-tight tabular-nums">{value}</p>
+      <p className="text-2xl font-bold tracking-tight leading-tight tabular-nums" style={{ color: "var(--vf-text-primary)" }}>{value}</p>
       {sub && <p className="text-xs text-slate-600 mt-0.5">{sub}</p>}
       {trend && (
         <p className={cn(

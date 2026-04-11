@@ -70,7 +70,7 @@ export default function NewCustomerPage() {
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <h1 className="text-xl font-bold text-slate-100">New customer</h1>
+          <h1 className="text-xl font-bold vf-text-1">New customer</h1>
           <p className="text-xs text-slate-600 mt-0.5">Add a new B2B customer to your account</p>
         </div>
       </div>

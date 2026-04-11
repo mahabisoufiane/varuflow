@@ -135,7 +135,7 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-100">Settings</h1>
+        <h1 className="text-2xl font-bold vf-text-1">Settings</h1>
         <p className="text-sm text-slate-600">Manage your account and organization</p>
       </div>
 
@@ -145,7 +145,7 @@ export default function SettingsPage() {
           <button key={t} onClick={() => setTab(t)}
             className={cn(
               "px-4 py-2 text-[13px] font-medium capitalize border-b-2 -mb-px transition-colors",
-              tab === t ? "border-indigo-500 text-slate-100" : "border-transparent text-slate-600 hover:text-slate-300"
+              tab === t ? "border-indigo-500 vf-text-1" : "border-transparent text-slate-600 hover:text-slate-300"
             )}>
             {t}
           </button>
@@ -156,7 +156,7 @@ export default function SettingsPage() {
         <>
           {/* Account info */}
           <Card>
-            <h2 className="font-semibold text-slate-100">Account</h2>
+            <h2 className="font-semibold vf-text-1">Account</h2>
             <div className="space-y-1.5">
               <Label className="text-xs text-slate-400">Email</Label>
               <p className="rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-2 text-sm text-slate-400">{me?.email}</p>
@@ -178,7 +178,7 @@ export default function SettingsPage() {
           {/* Company details */}
           <form onSubmit={handleCompany}>
             <Card>
-              <h2 className="font-semibold text-slate-100">Company details</h2>
+              <h2 className="font-semibold vf-text-1">Company details</h2>
               <p className="text-xs text-slate-600">Shown on invoices and purchase orders.</p>
               {[
                 { id: "company_name", label: "Company name *", placeholder: "Svensson AB", required: true },
@@ -206,7 +206,7 @@ export default function SettingsPage() {
           {/* Change password */}
           <form onSubmit={handlePassword}>
             <Card>
-              <h2 className="font-semibold text-slate-100">Change password</h2>
+              <h2 className="font-semibold vf-text-1">Change password</h2>
               {[
                 { id: "next",    label: "New password",          placeholder: "Min. 8 characters" },
                 { id: "confirm", label: "Confirm new password",  placeholder: "Repeat password"   },
@@ -234,14 +234,14 @@ export default function SettingsPage() {
         <div className="space-y-6">
           <Card className="!p-0 !space-y-0 overflow-hidden">
             <div className="px-6 py-4 border-b border-white/[0.06]">
-              <h2 className="font-semibold text-slate-100">Team members</h2>
+              <h2 className="font-semibold vf-text-1">Team members</h2>
               <p className="text-xs text-slate-600 mt-0.5">{members.length} member{members.length !== 1 ? "s" : ""}</p>
             </div>
             <div className="divide-y divide-white/[0.04]">
               {members.map((m) => (
                 <div key={m.id} className="flex items-center justify-between px-6 py-3">
                   <div>
-                    <p className="text-[13px] font-medium text-slate-200">User {m.user_id.slice(0, 8)}…</p>
+                    <p className="text-[13px] font-medium vf-text-1">User {m.user_id.slice(0, 8)}…</p>
                     <p className="text-xs text-slate-600">Joined {new Date(m.created_at).toLocaleDateString("sv-SE")}</p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -271,7 +271,7 @@ export default function SettingsPage() {
           {isOwner && (
             <form onSubmit={handleInvite}>
               <Card>
-                <h2 className="font-semibold text-slate-100 flex items-center gap-2">
+                <h2 className="font-semibold vf-text-1 flex items-center gap-2">
                   <UserPlus className="h-4 w-4 text-indigo-400" />Invite team member
                 </h2>
                 <div className="flex gap-3">
@@ -329,7 +329,7 @@ function BillingTab({ plan }: { plan: string }) {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-white/[0.06] bg-vf-surface p-6 space-y-4">
-        <h2 className="font-semibold text-slate-100 flex items-center gap-2">
+        <h2 className="font-semibold vf-text-1 flex items-center gap-2">
           <CreditCard className="h-4 w-4 text-indigo-400" />Subscription
         </h2>
         <div className="flex items-center gap-3">
@@ -411,7 +411,7 @@ function IntegrationsTab() {
               <span className="text-lg font-bold text-indigo-400">F</span>
             </div>
             <div>
-              <h2 className="font-semibold text-slate-100">Fortnox</h2>
+              <h2 className="font-semibold vf-text-1">Fortnox</h2>
               <p className="text-xs text-slate-600">Swedish accounting software</p>
             </div>
           </div>
@@ -487,7 +487,7 @@ function NotificationsTab() {
     <div className="space-y-4">
       <div className="rounded-xl border border-white/[0.06] bg-vf-surface p-6 space-y-5">
         <div>
-          <h2 className="font-semibold text-slate-100">Push notifications</h2>
+          <h2 className="font-semibold vf-text-1">Push notifications</h2>
           <p className="mt-1 text-sm text-slate-500">
             Get notified about overdue invoices, low stock alerts, and payment confirmations.
           </p>
@@ -536,7 +536,7 @@ function NotificationsTab() {
       </div>
 
       <div className="rounded-xl border border-white/[0.06] bg-vf-surface p-6 space-y-3">
-        <h2 className="font-semibold text-slate-100">Install app</h2>
+        <h2 className="font-semibold vf-text-1">Install app</h2>
         <p className="text-sm text-slate-500">
           Add Varuflow to your home screen for a native-like experience with offline access.
         </p>
