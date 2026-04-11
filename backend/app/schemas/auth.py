@@ -68,7 +68,6 @@ class LogoutRequest(BaseModel):
 
 class TOTPEnableResponse(BaseModel):
     provisioning_uri: str
-    secret: str
     message: str = "Scan the QR code with your authenticator app, then confirm with a TOTP code"
 
 

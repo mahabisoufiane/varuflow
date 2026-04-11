@@ -1,6 +1,7 @@
 """External integrations: Fortnox OAuth2, AI assistant."""
+import secrets
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from urllib.parse import urlencode
 
@@ -8,21 +9,25 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
 from app.middleware.auth import get_current_member
-from app.models.organization import Organization
+from app.middleware.plan_check import require_plan
+from app.models.organization import FortnoxOAuthState, OrgPlan, Organization
 from app.models.invoicing import Invoice, InvoiceStatus
 
 router = APIRouter(prefix="/api/integrations", tags=["integrations"])
 
-FORTNOX_AUTH_URL = "https://apps.fortnox.se/oauth-v1/auth"
+FORTNOX_AUTH_URL  = "https://apps.fortnox.se/oauth-v1/auth"
 FORTNOX_TOKEN_URL = "https://apps.fortnox.se/oauth-v1/token"
-FORTNOX_API_BASE = "https://api.fortnox.se/3"
-FORTNOX_SCOPES = "bookkeeping invoice customer"
+FORTNOX_API_BASE  = "https://api.fortnox.se/3"
+FORTNOX_SCOPES    = "bookkeeping invoice customer"
+
+# CSRF nonce expiry — Fortnox should redirect back within this window
+_OAUTH_STATE_TTL_MINUTES = 10
 
 
 def _org_id(ctx: tuple) -> uuid.UUID:
@@ -33,14 +38,14 @@ def _org_id(ctx: tuple) -> uuid.UUID:
 # ── Status ────────────────────────────────────────────────────────────────────
 
 class FortnoxStatus(BaseModel):
-    connected: bool
+    connected:    bool
     token_expiry: Optional[datetime] = None
 
 
 @router.get("/fortnox/status", response_model=FortnoxStatus)
 async def fortnox_status(
     ctx: tuple = Depends(get_current_member),
-    db: AsyncSession = Depends(get_db),
+    db:  AsyncSession = Depends(get_db),
 ):
     org = await db.get(Organization, _org_id(ctx))
     if not org:
@@ -51,19 +56,40 @@ async def fortnox_status(
     )
 
 
-# ── Connect (OAuth2 initiation) ────────────────────────────────────────────────
+# ── Connect (OAuth2 initiation) ───────────────────────────────────────────────
 
 @router.get("/fortnox/connect")
-async def fortnox_connect(ctx: tuple = Depends(get_current_member)):
+async def fortnox_connect(
+    ctx: tuple = Depends(get_current_member),
+    db:  AsyncSession = Depends(get_db),
+):
+    """Start Fortnox OAuth2 flow.
+
+    Generates a cryptographically random nonce and stores it in the DB.
+    The nonce is passed as the OAuth2 `state` parameter and validated on
+    callback to prevent CSRF attacks.
+    """
     if not settings.FORTNOX_CLIENT_ID:
         raise HTTPException(status_code=503, detail="Fortnox not configured — add FORTNOX_CLIENT_ID")
 
+    # Clean up expired nonces for this org before creating a new one
+    await db.execute(
+        delete(FortnoxOAuthState).where(
+            FortnoxOAuthState.org_id == _org_id(ctx),
+        )
+    )
+
+    nonce      = secrets.token_hex(32)          # 64-char hex, 256-bit entropy
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=_OAUTH_STATE_TTL_MINUTES)
+    db.add(FortnoxOAuthState(nonce=nonce, org_id=_org_id(ctx), expires_at=expires_at))
+    await db.commit()
+
     params = {
-        "client_id": settings.FORTNOX_CLIENT_ID,
-        "redirect_uri": settings.FORTNOX_REDIRECT_URI,
-        "scope": FORTNOX_SCOPES,
-        "state": str(_org_id(ctx)),
-        "access_type": "offline",
+        "client_id":     settings.FORTNOX_CLIENT_ID,
+        "redirect_uri":  settings.FORTNOX_REDIRECT_URI,
+        "scope":         FORTNOX_SCOPES,
+        "state":         nonce,                 # CSRF nonce — NOT the org_id
+        "access_type":   "offline",
         "response_type": "code",
     }
     return RedirectResponse(f"{FORTNOX_AUTH_URL}?{urlencode(params)}")
@@ -73,17 +99,35 @@ async def fortnox_connect(ctx: tuple = Depends(get_current_member)):
 
 @router.get("/fortnox/callback")
 async def fortnox_callback(
-    code: str = Query(...),
+    code:  str = Query(...),
     state: str = Query(...),
-    db: AsyncSession = Depends(get_db),
+    db:    AsyncSession = Depends(get_db),
 ):
+    """Exchange the Fortnox authorisation code for an access token.
+
+    The `state` parameter is a one-time CSRF nonce created in /connect and
+    stored in the DB. We validate and delete it here so it cannot be replayed.
+    """
     if not settings.FORTNOX_CLIENT_ID or not settings.FORTNOX_CLIENT_SECRET:
         raise HTTPException(status_code=503, detail="Fortnox not configured")
 
-    try:
-        org_id = uuid.UUID(state)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid state")
+    # ── Validate CSRF nonce ───────────────────────────────────────────────────
+    oauth_state = await db.scalar(
+        select(FortnoxOAuthState).where(FortnoxOAuthState.nonce == state)
+    )
+    if not oauth_state:
+        raise HTTPException(status_code=400, detail="Invalid or expired OAuth state. Please try connecting again.")
+
+    now = datetime.now(timezone.utc)
+    if oauth_state.expires_at.replace(tzinfo=timezone.utc) < now:
+        await db.delete(oauth_state)
+        await db.commit()
+        raise HTTPException(status_code=400, detail="OAuth state expired. Please try connecting again.")
+
+    # Consume the nonce immediately — it cannot be used again
+    org_id = oauth_state.org_id
+    await db.delete(oauth_state)
+    await db.commit()
 
     async with httpx.AsyncClient() as client:
         resp = await client.post(
@@ -110,7 +154,10 @@ async def fortnox_callback(
     org.fortnox_token_expiry = datetime.utcnow() + timedelta(seconds=expires_in)
     await db.commit()
 
-    return RedirectResponse("http://localhost:3000/settings?tab=integrations&connected=1")
+    # Redirect back to the frontend settings page.
+    # FRONTEND_URL is set in Railway Variables (https://varuflow.vercel.app).
+    # Never hard-code localhost here — the callback runs on Railway, not the dev machine.
+    return RedirectResponse(f"{settings.FRONTEND_URL}/settings?tab=integrations&connected=1")
 
 
 # ── Disconnect ────────────────────────────────────────────────────────────────
@@ -178,6 +225,7 @@ class SyncResult(BaseModel):
 async def sync_invoices_to_fortnox(
     ctx: tuple = Depends(get_current_member),
     db: AsyncSession = Depends(get_db),
+    _plan: None = Depends(require_plan(OrgPlan.PRO)),
 ):
     from sqlalchemy.orm import selectinload
     org_id = _org_id(ctx)
@@ -244,6 +292,7 @@ async def sync_invoices_to_fortnox(
 async def sync_customers_from_fortnox(
     ctx: tuple = Depends(get_current_member),
     db: AsyncSession = Depends(get_db),
+    _plan: None = Depends(require_plan(OrgPlan.PRO)),
 ):
     from app.models.invoicing import Customer
 
@@ -311,6 +360,7 @@ async def ai_chat(
     body: ChatMessage,
     ctx: tuple = Depends(get_current_member),
     db: AsyncSession = Depends(get_db),
+    _plan: None = Depends(require_plan(OrgPlan.PRO)),
 ):
     if not settings.OPENAI_API_KEY:
         raise HTTPException(status_code=503, detail="AI not configured — add OPENAI_API_KEY")

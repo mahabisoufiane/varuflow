@@ -35,7 +35,7 @@ logging.config.dictConfig({
     "root": {"level": "INFO", "handlers": ["console"]},
 })
 
-from app.config import settings
+from app.config import settings, validate_production_config
 from app.database import engine
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.routers import ai_engine, analytics, auth, billing, health, integrations, inventory, invoicing, local_auth, portal, pos, recurring, team, waitlist
@@ -64,7 +64,10 @@ def _run_migrations() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Run database migrations before the app starts serving requests.
+    # ── 1. Security config validation (crashes on bad production config) ──────
+    validate_production_config()
+
+    # ── 2. Database migrations ────────────────────────────────────────────────
     # Executed in a thread executor because Alembic's online migration path
     # calls asyncio.run() internally, which cannot be nested inside the
     # already-running event loop.
@@ -137,6 +140,12 @@ async def _log_requests(request: Request, call_next):
 # Without this, 500s reach the browser without Access-Control-Allow-Origin.
 @app.exception_handler(Exception)
 async def _global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    # Log the full traceback so Railway logs surface root causes.
+    # The client receives only a generic message — no internal details ever leak.
+    log.exception(
+        "Unhandled exception | method=%s path=%s",
+        request.method, request.url.path,
+    )
     return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 app.include_router(health.router, prefix="/api")

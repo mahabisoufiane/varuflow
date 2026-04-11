@@ -208,7 +208,7 @@ async def mfa_enable(
         secret, uri = await auth_service.totp_enable_initiate(current_user.id, db)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
-    return TOTPEnableResponse(provisioning_uri=uri, secret=secret)
+    return TOTPEnableResponse(provisioning_uri=uri)
 
 
 @router.post("/mfa/confirm", status_code=status.HTTP_200_OK)

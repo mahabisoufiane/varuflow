@@ -25,7 +25,12 @@ DEV_ORG_ID  = uuid.UUID("00000000-0000-0000-0000-000000000002")
 
 
 def _decode_token(token: str) -> dict:
-    """Decode and optionally verify a Supabase JWT."""
+    """Decode and verify a Supabase JWT.
+
+    Signature verification is always enforced in production.
+    In development (ENV=development) it is skipped when no secret is configured,
+    so the app can run without a live Supabase project.
+    """
     if settings.SUPABASE_JWT_SECRET:
         return jwt.decode(
             token,
@@ -33,7 +38,15 @@ def _decode_token(token: str) -> dict:
             algorithms=["HS256"],
             options={"verify_aud": False},
         )
-    # No secret configured — dev mode, skip signature verification
+
+    # No secret configured — only allowed in local development.
+    # validate_production_config() already crashes the process before we reach
+    # this point in production, so this branch is dev-only by construction.
+    if settings.ENV != "development":
+        # Belt-and-suspenders: if somehow validate_production_config was skipped,
+        # refuse to decode without a secret rather than accepting any token.
+        raise JWTError("SUPABASE_JWT_SECRET not configured — cannot verify token")
+
     return jwt.decode(
         token,
         "",
@@ -51,7 +64,9 @@ async def get_current_user(
     - No token → dev user
     - Invalid/expired token → dev user (handles stale localStorage sessions)
     """
-    is_dev = settings.ENV == "development" or settings.DEBUG
+    # Dev bypass is controlled by ENV only, not by DEBUG.
+    # DEBUG=True is for verbose logging; it must not open auth gates.
+    is_dev = settings.ENV == "development"
 
     if not credentials:
         if is_dev:

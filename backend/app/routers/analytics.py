@@ -16,8 +16,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_plan
 from app.models.inventory import Product, StockLevel, Warehouse
 from app.models.invoicing import Customer, Invoice, InvoiceLineItem, InvoiceStatus, Payment
+from app.models.organization import OrgPlan
 
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
@@ -278,6 +280,7 @@ async def export_analytics_pdf(
     db: AsyncSession = Depends(get_db),
     from_date: date = Query(default=None),
     to_date: date = Query(default=None),
+    _plan: None = Depends(require_plan(OrgPlan.PRO)),
 ):
     """Generate a PDF analytics report for the given date range."""
     from app.models.organization import Organization

@@ -15,9 +15,10 @@ import {
 import dynamic from "next/dynamic";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 
-const AiChat         = dynamic(() => import("@/components/app/AiChat"),         { ssr: false });
-const CommandPalette = dynamic(() => import("@/components/app/CommandPalette"), { ssr: false });
-const PwaInstallBanner = dynamic(() => import("@/components/app/PwaInstallBanner"), { ssr: false });
+const AiChat              = dynamic(() => import("@/components/app/AiChat"),              { ssr: false });
+const CommandPalette      = dynamic(() => import("@/components/app/CommandPalette"),      { ssr: false });
+const PwaInstallBanner    = dynamic(() => import("@/components/app/PwaInstallBanner"),    { ssr: false });
+const SessionTimeoutModal = dynamic(() => import("@/components/app/SessionTimeoutModal"), { ssr: false });
 
 /* ── Nav groups ─────────────────────────────────────────────────────────────── */
 const NAV_GROUPS = [
@@ -366,6 +367,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <CommandPalette />
       <AiChat />
       <PwaInstallBanner />
+      <SessionTimeoutModal />
     </>
   );
 }

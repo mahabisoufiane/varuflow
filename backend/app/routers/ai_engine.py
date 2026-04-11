@@ -23,6 +23,7 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_plan
 from app.models.inventory import (
     Product,
     PurchaseOrder,
@@ -33,9 +34,13 @@ from app.models.inventory import (
     Supplier,
 )
 from app.models.invoicing import Customer, Invoice, InvoiceStatus, Payment
-from app.models.organization import Organization
+from app.models.organization import OrgPlan, Organization
 
-router = APIRouter(prefix="/api/ai", tags=["ai"])
+router = APIRouter(
+    prefix="/api/ai",
+    tags=["ai"],
+    dependencies=[Depends(require_plan(OrgPlan.PRO))],
+)
 
 CardType = Literal["ALERT", "SUGGESTION", "WORKFLOW", "REPORT"]
 Priority = Literal["CRITICAL", "HIGH", "MEDIUM", "LOW"]

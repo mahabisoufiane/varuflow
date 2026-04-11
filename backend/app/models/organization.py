@@ -1,5 +1,6 @@
 import enum
 import uuid
+from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID
@@ -68,4 +69,23 @@ class OrganizationMember(Base):
 
     organization: Mapped["Organization"] = relationship(
         "Organization", back_populates="members"
+    )
+
+
+class FortnoxOAuthState(Base):
+    """One-time CSRF nonce for Fortnox OAuth2 state parameter.
+
+    Created on /fortnox/connect, consumed and deleted on /fortnox/callback.
+    Expires after 10 minutes to prevent replay of stale links.
+    """
+    __tablename__ = "fortnox_oauth_states"
+
+    id:         Mapped[uuid.UUID]  = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    nonce:      Mapped[str]        = mapped_column(String(64), nullable=False, unique=True, index=True)
+    org_id:     Mapped[uuid.UUID]  = mapped_column(
+        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
+    )
+    expires_at: Mapped[datetime]   = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime]   = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )

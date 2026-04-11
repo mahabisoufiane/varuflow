@@ -11,6 +11,7 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_plan
 from app.models.invoicing import (
     Customer,
     Invoice,
@@ -19,8 +20,13 @@ from app.models.invoicing import (
     RecurringFrequency,
     RecurringInvoice,
 )
+from app.models.organization import OrgPlan
 
-router = APIRouter(prefix="/api/recurring", tags=["recurring"])
+router = APIRouter(
+    prefix="/api/recurring",
+    tags=["recurring"],
+    dependencies=[Depends(require_plan(OrgPlan.PRO))],
+)
 
 
 def _org(ctx: tuple) -> uuid.UUID:
