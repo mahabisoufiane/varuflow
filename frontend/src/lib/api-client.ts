@@ -30,24 +30,39 @@ function getSupabase() {
 
 /**
  * Resolves the current session JWT to attach as an Authorization header.
- * Returns an empty object when Supabase is not configured or the user has
- * no active session — the backend will return 401 in that case.
+ *
+ * Proactively refreshes the token when it expires within the next 60 seconds
+ * so the backend never receives an already-expired JWT and returns 401.
+ * Returns an empty object when Supabase is not configured or there is no
+ * active session.
  */
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const supabase = getSupabase();
   if (!supabase) return {};
 
   try {
-    const result = await Promise.race([
-      supabase.auth.getSession(),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Auth check timed out")), 3_000)
-      ),
-    ]);
-    const session = (
-      result as Awaited<ReturnType<typeof supabase.auth.getSession>>
-    ).data?.session;
+    // Use getSession() — fast, reads from storage without a network call
+    const { data: { session } } = await supabase.auth.getSession();
     if (!session) return {};
+
+    const nowSeconds    = Math.floor(Date.now() / 1000);
+    const expiresAt     = session.expires_at ?? 0;
+    const secondsLeft   = expiresAt - nowSeconds;
+
+    // If the token expires within 60 seconds, refresh it now so the
+    // backend always receives a valid JWT. This prevents the "session
+    // expired" error that appeared when pages were loaded with a token
+    // that was about to expire or had just expired.
+    if (secondsLeft < 60) {
+      const { data: refreshed, error } = await supabase.auth.refreshSession();
+      if (error || !refreshed.session) {
+        // Refresh failed — sign out so the user is sent to login cleanly
+        await supabase.auth.signOut();
+        return {};
+      }
+      return { Authorization: `Bearer ${refreshed.session.access_token}` };
+    }
+
     return { Authorization: `Bearer ${session.access_token}` };
   } catch {
     return {};
@@ -63,9 +78,11 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
  * Throws a plain Error with a human-readable message on any non-2xx response.
  * Also fires a sonner toast so users always see what went wrong.
  */
+type RequestOptions = RequestInit & { _retried?: boolean };
+
 async function request<T>(
   path: string,
-  options: RequestInit = {},
+  options: RequestOptions = {},
   timeoutMs = REQUEST_TIMEOUT_MS
 ): Promise<T> {
   const authHeaders = await getAuthHeaders();
@@ -94,6 +111,23 @@ async function request<T>(
     throw new Error(message);
   } finally {
     clearTimeout(timer);
+  }
+
+  if (res.status === 401 && !options._retried) {
+    // Token was rejected — attempt a silent refresh and retry once.
+    // This handles the edge case where a token expired between getSession()
+    // and the request arriving at the backend (clock skew, slow network).
+    const supabase = getSupabase();
+    if (supabase) {
+      const { data: refreshed } = await supabase.auth.refreshSession();
+      if (refreshed.session) {
+        return request<T>(path, { ...options, _retried: true }, timeoutMs);
+      }
+      // Refresh failed — sign out so the user lands on the login page
+      await supabase.auth.signOut();
+    }
+    // Fall through: throw the 401 without a toast (layout handles redirect)
+    throw new Error("Your session has expired — please sign in again.");
   }
 
   if (!res.ok) {
