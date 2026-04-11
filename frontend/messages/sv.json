@@ -99,6 +99,125 @@
     "planRequired": "Den här funktionen kräver ett högre abonnemang.",
     "upgradePlan": "Uppgradera ditt abonnemang för att få tillgång."
   },
+  "pricing": {
+    "pageTitle": "Enkel, transparent prissättning",
+    "pageSubtitle": "Börja gratis. Skala i takt med dig. Inga dolda avgifter, inga transaktionsavgifter.",
+    "monthly": "Månadsvis",
+    "yearly": "Årsvis",
+    "yearlySave": "Spara 20%",
+    "billedYearly": "faktureras {amount} kr/år",
+    "perMonth": "/mån",
+    "mostPopular": "Mest populär",
+    "fullAccess": "Full åtkomst",
+    "startTrial": "Starta gratis provperiod",
+    "contactSales": "Kontakta sälj",
+    "trialNote": "14 dagars gratis provperiod · Inget kreditkort krävs",
+    "includes": "Ingår",
+    "locked": "Låst på denna plan",
+    "starter": {
+      "name": "Starter",
+      "description": "För mindre grossistföretag som kommer igång.",
+      "features": [
+        "Upp till 500 produkter",
+        "Fortnox-integration",
+        "Lagerhantering",
+        "Grundläggande fakturering",
+        "Grundläggande analys",
+        "E-postsupport",
+        "1 plats"
+      ],
+      "locked": [
+        "Mobilapp",
+        "Avancerad analys",
+        "Prioriterad support",
+        "Massimport",
+        "Anpassade integrationer",
+        "API-åtkomst"
+      ]
+    },
+    "professional": {
+      "name": "Professional",
+      "description": "För växande team som behöver mer kraft och insikt.",
+      "features": [
+        "Upp till 5 000 produkter",
+        "Allt i Starter",
+        "Avancerad analys",
+        "Prioriterad support",
+        "Upp till 5 platser",
+        "Lagervarningar",
+        "Massimport"
+      ],
+      "locked": [
+        "Mobilapp",
+        "Anpassade integrationer",
+        "API-åtkomst"
+      ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "description": "För stora verksamheter som behöver allt, överallt.",
+      "features": [
+        "Obegränsat antal produkter",
+        "Allt i Professional",
+        "Obegränsat antal platser",
+        "Anpassade integrationer",
+        "API-åtkomst",
+        "White-label-alternativ",
+        "Prioriterad support dygnet runt"
+      ],
+      "stars": [
+        "Mobilapp — Android, iOS & Huawei",
+        "Dedikerad kundansvarig",
+        "Anpassad onboarding"
+      ]
+    },
+    "mobileTeaser": {
+      "title": "Ta med Varuflow överallt",
+      "subtitle": "Enterprise-kunder får native-mobilappar för Android, iOS och Huawei — hantera ditt lager var som helst.",
+      "badge": "Tillgängligt exklusivt i Enterprise-planen",
+      "cta": "Uppgradera till Enterprise",
+      "android": "Google Play",
+      "ios": "App Store",
+      "huawei": "AppGallery"
+    },
+    "faq": {
+      "title": "Vanliga frågor",
+      "items": [
+        {
+          "q": "Kan jag byta plan senare?",
+          "a": "Ja, uppgradera eller nedgradera när som helst. Ändringar gäller från nästa faktureringscykel."
+        },
+        {
+          "q": "Finns det en gratis provperiod?",
+          "a": "Ja, alla planer inkluderar 14 dagars gratis provperiod. Inget kreditkort krävs."
+        },
+        {
+          "q": "Vilka betalningsmetoder accepterar ni?",
+          "a": "Kreditkort, banköverföring och Swish (Sverige)."
+        },
+        {
+          "q": "Är mina data säkra?",
+          "a": "All data är krypterad och lagras på EU-servrar. Vi är fullt GDPR-kompatibla."
+        },
+        {
+          "q": "Vad är mobilappen?",
+          "a": "Enterprise-kunder får native-appar för Android, iOS och Huawei för att hantera lagret var som helst."
+        }
+      ]
+    },
+    "contact": {
+      "title": "Kontakta sälj",
+      "subtitle": "Berätta om ditt företag så återkommer vi inom en arbetsdag.",
+      "name": "Ditt namn",
+      "email": "Jobbmejl",
+      "company": "Företagsnamn",
+      "message": "Berätta om dina behov",
+      "send": "Skicka meddelande",
+      "sending": "Skickar…",
+      "sent": "Meddelande skickat! Vi hör av oss snart.",
+      "cancel": "Avbryt"
+    }
+  },
   "success": {
     "loggedIn": "Välkommen tillbaka!",
     "loggedOut": "Du har loggats ut.",

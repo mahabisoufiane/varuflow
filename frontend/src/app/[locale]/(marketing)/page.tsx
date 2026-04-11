@@ -164,14 +164,22 @@ export default function HomePage() {
       {/* ── Pricing teaser ── */}
       <section className="bg-gray-50 px-4 py-16">
         <div className="mx-auto max-w-xl text-center">
-          <h2 className="text-2xl font-bold text-[#1a2332]">Simple pricing, coming soon</h2>
+          <h2 className="text-2xl font-bold text-[#1a2332]">Simple, transparent pricing</h2>
           <p className="mt-3 text-muted-foreground text-sm">
-            One flat monthly price. No per-user fees. No transaction cuts.
-            Waitlist members get 3 months free at launch.
+            From 299 kr/month. No per-user fees. No transaction cuts.
+            14-day free trial on every plan.
           </p>
-          <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-700 font-medium">
-            <CheckCircle2 className="h-4 w-4" />
-            Early access — join below
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#1a2332] px-6 py-3 text-sm font-semibold text-white hover:bg-[#2a3342] transition-colors"
+            >
+              View pricing
+            </Link>
+            <div className="inline-flex items-center gap-2 rounded-full bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-700 font-medium">
+              <CheckCircle2 className="h-4 w-4" />
+              14-day free trial
+            </div>
           </div>
         </div>
       </section>
