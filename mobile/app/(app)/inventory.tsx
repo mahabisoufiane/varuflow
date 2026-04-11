@@ -2,7 +2,7 @@
 // Purpose: Full inventory list with search, filter by status, pull-to-refresh
 // Used by: bottom tab navigator
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { apiClient }         from "@/lib/api-client";
+import { useApiCall }        from "@/lib/use-api-call";
 import { StockCard }         from "@/components/app/StockCard";
 import type { StockItem }    from "@/components/app/StockCard";
 
@@ -27,31 +28,15 @@ const FILTERS: { key: Filter; label: string }[] = [
 ];
 
 export default function InventoryScreen() {
-  const [items,      setItems]      = useState<StockItem[]>([]);
-  const [loading,    setLoading]    = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error,      setError]      = useState<string | null>(null);
-  const [search,     setSearch]     = useState("");
-  const [filter,     setFilter]     = useState<Filter>("all");
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<Filter>("all");
 
-  const load = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true);
-    setError(null);
-    try {
-      const data = await apiClient.get<StockItem[]>("/api/inventory/products");
-      setItems(data);
-    } catch {
-      setError("Could not load inventory. Pull down to retry.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
+  const { data: items, loading, refreshing, error, reload, refresh } = useApiCall(
+    () => apiClient.get<StockItem[]>("/api/inventory/products"),
+  );
 
   const displayed = useMemo(() => {
-    let list = items;
+    let list = items ?? [];
     if (filter === "critical") list = list.filter((i) => i.qty <= 0);
     if (filter === "low")      list = list.filter((i) => i.qty > 0 && i.qty <= i.reorderAt);
     if (search.trim()) {
@@ -71,7 +56,7 @@ export default function InventoryScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Inventory</Text>
-        <Text style={styles.count}>{items.length} products</Text>
+        <Text style={styles.count}>{(items ?? []).length} products</Text>
       </View>
 
       {/* Search */}
@@ -116,7 +101,7 @@ export default function InventoryScreen() {
       ) : error ? (
         <View style={styles.center}>
           <Text style={styles.errorText}>{error}</Text>
-          <Pressable style={styles.retryBtn} onPress={() => load()}>
+          <Pressable style={styles.retryBtn} onPress={reload}>
             <Text style={styles.retryText}>Retry</Text>
           </Pressable>
         </View>
@@ -127,7 +112,7 @@ export default function InventoryScreen() {
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={() => { setRefreshing(true); load(true); }}
+              onRefresh={refresh}
               tintColor="#6366F1"
             />
           }
@@ -151,43 +136,25 @@ export default function InventoryScreen() {
 const styles = StyleSheet.create({
   safe:          { flex: 1, backgroundColor: "#0F172A" },
   header:        {
-    flexDirection:   "row",
-    alignItems:      "center",
-    justifyContent:  "space-between",
-    paddingHorizontal: 20,
-    paddingTop:      20,
-    paddingBottom:   12,
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 20, paddingTop: 20, paddingBottom: 12,
   },
   title:         { fontSize: 22, fontWeight: "700", color: "#F8FAFC" },
   count:         { fontSize: 13, color: "#64748B" },
   searchWrap:    {
-    flexDirection:   "row",
-    alignItems:      "center",
+    flexDirection: "row", alignItems: "center",
     backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius:    12,
-    borderWidth:     1,
-    borderColor:     "rgba(255,255,255,0.08)",
-    marginHorizontal: 20,
-    paddingHorizontal: 12,
-    height:          44,
-    marginBottom:    12,
+    borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
+    marginHorizontal: 20, paddingHorizontal: 12, height: 44, marginBottom: 12,
   },
   searchIcon:    { fontSize: 15, marginRight: 8 },
   search:        { flex: 1, fontSize: 14, color: "#F8FAFC" },
   clearSearch:   { fontSize: 14, color: "#475569", paddingLeft: 8 },
-  filterRow:     {
-    flexDirection:    "row",
-    paddingHorizontal: 20,
-    gap:              8,
-    marginBottom:     14,
-  },
+  filterRow:     { flexDirection: "row", paddingHorizontal: 20, gap: 8, marginBottom: 14 },
   pill:          {
-    paddingHorizontal: 14,
-    paddingVertical:   6,
-    borderRadius:      20,
-    backgroundColor:   "rgba(255,255,255,0.05)",
-    borderWidth:       1,
-    borderColor:       "rgba(255,255,255,0.08)",
+    paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
   },
   pillActive:    { backgroundColor: "rgba(99,102,241,0.15)", borderColor: "rgba(99,102,241,0.4)" },
   pillText:      { fontSize: 13, color: "#64748B", fontWeight: "500" },
@@ -196,12 +163,9 @@ const styles = StyleSheet.create({
   center:        { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 },
   errorText:     { fontSize: 14, color: "#94A3B8", textAlign: "center", marginBottom: 16 },
   retryBtn:      {
-    paddingHorizontal: 20,
-    paddingVertical:   8,
-    backgroundColor:   "rgba(99,102,241,0.15)",
-    borderRadius:      8,
-    borderWidth:       1,
-    borderColor:       "rgba(99,102,241,0.35)",
+    paddingHorizontal: 20, paddingVertical: 8,
+    backgroundColor: "rgba(99,102,241,0.15)", borderRadius: 8,
+    borderWidth: 1, borderColor: "rgba(99,102,241,0.35)",
   },
   retryText:     { fontSize: 13, color: "#818CF8", fontWeight: "600" },
   emptyText:     { textAlign: "center", color: "#475569", fontSize: 14, paddingVertical: 24 },
