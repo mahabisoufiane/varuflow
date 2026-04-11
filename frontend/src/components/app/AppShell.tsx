@@ -13,6 +13,7 @@ import {
   Menu, X, Home,
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 const AiChat         = dynamic(() => import("@/components/app/AiChat"),         { ssr: false });
 const CommandPalette = dynamic(() => import("@/components/app/CommandPalette"), { ssr: false });
@@ -201,8 +202,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         ))}
       </nav>
 
-      {/* Bottom: AI indicator + locale + sign out */}
+      {/* Bottom: theme toggle + AI indicator + locale + sign out */}
       <div className="shrink-0 border-t border-white/[0.07] px-2 py-3 space-y-1">
+        {/* Theme toggle */}
+        <div className="flex justify-end px-1 pb-1">
+          <ThemeToggle />
+        </div>
         {/* AI indicator */}
         {isClient && (
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg">

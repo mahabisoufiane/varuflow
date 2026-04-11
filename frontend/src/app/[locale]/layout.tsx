@@ -1,9 +1,14 @@
+// File: src/app/[locale]/layout.tsx
+// Purpose: Root locale layout — wraps all pages with i18n, theme provider, and toaster
+// Used by: Every page under /[locale]/
+
 import Script from "next/script";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { ThemeProvider } from "next-themes";
 import { routing } from "@/i18n/routing";
 import { Toaster } from "@/components/ui/sonner";
 import SentryInit from "@/components/app/SentryInit";
@@ -46,17 +51,24 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={inter.variable}>
+    <html lang={locale} className={inter.variable} suppressHydrationWarning>
       <head>
-        <meta name="theme-color" content="#1a2332" />
+        <meta name="theme-color" content="#0F172A" />
         <link rel="apple-touch-icon" href="/icon.svg" />
       </head>
       <body className="font-sans antialiased" suppressHydrationWarning>
-        <NextIntlClientProvider messages={messages}>
-          <SentryInit />
-          {children}
-          <Toaster position="bottom-right" richColors />
-        </NextIntlClientProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          storageKey="varuflow-theme"
+        >
+          <NextIntlClientProvider messages={messages}>
+            <SentryInit />
+            {children}
+            <Toaster position="bottom-right" richColors />
+          </NextIntlClientProvider>
+        </ThemeProvider>
         {process.env.NEXT_PUBLIC_SENTRY_DSN && (
           <Script
             src="https://browser.sentry-cdn.com/8.0.0/bundle.min.js"

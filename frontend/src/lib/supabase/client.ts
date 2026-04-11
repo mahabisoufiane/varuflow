@@ -1,5 +1,5 @@
 // File: src/lib/supabase/client.ts
-// Purpose: Browser-side Supabase client factory — NEVER creates a client at module level
+// Purpose: Browser-side Supabase client factory + OAuth helpers (Google, Microsoft)
 // Used by: login, signup, forgot-password, reset-password, onboarding, settings, analytics, AppShell
 
 import { createBrowserClient } from "@supabase/ssr";
@@ -36,4 +36,33 @@ export function createClient() {
     );
   }
   return createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+/**
+ * Sign in with Google via Supabase OAuth.
+ * Requires Google provider enabled in Supabase dashboard → Authentication → Providers.
+ */
+export async function signInWithGoogle() {
+  const supabase = createClient();
+  return supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/en/auth/callback`,
+    },
+  });
+}
+
+/**
+ * Sign in with Microsoft (Azure AD) via Supabase OAuth.
+ * Requires Azure provider enabled in Supabase dashboard → Authentication → Providers.
+ */
+export async function signInWithMicrosoft() {
+  const supabase = createClient();
+  return supabase.auth.signInWithOAuth({
+    provider: "azure",
+    options: {
+      scopes: "email profile",
+      redirectTo: `${window.location.origin}/en/auth/callback`,
+    },
+  });
 }

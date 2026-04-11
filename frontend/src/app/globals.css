@@ -1,128 +1,269 @@
+/* File: src/app/globals.css
+   Purpose: Global styles, CSS variables (dark + light themes), component utilities
+   Used by: src/app/[locale]/layout.tsx — imported once at the root */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ── Theme tokens ─────────────────────────────────────────────────────────── */
 @layer base {
-  :root {
-    --background: 222 47% 5%;
-    --foreground: 210 40% 96%;
-    --card: 225 20% 9%;
-    --card-foreground: 210 40% 96%;
-    --popover: 225 20% 9%;
-    --popover-foreground: 210 40% 96%;
-    --primary: 239 84% 67%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 20% 13%;
-    --secondary-foreground: 210 40% 96%;
-    --muted: 220 20% 13%;
-    --muted-foreground: 215 20% 50%;
-    --accent: 220 20% 16%;
-    --accent-foreground: 210 40% 96%;
-    --destructive: 0 72% 51%;
+
+  /* DARK MODE (default) */
+  :root,
+  .dark {
+    --vf-bg-primary:     #0F172A;
+    --vf-bg-surface:     #1E293B;
+    --vf-bg-elevated:    #263244;
+    --vf-text-primary:   #F8FAFC;
+    --vf-text-secondary: #94A3B8;
+    --vf-text-muted:     #475569;
+    --vf-border:         rgba(255,255,255,0.08);
+    --vf-glass-bg:       rgba(255,255,255,0.05);
+    --vf-glass-border:   rgba(255,255,255,0.08);
+
+    /* shadcn tokens */
+    --background:             215 28% 9%;
+    --foreground:             210 40% 98%;
+    --card:                   215 25% 12%;
+    --card-foreground:        210 40% 98%;
+    --popover:                215 25% 12%;
+    --popover-foreground:     210 40% 98%;
+    --primary:                239 84% 67%;
+    --primary-foreground:     0 0% 100%;
+    --secondary:              215 25% 16%;
+    --secondary-foreground:   210 40% 98%;
+    --muted:                  215 25% 16%;
+    --muted-foreground:       215 20% 50%;
+    --accent:                 239 84% 67%;
+    --accent-foreground:      0 0% 100%;
+    --destructive:            0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 15% 14%;
-    --input: 220 15% 14%;
-    --ring: 239 84% 67%;
-    --radius: 0.5rem;
+    --border:                 215 20% 16%;
+    --input:                  215 20% 16%;
+    --ring:                   239 84% 67%;
+    --radius:                 0.5rem;
+
+    color-scheme: dark;
+  }
+
+  /* LIGHT MODE */
+  .light {
+    --vf-bg-primary:     #F8FAFC;
+    --vf-bg-surface:     #FFFFFF;
+    --vf-bg-elevated:    #F1F5F9;
+    --vf-text-primary:   #0F172A;
+    --vf-text-secondary: #475569;
+    --vf-text-muted:     #94A3B8;
+    --vf-border:         rgba(0,0,0,0.08);
+    --vf-glass-bg:       rgba(0,0,0,0.03);
+    --vf-glass-border:   rgba(0,0,0,0.08);
+
+    /* shadcn tokens */
+    --background:             0 0% 98%;
+    --foreground:             215 28% 9%;
+    --card:                   0 0% 100%;
+    --card-foreground:        215 28% 9%;
+    --popover:                0 0% 100%;
+    --popover-foreground:     215 28% 9%;
+    --primary:                239 84% 67%;
+    --primary-foreground:     0 0% 100%;
+    --secondary:              210 40% 96%;
+    --secondary-foreground:   215 28% 9%;
+    --muted:                  210 40% 96%;
+    --muted-foreground:       215 16% 47%;
+    --accent:                 239 84% 67%;
+    --accent-foreground:      0 0% 100%;
+    --destructive:            0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border:                 214 32% 91%;
+    --input:                  214 32% 91%;
+    --ring:                   239 84% 67%;
+    --radius:                 0.5rem;
+
+    color-scheme: light;
   }
 }
 
+/* ── Base resets ──────────────────────────────────────────────────────────── */
 @layer base {
   * {
     @apply border-border;
   }
-  html {
-    color-scheme: dark;
-  }
+
   body {
-    background-color: #0D0F14;
-    color: #F1F5F9;
+    background-color: var(--vf-bg-primary);
+    color: var(--vf-text-primary);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.09); border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+  ::-webkit-scrollbar             { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track       { background: transparent; }
+  ::-webkit-scrollbar-thumb       { background: rgba(99,102,241,0.2); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.4); }
 }
 
+/* ── Component utilities ──────────────────────────────────────────────────── */
 @layer components {
 
-  /* ── Skeleton ──────────────────────────────────────────────────── */
+  /* Glass surface */
+  .vf-glass {
+    background: var(--vf-glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--vf-glass-border);
+    border-radius: 16px;
+  }
+
+  /* Cards */
+  .vf-card {
+    background: var(--vf-bg-surface);
+    border: 1px solid var(--vf-border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  .vf-card-hover {
+    background: var(--vf-bg-surface);
+    border: 1px solid var(--vf-border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .vf-card-hover:hover {
+    background: var(--vf-bg-elevated);
+    border-color: rgba(99,102,241,0.3);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  }
+  .vf-card-elevated {
+    background: var(--vf-bg-elevated);
+    border: 1px solid var(--vf-border);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+  }
+  .vf-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--vf-border);
+  }
+
+  /* Input */
+  .vf-input {
+    width: 100%;
+    height: 48px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--vf-glass-border);
+    background: var(--vf-glass-bg);
+    color: var(--vf-text-primary);
+    font-size: 14px;
+    transition: all 200ms ease;
+    outline: none;
+  }
+  .vf-input::placeholder { color: var(--vf-text-muted); }
+  .vf-input:focus {
+    border-color: #6366F1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+
+  /* Buttons */
+  .vf-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 48px;
+    padding: 0 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366F1, #4F46E5);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 200ms ease;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+    cursor: pointer;
+    border: none;
+  }
+  .vf-btn:hover {
+    background: linear-gradient(135deg, #7C7FF5, #5850E6);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 0 16px rgba(99,102,241,0.3);
+    transform: scale(1.01);
+  }
+  .vf-btn:active   { transform: scale(0.98); }
+  .vf-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .vf-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 48px;
+    padding: 0 20px;
+    border-radius: 12px;
+    background: var(--vf-glass-bg);
+    border: 1px solid var(--vf-glass-border);
+    color: var(--vf-text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 200ms ease;
+    cursor: pointer;
+  }
+  .vf-btn-ghost:hover  { background: var(--vf-bg-elevated); color: var(--vf-text-primary); }
+  .vf-btn-ghost:active { transform: scale(0.98); }
+
+  .vf-btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 48px;
+    padding: 0 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 200ms ease;
+    cursor: pointer;
+    border: none;
+  }
+  .vf-btn-danger:hover  { transform: scale(1.01); box-shadow: 0 0 16px rgba(239,68,68,0.3); }
+  .vf-btn-danger:active { transform: scale(0.98); }
+
+  /* Status pills */
+  .pill-paid    { @apply inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 text-[11px] font-semibold; }
+  .pill-sent    { @apply inline-flex items-center gap-1.5 rounded-full bg-blue-500/10    text-blue-400    border border-blue-500/20    px-2.5 py-0.5 text-[11px] font-semibold; }
+  .pill-overdue { @apply inline-flex items-center gap-1.5 rounded-full bg-red-500/10     text-red-400     border border-red-500/20     px-2.5 py-0.5 text-[11px] font-semibold; }
+  .pill-draft   { @apply inline-flex items-center gap-1.5 rounded-full bg-white/5        text-slate-400   border border-white/[0.08]   px-2.5 py-0.5 text-[11px] font-semibold; }
+
+  /* Tables */
+  .vf-table        { @apply w-full text-sm; }
+  .vf-table thead tr { border-bottom: 1px solid var(--vf-border); }
+  .vf-table thead th { @apply px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide; color: var(--vf-text-muted); }
+  .vf-table tbody tr { border-bottom: 1px solid var(--vf-border); transition: background 0.15s ease; }
+  .vf-table tbody tr:hover { background: var(--vf-glass-bg); }
+  .vf-table tbody td { @apply px-4 py-3; color: var(--vf-text-secondary); }
+
+  /* Skeleton */
   .skeleton {
-    @apply relative overflow-hidden bg-white/[0.05] rounded-lg;
+    @apply relative overflow-hidden rounded-xl;
+    background: var(--vf-bg-elevated);
   }
   .skeleton::after {
     content: "";
     @apply absolute inset-0;
-    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
     animation: shimmer 1.4s infinite;
     transform: translateX(-100%);
   }
 
-  /* ── Card ──────────────────────────────────────────────────────── */
-  /* Use this instead of spelling out rounded-xl border ... every time */
-  .vf-card {
-    @apply rounded-xl border border-white/[0.08] bg-vf-surface;
-  }
-  .vf-card-elevated {
-    @apply rounded-xl border border-white/[0.08] bg-vf-elevated shadow-elevated;
-  }
-  /* Card header divider */
-  .vf-card-header {
-    @apply flex items-center justify-between px-5 py-3.5 border-b border-white/[0.07];
-  }
-
-  /* ── Status pills ──────────────────────────────────────────────── */
-  .pill-paid    { @apply inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 text-[11px] font-semibold; }
-  .pill-sent    { @apply inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-0.5 text-[11px] font-semibold; }
-  .pill-overdue { @apply inline-flex items-center gap-1.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-0.5 text-[11px] font-semibold; }
-  .pill-draft   { @apply inline-flex items-center gap-1.5 rounded-full bg-white/5 text-slate-400 border border-white/[0.08] px-2.5 py-0.5 text-[11px] font-semibold; }
-
-  /* ── Input ─────────────────────────────────────────────────────── */
-  .vf-input {
-    @apply w-full rounded-lg border border-white/[0.09] bg-vf-surface px-3.5 py-2.5 text-sm text-slate-100
-      placeholder:text-slate-600 focus:border-indigo-500/70 focus:outline-none focus:ring-2
-      focus:ring-indigo-500/20 transition-all;
-  }
-
-  /* ── Buttons ───────────────────────────────────────────────────── */
-  .vf-btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5
-      text-sm font-semibold text-white hover:bg-indigo-500 active:scale-[0.98]
-      disabled:opacity-40 disabled:pointer-events-none transition-all;
-  }
-  .vf-btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-white/[0.09]
-      px-4 py-2.5 text-sm font-medium text-slate-400 hover:bg-white/[0.05] hover:text-slate-200
-      active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none transition-all;
-  }
-  .vf-btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-red-600/80 px-4 py-2.5
-      text-sm font-semibold text-white hover:bg-red-600 active:scale-[0.98]
-      disabled:opacity-40 disabled:pointer-events-none transition-all;
-  }
-
-  /* ── Table ─────────────────────────────────────────────────────── */
-  .vf-table {
-    @apply w-full text-sm;
-  }
-  .vf-table thead tr {
-    @apply border-b border-white/[0.07];
-  }
-  .vf-table thead th {
-    @apply px-4 py-3 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wide;
-  }
-  .vf-table tbody tr {
-    @apply border-b border-white/[0.04] hover:bg-white/[0.025] transition-colors;
-  }
-  .vf-table tbody td {
-    @apply px-4 py-3 text-slate-300;
-  }
-
-  /* ── Page enter animation ──────────────────────────────────────── */
-  .page-enter {
-    animation: fade-in 0.18s ease-out both;
-  }
+  /* Page enter animation */
+  .page-enter { animation: fade-in 0.18s ease-out both; }
 }
