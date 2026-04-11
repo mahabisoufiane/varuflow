@@ -24,5 +24,17 @@ class Settings(BaseSettings):
     ENV: str = "development"
     DEBUG: bool = True
 
+    # ── Standalone local auth ──────────────────────────────────────────────────
+    # Strong random secret used to sign local JWT access tokens.
+    # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+    AUTH_JWT_SECRET: str = "change-me-in-production-use-a-64-char-random-hex-string"
+
+    # SMTP settings for auth emails (verification, password reset)
+    SMTP_HOST: str = ""          # e.g. smtp.mailgun.org | smtp.sendgrid.net
+    SMTP_PORT: int = 587         # 587 = STARTTLS, 465 = TLS, 25 = plain
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = "noreply@varuflow.se"
+
 
 settings = Settings()

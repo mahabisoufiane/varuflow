@@ -3,7 +3,6 @@ name = "varuflow-backend"
 version = "0.1.0"
 description = "Varuflow API — inventory and invoicing for Swedish wholesalers"
 authors = ["Varuflow"]
-readme = "README.md"
 packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
@@ -26,6 +25,10 @@ openai = ">=1.30"
 email-validator = ">=2.1"
 apscheduler = {version = ">=3.10", extras = ["asyncio"]}
 sentry-sdk = {version = ">=2.0", extras = ["fastapi"]}
+# ── Standalone local auth ──────────────────────────────────────────────────
+passlib = {extras = ["bcrypt"], version = ">=1.7"}
+pyotp = ">=2.9"
+aiosmtplib = ">=3.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.0"

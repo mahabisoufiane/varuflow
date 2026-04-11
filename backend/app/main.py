@@ -37,7 +37,8 @@ logging.config.dictConfig({
 
 from app.config import settings
 from app.database import engine
-from app.routers import ai_engine, analytics, auth, billing, health, integrations, inventory, invoicing, portal, pos, recurring, team, waitlist
+from app.middleware.rate_limit import RateLimitMiddleware
+from app.routers import ai_engine, analytics, auth, billing, health, integrations, inventory, invoicing, local_auth, portal, pos, recurring, team, waitlist
 from app.services.scheduler import create_scheduler
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
@@ -93,6 +94,10 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 
+# IP-based rate limit: 100 req/min — must be added BEFORE CORSMiddleware
+# so CORS headers are still injected on 429 responses.
+app.add_middleware(RateLimitMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS.split(","),
@@ -136,6 +141,7 @@ async def _global_exception_handler(request: Request, exc: Exception) -> JSONRes
 
 app.include_router(health.router, prefix="/api")
 app.include_router(auth.router)
+app.include_router(local_auth.router)
 app.include_router(inventory.router)
 app.include_router(invoicing.router)
 app.include_router(waitlist.router)
