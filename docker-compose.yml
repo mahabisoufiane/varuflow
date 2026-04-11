@@ -61,6 +61,14 @@ services:
       DEBUG: "true"
       PORTAL_JWT_SECRET: "portal-secret-change-in-production-32chars"
       PORTAL_BASE_URL: "http://localhost:3000"
+      # ── Standalone local auth ──────────────────────────────────────────────
+      # Replace with: python -c "import secrets; print(secrets.token_hex(32))"
+      AUTH_JWT_SECRET: "dev-local-auth-jwt-secret-change-in-production-64chars"
+      SMTP_HOST: ""          # blank → emails printed to stdout in dev
+      SMTP_PORT: "587"
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""
+      SMTP_FROM: "noreply@varuflow.se"
     depends_on:
       postgres:
         condition: service_healthy
