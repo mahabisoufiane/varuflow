@@ -8,6 +8,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
+      "image": "./assets/splash.png",
       "backgroundColor": "#0F172A",
       "resizeMode": "contain"
     },
@@ -15,6 +16,7 @@
       "package": "com.varuflow.app",
       "versionCode": 1,
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0F172A"
       },
       "permissions": [
