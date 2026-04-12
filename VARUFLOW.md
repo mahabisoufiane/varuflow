@@ -447,7 +447,7 @@ uvicorn app.main:app --reload  # starts on http://localhost:8000
 cd frontend
 cp .env.local.example .env.local   # fill in NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_API_URL
 npm install
-npm run dev                         # starts on http://localhost:3001
+npm run dev                         # starts on http://localhost:3000
 ```
 
 ### Required Environment Variables
@@ -463,7 +463,7 @@ STRIPE_SECRET_KEY=sk_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 OPENAI_API_KEY=sk-...
 PORTAL_JWT_SECRET=<random 32+ char string>
-PORTAL_BASE_URL=http://localhost:3001
+PORTAL_BASE_URL=http://localhost:3000
 FORTNOX_CLIENT_ID=...
 FORTNOX_CLIENT_SECRET=...
 ```

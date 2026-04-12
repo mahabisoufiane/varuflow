@@ -33,7 +33,7 @@ function getLocalePrefix(pathname: string): string {
   return match ? `/${match[1]}` : "";
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Portal routes are standalone — skip i18n and auth entirely
   if (request.nextUrl.pathname.startsWith("/portal")) {
     return NextResponse.next();
