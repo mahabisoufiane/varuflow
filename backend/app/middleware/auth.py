@@ -35,7 +35,7 @@ def _decode_token(token: str) -> dict:
         return jwt.decode(
             token,
             settings.SUPABASE_JWT_SECRET,
-            algorithms=["ES256"],
+            algorithms=["HS256"],
             options={"verify_aud": False},
         )
 

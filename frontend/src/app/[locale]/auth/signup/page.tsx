@@ -208,7 +208,7 @@ export default function SignupPage() {
     try {
       const { error } = await supabase.auth.signUp({
         email, password,
-        options: { data:{ full_name:fullName }, emailRedirectTo:`${location.origin}/en/auth/callback?next=/onboarding${plan ? `%3Fplan%3D${plan}` : ""}` },
+        options: { data:{ full_name:fullName }, emailRedirectTo:`${location.origin}/en/auth/callback?next=${encodeURIComponent(`/onboarding${plan ? `?plan=${plan}` : ""}`)}` },
       });
       if (error) return setError(mapSignupError(error.message, t));
       setSent(true);
