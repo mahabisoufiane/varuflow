@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 type Step = 1 | 2 | 3;
@@ -21,8 +22,9 @@ const ORG_NUMBER_RE = /^\d{6}-?\d{4}$/;
 export default function OnboardingPage() {
   const t = useTranslations("onboarding");
   const router = useRouter();
-  // Supabase client — created inside the component, never at module level
   const supabase = createClient();
+  const searchParams = useSearchParams();
+  const plan = searchParams.get("plan") ?? "";
 
   const [step, setStep] = useState<Step>(1);
   const [form, setForm] = useState<CompanyForm>({
@@ -240,7 +242,31 @@ export default function OnboardingPage() {
             </div>
             <Button
               className="w-full bg-[#1a2332] hover:bg-[#2a3342] text-white"
-              onClick={() => router.push("/dashboard")}
+              onClick={async () => {
+                // If the user came from the pricing page with a paid plan, send
+                // them to Stripe checkout instead of straight to the dashboard.
+                if (plan === "starter" || plan === "professional") {
+                  const { data: { session } } = await supabase.auth.getSession();
+                  if (session) {
+                    try {
+                      const res = await fetch(
+                        `${process.env.NEXT_PUBLIC_API_URL}/api/billing/checkout`,
+                        {
+                          method: "POST",
+                          headers: { Authorization: `Bearer ${session.access_token}` },
+                        }
+                      );
+                      if (res.ok) {
+                        const { url } = await res.json();
+                        window.location.href = url;
+                        return;
+                      }
+                    } catch {}
+                    // Checkout failed — fall through to dashboard
+                  }
+                }
+                router.push("/dashboard");
+              }}
             >
               {t("finish")}
             </Button>

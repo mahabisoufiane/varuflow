@@ -3,6 +3,7 @@
 import { createClient, signInWithGoogle, signInWithMicrosoft } from "@/lib/supabase/client";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { Eye, EyeOff, Loader2, Mail, Zap, Check, X } from "lucide-react";
 import ThemeToggle from "@/components/ui/ThemeToggle";
@@ -158,6 +159,8 @@ function SuccessState({ email, onResend }: { email: string; onResend: () => void
 export default function SignupPage() {
   const t = useTranslations();
   const supabase = createClient();
+  const searchParams = useSearchParams();
+  const plan = searchParams.get("plan") ?? "";
 
   const [fullName, setFullName]           = useState("");
   const [email, setEmail]                 = useState("");
@@ -205,7 +208,7 @@ export default function SignupPage() {
     try {
       const { error } = await supabase.auth.signUp({
         email, password,
-        options: { data:{ full_name:fullName }, emailRedirectTo:`${location.origin}/en/auth/callback?next=/onboarding` },
+        options: { data:{ full_name:fullName }, emailRedirectTo:`${location.origin}/en/auth/callback?next=/onboarding${plan ? `%3Fplan%3D${plan}` : ""}` },
       });
       if (error) return setError(mapSignupError(error.message, t));
       setSent(true);

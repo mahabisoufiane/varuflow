@@ -343,8 +343,8 @@ export default function PricingPage() {
   const enterpriseStars      = t.raw("enterprise.stars") as string[];
   const faqItems             = t.raw("faq.items") as { q: string; a: string }[];
 
-  function goToSignup() {
-    window.location.href = "/auth/signup";
+  function goToSignup(plan: "starter" | "professional") {
+    window.location.href = `/auth/signup?plan=${plan}`;
   }
 
   return (
@@ -412,7 +412,7 @@ export default function PricingPage() {
             lockedFeatures={starterLocked}
             ctaLabel={t("startTrial")}
             ctaStyle="secondary"
-            onCta={goToSignup}
+            onCta={() => goToSignup("starter")}
           />
           <PlanCard
             plan="professional"
@@ -424,7 +424,7 @@ export default function PricingPage() {
             lockedFeatures={proLocked}
             ctaLabel={t("startTrial")}
             ctaStyle="primary"
-            onCta={goToSignup}
+            onCta={() => goToSignup("professional")}
           />
           <PlanCard
             plan="enterprise"
@@ -524,7 +524,7 @@ export default function PricingPage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
-              href="/auth/signup"
+              href="/auth/signup?plan=professional"
               className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#4F46E5] px-7 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(99,102,241,0.4)]"
             >
               Start free trial
