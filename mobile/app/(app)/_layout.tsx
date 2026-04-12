@@ -1,10 +1,16 @@
 // File: mobile/app/(app)/_layout.tsx
 // Purpose: Bottom tab navigator for authenticated enterprise users
 // Tabs: Dashboard · Inventory · Analytics · Settings
+//
+// SECURITY: This layout is the second auth gate — it checks for a live Supabase
+// session and enterprise plan before rendering any (app) screen. The root
+// _layout.tsx is the primary gate; this one protects against direct deep-link
+// access and any edge-case where appState hasn't resolved yet.
 
-import React from "react";
-import { StyleSheet, Text } from "react-native";
-import { Tabs } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { Tabs, router } from "expo-router";
+import { supabase, getUserPlan } from "@/lib/supabase";
 
 function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
   return (
@@ -13,6 +19,35 @@ function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
 }
 
 export default function AppLayout() {
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    async function guard() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.replace("/(auth)/login");
+        return;
+      }
+      const plan = await getUserPlan(session.user.id);
+      if (plan !== "enterprise") {
+        // Not enterprise — root layout will show EnterpriseGate on next event,
+        // but redirect immediately so no (app) screen flashes.
+        router.replace("/(auth)/login");
+        return;
+      }
+      setChecked(true);
+    }
+    guard();
+  }, []);
+
+  if (!checked) {
+    return (
+      <View style={styles.splash}>
+        <ActivityIndicator size="large" color="#6366F1" />
+      </View>
+    );
+  }
+
   return (
     <Tabs
       screenOptions={{
@@ -56,6 +91,12 @@ export default function AppLayout() {
 }
 
 const styles = StyleSheet.create({
+  splash: {
+    flex:            1,
+    backgroundColor: "#0F172A",
+    alignItems:      "center",
+    justifyContent:  "center",
+  },
   tabBar: {
     backgroundColor:  "#1E293B",
     borderTopColor:   "rgba(255,255,255,0.06)",

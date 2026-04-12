@@ -27,11 +27,11 @@ export default function RootLayout() {
     async (event: AuthChangeEvent, session: Session | null) => {
       // TOKEN_REFRESHED / SIGNED_IN / INITIAL_SESSION  → user is authenticated
       // SIGNED_OUT → actual sign-out (user tapped button or token truly invalid)
-      // TOKEN_REFRESH_FAILED → network blip; DO NOT sign the user out
-      if (event === "TOKEN_REFRESH_FAILED") {
-        // Keep whatever state we already have — don't kick to login
-        return;
-      }
+      // TOKEN_REFRESH_FAILED handling is disabled for now — re-enable if needed:
+      // if ((event as string) === "TOKEN_REFRESH_FAILED") {
+      //   // Keep whatever state we already have — don't kick to login on network blips
+      //   return;
+      // }
 
       if (!session) {
         setState("unauthenticated");
