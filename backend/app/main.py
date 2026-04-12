@@ -146,7 +146,20 @@ async def _global_exception_handler(request: Request, exc: Exception) -> JSONRes
         "Unhandled exception | method=%s path=%s",
         request.method, request.url.path,
     )
-    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+
+    origin = request.headers.get("origin")
+    allowed_origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
+    headers = {}
+    if origin in allowed_origins:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+        headers["Vary"] = "Origin"
+
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"},
+        headers=headers,
+    )
 
 app.include_router(health.router, prefix="/api")
 app.include_router(auth.router)
