@@ -556,7 +556,6 @@ def _generate_zreport(session: PosSession, org_name: str) -> bytes:
     styles = getSampleStyleSheet()
     h1 = ParagraphStyle("H1", parent=styles["Normal"], fontSize=16, fontName="Helvetica-Bold", textColor=NAVY)
     h2 = ParagraphStyle("H2", parent=styles["Normal"], fontSize=11, fontName="Helvetica-Bold", textColor=NAVY)
-    normal = ParagraphStyle("N", parent=styles["Normal"], fontSize=9)
     small = ParagraphStyle("S", parent=styles["Normal"], fontSize=8, textColor=colors.gray)
 
     sales = [s for s in session.sales if not s.is_refunded]

@@ -6,7 +6,7 @@ from typing import Optional
 from urllib.parse import urlencode
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy import delete, select
@@ -367,7 +367,7 @@ async def ai_chat(
 
     from sqlalchemy import func
     from app.models.inventory import Product, StockLevel
-    from app.models.invoicing import Invoice, InvoiceStatus, Customer
+    from app.models.invoicing import Invoice, InvoiceStatus
 
     org_id = _org_id(ctx)
 

@@ -10,12 +10,15 @@ GET  /api/ai/cards          — generate fresh action cards from live data
 POST /api/ai/actions/send-reminder   — send payment reminder email
 POST /api/ai/actions/mark-seen       — mark card seen (frontend tracking)
 """
+import logging
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
+
+log = logging.getLogger(__name__)
 from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,7 +36,7 @@ from app.models.inventory import (
     StockMovementType,
     Supplier,
 )
-from app.models.invoicing import Customer, Invoice, InvoiceStatus, Payment
+from app.models.invoicing import Customer, Invoice, InvoiceStatus
 from app.models.organization import OrgPlan, Organization
 
 router = APIRouter(

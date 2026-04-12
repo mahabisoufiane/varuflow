@@ -1,6 +1,6 @@
 """Analytics: revenue over time, top customers, top products, inventory value, overdue summary."""
 import uuid
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 from io import BytesIO
 
@@ -365,8 +365,7 @@ async def export_analytics_pdf(
     styles = getSampleStyleSheet()
     story = []
 
-    def cell(text, bold=False, small=False):
-        size = 9 if small else 10
+    def cell(text, bold=False, small=False):  # noqa: ARG001
         weight = "b" if bold else ""
         return Paragraph(f"<{weight}>{text}</{weight}>" if weight else text, styles["Normal"])
 

@@ -15,7 +15,7 @@ import asyncio
 import logging
 import time
 from collections import defaultdict
-from typing import DefaultDict, NamedTuple
+from typing import NamedTuple
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -55,7 +55,7 @@ _PATH_LIMITS: list[tuple[str, _Limit]] = [
 # Separate counter namespace per (path_prefix, ip) so auth counters don't
 # share state with the global counter.
 # Key: (namespace, ip)  Value: list of monotonic timestamps
-_counters: DefaultDict[tuple[str, str], list[float]] = defaultdict(list)
+_counters: defaultdict[tuple[str, str], list[float]] = defaultdict(list)
 _lock = asyncio.Lock()
 
 

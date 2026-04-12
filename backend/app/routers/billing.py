@@ -2,7 +2,7 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from sqlalchemy import String, select
 from sqlalchemy.dialects.postgresql import UUID as PGUUID

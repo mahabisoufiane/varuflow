@@ -6,7 +6,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, Field
 
-from app.models.invoicing import InvoiceStatus, PaymentMethod, RecurringFrequency
+from app.models.invoicing import InvoiceStatus, PaymentMethod
 
 PositiveDecimal = Annotated[Decimal, Field(gt=0)]
 

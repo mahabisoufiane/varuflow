@@ -619,7 +619,6 @@ def _generate_peppol_xml(inv: Invoice, org) -> bytes:
 
     lines_xml = ""
     for idx, li in enumerate(inv.line_items, start=1):
-        vat_amount = (li.line_total * li.tax_rate / 100).quantize(Decimal("0.01"))
         lines_xml += f"""
     <cac:InvoiceLine>
       <cbc:ID>{idx}</cbc:ID>
@@ -858,7 +857,6 @@ def _generate_ehf_xml(inv: Invoice, org) -> bytes:
 
     lines_xml = ""
     for idx, li in enumerate(inv.line_items, start=1):
-        vat_amount = (li.line_total * li.tax_rate / 100).quantize(Decimal("0.01"))
         lines_xml += f"""
   <cac:InvoiceLine>
     <cbc:ID>{idx}</cbc:ID>

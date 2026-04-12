@@ -227,7 +227,7 @@ async def send_weekly_digest_email(
     )
 
     payload = {
-        "from": f"Varuflow <digest@varuflow.app>",
+        "from": "Varuflow <digest@varuflow.app>",
         "to": [to_email],
         "subject": f"Weekly digest — {org_name}",
         "html": f"""
