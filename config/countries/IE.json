@@ -1,0 +1,25 @@
+{
+  "iso_alpha2": "IE",
+  "display_name": "Ireland",
+  "region": "europe",
+  "default_locale": "en-IE",
+  "currency": "EUR",
+  "vat": {
+    "standard_rate_pct": 23.0,
+    "reduced_rates_pct": [
+      13.5,
+      9.0,
+      4.8
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": true,
+    "tax_id_regex": "IE\\d{7}[A-Z]{1,2}",
+    "einvoicing_status": "B2G mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/IE/README.md"
+}

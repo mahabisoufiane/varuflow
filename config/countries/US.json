@@ -1,0 +1,21 @@
+{
+  "iso_alpha2": "US",
+  "display_name": "United States",
+  "region": "americas",
+  "default_locale": "en-US",
+  "currency": "USD",
+  "vat": {
+    "standard_rate_pct": 0.0,
+    "reduced_rates_pct": [],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d{2}-\\d{7}",
+    "einvoicing_status": "voluntary (per-state sales tax)"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/US/README.md"
+}

@@ -1,0 +1,23 @@
+{
+  "iso_alpha2": "VE",
+  "display_name": "Venezuela",
+  "region": "americas",
+  "default_locale": "es-VE",
+  "currency": "VES",
+  "vat": {
+    "standard_rate_pct": 16.0,
+    "reduced_rates_pct": [
+      8.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "[JVEG]-\\d{9}",
+    "einvoicing_status": "planned"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/VE/README.md"
+}

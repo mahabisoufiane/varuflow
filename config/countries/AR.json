@@ -1,0 +1,24 @@
+{
+  "iso_alpha2": "AR",
+  "display_name": "Argentina",
+  "region": "americas",
+  "default_locale": "es-AR",
+  "currency": "ARS",
+  "vat": {
+    "standard_rate_pct": 21.0,
+    "reduced_rates_pct": [
+      10.5,
+      27.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d{2}-\\d{8}-\\d{1}",
+    "einvoicing_status": "AFIP mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/AR/README.md"
+}

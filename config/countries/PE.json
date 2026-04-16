@@ -1,0 +1,21 @@
+{
+  "iso_alpha2": "PE",
+  "display_name": "Peru",
+  "region": "americas",
+  "default_locale": "es-PE",
+  "currency": "PEN",
+  "vat": {
+    "standard_rate_pct": 18.0,
+    "reduced_rates_pct": [],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d{11}",
+    "einvoicing_status": "SUNAT mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/PE/README.md"
+}

@@ -1,0 +1,24 @@
+{
+  "iso_alpha2": "GB",
+  "display_name": "United Kingdom",
+  "region": "europe",
+  "default_locale": "en-GB",
+  "currency": "GBP",
+  "vat": {
+    "standard_rate_pct": 20.0,
+    "reduced_rates_pct": [
+      5.0,
+      0.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": true,
+    "tax_id_regex": "GB\\d{9}",
+    "einvoicing_status": "voluntary"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/GB/README.md"
+}

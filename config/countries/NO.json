@@ -1,0 +1,24 @@
+{
+  "iso_alpha2": "NO",
+  "display_name": "Norway",
+  "region": "europe",
+  "default_locale": "nb-NO",
+  "currency": "NOK",
+  "vat": {
+    "standard_rate_pct": 25.0,
+    "reduced_rates_pct": [
+      15.0,
+      12.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": true,
+    "tax_id_regex": "NO\\d{9}MVA",
+    "einvoicing_status": "voluntary"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/NO/README.md"
+}

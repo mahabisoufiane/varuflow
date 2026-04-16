@@ -1,0 +1,424 @@
+{
+  "generated_by": "scripts/scaffold_global.py",
+  "regions": [
+    "americas",
+    "europe",
+    "middle-east"
+  ],
+  "countries": [
+    {
+      "code": "AE",
+      "name": "United Arab Emirates",
+      "region": "middle-east",
+      "currency": "AED"
+    },
+    {
+      "code": "AL",
+      "name": "Albania",
+      "region": "europe",
+      "currency": "ALL"
+    },
+    {
+      "code": "AR",
+      "name": "Argentina",
+      "region": "americas",
+      "currency": "ARS"
+    },
+    {
+      "code": "AT",
+      "name": "Austria",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "BA",
+      "name": "Bosnia",
+      "region": "europe",
+      "currency": "BAM"
+    },
+    {
+      "code": "BE",
+      "name": "Belgium",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "BG",
+      "name": "Bulgaria",
+      "region": "europe",
+      "currency": "BGN"
+    },
+    {
+      "code": "BH",
+      "name": "Bahrain",
+      "region": "middle-east",
+      "currency": "BHD"
+    },
+    {
+      "code": "BO",
+      "name": "Bolivia",
+      "region": "americas",
+      "currency": "BOB"
+    },
+    {
+      "code": "BR",
+      "name": "Brazil",
+      "region": "americas",
+      "currency": "BRL"
+    },
+    {
+      "code": "CA",
+      "name": "Canada",
+      "region": "americas",
+      "currency": "CAD"
+    },
+    {
+      "code": "CH",
+      "name": "Switzerland",
+      "region": "europe",
+      "currency": "CHF"
+    },
+    {
+      "code": "CL",
+      "name": "Chile",
+      "region": "americas",
+      "currency": "CLP"
+    },
+    {
+      "code": "CO",
+      "name": "Colombia",
+      "region": "americas",
+      "currency": "COP"
+    },
+    {
+      "code": "CR",
+      "name": "Costa Rica",
+      "region": "americas",
+      "currency": "CRC"
+    },
+    {
+      "code": "CY",
+      "name": "Cyprus",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "CZ",
+      "name": "Czechia",
+      "region": "europe",
+      "currency": "CZK"
+    },
+    {
+      "code": "DE",
+      "name": "Germany",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "DK",
+      "name": "Denmark",
+      "region": "europe",
+      "currency": "DKK"
+    },
+    {
+      "code": "DO",
+      "name": "Dominican Rep.",
+      "region": "americas",
+      "currency": "DOP"
+    },
+    {
+      "code": "EC",
+      "name": "Ecuador",
+      "region": "americas",
+      "currency": "USD"
+    },
+    {
+      "code": "EE",
+      "name": "Estonia",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "EG",
+      "name": "Egypt",
+      "region": "middle-east",
+      "currency": "EGP"
+    },
+    {
+      "code": "ES",
+      "name": "Spain",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "FI",
+      "name": "Finland",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "FR",
+      "name": "France",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "GB",
+      "name": "United Kingdom",
+      "region": "europe",
+      "currency": "GBP"
+    },
+    {
+      "code": "GR",
+      "name": "Greece",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "GT",
+      "name": "Guatemala",
+      "region": "americas",
+      "currency": "GTQ"
+    },
+    {
+      "code": "HR",
+      "name": "Croatia",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "HU",
+      "name": "Hungary",
+      "region": "europe",
+      "currency": "HUF"
+    },
+    {
+      "code": "IE",
+      "name": "Ireland",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "IL",
+      "name": "Israel",
+      "region": "middle-east",
+      "currency": "ILS"
+    },
+    {
+      "code": "IQ",
+      "name": "Iraq",
+      "region": "middle-east",
+      "currency": "IQD"
+    },
+    {
+      "code": "IS",
+      "name": "Iceland",
+      "region": "europe",
+      "currency": "ISK"
+    },
+    {
+      "code": "IT",
+      "name": "Italy",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "JM",
+      "name": "Jamaica",
+      "region": "americas",
+      "currency": "JMD"
+    },
+    {
+      "code": "JO",
+      "name": "Jordan",
+      "region": "middle-east",
+      "currency": "JOD"
+    },
+    {
+      "code": "KW",
+      "name": "Kuwait",
+      "region": "middle-east",
+      "currency": "KWD"
+    },
+    {
+      "code": "LB",
+      "name": "Lebanon",
+      "region": "middle-east",
+      "currency": "LBP"
+    },
+    {
+      "code": "LT",
+      "name": "Lithuania",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "LU",
+      "name": "Luxembourg",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "LV",
+      "name": "Latvia",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "MD",
+      "name": "Moldova",
+      "region": "europe",
+      "currency": "MDL"
+    },
+    {
+      "code": "ME",
+      "name": "Montenegro",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "MK",
+      "name": "North Macedonia",
+      "region": "europe",
+      "currency": "MKD"
+    },
+    {
+      "code": "MT",
+      "name": "Malta",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "MX",
+      "name": "Mexico",
+      "region": "americas",
+      "currency": "MXN"
+    },
+    {
+      "code": "NL",
+      "name": "Netherlands",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "NO",
+      "name": "Norway",
+      "region": "europe",
+      "currency": "NOK"
+    },
+    {
+      "code": "OM",
+      "name": "Oman",
+      "region": "middle-east",
+      "currency": "OMR"
+    },
+    {
+      "code": "PA",
+      "name": "Panama",
+      "region": "americas",
+      "currency": "PAB"
+    },
+    {
+      "code": "PE",
+      "name": "Peru",
+      "region": "americas",
+      "currency": "PEN"
+    },
+    {
+      "code": "PL",
+      "name": "Poland",
+      "region": "europe",
+      "currency": "PLN"
+    },
+    {
+      "code": "PT",
+      "name": "Portugal",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "PY",
+      "name": "Paraguay",
+      "region": "americas",
+      "currency": "PYG"
+    },
+    {
+      "code": "QA",
+      "name": "Qatar",
+      "region": "middle-east",
+      "currency": "QAR"
+    },
+    {
+      "code": "RO",
+      "name": "Romania",
+      "region": "europe",
+      "currency": "RON"
+    },
+    {
+      "code": "RS",
+      "name": "Serbia",
+      "region": "europe",
+      "currency": "RSD"
+    },
+    {
+      "code": "SA",
+      "name": "Saudi Arabia",
+      "region": "middle-east",
+      "currency": "SAR"
+    },
+    {
+      "code": "SE",
+      "name": "Sweden",
+      "region": "europe",
+      "currency": "SEK"
+    },
+    {
+      "code": "SI",
+      "name": "Slovenia",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "SK",
+      "name": "Slovakia",
+      "region": "europe",
+      "currency": "EUR"
+    },
+    {
+      "code": "TR",
+      "name": "T\u00fcrkiye",
+      "region": "middle-east",
+      "currency": "TRY"
+    },
+    {
+      "code": "UA",
+      "name": "Ukraine",
+      "region": "europe",
+      "currency": "UAH"
+    },
+    {
+      "code": "US",
+      "name": "United States",
+      "region": "americas",
+      "currency": "USD"
+    },
+    {
+      "code": "UY",
+      "name": "Uruguay",
+      "region": "americas",
+      "currency": "UYU"
+    },
+    {
+      "code": "VE",
+      "name": "Venezuela",
+      "region": "americas",
+      "currency": "VES"
+    },
+    {
+      "code": "YE",
+      "name": "Yemen",
+      "region": "middle-east",
+      "currency": "YER"
+    }
+  ]
+}

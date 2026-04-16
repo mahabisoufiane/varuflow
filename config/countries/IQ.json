@@ -1,0 +1,21 @@
+{
+  "iso_alpha2": "IQ",
+  "display_name": "Iraq",
+  "region": "middle-east",
+  "default_locale": "ar-IQ",
+  "currency": "IQD",
+  "vat": {
+    "standard_rate_pct": 0.0,
+    "reduced_rates_pct": [],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d{9}",
+    "einvoicing_status": "planned"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/IQ/README.md"
+}
