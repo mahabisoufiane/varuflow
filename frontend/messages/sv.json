@@ -9,17 +9,17 @@
     "edit": "Redigera",
     "create": "Skapa",
     "search": "Sök...",
-    "noResults": "Inga resultat hittades",
+    "noResults": "Inga resultat",
     "back": "Tillbaka"
   },
   "nav": {
-    "dashboard": "Instrumentpanel",
+    "dashboard": "Översikt",
     "analytics": "Analys",
     "aiAdvisor": "AI-rådgivare",
     "inventory": "Lager",
     "invoices": "Fakturor",
     "recurring": "Återkommande",
-    "cashRegister": "Kassaregister",
+    "cashRegister": "Kassa",
     "customers": "Kunder",
     "settings": "Inställningar",
     "signOut": "Logga ut"
@@ -34,7 +34,7 @@
     "orContinueWith": "Eller logga in med lösenord",
     "noAccount": "Har du inget konto?",
     "hasAccount": "Har du redan ett konto?",
-    "forgotPassword": "Glömt lösenordet?",
+    "forgotPassword": "Glömt lösenord?",
     "signInWithPassword": "Logga in",
     "createAccount": "Skapa konto",
     "signUpDescription": "Starta din kostnadsfria Varuflow-testperiod.",
@@ -117,14 +117,14 @@
     "title": "Inställningar"
   },
   "errors": {
-    "invalidCredentials": "Felaktig e-post eller lösenord. Försök igen.",
+    "invalidCredentials": "Fel e-post eller lösenord.",
     "emailNotConfirmed": "Bekräfta din e-post innan du loggar in.",
     "accountLocked": "För många försök. Vänta 15 minuter.",
-    "networkError": "Anslutningen misslyckades. Kontrollera din internetanslutning.",
+    "networkError": "Anslutningsfel. Kontrollera din internetanslutning.",
     "sessionExpired": "Din session har gått ut. Logga in igen.",
-    "unauthorized": "Du har inte behörighet att göra detta.",
-    "serverError": "Något gick fel. Vi undersöker saken.",
-    "notFound": "Den här sidan finns inte.",
+    "unauthorized": "Du har inte behörighet till detta.",
+    "serverError": "Något gick fel på vår sida.",
+    "notFound": "Sidan finns inte.",
     "validationError": "Kontrollera formuläret för fel.",
     "emailTaken": "Den här e-posten är redan registrerad.",
     "passwordMismatch": "Lösenorden matchar inte.",
@@ -253,10 +253,14 @@
   },
   "success": {
     "loggedIn": "Välkommen tillbaka!",
-    "loggedOut": "Du har loggats ut.",
+    "loggedOut": "Du är utloggad.",
     "signupComplete": "Konto skapat! Kolla din e-post för bekräftelse.",
     "emailResent": "Bekräftelsemail skickat igen.",
     "profileUpdated": "Profil sparad.",
     "passwordChanged": "Lösenord uppdaterat."
+  },
+  "_meta": {
+    "locale": "sv",
+    "dir": "ltr"
   }
 }
