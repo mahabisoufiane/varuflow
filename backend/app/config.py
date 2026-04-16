@@ -36,9 +36,14 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = "https://varuflow.vercel.app"
 
     # ── Supabase ──────────────────────────────────────────────────────────────
-    SUPABASE_URL:         str = ""
-    SUPABASE_SERVICE_KEY: str = ""
-    SUPABASE_JWT_SECRET:  str = ""
+    # `SUPABASE_SERVICE_KEY` is the canonical name used throughout the codebase.
+    # `SUPABASE_SERVICE_ROLE_KEY` is accepted as an alias because the Railway
+    # deployment was provisioned under that name — resolved at startup below.
+    SUPABASE_URL:              str = ""
+    SUPABASE_SERVICE_KEY:      str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
+    SUPABASE_JWT_SECRET:       str = ""
+    SUPABASE_ANON_KEY:         str = ""
 
     # ── Third-party services ──────────────────────────────────────────────────
     RESEND_API_KEY:       str = ""
@@ -95,6 +100,12 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Accept SUPABASE_SERVICE_ROLE_KEY as an alias for SUPABASE_SERVICE_KEY so
+# existing Railway deployments (provisioned with the _ROLE_ name) continue
+# to work without a breaking rename. The canonical field is SERVICE_KEY.
+if not settings.SUPABASE_SERVICE_KEY and settings.SUPABASE_SERVICE_ROLE_KEY:
+    settings.SUPABASE_SERVICE_KEY = settings.SUPABASE_SERVICE_ROLE_KEY
 
 
 def validate_production_config() -> None:
