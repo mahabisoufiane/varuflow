@@ -6,6 +6,11 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig = {
   output: "standalone",
   reactStrictMode: false,
+  // Allow pointing the build dir elsewhere when .next is unwritable (e.g. left
+  // root-owned by a prior Docker run on a dev machine). Unset in prod → default.
+  ...(process.env.NEXT_DIST_DIR_OVERRIDE
+    ? { distDir: process.env.NEXT_DIST_DIR_OVERRIDE }
+    : {}),
   // Bake NEXT_PUBLIC vars into the Turbopack client bundle at build time.
   // NEXT_PUBLIC_SUPABASE_ANON_KEY is the canonical name — also keep the legacy
   // PUBLISHABLE_DEFAULT_KEY for any remaining references.
