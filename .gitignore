@@ -47,3 +47,7 @@ frontend/frontend/
 
 # Claude
 .claude/
+
+# Never commit real deployment secrets
+deploy/**/backend.env.secret
+deploy/**/frontend.env.secret
