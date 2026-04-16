@@ -59,6 +59,37 @@ class PortalResponse(BaseModel):
     url: str
 
 
+class BillingStatusResponse(BaseModel):
+    """Surfaces billing capability to the frontend so UI can hide disabled
+    flows (e.g. the Upgrade button) instead of letting users click into a 503.
+    Safe to expose publicly — returns only booleans, never secrets."""
+    stripe_configured:  bool
+    checkout_available: bool
+    portal_available:   bool
+    invoice_payment_links_available: bool
+
+
+# ── Public status probe ───────────────────────────────────────────────────────
+
+@router.get("/status", response_model=BillingStatusResponse)
+async def billing_status() -> BillingStatusResponse:
+    """Report whether billing is operational.
+
+    Unauthenticated because it returns no tenant data — the frontend calls
+    it before showing the Upgrade button. Safe against enumeration: only
+    booleans are returned, never secret values or customer IDs.
+    """
+    has_secret      = bool(settings.STRIPE_SECRET_KEY)
+    has_webhook     = bool(settings.STRIPE_WEBHOOK_SECRET)
+    has_price       = bool(settings.STRIPE_PRO_PRICE_ID)
+    return BillingStatusResponse(
+        stripe_configured               = has_secret,
+        checkout_available              = has_secret and has_price,
+        portal_available                = has_secret,
+        invoice_payment_links_available = has_secret and has_webhook,
+    )
+
+
 # ── Checkout ──────────────────────────────────────────────────────────────────
 
 @router.post("/checkout", response_model=CheckoutResponse)
