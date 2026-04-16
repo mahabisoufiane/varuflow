@@ -27,25 +27,27 @@ DEV_ORG_ID  = uuid.UUID("00000000-0000-0000-0000-000000000002")
 def _decode_token(token: str) -> dict:
     """Decode and verify a Supabase JWT.
 
-    Signature verification is always enforced in production.
-    In development (ENV=development) it is skipped when no secret is configured,
-    so the app can run without a live Supabase project.
-    """
-    # TODO: re-enable signature verification once SUPABASE_JWT_SECRET is
-    # confirmed correct in Railway. Currently bypassed because the secret
-    # mismatch blocks all authenticated requests in production.
-    # SECURITY: restore the block below before going to a paid/public launch.
-    #
-    # if settings.SUPABASE_JWT_SECRET:
-    #     return jwt.decode(
-    #         token,
-    #         settings.SUPABASE_JWT_SECRET,
-    #         algorithms=["HS256"],
-    #         options={"verify_aud": False},
-    #     )
-    # if settings.ENV != "development":
-    #     raise JWTError("SUPABASE_JWT_SECRET not configured — cannot verify token")
+    Behaviour depends on `settings.ENFORCE_JWT_SIGNATURE`:
+      True  → signature verification required; a missing secret is an error.
+      False → legacy unverified decode, kept for backward compatibility
+              with the current Railway deployment. Flip the env flag once
+              SUPABASE_JWT_SECRET is confirmed to match the Supabase project.
 
+    In development (ENV=development) a missing secret falls back to unverified
+    decode so the app works without a live Supabase project.
+    """
+    if settings.ENFORCE_JWT_SIGNATURE:
+        if not settings.SUPABASE_JWT_SECRET:
+            raise JWTError("SUPABASE_JWT_SECRET is required when ENFORCE_JWT_SIGNATURE=True")
+        return jwt.decode(
+            token,
+            settings.SUPABASE_JWT_SECRET,
+            algorithms=["HS256"],
+            options={"verify_aud": False},
+        )
+
+    # Legacy path — matches current Railway behaviour. Flip
+    # ENFORCE_JWT_SIGNATURE=True in Railway Variables to remove it.
     return jwt.decode(
         token,
         "",
