@@ -37,8 +37,9 @@ logging.config.dictConfig({
 
 from app.config import settings, validate_production_config
 from app.database import engine
+from app.middleware.country import CountryMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
-from app.routers import ai_engine, analytics, auth, billing, health, integrations, inventory, invoicing, local_auth, portal, pos, recurring, team, waitlist
+from app.routers import ai_engine, analytics, auth, billing, countries, health, integrations, inventory, invoicing, local_auth, portal, pos, recurring, team, waitlist
 from app.services.scheduler import create_scheduler
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
@@ -106,9 +107,14 @@ app.add_middleware(
     allow_origins=settings.CORS_ORIGINS.split(","),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With", "X-Country-Code"],
+    expose_headers=["X-Country-Code"],
     max_age=3600,
 )
+
+# Country resolution — must run AFTER CORS (inner layer) so it sees real
+# client headers but does not interfere with preflight short-circuiting.
+app.add_middleware(CountryMiddleware)
 
 
 @app.middleware("http")
@@ -175,3 +181,4 @@ app.include_router(billing.router)
 app.include_router(integrations.router)
 app.include_router(portal.router)
 app.include_router(ai_engine.router)
+app.include_router(countries.router)

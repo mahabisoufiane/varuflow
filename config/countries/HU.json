@@ -1,0 +1,24 @@
+{
+  "iso_alpha2": "HU",
+  "display_name": "Hungary",
+  "region": "europe",
+  "default_locale": "hu-HU",
+  "currency": "HUF",
+  "vat": {
+    "standard_rate_pct": 27.0,
+    "reduced_rates_pct": [
+      18.0,
+      5.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": true,
+    "tax_id_regex": "HU\\d{8}",
+    "einvoicing_status": "RTIR mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/HU/README.md"
+}

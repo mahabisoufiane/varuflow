@@ -1,0 +1,21 @@
+{
+  "iso_alpha2": "IL",
+  "display_name": "Israel",
+  "region": "middle-east",
+  "default_locale": "he-IL",
+  "currency": "ILS",
+  "vat": {
+    "standard_rate_pct": 18.0,
+    "reduced_rates_pct": [],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d{9}",
+    "einvoicing_status": "mandatory from 2024"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/IL/README.md"
+}

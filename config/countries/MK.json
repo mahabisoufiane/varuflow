@@ -1,0 +1,24 @@
+{
+  "iso_alpha2": "MK",
+  "display_name": "North Macedonia",
+  "region": "europe",
+  "default_locale": "mk-MK",
+  "currency": "MKD",
+  "vat": {
+    "standard_rate_pct": 18.0,
+    "reduced_rates_pct": [
+      5.0,
+      10.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": true,
+    "tax_id_regex": "MK\\d{13}",
+    "einvoicing_status": "planned"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/MK/README.md"
+}

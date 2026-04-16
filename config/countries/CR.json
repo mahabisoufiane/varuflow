@@ -1,0 +1,25 @@
+{
+  "iso_alpha2": "CR",
+  "display_name": "Costa Rica",
+  "region": "americas",
+  "default_locale": "es-CR",
+  "currency": "CRC",
+  "vat": {
+    "standard_rate_pct": 13.0,
+    "reduced_rates_pct": [
+      4.0,
+      2.0,
+      1.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d{10,12}",
+    "einvoicing_status": "mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/CR/README.md"
+}

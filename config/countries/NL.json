@@ -1,0 +1,23 @@
+{
+  "iso_alpha2": "NL",
+  "display_name": "Netherlands",
+  "region": "europe",
+  "default_locale": "nl-NL",
+  "currency": "EUR",
+  "vat": {
+    "standard_rate_pct": 21.0,
+    "reduced_rates_pct": [
+      9.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": true,
+    "tax_id_regex": "NL\\d{9}B\\d{2}",
+    "einvoicing_status": "B2G mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/NL/README.md"
+}

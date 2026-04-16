@@ -1,0 +1,24 @@
+{
+  "iso_alpha2": "SE",
+  "display_name": "Sweden",
+  "region": "europe",
+  "default_locale": "sv-SE",
+  "currency": "SEK",
+  "vat": {
+    "standard_rate_pct": 25.0,
+    "reduced_rates_pct": [
+      12.0,
+      6.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": true,
+    "tax_id_regex": "SE\\d{10}01",
+    "einvoicing_status": "B2G mandatory (Peppol)"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/SE/README.md"
+}

@@ -1,0 +1,266 @@
+{
+  "common": {
+    "appName": "Varuflow",
+    "loading": "Načítava sa...",
+    "error": "Something went wrong",
+    "save": "Uložiť",
+    "cancel": "Zrušiť",
+    "delete": "Odstrániť",
+    "edit": "Upraviť",
+    "create": "Create",
+    "search": "Search...",
+    "noResults": "No results found",
+    "back": "Späť"
+  },
+  "nav": {
+    "dashboard": "Prehľad",
+    "analytics": "Analytics",
+    "aiAdvisor": "AI Advisor",
+    "inventory": "Sklad",
+    "invoices": "Faktúry",
+    "recurring": "Recurring",
+    "cashRegister": "Cash Register",
+    "customers": "Zákazníci",
+    "settings": "Nastavenia",
+    "signOut": "Odhlásiť"
+  },
+  "auth": {
+    "login": "Prihlásiť",
+    "signup": "Sign up",
+    "email": "E-mail",
+    "password": "Heslo",
+    "magicLink": "Send magic link",
+    "magicLinkSent": "Check your email — we sent a magic link to {email}",
+    "orContinueWith": "Or sign in with password",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "forgotPassword": "Forgot password?",
+    "signInWithPassword": "Sign in",
+    "createAccount": "Create account",
+    "signUpDescription": "Start your free Varuflow trial.",
+    "loginDescription": "Sign in to your Varuflow account.",
+    "fullName": "Full name",
+    "fullNamePlaceholder": "Erik Lindqvist",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "Repeat your password",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithMicrosoft": "Continue with Microsoft",
+    "orDivider": "OR",
+    "forgotPasswordTitle": "Forgot your password?",
+    "forgotPasswordSubtitle": "Enter your email and we'll send you a reset link.",
+    "sendResetLink": "Send reset link",
+    "resetLinkSentTitle": "Check your inbox",
+    "resetLinkSentSubtitle": "We sent a reset link to {email}. It expires in 1 hour.",
+    "backToSignIn": "Back to sign in",
+    "resetPasswordTitle": "Choose a new password",
+    "resetPasswordSubtitle": "Make it strong — you only have to do this once.",
+    "newPassword": "New password",
+    "newPasswordPlaceholder": "Create a strong password",
+    "setNewPassword": "Set new password",
+    "passwordUpdatedTitle": "Password updated",
+    "passwordUpdatedSubtitle": "Redirecting you to the dashboard…",
+    "verifyingLink": "Verifying reset link…",
+    "openGmail": "Open Gmail",
+    "openOutlook": "Open Outlook",
+    "resendEmail": "Didn't receive it? Resend email",
+    "checkInboxTitle": "Check your inbox",
+    "checkInboxSubtitle": "We sent a confirmation link to {email}. Click it to activate your account.",
+    "strengthWeak": "Weak",
+    "strengthFair": "Fair",
+    "strengthGood": "Good",
+    "strengthStrong": "Strong",
+    "reqLength": "At least 8 characters",
+    "reqUppercase": "One uppercase letter",
+    "reqNumber": "One number"
+  },
+  "onboarding": {
+    "title": "Set up your company",
+    "subtitle": "Tell us about your business to get started.",
+    "step1Title": "Company details",
+    "step2Title": "Upload logo",
+    "step2Skip": "Skip for now",
+    "step3Title": "You're all set!",
+    "companyName": "Company name",
+    "companyNamePlaceholder": "Svensson AB",
+    "orgNumber": "Organization number",
+    "orgNumberPlaceholder": "556000-0000",
+    "orgNumberHint": "Swedish organization number (XXXXXX-XXXX)",
+    "vatNumber": "VAT number",
+    "vatNumberPlaceholder": "SE556000000001",
+    "address": "Address",
+    "continue": "Continue",
+    "finish": "Go to dashboard",
+    "logoUpload": "Upload your company logo",
+    "logoHint": "PNG or JPG, max 2 MB. Shown on invoices."
+  },
+  "marketing": {
+    "hero": {
+      "title": "The operating system for Swedish wholesalers",
+      "subtitle": "Manage inventory, automate invoicing, and track cash flow — built for Swedish B2B businesses.",
+      "cta": "Join the waitlist"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome to Varuflow"
+  },
+  "inventory": {
+    "title": "Inventory"
+  },
+  "invoices": {
+    "title": "Invoices"
+  },
+  "customers": {
+    "title": "Customers"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "errors": {
+    "invalidCredentials": "Incorrect email or password. Please try again.",
+    "emailNotConfirmed": "Please confirm your email before signing in.",
+    "accountLocked": "Too many attempts. Please wait 15 minutes.",
+    "networkError": "Connection failed. Please check your internet.",
+    "sessionExpired": "Your session expired. Please sign in again.",
+    "unauthorized": "You don't have permission to do this.",
+    "serverError": "Something went wrong on our end. We're looking into it.",
+    "notFound": "This page doesn't exist.",
+    "validationError": "Please check the form for errors.",
+    "emailTaken": "This email is already registered.",
+    "passwordMismatch": "Passwords don't match.",
+    "weakPassword": "Password must be at least 8 characters.",
+    "planRequired": "This feature requires a higher plan.",
+    "upgradePlan": "Upgrade your plan to access this feature."
+  },
+  "pricing": {
+    "pageTitle": "Simple, transparent pricing",
+    "pageSubtitle": "Start free. Scale as you grow. No hidden fees, no per-transaction cuts.",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "yearlySave": "Save 20%",
+    "billedYearly": "billed {amount} kr/year",
+    "perMonth": "/mo",
+    "mostPopular": "Most Popular",
+    "fullAccess": "Full Access",
+    "startTrial": "Start Free Trial",
+    "contactSales": "Contact Sales",
+    "trialNote": "14-day free trial · No credit card required",
+    "includes": "What's included",
+    "locked": "Locked on this plan",
+    "starter": {
+      "name": "Starter",
+      "description": "For small wholesale businesses getting started.",
+      "features": [
+        "Up to 500 products",
+        "Fortnox integration",
+        "Inventory management",
+        "Basic invoicing",
+        "Basic analytics",
+        "Email support",
+        "1 seat"
+      ],
+      "locked": [
+        "Mobile app",
+        "Advanced analytics",
+        "Priority support",
+        "Bulk import",
+        "Custom integrations",
+        "API access"
+      ]
+    },
+    "professional": {
+      "name": "Professional",
+      "description": "For growing teams who need more power and insight.",
+      "features": [
+        "Up to 5,000 products",
+        "Everything in Starter",
+        "Advanced analytics",
+        "Priority support",
+        "Up to 5 seats",
+        "Low stock alerts",
+        "Bulk import"
+      ],
+      "locked": [
+        "Mobile app",
+        "Custom integrations",
+        "API access"
+      ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "description": "For large operations that need everything, everywhere.",
+      "features": [
+        "Unlimited products",
+        "Everything in Professional",
+        "Unlimited seats",
+        "Custom integrations",
+        "API access",
+        "White-label option",
+        "24/7 priority support"
+      ],
+      "stars": [
+        "Mobile app — Android, iOS & Huawei",
+        "Dedicated account manager",
+        "Custom onboarding"
+      ]
+    },
+    "mobileTeaser": {
+      "title": "Take Varuflow everywhere",
+      "subtitle": "Enterprise clients get native mobile apps for Android, iOS, and Huawei — manage your inventory from anywhere.",
+      "badge": "Available exclusively on the Enterprise plan",
+      "cta": "Upgrade to Enterprise",
+      "android": "Google Play",
+      "ios": "App Store",
+      "huawei": "AppGallery"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": [
+        {
+          "q": "Can I change plans later?",
+          "a": "Yes, upgrade or downgrade anytime. Changes apply from the next billing cycle."
+        },
+        {
+          "q": "Is there a free trial?",
+          "a": "Yes, all plans include a 14-day free trial. No credit card required."
+        },
+        {
+          "q": "What payment methods do you accept?",
+          "a": "Credit cards, bank transfer, and Swish (Sweden)."
+        },
+        {
+          "q": "Is my data secure?",
+          "a": "All data is encrypted and stored in EU servers. We are fully GDPR compliant."
+        },
+        {
+          "q": "What is the mobile app?",
+          "a": "Enterprise clients receive native apps for Android, iOS, and Huawei to manage inventory on the go."
+        }
+      ]
+    },
+    "contact": {
+      "title": "Contact Sales",
+      "subtitle": "Tell us about your business and we'll get back to you within one business day.",
+      "name": "Your name",
+      "email": "Work email",
+      "company": "Company name",
+      "message": "Tell us about your needs",
+      "send": "Send message",
+      "sending": "Sending…",
+      "sent": "Message sent! We'll be in touch soon.",
+      "cancel": "Cancel"
+    }
+  },
+  "success": {
+    "loggedIn": "Welcome back!",
+    "loggedOut": "You've been signed out.",
+    "signupComplete": "Account created! Check your email to confirm.",
+    "emailResent": "Confirmation email resent.",
+    "profileUpdated": "Profile saved.",
+    "passwordChanged": "Password updated successfully."
+  },
+  "_meta": {
+    "locale": "sk",
+    "dir": "ltr"
+  }
+}

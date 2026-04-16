@@ -1,0 +1,24 @@
+{
+  "iso_alpha2": "PA",
+  "display_name": "Panama",
+  "region": "americas",
+  "default_locale": "es-PA",
+  "currency": "PAB",
+  "vat": {
+    "standard_rate_pct": 7.0,
+    "reduced_rates_pct": [
+      10.0,
+      15.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d+",
+    "einvoicing_status": "voluntary"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/PA/README.md"
+}

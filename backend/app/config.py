@@ -76,6 +76,23 @@ class Settings(BaseSettings):
     # trusted load balancer. When False the rate limiter uses request.client.host.
     TRUST_PROXY: bool = True
 
+    # ── Country / i18n defaults ──────────────────────────────────────────────
+    # Resolved country for a request falls back to this code when no header,
+    # subdomain, or org-level country is available.
+    DEFAULT_COUNTRY: str = "SE"
+
+    # ── Security hardening toggles ───────────────────────────────────────────
+    # Opt-in JWT signature enforcement. Defaults to False for backward
+    # compatibility with the current Railway deployment (see the TODO in
+    # middleware/auth.py). Flip to True in Railway Variables once
+    # SUPABASE_JWT_SECRET is confirmed to match the Supabase project.
+    ENFORCE_JWT_SIGNATURE: bool = False
+
+    # When True, production startup refuses to boot if placeholder secrets
+    # are still present. Defaults to False to match current behaviour; turn
+    # on before a paid / public launch.
+    ENFORCE_SECRET_VALIDATION: bool = False
+
 
 settings = Settings()
 
@@ -92,26 +109,28 @@ def validate_production_config() -> None:
 
     errors: list[str] = []
 
-    # 1. JWT secrets placeholder check — temporarily disabled while Railway
-    # variables are being confirmed. Re-enable before public launch.
-    # if settings.PORTAL_JWT_SECRET in _DANGEROUS_SECRETS:
-    #     errors.append(
-    #         "PORTAL_JWT_SECRET is still the default placeholder. "
-    #         "Generate a real secret: python -c \"import secrets; print(secrets.token_hex(32))\""
-    #     )
-    # if settings.AUTH_JWT_SECRET in _DANGEROUS_SECRETS:
-    #     errors.append(
-    #         "AUTH_JWT_SECRET is still the default placeholder. "
-    #         "Generate a real secret: python -c \"import secrets; print(secrets.token_hex(32))\""
-    #     )
-
-    # 2. Supabase JWT secret check — temporarily disabled while secret mismatch
-    # is being resolved. Re-enable once SUPABASE_JWT_SECRET is confirmed in Railway.
-    # if not settings.SUPABASE_JWT_SECRET:
-    #     errors.append(
-    #         "SUPABASE_JWT_SECRET is empty. Without it, ALL JWTs are accepted "
-    #         "without signature verification. Set it in Railway Variables."
-    #     )
+    # Opt-in enforcement — keeps current Railway deployment working while
+    # still giving a single knob to flip for pre-launch hardening.
+    if settings.ENFORCE_SECRET_VALIDATION:
+        if settings.PORTAL_JWT_SECRET in _DANGEROUS_SECRETS:
+            errors.append(
+                "PORTAL_JWT_SECRET is still the default placeholder. "
+                "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+            )
+        if settings.AUTH_JWT_SECRET in _DANGEROUS_SECRETS:
+            errors.append(
+                "AUTH_JWT_SECRET is still the default placeholder. "
+                "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+            )
+        if not settings.SUPABASE_JWT_SECRET:
+            errors.append(
+                "SUPABASE_JWT_SECRET is empty. Without it, JWT signature "
+                "verification cannot be enabled."
+            )
+        if settings.ENFORCE_JWT_SIGNATURE and not settings.SUPABASE_JWT_SECRET:
+            errors.append(
+                "ENFORCE_JWT_SIGNATURE=True but SUPABASE_JWT_SECRET is empty."
+            )
 
     # 3. DEBUG must be off in production
     if settings.DEBUG:

@@ -1,0 +1,21 @@
+{
+  "iso_alpha2": "QA",
+  "display_name": "Qatar",
+  "region": "middle-east",
+  "default_locale": "ar-QA",
+  "currency": "QAR",
+  "vat": {
+    "standard_rate_pct": 0.0,
+    "reduced_rates_pct": [],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d{11}",
+    "einvoicing_status": "planned"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/QA/README.md"
+}
