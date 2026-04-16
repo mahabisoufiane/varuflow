@@ -1,0 +1,90 @@
+name: Security
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly re-scan so new CVEs in pinned deps surface without code changes
+    - cron: "17 6 * * 1"
+
+jobs:
+  backend-security:
+    name: Backend — bandit + pip-audit + secret scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install security tools
+        run: pip install bandit pip-audit
+
+      - name: Bandit (static analysis)
+        run: bandit -r app -ll -q
+        continue-on-error: true
+
+      - name: pip-audit (dependency CVEs)
+        run: pip-audit -r <(poetry export -f requirements.txt --without-hashes 2>/dev/null) || pip-audit
+        continue-on-error: true
+
+  frontend-security:
+    name: Frontend — npm audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm audit (high+ severity)
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  secret-scan:
+    name: Repo — gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  claude-rules:
+    name: Repo — CLAUDE.md compliance greps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No hardcoded prod URL in frontend/src
+        run: |
+          if grep -rn "varuflow-production.up.railway.app" frontend/src; then
+            echo "::error::Hardcoded production Railway URL found in frontend/src"; exit 1
+          fi
+      - name: No wildcard CORS in backend
+        run: |
+          if grep -rn 'allow_origins=\["\*"\]' backend/; then
+            echo "::error::Wildcard CORS is forbidden"; exit 1
+          fi
+      - name: No OpenAI import in ai_engine.py
+        run: |
+          if grep -n "openai" backend/app/routers/ai_engine.py; then
+            echo "::error::ai_engine.py must not import openai (GPT-4o lives in integrations.py)"; exit 1
+          fi
+      - name: No secrets in source
+        run: |
+          if grep -rnE "sk_live_[A-Za-z0-9]{16,}|sk_test_[A-Za-z0-9]{16,}|whsec_[A-Za-z0-9]{16,}" backend/app frontend/src; then
+            echo "::error::Possible committed secret"; exit 1
+          fi
