@@ -1,7 +1,6 @@
 "use client";
 
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import { api } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -14,11 +13,13 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { useCapabilities } from "@/hooks/useCapabilities";
 
 const AiChat              = dynamic(() => import("@/components/app/AiChat"),              { ssr: false });
 const CommandPalette      = dynamic(() => import("@/components/app/CommandPalette"),      { ssr: false });
 const PwaInstallBanner    = dynamic(() => import("@/components/app/PwaInstallBanner"),    { ssr: false });
 const SessionTimeoutModal = dynamic(() => import("@/components/app/SessionTimeoutModal"), { ssr: false });
+const CountryPicker       = dynamic(() => import("@/components/app/CountryPicker"),       { ssr: false });
 
 /* ── Nav groups ─────────────────────────────────────────────────────────────── */
 const NAV_GROUPS = [
@@ -94,11 +95,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const t        = useTranslations("nav");
   const supabase = createClient();
 
-  const [isClient,         setIsClient]         = useState(false);
-  const [email,            setEmail]            = useState<string | null>(null);
-  const [fortnoxConnected, setFortnoxConnected] = useState(false);
-  const [openaiConnected,  setOpenaiConnected]  = useState(false);
-  const [sidebarOpen,      setSidebarOpen]      = useState(false);
+  const [isClient,    setIsClient]    = useState(false);
+  const [email,       setEmail]       = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Unified capability probe — tells us which integrations are active so
+  // we can hide disabled flows instead of showing broken buttons.
+  const caps = useCapabilities();
+  const fortnoxConnected = caps?.fortnox_configured ?? false;
+  const openaiConnected  = caps?.ai_chat_available  ?? false;
 
   useEffect(() => {
     setIsClient(true);
@@ -112,12 +117,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         }
       });
     }
-    api.get<{ connected: boolean }>("/api/integrations/fortnox/status")
-      .then((s) => setFortnoxConnected(s.connected))
-      .catch(() => {});
-    api.get<{ openai_configured: boolean }>("/api/integrations/config")
-      .then((s) => setOpenaiConnected(s.openai_configured))
-      .catch(() => {});
   }, []);
 
   function isActive(href: string) {
@@ -318,6 +317,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               {getPageTitle(pathname)}
             </h1>
             <div className="flex items-center gap-2">
+              <CountryPicker />
               <button
                 onClick={openSearch}
                 className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs vf-text-m transition-all vf-btn-ghost h-9"

@@ -1,51 +1,59 @@
 "use client";
-// File: src/components/app/CountryPicker.tsx
-// Purpose: user-visible picker for the active country. Persists selection
-// in localStorage via setCountryOverride() and reloads the page so server
-// components re-render with the new NEXT_PUBLIC_DEFAULT_COUNTRY context.
+// Compact country picker styled to match the Varuflow app shell.
+// Pulls the country list from /api/countries (served by the backend's
+// country service). Falls back silently if the backend hasn't deployed
+// the new endpoint yet.
 
 import { useEffect, useState } from "react";
+import { Globe } from "lucide-react";
+import { api } from "@/lib/api-client";
 import { resolveCountryCode, setCountryOverride } from "@/lib/country";
 
 type Option = { code: string; name: string };
 
-export function CountryPicker({ apiBase }: { apiBase: string }) {
+export default function CountryPicker() {
   const [options, setOptions] = useState<Option[]>([]);
   const [current, setCurrent] = useState<string>("");
 
   useEffect(() => {
-    setCurrent(resolveCountryCode(
-      typeof window !== "undefined" ? window.location.host : null,
-    ));
-    const controller = new AbortController();
-    fetch(`${apiBase}/api/countries`, { signal: controller.signal })
-      .then((r) => (r.ok ? r.json() : null))
+    setCurrent(
+      resolveCountryCode(
+        typeof window !== "undefined" ? window.location.host : null,
+      ),
+    );
+    api
+      .get<{ countries: Option[] }>("/api/countries")
       .then((j) => {
-        if (j?.countries) setOptions(j.countries);
+        if (j?.countries?.length) setOptions(j.countries);
       })
       .catch(() => {
-        /* silent — falls back to just the current country */
+        /* silent — old backend without /api/countries */
       });
-    return () => controller.abort();
-  }, [apiBase]);
+  }, []);
 
   if (!options.length) return null;
 
   return (
-    <select
-      aria-label="Country"
-      value={current}
-      onChange={(e) => {
-        setCountryOverride(e.target.value);
-        if (typeof window !== "undefined") window.location.reload();
-      }}
-      className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm"
-    >
-      {options.map((o) => (
-        <option key={o.code} value={o.code}>
-          {o.code} — {o.name}
-        </option>
-      ))}
-    </select>
+    <label className="relative inline-flex items-center gap-1.5 rounded-xl px-2.5 h-9 text-xs vf-text-m vf-btn-ghost cursor-pointer">
+      <Globe className="h-3.5 w-3.5" />
+      <span className="font-semibold tracking-wide tabular-nums">
+        {current || "—"}
+      </span>
+      <select
+        aria-label="Country"
+        value={current}
+        onChange={(e) => {
+          setCountryOverride(e.target.value);
+          if (typeof window !== "undefined") window.location.reload();
+        }}
+        className="absolute inset-0 opacity-0 cursor-pointer"
+      >
+        {options.map((o) => (
+          <option key={o.code} value={o.code}>
+            {o.code} — {o.name}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
