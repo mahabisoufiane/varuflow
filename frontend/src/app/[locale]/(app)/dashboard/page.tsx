@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import AiActionCards from "@/components/app/AiActionCards";
 import { cn } from "@/lib/utils";
+import { useMoney } from "@/hooks/useMoney";
 
 /* ── Types ──────────────────────────────────────────────────────────────────── */
 interface StockLevel {
@@ -37,9 +38,6 @@ interface RevenuePoint { month: string; invoiced: number; collected: number; }
 interface AnalyticsOverview { revenue_points: RevenuePoint[]; }
 
 /* ── Helpers ─────────────────────────────────────────────────────────────────── */
-function fmt(n: number) {
-  return n.toLocaleString("sv-SE", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-}
 function pct(a: number, b: number) {
   if (b === 0) return 0;
   return Math.round(((a - b) / b) * 100);
@@ -104,6 +102,8 @@ function MiniBar({ data }: { data: number[] }) {
 
 /* ════════════════════════════════════════════════════════════════════════════ */
 export default function DashboardPage() {
+  const { fmt, code: currencyCode, fmtDate, locale } = useMoney();
+
   const [lowStock, setLowStock] = useState<StockLevel[]>([]);
   const [openInvoices, setOpenInvoices] = useState<Invoice[]>([]);
   const [recentMovements, setRecentMovements] = useState<Movement[]>([]);
@@ -117,8 +117,12 @@ export default function DashboardPage() {
   useEffect(() => {
     const d = new Date();
     setNow(d);
-    setTodayLabel(d.toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long" }));
-  }, []);
+    try {
+      setTodayLabel(new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long" }).format(d));
+    } catch {
+      setTodayLabel(d.toDateString());
+    }
+  }, [locale]);
 
   useEffect(() => {
     Promise.all([
@@ -133,11 +137,11 @@ export default function DashboardPage() {
       setOverview(ov);
       const dates: Record<string, string> = {};
       for (const m of movements) {
-        dates[m.id] = new Date(m.created_at).toLocaleDateString("sv-SE");
+        dates[m.id] = fmtDate(m.created_at, "short");
       }
       setMovementDates(dates);
     }).finally(() => setLoading(false));
-  }, []);
+  }, [fmtDate]);
 
   /* ── Derived ─────────────────────────────────────────────────────────── */
   const outstanding = openInvoices.reduce((s, i) => s + Number(i.total_sek), 0);
@@ -195,7 +199,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KpiCard
           label="Outstanding"
-          value={`${fmt(outstanding)} kr`}
+          value={fmt(outstanding)}
           sub={`${openInvoices.length} open invoice${openInvoices.length !== 1 ? "s" : ""}`}
           trend={overdueCount > 0 ? { label: `${overdueCount} overdue`, up: false } : undefined}
           icon={<FileText className="h-4 w-4" />}
@@ -206,7 +210,7 @@ export default function DashboardPage() {
         />
         <KpiCard
           label="Invoiced this month"
-          value={`${fmt(thisMonth)} kr`}
+          value={fmt(thisMonth)}
           sub="revenue"
           trend={lastMonth > 0 ? { label: `${revDelta > 0 ? "+" : ""}${revDelta}% vs last month`, up: revDelta >= 0 } : undefined}
           icon={<TrendingUp className="h-4 w-4" />}
@@ -254,7 +258,7 @@ export default function DashboardPage() {
                 </p>
                 <p className="mt-1.5 text-[42px] font-bold tracking-tight leading-none tabular-nums vf-text-1">
                   {fmt(outstanding)}
-                  <span className="ml-2 text-lg font-normal vf-text-m">SEK</span>
+                  <span className="ml-2 text-lg font-normal vf-text-m">{currencyCode}</span>
                 </p>
                 <p className="mt-2 text-sm vf-text-m">
                   {openInvoices.length} {openInvoices.length === 1 ? "invoice" : "invoices"} awaiting payment
@@ -283,7 +287,7 @@ export default function DashboardPage() {
                 style={{ background: "rgba(16,185,129,0.10)", border: "1px solid rgba(16,185,129,0.22)" }}>
                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
                 <span className="text-[11px] text-emerald-500 font-medium">
-                  {fmt(collectedThisMonth)} kr collected this month
+                  {fmt(collectedThisMonth)} collected this month
                 </span>
               </div>
             )}
@@ -366,8 +370,8 @@ export default function DashboardPage() {
                       <p className="text-xs vf-text-m truncate">{inv.customer.company_name}</p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="font-mono text-[13px] font-semibold vf-text-1">{fmt(Number(inv.total_sek))} kr</p>
-                      <p className="text-[11px] vf-text-m">Due {inv.due_date}</p>
+                      <p className="font-mono text-[13px] font-semibold vf-text-1">{fmt(Number(inv.total_sek))}</p>
+                      <p className="text-[11px] vf-text-m">Due {fmtDate(inv.due_date, "short")}</p>
                     </div>
                   </div>
                 );

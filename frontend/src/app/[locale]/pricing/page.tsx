@@ -5,7 +5,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
   Check, Lock, X, ChevronDown, Star, Smartphone,
@@ -15,8 +15,17 @@ import { cn } from "@/lib/utils";
 import { PLAN_PRICES, type Plan } from "@/lib/plan";
 
 /* ── Price display helper ────────────────────────────────────────────────────── */
-function fmt(n: number): string {
-  return n.toLocaleString("sv-SE");
+// Nordic locales see their local "kr" prices; everyone else sees EUR.
+function useLocalePricing() {
+  const locale = useLocale();
+  const nordicKroner = locale === "sv" || locale === "no" || locale === "da";
+  const symbol = nordicKroner ? "kr" : "€";
+  const intlLocale = nordicKroner
+    ? (locale === "sv" ? "sv-SE" : locale === "no" ? "nb-NO" : "da-DK")
+    : locale;
+  const fmt = (n: number) => n.toLocaleString(intlLocale);
+  const pickPrice = (p: { sek: number; eur: number }) => (nordicKroner ? p.sek : p.eur);
+  return { fmt, symbol, pickPrice, nordicKroner };
 }
 
 /* ── FAQ item (self-contained accordion row) ─────────────────────────────────── */
@@ -178,9 +187,14 @@ function PlanCard({
   features, lockedFeatures, stars, ctaLabel, ctaStyle, onCta,
 }: PlanCardProps) {
   const t = useTranslations("pricing");
+  const { fmt, symbol, pickPrice, nordicKroner } = useLocalePricing();
   const prices = PLAN_PRICES[plan];
   const price = yearly ? prices.yearly : prices.monthly;
-  const annualSek = yearly && "annualSek" in price ? (price as typeof prices.yearly).annualSek : null;
+  const annual = yearly && "annualSek" in price
+    ? (nordicKroner
+        ? (price as typeof prices.yearly).annualSek
+        : (price as typeof prices.yearly).annualEur)
+    : null;
 
   return (
     <div
@@ -230,16 +244,18 @@ function PlanCard({
       <div className="mb-6">
         <div className="flex items-baseline gap-1">
           <span className="text-5xl font-bold tabular-nums" style={{ color: "var(--vf-text-primary)" }}>
-            {fmt(price.sek)}
+            {fmt(pickPrice(price))}
           </span>
           <span className="text-lg font-semibold" style={{ color: "var(--vf-text-muted)" }}>
-            kr{t("perMonth")}
+            {symbol}{t("perMonth")}
           </span>
         </div>
         <p className="mt-1 text-xs" style={{ color: "var(--vf-text-muted)" }}>
-          {yearly && annualSek
-            ? t("billedYearly", { amount: fmt(annualSek) })
-            : `/ €${price.eur}`}
+          {yearly && annual
+            ? t("billedYearly", { amount: fmt(annual) })
+            : nordicKroner
+              ? `/ €${price.eur}`
+              : `/ ${price.sek} kr`}
         </p>
       </div>
 

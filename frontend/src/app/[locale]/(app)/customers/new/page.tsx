@@ -6,6 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, Building2, Hash, Globe, Mail, Phone, MapPin, Clock, Loader2, AlertCircle } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { VatVerifyButton } from "@/components/app/VatVerifyButton";
 
 const FIELDS = [
   { id: "company_name",       label: "Company name",         icon: Building2, span: true,  required: true,  placeholder: "Nordisk Handel AB",     type: "text"   },
@@ -102,6 +103,9 @@ export default function NewCustomerPage() {
                 placeholder={placeholder}
                 className="vf-input w-full"
               />
+              {id === "vat_number" && form.vat_number && (
+                <VatVerifyButton vatNumber={form.vat_number} />
+              )}
             </div>
           ))}
         </div>

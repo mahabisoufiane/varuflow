@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { useMoney } from "@/hooks/useMoney";
 
 interface Customer { id: string; company_name: string; payment_terms_days: number; }
 interface Product { id: string; name: string; sku: string; sell_price: string; tax_rate: string; }
@@ -19,6 +20,8 @@ function addDays(d: string, n: number) {
 
 export default function NewInvoicePage() {
   const router = useRouter();
+  const { fmt, code: currencyCode, vatRates, config } = useMoney();
+  const defaultVatRate = String(config?.vat.standard_rate_pct ?? vatRates[0] ?? 25);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [customerId, setCustomerId] = useState("");
@@ -29,10 +32,10 @@ export default function NewInvoicePage() {
   useEffect(() => {
     const t = todayStr();
     setIssueDate(t);
-    setDueDate(addDays(t, 30));
-  }, []);
+    setDueDate(addDays(t, config?.invoice?.due_days_default ?? 30));
+  }, [config?.invoice?.due_days_default]);
   const [notes, setNotes] = useState("");
-  const [items, setItems] = useState<LineItem[]>([{ description: "", product_id: "", quantity: "1", unit_price: "", tax_rate: "25" }]);
+  const [items, setItems] = useState<LineItem[]>([{ description: "", product_id: "", quantity: "1", unit_price: "", tax_rate: defaultVatRate }]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,7 +70,7 @@ export default function NewInvoicePage() {
     }));
   }
 
-  function addLine() { setItems((prev) => [...prev, { description: "", product_id: "", quantity: "1", unit_price: "", tax_rate: "25" }]); }
+  function addLine() { setItems((prev) => [...prev, { description: "", product_id: "", quantity: "1", unit_price: "", tax_rate: defaultVatRate }]); }
   function removeLine(i: number) { setItems((prev) => prev.filter((_, idx) => idx !== i)); }
 
   const subtotal = items.reduce((s, it) => s + (Number(it.unit_price) * Number(it.quantity) || 0), 0);
@@ -164,7 +167,7 @@ export default function NewInvoicePage() {
                     className="block w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
                 </div>
                 <div className="col-span-2 space-y-1.5">
-                  {i === 0 && <Label>Price (SEK)</Label>}
+                  {i === 0 && <Label>Price ({currencyCode})</Label>}
                   <input type="number" step="0.01" min="0" required value={item.unit_price}
                     onChange={(e) => setItem(i, "unit_price", e.target.value)}
                     className="block w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
@@ -173,10 +176,7 @@ export default function NewInvoicePage() {
                   {i === 0 && <Label>VAT%</Label>}
                   <select value={item.tax_rate} onChange={(e) => setItem(i, "tax_rate", e.target.value)}
                     className="block w-full rounded-md border border-gray-300 px-1 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
-                    <option value="25">25%</option>
-                    <option value="12">12%</option>
-                    <option value="6">6%</option>
-                    <option value="0">0%</option>
+                    {vatRates.map((r) => <option key={r} value={String(r)}>{r}%</option>)}
                   </select>
                 </div>
                 <div className={`col-span-1 ${i === 0 ? "pb-0.5" : ""}`}>
@@ -197,15 +197,15 @@ export default function NewInvoicePage() {
             <div className="text-right space-y-1">
               <div className="flex justify-between gap-8 text-sm text-muted-foreground">
                 <span>Subtotal</span>
-                <span className="font-mono">{subtotal.toLocaleString("sv-SE", { minimumFractionDigits: 2 })} SEK</span>
+                <span className="font-mono">{fmt(subtotal, { decimals: 2 })}</span>
               </div>
               <div className="flex justify-between gap-8 text-sm text-muted-foreground">
                 <span>VAT</span>
-                <span className="font-mono">{vat.toLocaleString("sv-SE", { minimumFractionDigits: 2 })} SEK</span>
+                <span className="font-mono">{fmt(vat, { decimals: 2 })}</span>
               </div>
               <div className="flex justify-between gap-8 text-base font-bold text-[#1a2332]">
                 <span>Total</span>
-                <span className="font-mono">{(subtotal + vat).toLocaleString("sv-SE", { minimumFractionDigits: 2 })} SEK</span>
+                <span className="font-mono">{fmt(subtotal + vat, { decimals: 2 })}</span>
               </div>
             </div>
           </div>

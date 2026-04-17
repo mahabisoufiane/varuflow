@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { useState } from "react";
+import { useLocale } from "next-intl";
 import {
   BarChart3,
   CheckCircle2,
@@ -58,6 +59,12 @@ export default function HomePage() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const locale = useLocale();
+  const priceLabel =
+    locale === "sv" ? "299 kr" :
+    locale === "no" ? "299 kr" :
+    locale === "da" ? "299 kr" :
+    "€29";
 
   async function handleWaitlist(e: React.FormEvent) {
     e.preventDefault();
@@ -166,7 +173,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-xl text-center">
           <h2 className="text-2xl font-bold text-[#1a2332]">Simple, transparent pricing</h2>
           <p className="mt-3 text-muted-foreground text-sm">
-            From 299 kr/month. No per-user fees. No transaction cuts.
+            From {priceLabel}/month. No per-user fees. No transaction cuts.
             14-day free trial on every plan.
           </p>
           <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">

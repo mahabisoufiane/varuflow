@@ -12,6 +12,7 @@ import {
   Tag, User, X, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMoney } from "@/hooks/useMoney";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -63,10 +64,6 @@ interface Customer {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function fmt(n: number | string) {
-  return Number(n).toLocaleString("sv-SE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
 function lineTotal(item: CartItem) {
   const base = item.quantity * item.unit_price;
   return base * (1 - item.discount_pct / 100);
@@ -90,6 +87,8 @@ const QUICK_CASH = [100, 200, 500, 1000];
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function PosPage() {
+  const { fmt: fmtMoney } = useMoney();
+  const fmt = (n: number | string) => fmtMoney(Number(n), { decimals: 2 });
   const [session, setSession]             = useState<Session | null>(null);
   const [products, setProducts]           = useState<Product[]>([]);
   const [cart, setCart]                   = useState<CartItem[]>([]);
@@ -307,7 +306,7 @@ export default function PosPage() {
       setTendered("");
       setSaleDiscount(0);
       setSession((s) => s ? { ...s, sale_count: s.sale_count + 1 } : s);
-      toast.success(`Sale ${sale.sale_number} — ${fmt(sale.total)} kr`);
+      toast.success(`Sale ${sale.sale_number} — ${fmt(sale.total)}`);
     } catch (e: any) {
       toast.error(e.message ?? "Checkout failed");
     } finally {
@@ -367,7 +366,7 @@ export default function PosPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Total revenue</span>
-                <span className="font-medium">{fmt(session?.total_revenue ?? 0)} kr</span>
+                <span className="font-medium">{fmt(session?.total_revenue ?? 0)}</span>
               </div>
             </div>
             <div className="flex gap-2">
@@ -393,7 +392,7 @@ export default function PosPage() {
               <h1 className="text-xl font-bold text-gray-900">Cash Register</h1>
               {session && (
                 <p className="text-xs text-gray-400">
-                  {session.sale_count} sales · {fmt(session.total_revenue)} kr today
+                  {session.sale_count} sales · {fmt(session.total_revenue)}today
                 </p>
               )}
             </div>
@@ -462,7 +461,7 @@ export default function PosPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-semibold text-gray-900">{fmt(s.total)} kr</span>
+                        <span className="text-sm font-semibold text-gray-900">{fmt(s.total)}</span>
                         <button
                           onClick={() => window.open(`${apiBase}/api/pos/sales/${s.id}/receipt`, "_blank")}
                           className="rounded p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100"
@@ -541,7 +540,7 @@ export default function PosPage() {
                     <span className="mt-0.5 text-[10px] text-gray-300 font-mono">{p.barcode}</span>
                   )}
                   <div className="mt-2 flex w-full items-center justify-between">
-                    <span className="text-sm font-bold text-[#1a2332]">{fmt(p.sell_price)} kr</span>
+                    <span className="text-sm font-bold text-[#1a2332]">{fmt(p.sell_price)}</span>
                     <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-medium",
                       p.stock <= 0 ? "bg-red-50 text-red-500" :
                       p.stock < 5 ? "bg-amber-50 text-amber-600" :
@@ -646,7 +645,7 @@ export default function PosPage() {
                     {item.discount_pct > 0 && (
                       <span className="text-[10px] text-red-500 font-medium">-{item.discount_pct}%</span>
                     )}
-                    <span className="text-xs font-semibold text-gray-700">{fmt(lineTotal(item))} kr</span>
+                    <span className="text-xs font-semibold text-gray-700">{fmt(lineTotal(item))}</span>
                   </div>
                 </div>
 
@@ -724,10 +723,10 @@ export default function PosPage() {
           {cart.length > 0 && (
             <div className="border-t pt-2 space-y-0.5 text-xs">
               <div className="flex justify-between text-gray-400">
-                <span>Subtotal</span><span>{fmt(subtotal)} kr</span>
+                <span>Subtotal</span><span>{fmt(subtotal)}</span>
               </div>
               <div className="flex justify-between text-gray-400">
-                <span>VAT</span><span>{fmt(vat)} kr</span>
+                <span>VAT</span><span>{fmt(vat)}</span>
               </div>
 
               {/* Sale-level discount */}
@@ -741,7 +740,7 @@ export default function PosPage() {
                   {editDiscountOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                 </button>
                 {saleDiscount > 0 && (
-                  <span className="text-red-500 font-medium">-{fmt(discountAmt)} kr</span>
+                  <span className="text-red-500 font-medium">-{fmt(discountAmt)}</span>
                 )}
               </div>
               {editDiscountOpen && (
@@ -771,7 +770,7 @@ export default function PosPage() {
               )}
 
               <div className="flex justify-between font-bold text-[#1a2332] text-sm pt-1 border-t">
-                <span>Total</span><span>{fmt(total)} kr</span>
+                <span>Total</span><span>{fmt(total)}</span>
               </div>
             </div>
           )}
@@ -814,11 +813,11 @@ export default function PosPage() {
                 step="1"
                 value={tendered}
                 onChange={(e) => setTendered(e.target.value)}
-                placeholder={`Tendered (min ${fmt(Math.ceil(total / 10) * 10)} kr)`}
+                placeholder={`Tendered (min ${fmt(Math.ceil(total / 10) * 10)})`}
                 className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
               />
               {change !== null && change >= 0 && (
-                <p className="text-center text-sm font-bold text-green-600">Change: {fmt(change)} kr</p>
+                <p className="text-center text-sm font-bold text-green-600">Change: {fmt(change)}</p>
               )}
               {change !== null && change < 0 && (
                 <p className="text-center text-xs text-red-500">Insufficient amount</p>
@@ -835,20 +834,20 @@ export default function PosPage() {
             }
             className="w-full bg-[#0f1724] hover:bg-[#1a2840] text-white font-semibold"
           >
-            {processing ? "Processing…" : `Charge ${fmt(total)} kr`}
+            {processing ? "Processing…" : `Charge ${fmt(total)}`}
           </Button>
 
           {/* Last sale receipt */}
           {lastSale && (
             <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-xs space-y-1.5">
               <div className="flex items-center justify-between">
-                <p className="font-semibold text-green-700">{lastSale.sale_number} — {fmt(lastSale.total)} kr</p>
+                <p className="font-semibold text-green-700">{lastSale.sale_number} — {fmt(lastSale.total)}</p>
                 <button onClick={() => setLastSale(null)} className="text-green-400 hover:text-green-600">
                   <X className="h-3.5 w-3.5" />
                 </button>
               </div>
               {lastSale.change_due && Number(lastSale.change_due) > 0 && (
-                <p className="text-green-600 font-medium">Change: {fmt(lastSale.change_due)} kr</p>
+                <p className="text-green-600 font-medium">Change: {fmt(lastSale.change_due)}</p>
               )}
               <button
                 onClick={() => window.open(`${apiBase}/api/pos/sales/${lastSale.id}/receipt`, "_blank")}

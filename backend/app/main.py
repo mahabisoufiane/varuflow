@@ -39,7 +39,7 @@ from app.config import settings, validate_production_config
 from app.database import engine
 from app.middleware.country import CountryMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
-from app.routers import ai_engine, analytics, auth, billing, countries, health, integrations, inventory, invoicing, local_auth, portal, pos, recurring, team, waitlist
+from app.routers import ai_engine, analytics, auth, billing, countries, health, iban, integrations, inventory, invoicing, local_auth, portal, pos, recurring, tax, team, vat, waitlist
 from app.services.scheduler import create_scheduler
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
@@ -182,3 +182,6 @@ app.include_router(integrations.router)
 app.include_router(portal.router)
 app.include_router(ai_engine.router)
 app.include_router(countries.router)
+app.include_router(vat.router)
+app.include_router(iban.router)
+app.include_router(tax.router)

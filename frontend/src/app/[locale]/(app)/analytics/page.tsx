@@ -10,6 +10,11 @@ import {
 } from "recharts";
 import { cn } from "@/lib/utils";
 import { ArrowRight, Package, TrendingUp, AlertTriangle, Users, Download, ShoppingBag, CheckCircle2 } from "lucide-react";
+import { useMoney } from "@/hooks/useMoney";
+
+// Tooltip helpers need a non-hook fmt — Intl auto-picks the user's locale.
+const fmt = (n: number) =>
+  n.toLocaleString(typeof navigator !== "undefined" ? navigator.language : "en", { minimumFractionDigits: 0 });
 
 interface RevenuePoint { month: string; invoiced: number; collected: number; }
 interface TopCustomer { customer_id: string; company_name: string; total_invoiced: number; invoice_count: number; }
@@ -25,7 +30,6 @@ interface Analytics {
   overdue: { overdue_count: number; overdue_total: number; oldest_days: number; };
 }
 
-function fmt(n: number) { return n.toLocaleString("sv-SE", { minimumFractionDigits: 0 }); }
 function fmtMonth(m: string) {
   const [y, mo] = m.split("-");
   return new Date(Number(y), Number(mo) - 1).toLocaleString("en", { month: "short" });
@@ -65,7 +69,7 @@ function ChartTooltip({ active, payload, label }: {
             <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
             <span className="vf-text-m text-xs">{p.name}</span>
           </div>
-          <span className="font-mono font-semibold vf-text-1 text-xs">{fmt(p.value)} SEK</span>
+          <span className="font-mono font-semibold vf-text-1 text-xs">{fmt(p.value)}</span>
         </div>
       ))}
     </div>
@@ -82,12 +86,13 @@ function PieTooltip({ active, payload }: {
     <div className="vf-section px-3 py-2 text-sm shadow-elevated">
       <p className="font-semibold vf-text-1 text-xs">{p.name}</p>
       <p className="vf-text-m text-xs">{p.value} invoices</p>
-      <p className="font-mono vf-text-2 text-xs">{fmt(p.payload.total)} SEK</p>
+      <p className="font-mono vf-text-2 text-xs">{fmt(p.payload.total)}</p>
     </div>
   );
 }
 
 export default function AnalyticsPage() {
+  const { fmt, code: currencyCode } = useMoney();
   const [data, setData]         = useState<Analytics | null>(null);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState<string | null>(null);
@@ -374,7 +379,7 @@ export default function AnalyticsPage() {
       {data.top_products.length > 0 && (
         <div className="vf-section p-6">
           <h2 className="font-semibold vf-text-1 mb-6 flex items-center gap-2">
-            <ShoppingBag className="h-4 w-4 text-emerald-400" />Top products by revenue (SEK)
+            <ShoppingBag className="h-4 w-4 text-emerald-400" />Top products by revenue ({currencyCode})
           </h2>
           <ResponsiveContainer width="100%" height={Math.max(200, barData.length * 38)}>
             <BarChart data={barData} layout="vertical" margin={{ top: 0, right: 48, left: 8, bottom: 0 }}>

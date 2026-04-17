@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useMoney } from "@/hooks/useMoney";
 import {
   AlertTriangle, ArrowRight, CheckCircle2, Clock,
   FileText, Plus, Send, TrendingUp,
@@ -24,10 +25,6 @@ const NEXT_STATUS: Record<string, string | null> = {
   DRAFT: "SENT", SENT: "PAID", OVERDUE: "PAID", PAID: null,
 };
 
-function fmt(n: number) {
-  return n.toLocaleString("sv-SE", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-}
-
 function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { label: string; cls: string }> = {
     DRAFT:   { label: "Draft",   cls: "pill-draft"   },
@@ -42,6 +39,7 @@ function StatusBadge({ status }: { status: string }) {
 type Filter = "ALL" | "DRAFT" | "SENT" | "OVERDUE" | "PAID";
 
 export default function InvoicesPage() {
+  const { fmt, code: currencyCode, fmtDate } = useMoney();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [filter, setFilter] = useState<Filter>("ALL");
   const [updating, setUpdating] = useState<string | null>(null);
@@ -120,12 +118,12 @@ export default function InvoicesPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           {
-            label: "Outstanding", value: `${fmt(outstanding)} kr`,
+            label: "Outstanding", value: fmt(outstanding),
             sub: `${invoices.filter(i => i.status === "SENT" || i.status === "OVERDUE").length} invoices`,
             icon: <TrendingUp className="h-4 w-4" />, col: "text-indigo-400 bg-indigo-500/10",
           },
           {
-            label: "Overdue", value: `${fmt(overdueAmt)} kr`,
+            label: "Overdue", value: fmt(overdueAmt),
             sub: overdueCount > 0 ? `${overdueCount} need action` : "All current",
             icon: <AlertTriangle className="h-4 w-4" />,
             col: overdueAmt > 0 ? "text-red-400 bg-red-500/10" : "text-emerald-400 bg-emerald-500/10",
@@ -229,13 +227,13 @@ export default function InvoicesPage() {
                     className="font-mono text-[13px] font-bold vf-text-1 hover:text-indigo-500 transition-colors">
                     {inv.invoice_number}
                   </Link>
-                  <p className="text-[11px] vf-text-m mt-0.5">{inv.issue_date}</p>
+                  <p className="text-[11px] vf-text-m mt-0.5">{fmtDate(inv.issue_date, "short")}</p>
                 </div>
 
                 {/* Customer */}
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-semibold vf-text-1 truncate">{inv.customer.company_name}</p>
-                  <p className="text-xs vf-text-m">Due {inv.due_date}</p>
+                  <p className="text-xs vf-text-m">Due {fmtDate(inv.due_date, "short")}</p>
                 </div>
 
                 {/* Status */}
@@ -251,7 +249,7 @@ export default function InvoicesPage() {
                   )}>
                     {fmt(Number(inv.total_sek))}
                   </p>
-                  <p className="text-[11px] vf-text-m">SEK</p>
+                  <p className="text-[11px] vf-text-m">{currencyCode}</p>
                 </div>
 
                 {/* Actions */}
