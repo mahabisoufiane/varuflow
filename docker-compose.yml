@@ -25,8 +25,8 @@ services:
       GOTRUE_API_PORT: "9999"
       GOTRUE_DB_DRIVER: postgres
       GOTRUE_DB_DATABASE_URL: "postgres://postgres:postgres@postgres:5432/varuflow?search_path=auth"
-      GOTRUE_SITE_URL: "http://localhost:3000"
-      GOTRUE_URI_ALLOW_LIST: "http://localhost:3000,http://localhost:3000"
+      GOTRUE_SITE_URL: "http://localhost:3010"
+      GOTRUE_URI_ALLOW_LIST: "http://localhost:3010,http://localhost:3000"
       GOTRUE_DISABLE_SIGNUP: "false"
       GOTRUE_JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
       GOTRUE_JWT_EXP: "3600"
@@ -45,22 +45,22 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8010 --reload
     volumes:
       - ./backend:/app
     working_dir: /app
     ports:
-      - "8000:8000"
+      - "8010:8010"
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/varuflow
-      CORS_ORIGINS: '["http://localhost:3000","http://localhost:3000","http://localhost:3002"]'
+      CORS_ORIGINS: '["http://localhost:3010","http://localhost:3000","http://localhost:3002"]'
       SUPABASE_URL: http://supabase:9999
       SUPABASE_SERVICE_KEY: ""
       SUPABASE_JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
       ENV: development
       DEBUG: "true"
       PORTAL_JWT_SECRET: "portal-secret-change-in-production-32chars"
-      PORTAL_BASE_URL: "http://localhost:3000"
+      PORTAL_BASE_URL: "http://localhost:3010"
       # ── Standalone local auth ──────────────────────────────────────────────
       # Replace with: python -c "import secrets; print(secrets.token_hex(32))"
       AUTH_JWT_SECRET: "dev-local-auth-jwt-secret-change-in-production-64chars"
@@ -86,10 +86,10 @@ services:
       - frontend_next:/app/.next
     working_dir: /app
     ports:
-      - "3000:3000"
+      - "3010:3010"
     environment:
       NODE_ENV: development
-      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_API_URL: http://localhost:8010
       NEXT_PUBLIC_SUPABASE_URL: https://tmizvegzdlwpqceavvwh.supabase.co
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY: sb_publishable_R9YSA5I3KRsLqXifnuGRAQ_J9YMEywy
     depends_on:
