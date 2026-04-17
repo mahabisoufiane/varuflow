@@ -23,22 +23,26 @@ NonNegativeInt = Annotated[int, Field(ge=0)]
 class ProductCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     sku: str = Field(..., min_length=1, max_length=100)
+    barcode: str | None = Field(None, max_length=50)
     category: str | None = Field(None, max_length=100)
     unit: str = Field("st", max_length=50)
     purchase_price: PositiveDecimal
     sell_price: PositiveDecimal
     tax_rate: Decimal = Field(Decimal("25.00"), ge=0, le=100)
+    reorder_level: int = Field(0, ge=0)
     description: str | None = None
 
 
 class ProductUpdate(BaseModel):
     name: str | None = Field(None, min_length=1, max_length=255)
     sku: str | None = Field(None, min_length=1, max_length=100)
+    barcode: str | None = Field(None, max_length=50)
     category: str | None = None
     unit: str | None = Field(None, max_length=50)
     purchase_price: PositiveDecimal | None = None
     sell_price: PositiveDecimal | None = None
     tax_rate: Decimal | None = Field(None, ge=0, le=100)
+    reorder_level: int | None = Field(None, ge=0)
     description: str | None = None
     is_active: bool | None = None
 
@@ -48,11 +52,13 @@ class ProductOut(BaseModel):
     org_id: uuid.UUID
     name: str
     sku: str
+    barcode: str | None = None
     category: str | None
     unit: str
     purchase_price: Decimal
     sell_price: Decimal
     tax_rate: Decimal
+    reorder_level: int = 0
     description: str | None
     is_active: bool
     created_at: datetime

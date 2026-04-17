@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
-  Package, Pencil, Plus, Search, Upload, TrendingUp, X,
+  Package, Pencil, Plus, Search, Upload, TrendingUp, X, ScanLine,
 } from "lucide-react";
 
 interface Product {
@@ -103,6 +103,12 @@ export default function ProductsPage() {
             <Upload className="h-3.5 w-3.5" />{importing ? "Importing…" : "Import CSV"}
           </button>
           <Link
+            href="/inventory/products/scan"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:shadow-md transition-all"
+          >
+            <ScanLine className="h-3.5 w-3.5" />Scan
+          </Link>
+          <Link
             href="/inventory/products/new"
             className="inline-flex items-center gap-1.5 rounded-lg bg-[#0d1117] px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-[#161b22] transition-colors"
           >
@@ -160,10 +166,16 @@ export default function ProductsPage() {
           <Package className="mx-auto h-8 w-8 text-gray-200 mb-2" />
           <p className="text-sm text-gray-400">{search ? "No products match" : "No products yet"}</p>
           {!search && (
-            <Link href="/inventory/products/new"
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#0d1117] px-4 py-2 text-sm font-medium text-white hover:bg-[#161b22]">
-              <Plus className="h-3.5 w-3.5" />Add first product
-            </Link>
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <Link href="/inventory/products/scan"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:shadow-md">
+                <ScanLine className="h-3.5 w-3.5" />Scan first product
+              </Link>
+              <Link href="/inventory/products/new"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#0d1117] px-4 py-2 text-sm font-medium text-white hover:bg-[#161b22]">
+                <Plus className="h-3.5 w-3.5" />Add manually
+              </Link>
+            </div>
           )}
         </div>
       ) : (

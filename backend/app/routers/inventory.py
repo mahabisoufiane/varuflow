@@ -72,7 +72,7 @@ async def list_products(
     q = select(Product).where(Product.org_id == org_id)
     if search:
         like = f"%{search}%"
-        q = q.where(Product.name.ilike(like) | Product.sku.ilike(like))
+        q = q.where(Product.name.ilike(like) | Product.sku.ilike(like) | Product.barcode.ilike(like))
     if category:
         q = q.where(Product.category == category)
     if is_active is not None:
@@ -104,6 +104,82 @@ async def create_product(
     await db.commit()
     await db.refresh(product)
     return product
+
+
+# ── Barcode scan flow ─────────────────────────────────────────────────────────
+# Both endpoints live under /products/... but have STATIC prefixes that don't
+# collide with the UUID capture below.  Order matters — keep them above the
+# `/products/{product_id}` route.
+
+@router.get("/products/by-barcode/{barcode}", response_model=Optional[ProductOut])
+async def find_product_by_barcode(
+    barcode: str,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the org's product matching this barcode, or null.
+
+    Used by the mobile scan flow to answer 'do we already stock this?'
+    """
+    code = barcode.strip()
+    if not code:
+        raise HTTPException(status_code=422, detail="Empty barcode.")
+    product = await db.scalar(
+        select(Product).where(
+            Product.org_id == _org(ctx),
+            Product.barcode == code,
+            Product.is_active.is_(True),
+        )
+    )
+    return product  # may be None — FastAPI returns null
+
+
+@router.get("/products/barcode-lookup/{barcode}")
+async def lookup_barcode_externally(
+    barcode: str,
+    _ctx: tuple = Depends(get_current_member),
+):
+    """Look up an unknown barcode against Open Food Facts.
+
+    The API is free, public, and covers ~3M grocery products — exactly
+    Varuflow's wholesale sweet spot. Returns name/brand/image so the mobile
+    "add product" flow can pre-fill the form instead of forcing the user to
+    type everything.
+
+    Always returns 200 with { found: bool, ...fields }.  Never 5xx, so the
+    client can keep scanning even if the upstream is down.
+    """
+    import httpx
+
+    code = barcode.strip()
+    if not code or not code.isdigit() or len(code) < 6 or len(code) > 14:
+        return {"found": False, "barcode": code, "reason": "Invalid barcode format."}
+
+    url = f"https://world.openfoodfacts.org/api/v2/product/{code}.json"
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get(url, headers={"User-Agent": "Varuflow/1.0"})
+    except Exception:  # noqa: BLE001
+        return {"found": False, "barcode": code, "reason": "Upstream unreachable."}
+
+    if resp.status_code != 200:
+        return {"found": False, "barcode": code, "reason": f"Upstream {resp.status_code}."}
+
+    data = resp.json() if resp.content else {}
+    if data.get("status") != 1:
+        return {"found": False, "barcode": code, "reason": "Not in catalogue."}
+
+    p = data.get("product") or {}
+    return {
+        "found":     True,
+        "barcode":   code,
+        "name":      (p.get("product_name") or p.get("product_name_en") or "").strip() or None,
+        "brand":     (p.get("brands") or "").split(",")[0].strip() or None,
+        "category":  (p.get("categories") or "").split(",")[0].strip() or None,
+        "quantity":  (p.get("quantity") or "").strip() or None,
+        "image_url": p.get("image_front_small_url") or p.get("image_url") or None,
+        "source":    "openfoodfacts",
+    }
 
 
 @router.get("/products/{product_id}", response_model=ProductOut)
