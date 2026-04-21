@@ -336,6 +336,8 @@ async def get_demand_forecast(
 
 @router.get("/suppliers", response_model=list[SupplierOut])
 async def list_suppliers(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
     ctx: tuple = Depends(get_current_member),
     db: AsyncSession = Depends(get_db),
 ):
@@ -343,6 +345,8 @@ async def list_suppliers(
         select(Supplier)
         .where(Supplier.org_id == _org(ctx), Supplier.is_active == True)
         .order_by(Supplier.name)
+        .offset(skip)
+        .limit(limit)
     )
     return result.scalars().all()
 
@@ -434,6 +438,8 @@ async def update_warehouse(
 async def list_stock(
     warehouse_id: Optional[uuid.UUID] = Query(None),
     low_stock_only: bool = Query(False),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
     ctx: tuple = Depends(get_current_member),
     db: AsyncSession = Depends(get_db),
 ):
@@ -449,7 +455,9 @@ async def list_stock(
         q = q.where(StockLevel.warehouse_id == warehouse_id)
     if low_stock_only:
         q = q.where(StockLevel.quantity < StockLevel.min_threshold)
-    result = await db.execute(q.order_by(StockLevel.updated_at.desc()))
+    result = await db.execute(
+        q.order_by(StockLevel.updated_at.desc()).offset(skip).limit(limit)
+    )
     levels = result.scalars().all()
     return [
         StockLevelOut(
@@ -605,6 +613,8 @@ async def create_movement(
 @router.get("/purchase-orders", response_model=list[PurchaseOrderOut])
 async def list_purchase_orders(
     status: Optional[PurchaseOrderStatus] = Query(None),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
     ctx: tuple = Depends(get_current_member),
     db: AsyncSession = Depends(get_db),
 ):
@@ -618,7 +628,9 @@ async def list_purchase_orders(
     )
     if status:
         q = q.where(PurchaseOrder.status == status)
-    result = await db.execute(q.order_by(PurchaseOrder.created_at.desc()))
+    result = await db.execute(
+        q.order_by(PurchaseOrder.created_at.desc()).offset(skip).limit(limit)
+    )
     return result.scalars().all()
 
 

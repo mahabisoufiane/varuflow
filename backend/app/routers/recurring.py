@@ -2,7 +2,7 @@
 import uuid
 from datetime import date, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -58,6 +58,8 @@ class RecurringOut(BaseModel):
 
 @router.get("", response_model=list[RecurringOut])
 async def list_recurring(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
     ctx: tuple = Depends(get_current_member),
     db: AsyncSession = Depends(get_db),
 ):
@@ -67,6 +69,8 @@ async def list_recurring(
         .options(selectinload(RecurringInvoice.customer))
         .where(RecurringInvoice.org_id == org_id)
         .order_by(RecurringInvoice.next_run_date)
+        .offset(skip)
+        .limit(limit)
     )
     rows = result.scalars().all()
     return [

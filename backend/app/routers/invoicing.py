@@ -61,6 +61,8 @@ def _invoice_number(org_id: uuid.UUID, sequence: int) -> str:
 async def list_customers(
     search: Optional[str] = Query(None),
     is_active: Optional[bool] = Query(None),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
     ctx: tuple = Depends(get_current_member),
     db: AsyncSession = Depends(get_db),
 ):
@@ -73,7 +75,7 @@ async def list_customers(
         )
     if is_active is not None:
         q = q.where(Customer.is_active == is_active)
-    q = q.order_by(Customer.company_name)
+    q = q.order_by(Customer.company_name).offset(skip).limit(limit)
     result = await db.execute(q)
     return result.scalars().all()
 
@@ -149,6 +151,8 @@ async def deactivate_customer(
 async def list_invoices(
     status: Optional[InvoiceStatus] = Query(None),
     customer_id: Optional[uuid.UUID] = Query(None),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
     ctx: tuple = Depends(get_current_member),
     db: AsyncSession = Depends(get_db),
 ):
@@ -162,7 +166,7 @@ async def list_invoices(
         q = q.where(Invoice.status == status)
     if customer_id:
         q = q.where(Invoice.customer_id == customer_id)
-    q = q.order_by(Invoice.created_at.desc())
+    q = q.order_by(Invoice.created_at.desc()).offset(skip).limit(limit)
     result = await db.execute(q)
     return result.scalars().all()
 
