@@ -2,6 +2,9 @@
    Purpose: Global styles, CSS variables (dark + light themes), component utilities
    Used by: src/app/[locale]/layout.tsx — imported once at the root */
 
+/* Windows 11 Fluent skin — scoped to .win11 root (app shell only) */
+@import "../styles/win11.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

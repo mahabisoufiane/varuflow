@@ -275,7 +275,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      <div className="flex min-h-screen" style={{ background: "var(--vf-bg-primary)" }}>
+      <div className="win11 flex min-h-screen" style={{ background: "var(--vf-bg-primary)" }}>
 
         {/* Mobile overlay */}
         {sidebarOpen && (

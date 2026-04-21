@@ -85,6 +85,11 @@ def _resolve_limit(path: str) -> tuple[str, _Limit]:
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
+        # Disable rate limiting entirely in local development so HMR + dashboard
+        # polling don't trip the limiter. Production (ENV=production) enforces it.
+        if settings.ENV == "development":
+            return await call_next(request)
+
         ip   = _client_ip(request)
         path = request.url.path
         now  = time.monotonic()

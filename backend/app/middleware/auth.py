@@ -27,18 +27,21 @@ DEV_ORG_ID  = uuid.UUID("00000000-0000-0000-0000-000000000002")
 def _decode_token(token: str) -> dict:
     """Decode and verify a Supabase JWT.
 
-    Behaviour depends on `settings.ENFORCE_JWT_SIGNATURE`:
-      True  → signature verification required; a missing secret is an error.
-      False → legacy unverified decode, kept for backward compatibility
-              with the current Railway deployment. Flip the env flag once
-              SUPABASE_JWT_SECRET is confirmed to match the Supabase project.
+    Production (ENV != development): signature verification is ALWAYS required.
+      A missing or empty SUPABASE_JWT_SECRET is a hard error — the app will
+      have refused to boot via validate_production_config(), but we double-
+      check here so tests and non-Railway deploys also fail closed.
 
-    In development (ENV=development) a missing secret falls back to unverified
-    decode so the app works without a live Supabase project.
+    Development (ENV == development): signature verification is performed
+      when SUPABASE_JWT_SECRET is set; otherwise we fall back to an
+      unverified decode so the app is usable without a live Supabase project.
+      This is the ONLY place unverified JWTs are accepted.
     """
-    if settings.ENFORCE_JWT_SIGNATURE:
+    if settings.ENV != "development":
         if not settings.SUPABASE_JWT_SECRET:
-            raise JWTError("SUPABASE_JWT_SECRET is required when ENFORCE_JWT_SIGNATURE=True")
+            # Should never reach here — validate_production_config() aborts
+            # startup when this is empty. Belt-and-braces defence.
+            raise JWTError("SUPABASE_JWT_SECRET is required in production")
         return jwt.decode(
             token,
             settings.SUPABASE_JWT_SECRET,
@@ -46,8 +49,14 @@ def _decode_token(token: str) -> dict:
             options={"verify_aud": False},
         )
 
-    # Legacy path — matches current Railway behaviour. Flip
-    # ENFORCE_JWT_SIGNATURE=True in Railway Variables to remove it.
+    # Development only — verify if secret present, else unverified decode
+    if settings.SUPABASE_JWT_SECRET:
+        return jwt.decode(
+            token,
+            settings.SUPABASE_JWT_SECRET,
+            algorithms=["HS256"],
+            options={"verify_aud": False},
+        )
     return jwt.decode(
         token,
         "",

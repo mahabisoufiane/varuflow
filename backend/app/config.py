@@ -87,16 +87,12 @@ class Settings(BaseSettings):
     DEFAULT_COUNTRY: str = "SE"
 
     # ── Security hardening toggles ───────────────────────────────────────────
-    # Opt-in JWT signature enforcement. Defaults to False for backward
-    # compatibility with the current Railway deployment (see the TODO in
-    # middleware/auth.py). Flip to True in Railway Variables once
-    # SUPABASE_JWT_SECRET is confirmed to match the Supabase project.
-    ENFORCE_JWT_SIGNATURE: bool = False
-
-    # When True, production startup refuses to boot if placeholder secrets
-    # are still present. Defaults to False to match current behaviour; turn
-    # on before a paid / public launch.
-    ENFORCE_SECRET_VALIDATION: bool = False
+    # Deprecated toggles kept for one release so Railway doesn't hard-fail if
+    # the variables are still set. They have NO effect — JWT signature
+    # verification is now always enforced in production (ENV != development),
+    # and production startup always validates that secrets are non-placeholder.
+    ENFORCE_JWT_SIGNATURE:    bool = True   # kept for back-compat, ignored
+    ENFORCE_SECRET_VALIDATION: bool = True   # kept for back-compat, ignored
 
 
 settings = Settings()
@@ -120,33 +116,41 @@ def validate_production_config() -> None:
 
     errors: list[str] = []
 
-    # Opt-in enforcement — keeps current Railway deployment working while
-    # still giving a single knob to flip for pre-launch hardening.
-    if settings.ENFORCE_SECRET_VALIDATION:
-        if settings.PORTAL_JWT_SECRET in _DANGEROUS_SECRETS:
-            errors.append(
-                "PORTAL_JWT_SECRET is still the default placeholder. "
-                "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
-            )
-        if settings.AUTH_JWT_SECRET in _DANGEROUS_SECRETS:
-            errors.append(
-                "AUTH_JWT_SECRET is still the default placeholder. "
-                "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
-            )
-        if not settings.SUPABASE_JWT_SECRET:
-            errors.append(
-                "SUPABASE_JWT_SECRET is empty. Without it, JWT signature "
-                "verification cannot be enabled."
-            )
-        if settings.ENFORCE_JWT_SIGNATURE and not settings.SUPABASE_JWT_SECRET:
-            errors.append(
-                "ENFORCE_JWT_SIGNATURE=True but SUPABASE_JWT_SECRET is empty."
-            )
+    # ── Required secrets in production — no opt-out ─────────────────────────
+    if settings.PORTAL_JWT_SECRET in _DANGEROUS_SECRETS or not settings.PORTAL_JWT_SECRET:
+        errors.append(
+            "PORTAL_JWT_SECRET is empty or the default placeholder. "
+            "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+        )
+    elif len(settings.PORTAL_JWT_SECRET) < 32:
+        errors.append("PORTAL_JWT_SECRET must be at least 32 characters.")
 
-    # 3. DEBUG must be off in production
+    if settings.AUTH_JWT_SECRET in _DANGEROUS_SECRETS or not settings.AUTH_JWT_SECRET:
+        errors.append(
+            "AUTH_JWT_SECRET is empty or the default placeholder. "
+            "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+        )
+    elif len(settings.AUTH_JWT_SECRET) < 32:
+        errors.append("AUTH_JWT_SECRET must be at least 32 characters.")
+
+    if not settings.SUPABASE_JWT_SECRET:
+        errors.append(
+            "SUPABASE_JWT_SECRET is empty. Required to verify Supabase JWT "
+            "signatures in production."
+        )
+    elif len(settings.SUPABASE_JWT_SECRET) < 32:
+        errors.append("SUPABASE_JWT_SECRET must be at least 32 characters.")
+
+    if not settings.CORS_ORIGINS or settings.CORS_ORIGINS.strip() == "*":
+        errors.append(
+            "CORS_ORIGINS must be an explicit comma-separated list of origins. "
+            "Wildcard '*' is never permitted in production."
+        )
+
+    # DEBUG must be off in production
     if settings.DEBUG:
         errors.append(
-            "DEBUG=True in production exposes stack traces and enables dev bypass. "
+            "DEBUG=True in production exposes stack traces. "
             "Set DEBUG=False in Railway Variables."
         )
 

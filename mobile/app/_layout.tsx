@@ -25,13 +25,22 @@ export default function RootLayout() {
 
   const handleAuthEvent = useCallback(
     async (event: AuthChangeEvent, session: Session | null) => {
-      // TOKEN_REFRESHED / SIGNED_IN / INITIAL_SESSION  → user is authenticated
-      // SIGNED_OUT → actual sign-out (user tapped button or token truly invalid)
-      // TOKEN_REFRESH_FAILED handling is disabled for now — re-enable if needed:
-      // if ((event as string) === "TOKEN_REFRESH_FAILED") {
-      //   // Keep whatever state we already have — don't kick to login on network blips
-      //   return;
-      // }
+      // Event semantics:
+      //   TOKEN_REFRESHED / SIGNED_IN / INITIAL_SESSION → authenticated
+      //   SIGNED_OUT                                    → user signed out
+      //   TOKEN_REFRESH_FAILED                          → refresh failed, force re-auth
+      //
+      // TOKEN_REFRESH_FAILED is treated as a hard auth failure: the refresh
+      // token is rejected by Supabase (revoked, expired, or tampered with).
+      // We sign the user out explicitly and redirect to login. A transient
+      // network error does NOT emit this event — Supabase retries silently —
+      // so it's safe to treat every TOKEN_REFRESH_FAILED as a real failure.
+      if ((event as string) === "TOKEN_REFRESH_FAILED") {
+        await supabase.auth.signOut().catch(() => {});
+        setState("unauthenticated");
+        router.replace("/(auth)/login");
+        return;
+      }
 
       if (!session) {
         setState("unauthenticated");

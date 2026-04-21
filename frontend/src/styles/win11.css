@@ -1,0 +1,203 @@
+/* File: src/styles/win11.css
+   Purpose: Windows 11 Fluent-inspired skin, scoped to .win11 root (app shell only).
+   Used by: globals.css (import) + AppShell.tsx (root class).
+
+   Strategy: override the existing --vf-* CSS variables and a handful of
+   component utility classes only inside .win11 so the marketing + auth
+   pages stay untouched. */
+
+/* ── Windows accent + surface tokens ─────────────────────────────────────── */
+.win11 {
+  /* Windows 11 accent (light/default) */
+  --w11-accent:        #0067C0;
+  --w11-accent-hover:  #1B7FCB;
+  --w11-accent-press:  #005A9E;
+  --w11-accent-soft:   rgba(0, 103, 192, 0.12);
+  --w11-accent-tint:   rgba(0, 103, 192, 0.08);
+
+  /* Fluent corner radii */
+  --w11-radius-sm:     4px;
+  --w11-radius:        8px;
+  --w11-radius-lg:     12px;
+
+  /* Segoe UI stack */
+  font-family: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system,
+               BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+  font-feature-settings: "ss01", "cv01", "cv02";
+  letter-spacing: -0.005em;
+}
+
+/* DARK — override when inside .dark .win11 or :root.win11 in dark */
+.dark .win11,
+.win11.dark {
+  --w11-accent:        #60CDFF;
+  --w11-accent-hover:  #4CC2FF;
+  --w11-accent-press:  #76D3FF;
+  --w11-accent-soft:   rgba(96, 205, 255, 0.14);
+  --w11-accent-tint:   rgba(96, 205, 255, 0.08);
+}
+
+/* Map Varuflow vars → Mica-like Fluent surfaces */
+.win11 {
+  --vf-bg-primary:     #F3F3F3;   /* Mica base */
+  --vf-bg-surface:     rgba(255, 255, 255, 0.70);
+  --vf-bg-elevated:    rgba(255, 255, 255, 0.85);
+  --vf-text-primary:   #1A1A1A;
+  --vf-text-secondary: #3B3B3B;
+  --vf-text-muted:     #636363;
+  --vf-border:         rgba(0, 0, 0, 0.0578);
+  --vf-border-strong:  rgba(0, 0, 0, 0.0924);
+  --vf-glass-bg:       rgba(255, 255, 255, 0.55);
+  --vf-glass-border:   rgba(0, 0, 0, 0.05);
+  --vf-divider:        rgba(0, 0, 0, 0.05);
+  --vf-hover:          rgba(0, 0, 0, 0.04);
+}
+.dark .win11,
+.win11.dark {
+  --vf-bg-primary:     #202020;   /* Mica dark */
+  --vf-bg-surface:     rgba(44, 44, 44, 0.70);
+  --vf-bg-elevated:    rgba(55, 55, 55, 0.85);
+  --vf-text-primary:   #FFFFFF;
+  --vf-text-secondary: #D0D0D0;
+  --vf-text-muted:     #A0A0A0;
+  --vf-border:         rgba(255, 255, 255, 0.0837);
+  --vf-border-strong:  rgba(255, 255, 255, 0.12);
+  --vf-glass-bg:       rgba(44, 44, 44, 0.55);
+  --vf-glass-border:   rgba(255, 255, 255, 0.08);
+  --vf-divider:        rgba(255, 255, 255, 0.06);
+  --vf-hover:          rgba(255, 255, 255, 0.05);
+}
+
+/* ── Mica root background (soft gradient noise) ──────────────────────────── */
+.win11 {
+  background:
+    radial-gradient(1200px 600px at 10% -10%, var(--w11-accent-tint), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(163, 130, 255, 0.10), transparent 60%),
+    var(--vf-bg-primary);
+}
+
+/* Sidebar + topbar acrylic */
+.win11 aside,
+.win11 > header,
+.win11 .flex.flex-1 > header {
+  backdrop-filter: saturate(1.5) blur(30px);
+  -webkit-backdrop-filter: saturate(1.5) blur(30px);
+  background: var(--vf-glass-bg) !important;
+}
+
+/* ── Rounding override to Fluent corners ─────────────────────────────────── */
+.win11 .vf-card,
+.win11 .vf-card-hover,
+.win11 .vf-card-elevated,
+.win11 .vf-section,
+.win11 .vf-surface {
+  border-radius: var(--w11-radius);
+}
+.win11 .vf-surface-elevated,
+.win11 .vf-stat-tile,
+.win11 .vf-input,
+.win11 .vf-btn,
+.win11 .vf-btn-ghost,
+.win11 .vf-btn-danger {
+  border-radius: var(--w11-radius-sm);
+}
+
+/* ── Buttons: flat Fluent accent ─────────────────────────────────────────── */
+.win11 .vf-btn {
+  background: var(--w11-accent);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.14),
+              inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  height: 32px;
+  padding: 0 14px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0;
+}
+.win11 .vf-btn:hover {
+  background: var(--w11-accent-hover);
+  transform: none;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.16),
+              inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+.win11 .vf-btn:active {
+  background: var(--w11-accent-press);
+  transform: none;
+}
+
+.win11 .vf-btn-ghost {
+  height: 32px;
+  font-weight: 500;
+  background: var(--vf-bg-surface);
+  border: 1px solid var(--vf-border-strong);
+}
+.win11 .vf-btn-ghost:hover {
+  background: var(--vf-bg-elevated);
+  border-color: var(--vf-border-strong);
+  color: var(--vf-text-primary);
+  transform: none;
+}
+
+/* ── Inputs: Fluent underline focus ──────────────────────────────────────── */
+.win11 .vf-input {
+  height: 32px;
+  padding: 6px 12px;
+  background: var(--vf-bg-surface);
+  border: 1px solid var(--vf-border-strong);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.45);
+}
+.dark .win11 .vf-input,
+.win11.dark .vf-input {
+  border-bottom-color: rgba(255, 255, 255, 0.54);
+}
+.win11 .vf-input:focus {
+  border-color: var(--vf-border-strong);
+  border-bottom: 2px solid var(--w11-accent);
+  box-shadow: none;
+  padding-bottom: 5px;
+}
+
+/* ── Nav active indicator: Fluent pill bar ───────────────────────────────── */
+.win11 nav a[class*="bg-indigo-500"],
+.win11 nav a.active-win11 {
+  background: var(--w11-accent-soft) !important;
+  color: var(--w11-accent) !important;
+}
+.win11 nav a span.bg-indigo-500 {
+  background: var(--w11-accent) !important;
+  height: 16px !important;
+  width: 3px !important;
+  border-radius: 999px !important;
+}
+
+/* Logo gradient → solid Windows blue in win11 */
+.win11 [class*="from-indigo-500"][class*="to-violet-"],
+.win11 [class*="from-indigo-600"][class*="to-violet-"] {
+  background: var(--w11-accent) !important;
+  background-image: none !important;
+}
+.win11 [class*="bg-clip-text"][class*="from-indigo-"] {
+  -webkit-text-fill-color: var(--vf-text-primary);
+  background-image: none !important;
+  color: var(--vf-text-primary) !important;
+}
+
+/* Indigo text accents → Windows accent */
+.win11 .text-indigo-500,
+.win11 [class*="text-indigo-5"] {
+  color: var(--w11-accent) !important;
+}
+
+/* ── Scrollbars: thinner, Fluent thumb ───────────────────────────────────── */
+.win11 ::-webkit-scrollbar         { width: 6px; height: 6px; }
+.win11 ::-webkit-scrollbar-thumb   { background: rgba(100, 100, 100, 0.35); border-radius: 999px; }
+.win11 ::-webkit-scrollbar-thumb:hover { background: rgba(100, 100, 100, 0.55); }
+
+/* ── Focus ring: Fluent accent ───────────────────────────────────────────── */
+.win11 *:focus-visible {
+  outline: 2px solid var(--w11-accent);
+  outline-offset: 2px;
+  border-radius: var(--w11-radius-sm);
+}
+
+/* ── Motion: snappier, Fluent-ish easing ─────────────────────────────────── */
+.win11 .page-enter { animation: fade-in 0.14s cubic-bezier(0.33, 0, 0.67, 1) both; }
