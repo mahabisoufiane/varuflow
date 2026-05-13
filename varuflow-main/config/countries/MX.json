@@ -1,0 +1,24 @@
+{
+  "iso_alpha2": "MX",
+  "display_name": "Mexico",
+  "region": "americas",
+  "default_locale": "es-MX",
+  "currency": "MXN",
+  "vat": {
+    "standard_rate_pct": 16.0,
+    "reduced_rates_pct": [
+      8.0,
+      0.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "[A-Z&Ñ]{3,4}\\d{6}[A-Z0-9]{3}",
+    "einvoicing_status": "CFDI mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/MX/README.md"
+}

@@ -1,0 +1,50 @@
+{
+  "code": "BY",
+  "code3": "BLR",
+  "name": { "en": "Belarus", "local": "\u0411\u0435\u043b\u0430\u0440\u0443\u0441\u044c", "sv": "Belarus" },
+  "region": "europe",
+  "subregion": "eastern-europe",
+  "is_eu_member": false,
+  "is_eea_member": false,
+  "is_efta_member": false,
+  "is_schengen": false,
+  "is_eurozone": false,
+  "currency": { "code": "BYN", "symbol": "Br", "name": "Belarusian Ruble", "decimal_places": 2, "format": "#,##0.00 Br" },
+  "vat": {
+    "applicable": true,
+    "name_local": "\u041d\u0414\u0421 (\u041d\u0430\u043b\u043e\u0433 \u043d\u0430 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u043d\u0443\u044e \u0441\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c)",
+    "standard_rate_pct": 20.0,
+    "reduced_rates_pct": [10.0],
+    "registration_threshold_eur": 0,
+    "vat_id_format": "^\\d{9}$",
+    "vat_id_example": "123456789"
+  },
+  "invoice_rules": {
+    "language_required": ["be", "ru"],
+    "sequential_numbering_required": true,
+    "retention_years": 5,
+    "e_invoice_required": false
+  },
+  "compliance": {
+    "data_protection_law": "Law on Personal Data Protection",
+    "company_registry_name": "Unified State Register of Legal Entities",
+    "tax_authority_name": "Ministry of Taxes and Duties"
+  },
+  "locale": {
+    "default_language": "ru",
+    "date_format": "DD.MM.YYYY",
+    "timezone": "Europe/Minsk",
+    "number_format": { "decimal_separator": ",", "thousands_separator": " ", "currency_position": "after" }
+  },
+  "address_format": {
+    "postal_code_regex": "^\\d{6}$",
+    "postal_code_example": "220000"
+  },
+  "payment": {
+    "supported_methods": ["bank_transfer", "card"],
+    "open_banking_supported": false
+  },
+  "varuflow_localization_status": {
+    "ready_for_market": false
+  }
+}

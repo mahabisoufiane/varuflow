@@ -1,0 +1,24 @@
+{
+  "iso_alpha2": "AT",
+  "display_name": "Austria",
+  "region": "europe",
+  "default_locale": "de-AT",
+  "currency": "EUR",
+  "vat": {
+    "standard_rate_pct": 20.0,
+    "reduced_rates_pct": [
+      10.0,
+      13.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": true,
+    "tax_id_regex": "ATU\\d{8}",
+    "einvoicing_status": "B2G mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/AT/README.md"
+}
