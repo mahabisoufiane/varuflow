@@ -1,0 +1,50 @@
+{
+  "code": "KZ",
+  "code3": "KAZ",
+  "name": { "en": "Kazakhstan", "local": "\u049a\u0430\u0437\u0430\u049b\u0441\u0442\u0430\u043d", "sv": "Kazakstan" },
+  "region": "europe",
+  "subregion": "central-asia",
+  "is_eu_member": false,
+  "is_eea_member": false,
+  "is_efta_member": false,
+  "is_schengen": false,
+  "is_eurozone": false,
+  "currency": { "code": "KZT", "symbol": "\u20b8", "name": "Kazakhstani Tenge", "decimal_places": 2, "format": "#,##0.00 \u20b8" },
+  "vat": {
+    "applicable": true,
+    "name_local": "\u049a\u049a\u0421 (\u049a\u043e\u0441\u044b\u043b\u0493\u0430\u043d \u049b\u04b1\u043d \u0441\u0430\u043b\u044b\u0493\u044b)",
+    "standard_rate_pct": 12.0,
+    "reduced_rates_pct": [],
+    "registration_threshold_eur": 0,
+    "vat_id_format": "^\\d{12}$",
+    "vat_id_example": "123456789012"
+  },
+  "invoice_rules": {
+    "language_required": ["kk", "ru"],
+    "sequential_numbering_required": true,
+    "retention_years": 5,
+    "e_invoice_required": true
+  },
+  "compliance": {
+    "data_protection_law": "Law on Personal Data and Their Protection",
+    "company_registry_name": "National Registry of Business Identification Numbers",
+    "tax_authority_name": "State Revenue Committee"
+  },
+  "locale": {
+    "default_language": "kk",
+    "date_format": "DD.MM.YYYY",
+    "timezone": "Asia/Almaty",
+    "number_format": { "decimal_separator": ",", "thousands_separator": " ", "currency_position": "after" }
+  },
+  "address_format": {
+    "postal_code_regex": "^\\d{6}$",
+    "postal_code_example": "050000"
+  },
+  "payment": {
+    "supported_methods": ["bank_transfer", "card"],
+    "open_banking_supported": false
+  },
+  "varuflow_localization_status": {
+    "ready_for_market": false
+  }
+}

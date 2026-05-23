@@ -1,0 +1,24 @@
+{
+  "iso_alpha2": "JO",
+  "display_name": "Jordan",
+  "region": "middle-east",
+  "default_locale": "ar-JO",
+  "currency": "JOD",
+  "vat": {
+    "standard_rate_pct": 16.0,
+    "reduced_rates_pct": [
+      4.0,
+      10.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d{9}",
+    "einvoicing_status": "mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/JO/README.md"
+}

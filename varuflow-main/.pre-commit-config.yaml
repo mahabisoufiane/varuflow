@@ -1,0 +1,38 @@
+repos:
+  - repo: local
+    hooks:
+      - id: no-hardcoded-railway-url
+        name: No hardcoded Railway production URL in source
+        entry: bash -c 'if grep -rn "varuflow-production.up.railway.app" frontend/src backend/app; then echo "Hardcoded production URL found"; exit 1; fi'
+        language: system
+        pass_filenames: false
+
+      - id: no-wildcard-cors
+        name: No wildcard CORS
+        entry: bash -c 'if grep -rn "allow_origins=\\[\"\\*\"\\]" backend/; then echo "Wildcard CORS is forbidden"; exit 1; fi'
+        language: system
+        pass_filenames: false
+
+      - id: no-openai-in-ai-engine
+        name: ai_engine.py must not import openai
+        entry: bash -c 'if grep -n "openai" backend/app/routers/ai_engine.py; then echo "ai_engine.py must not import openai (use integrations.py)"; exit 1; fi'
+        language: system
+        pass_filenames: false
+
+      - id: no-committed-secrets
+        name: No Stripe/Resend/webhook secrets in source
+        entry: bash -c 'if grep -rnE "sk_live_[A-Za-z0-9]{16,}|sk_test_[A-Za-z0-9]{16,}|whsec_[A-Za-z0-9]{16,}|re_[A-Za-z0-9]{24,}" backend/app frontend/src; then echo "Possible committed secret"; exit 1; fi'
+        language: system
+        pass_filenames: false
+
+      - id: no-env-files
+        name: No .env / .env.local committed
+        entry: bash -c 'files=$(git diff --cached --name-only | grep -E "(^|/)\\.env(\\..*)?$" | grep -v "\\.example$" || true); if [ -n "$files" ]; then echo "Refusing to commit env file(s): $files"; exit 1; fi'
+        language: system
+        pass_filenames: false
+
+      - id: locale-keys-aligned
+        name: Locale message files aligned with en.json
+        entry: python3 scripts/check_locales.py
+        language: system
+        pass_filenames: false
