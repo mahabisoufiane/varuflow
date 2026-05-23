@@ -1,0 +1,50 @@
+{
+  "code": "AD",
+  "code3": "AND",
+  "name": { "en": "Andorra", "local": "Andorra", "sv": "Andorra" },
+  "region": "europe",
+  "subregion": "southern-europe",
+  "is_eu_member": false,
+  "is_eea_member": false,
+  "is_efta_member": false,
+  "is_schengen": false,
+  "is_eurozone": false,
+  "currency": { "code": "EUR", "symbol": "\u20ac", "name": "Euro", "decimal_places": 2, "format": "#.##0,00 \u20ac" },
+  "vat": {
+    "applicable": true,
+    "name_local": "Impost General Indirecte (IGI)",
+    "standard_rate_pct": 4.5,
+    "reduced_rates_pct": [1.0, 2.5],
+    "registration_threshold_eur": 40000,
+    "vat_id_format": "^[A-Z]\\d{6}[A-Z]$",
+    "vat_id_example": "A123456B"
+  },
+  "invoice_rules": {
+    "language_required": ["ca"],
+    "sequential_numbering_required": true,
+    "retention_years": 7,
+    "e_invoice_required": false
+  },
+  "compliance": {
+    "data_protection_law": "Llei qualificada de protecci\u00f3 de dades personals (LQPDP)",
+    "company_registry_name": "Registre de Societats",
+    "tax_authority_name": "Departament de Tributs i de Fronteres"
+  },
+  "locale": {
+    "default_language": "ca",
+    "date_format": "DD/MM/YYYY",
+    "timezone": "Europe/Andorra",
+    "number_format": { "decimal_separator": ",", "thousands_separator": ".", "currency_position": "after" }
+  },
+  "address_format": {
+    "postal_code_regex": "^AD[1-7]0\\d$",
+    "postal_code_example": "AD500"
+  },
+  "payment": {
+    "supported_methods": ["bank_transfer", "card"],
+    "open_banking_supported": false
+  },
+  "varuflow_localization_status": {
+    "ready_for_market": false
+  }
+}

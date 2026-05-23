@@ -1,0 +1,26 @@
+{
+  "name": "varuflow-studio",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "sanity dev --port 3333",
+    "build": "sanity build",
+    "deploy": "sanity deploy",
+    "seed": "tsx seed/seed.ts"
+  },
+  "dependencies": {
+    "@sanity/icons": "^3.4.0",
+    "@sanity/image-url": "^1.0.2",
+    "@sanity/vision": "^3.56.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sanity": "^3.56.0",
+    "styled-components": "^6.1.11"
+  },
+  "devDependencies": {
+    "@sanity/eslint-config-studio": "^4.0.0",
+    "@types/react": "^18.3.1",
+    "tsx": "^4.19.1",
+    "typescript": "5.5.4"
+  }
+}

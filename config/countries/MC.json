@@ -1,0 +1,50 @@
+{
+  "code": "MC",
+  "code3": "MCO",
+  "name": { "en": "Monaco", "local": "Monaco", "sv": "Monaco" },
+  "region": "europe",
+  "subregion": "western-europe",
+  "is_eu_member": false,
+  "is_eea_member": false,
+  "is_efta_member": false,
+  "is_schengen": true,
+  "is_eurozone": true,
+  "currency": { "code": "EUR", "symbol": "\u20ac", "name": "Euro", "decimal_places": 2, "format": "#\u00a0##0,00 \u20ac" },
+  "vat": {
+    "applicable": true,
+    "name_local": "TVA (Taxe sur la Valeur Ajout\u00e9e)",
+    "standard_rate_pct": 20.0,
+    "reduced_rates_pct": [10.0, 5.5, 2.1],
+    "registration_threshold_eur": 0,
+    "vat_id_format": "^FR\\d{11}$",
+    "vat_id_example": "FR12345678901"
+  },
+  "invoice_rules": {
+    "language_required": ["fr"],
+    "sequential_numbering_required": true,
+    "retention_years": 10,
+    "e_invoice_required": false
+  },
+  "compliance": {
+    "data_protection_law": "Loi n\u00b0 1.565 relative \u00e0 la protection des donn\u00e9es personnelles",
+    "company_registry_name": "R\u00e9pertoire du Commerce et de l'Industrie (RCI)",
+    "tax_authority_name": "Direction des Services Fiscaux"
+  },
+  "locale": {
+    "default_language": "fr",
+    "date_format": "DD/MM/YYYY",
+    "timezone": "Europe/Monaco",
+    "number_format": { "decimal_separator": ",", "thousands_separator": " ", "currency_position": "after" }
+  },
+  "address_format": {
+    "postal_code_regex": "^980\\d{2}$",
+    "postal_code_example": "98000"
+  },
+  "payment": {
+    "supported_methods": ["bank_transfer", "card", "sepa"],
+    "open_banking_supported": true
+  },
+  "varuflow_localization_status": {
+    "ready_for_market": false
+  }
+}

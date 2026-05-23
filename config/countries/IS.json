@@ -1,0 +1,23 @@
+{
+  "iso_alpha2": "IS",
+  "display_name": "Iceland",
+  "region": "europe",
+  "default_locale": "is-IS",
+  "currency": "ISK",
+  "vat": {
+    "standard_rate_pct": 24.0,
+    "reduced_rates_pct": [
+      11.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": true,
+    "tax_id_regex": "IS\\d{5,6}",
+    "einvoicing_status": "B2G mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/IS/README.md"
+}
