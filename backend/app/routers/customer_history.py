@@ -26,8 +26,9 @@ from app.middleware.auth import get_current_member
 from app.models.bookings import Appointment
 from app.models.customer_history import CustomerHistoryEvent
 from app.models.invoicing import Invoice, Payment
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/history", tags=["customer-history"])
+router = APIRouter(prefix="/api/history", tags=["customer-history"], dependencies=[Depends(require_module("invoicing"))])
 log = logging.getLogger(__name__)
 
 

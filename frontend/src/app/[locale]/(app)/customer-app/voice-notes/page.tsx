@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api-client";
 import {
   PlusCircle, Mic, RefreshCw, ChevronDown, ChevronUp, Trash2,
 } from "lucide-react";
@@ -52,11 +51,6 @@ function truncate(str: string | null, n: number): string {
 }
 
 export default function VoiceNotesPage() {
-  const router = useRouter();
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale ?? "en";
-  const supabase = createClient();
-
   const [notes, setNotes] = useState<VoiceNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [senderFilter, setSenderFilter] = useState<SenderFilter>("all");
@@ -76,23 +70,12 @@ export default function VoiceNotesPage() {
     thread_id: "",
   });
 
-  async function getToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }
-  function apiUrl(p: string) { return `${process.env.NEXT_PUBLIC_API_URL}${p}`; }
-
   async function load() {
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push(`/${locale}/auth/login`); return; }
       const query = unreadOnly ? "?is_read=false" : "";
-      const res = await fetch(apiUrl(`/api/voice-notes${query}`), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (res.ok) setNotes(await res.json());
+      const data = await api.get<VoiceNote[]>(`/api/voice-notes${query}`);
+      setNotes(data);
     } catch {
       toast.error("Failed to load voice notes");
     } finally {
@@ -105,21 +88,11 @@ export default function VoiceNotesPage() {
   async function markRead(id: string) {
     setActionLoading(id + "_read");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/voice-notes/${id}/read`), {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to mark as read");
-        return;
-      }
+      await api.patch(`/api/voice-notes/${id}/read`, {});
       setNotes((prev) => prev.map((n) => n.id === id ? { ...n, is_read: true } : n));
       toast.success("Marked as read");
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -130,25 +103,14 @@ export default function VoiceNotesPage() {
     if (!text) { toast.error("Transcription text is required"); return; }
     setActionLoading(id + "_transcribe");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/voice-notes/${id}/transcribe`), {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ transcription: text }),
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to save transcription");
-        return;
-      }
+      await api.patch(`/api/voice-notes/${id}/transcribe`, { transcription: text });
       toast.success("Transcription saved");
       setNotes((prev) =>
         prev.map((n) => n.id === id ? { ...n, transcription: text } : n)
       );
       setShowTranscribeInput((prev) => ({ ...prev, [id]: false }));
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -157,22 +119,12 @@ export default function VoiceNotesPage() {
   async function deleteNote(id: string) {
     setActionLoading(id + "_delete");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/voice-notes/${id}`), {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to delete note");
-        return;
-      }
+      await api.delete(`/api/voice-notes/${id}`);
       setNotes((prev) => prev.filter((n) => n.id !== id));
       if (expandedId === id) setExpandedId(null);
       toast.success("Voice note deleted");
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -182,30 +134,19 @@ export default function VoiceNotesPage() {
     if (!newForm.audio_url.trim()) { toast.error("Audio URL is required"); return; }
     setActionLoading("upload");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl("/api/voice-notes"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          sender_type: newForm.sender_type,
-          audio_url: newForm.audio_url,
-          duration_seconds: newForm.duration_seconds ? parseInt(newForm.duration_seconds) : null,
-          customer_id: newForm.customer_id || null,
-          thread_id: newForm.thread_id || null,
-        }),
+      await api.post("/api/voice-notes", {
+        sender_type: newForm.sender_type,
+        audio_url: newForm.audio_url,
+        duration_seconds: newForm.duration_seconds ? parseInt(newForm.duration_seconds) : null,
+        customer_id: newForm.customer_id || null,
+        thread_id: newForm.thread_id || null,
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to upload voice note");
-        return;
-      }
       toast.success("Voice note uploaded");
       setShowNew(false);
       setNewForm({ sender_type: "customer", audio_url: "", duration_seconds: "", customer_id: "", thread_id: "" });
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }

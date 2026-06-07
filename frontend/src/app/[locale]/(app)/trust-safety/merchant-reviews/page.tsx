@@ -12,11 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
 
 const TAG_COLORS: Record<string, string> = {
   no_show: "bg-red-100 text-red-800",
@@ -64,13 +60,9 @@ export default function MerchantReviewsPage() {
       const params = new URLSearchParams();
       if (customerFilter) params.set("customer_id", customerFilter);
       const endpoint = networkMode
-        ? `${API}/api/merchant-reviews/network?${params}`
-        : `${API}/api/merchant-reviews?${params}`;
-      const res = await fetch(endpoint, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setReviews(await res.json());
+        ? `/api/merchant-reviews/network?${params}`
+        : `/api/merchant-reviews?${params}`;
+      setReviews(await api.get<MerchantReview[]>(endpoint));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load reviews");
     } finally {
@@ -100,15 +92,7 @@ export default function MerchantReviewsPage() {
         shared_with_network: fShared,
       };
       if (fBookingId) body.booking_id = fBookingId;
-      const res = await fetch(`${API}/api/merchant-reviews`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post<MerchantReview>("/api/merchant-reviews", body);
       setFCustomerId(""); setFBookingId(""); setFBody(""); setFTags(""); setFIsPrivate(false); setFShared(false); setFRating("5");
       fetchReviews();
     } catch (e: unknown) {

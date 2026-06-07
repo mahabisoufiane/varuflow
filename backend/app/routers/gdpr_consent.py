@@ -36,9 +36,10 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.consent import ConsentAuditLog, ConsentRecord, DsarRequest
 from app.models.invoicing import Customer, Invoice, Payment
+from app.middleware.plan_check import require_module
 
 log = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/gdpr", tags=["gdpr_consent"])
+router = APIRouter(prefix="/api/gdpr", tags=["gdpr_consent"], dependencies=[Depends(require_module("settings"))])
 
 
 CONSENT_TYPES = {

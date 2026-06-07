@@ -11,10 +11,12 @@ GET  /api/email-templates/sends        — list send history
 GET  /api/email-templates/track/{tracking_id}/open — pixel tracking (open event)
 """
 import logging
+import os
 import secrets
 import uuid
 from datetime import datetime, timezone
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -23,9 +25,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.email_templates import EmailTemplate, EmailTemplateSend
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/email-templates", tags=["email_templates"])
+router = APIRouter(prefix="/api/email-templates", tags=["email_templates"], dependencies=[Depends(require_module("invoicing"))])
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
@@ -308,7 +311,7 @@ async def send_template(
     member=Depends(get_current_member),
     db: AsyncSession = Depends(get_db),
 ):
-    """Log a send event (actual email delivery is done by Resend/SMTP in a service layer)."""
+    """Render template variables, deliver via Resend, and log the send event."""
     try:
         org_id = member["org_id"]
         t = (await db.execute(
@@ -321,7 +324,38 @@ async def send_template(
             raise HTTPException(status_code=404, detail="Template not found")
 
         rendered_subject = _render(body.subject or t.subject, body.variables)
+        rendered_body = _render(t.body_html, body.variables)
         tracking_id = secrets.token_urlsafe(16)
+
+        # Inject a 1×1 tracking pixel so we can record opens.
+        tracking_pixel = (
+            f'<img src="{os.getenv("NEXT_PUBLIC_API_URL", "")}'
+            f'/api/email-templates/track/{tracking_id}/open" '
+            f'width="1" height="1" style="display:none" alt="" />'
+        )
+        html_with_pixel = rendered_body + tracking_pixel
+
+        # Deliver via Resend — silently skip if key not configured (dev/test).
+        resend_key = os.getenv("RESEND_API_KEY", "")
+        if resend_key:
+            try:
+                async with httpx.AsyncClient(timeout=10) as client:
+                    res = await client.post(
+                        "https://api.resend.com/emails",
+                        headers={"Authorization": f"Bearer {resend_key}"},
+                        json={
+                            "from": "Varuflow <noreply@varuflow.com>",
+                            "to": [body.to_email],
+                            "subject": rendered_subject,
+                            "html": html_with_pixel,
+                        },
+                    )
+                if res.status_code not in (200, 201):
+                    logger.warning("Resend delivery failed: %s %s", res.status_code, res.text)
+                    raise HTTPException(status_code=502, detail="Email delivery failed")
+            except httpx.RequestError as exc:
+                logger.error("Resend network error: %s", exc)
+                raise HTTPException(status_code=502, detail="Email delivery failed — network error")
 
         send = EmailTemplateSend(
             template_id=t.id,

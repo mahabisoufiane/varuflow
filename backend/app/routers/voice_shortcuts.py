@@ -14,10 +14,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.voice_shortcut import VoiceShortcut
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/voice-shortcuts", tags=["voice-shortcuts"])
+router = APIRouter(prefix="/api/voice-shortcuts", tags=["voice-shortcuts"], dependencies=[Depends(require_module("ai"))])
 
 
 def _org_id(ctx: tuple) -> uuid.UUID:

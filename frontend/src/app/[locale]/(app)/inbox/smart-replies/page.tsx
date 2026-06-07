@@ -1,14 +1,10 @@
 "use client";
 import { useState } from "react";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
 
 function toneBadgeClass(tone: string) {
   const map: Record<string, string> = {
@@ -42,18 +38,12 @@ export default function SmartRepliesPage() {
     setLogId(null);
     setAccepted(null);
     try {
-      const res = await fetch(`${API}/api/inbox/smart-reply`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message_id: messageId }),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data = await res.json();
-      setSuggestions(data.suggestions ?? data);
-      setLogId(data.log_id ?? null);
+      const data = await api.post<{ suggestions?: SmartReplySuggestion[]; log_id?: string } & SmartReplySuggestion[]>(
+        "/api/inbox/smart-reply",
+        { message_id: messageId }
+      );
+      setSuggestions((data as any).suggestions ?? data);
+      setLogId((data as any).log_id ?? null);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to get suggestions");
     } finally {
@@ -65,15 +55,7 @@ export default function SmartRepliesPage() {
     if (!logId) return;
     setAcceptLoading(index);
     try {
-      const res = await fetch(`${API}/api/inbox/smart-reply/${logId}/accept`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ index }),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post(`/api/inbox/smart-reply/${logId}/accept`, { index });
       setAccepted(index);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to accept reply");

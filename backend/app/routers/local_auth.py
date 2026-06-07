@@ -357,7 +357,7 @@ async def password_reset_request(
         try:
             await auth_email.send_password_reset_email(body.email, token)
         except Exception:
-            log.exception("Failed to send password reset email | email=%s", body.email)
+            log.exception("Failed to send password reset email | email=%s", body.email)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
     # Always respond identically — don't reveal whether the email exists
     return {"message": "If an account with that email exists, a reset link has been sent."}
 

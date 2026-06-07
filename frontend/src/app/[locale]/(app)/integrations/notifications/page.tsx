@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Bell, Trash2, TestTube } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 const ALL_EVENTS = [
   { key: "stock.low", label: "Low stock alert" },
@@ -25,19 +26,15 @@ interface Channel {
 }
 
 export default function NotificationsIntegrationPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [channels, setChannels] = useState<Channel[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [testing, setTesting] = useState<string | null>(null);
   const [form, setForm] = useState({ channel_type: "slack", name: "", webhook_url: "", events: [] as string[] });
 
-  const fetch_ = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   async function load() {
     try {
-      const res = await fetch_("/api/integrations/notifications/channels");
-      if (res.ok) setChannels((await res.json()).channels);
+      const data = await api.get<{ channels?: Channel[] }>("/api/integrations/notifications/channels");
+      setChannels(data.channels ?? []);
     } catch {}
   }
 
@@ -45,32 +42,33 @@ export default function NotificationsIntegrationPage() {
 
   async function createChannel() {
     if (!form.name || !form.webhook_url) { toast.error("Name and webhook URL are required"); return; }
-    const res = await fetch_("/api/integrations/notifications/channels", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    if (res.ok) {
+    try {
+      await api.post("/api/integrations/notifications/channels", form);
       toast.success("Channel added");
       setShowForm(false);
       setForm({ channel_type: "slack", name: "", webhook_url: "", events: [] });
       await load();
-    } else {
-      const err = await res.json();
-      toast.error(err.detail || "Failed to add channel");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add channel");
     }
   }
 
   async function deleteChannel(id: string) {
-    const res = await fetch_(`/api/integrations/notifications/channels/${id}`, { method: "DELETE" });
-    if (res.ok) { toast.success("Channel removed"); await load(); }
+    try {
+      await api.delete(`/api/integrations/notifications/channels/${id}`);
+      toast.success("Channel removed");
+      await load();
+    } catch {}
   }
 
   async function testChannel(id: string) {
     setTesting(id);
-    const res = await fetch_(`/api/integrations/notifications/channels/${id}/test`, { method: "POST" });
-    if (res.ok) toast.success("Test notification sent");
-    else toast.error("Test failed — check your webhook URL");
+    try {
+      await api.post(`/api/integrations/notifications/channels/${id}/test`, {});
+      toast.success("Test notification sent");
+    } catch {
+      toast.error("Test failed — check your webhook URL");
+    }
     setTesting(null);
   }
 

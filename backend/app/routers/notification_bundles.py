@@ -22,8 +22,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.notification_bundle import NotificationBundleConfig
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/notification-bundles", tags=["notifications"])
+router = APIRouter(prefix="/api/notification-bundles", tags=["notifications"], dependencies=[Depends(require_module("settings"))])
 log = logging.getLogger(__name__)
 
 VALID_CHANNELS = {"push", "email", "sms", "in_app"}

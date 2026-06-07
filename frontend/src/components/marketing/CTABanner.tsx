@@ -20,7 +20,7 @@ export default function CTABanner({ headline, subheadline, ctaPrimary, ctaSecond
       className="relative overflow-hidden px-4 py-20 text-center"
       style={{
         background:
-          "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(99,102,241,0.15) 0%, transparent 70%)",
+          "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(74,108,247,0.15) 0%, transparent 70%)",
       }}
     >
       <div className="mx-auto max-w-2xl">

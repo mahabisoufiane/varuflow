@@ -75,7 +75,7 @@ export default function DeveloperKeysPage() {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api<ApiKeyRow[]>("/api/developer/keys");
+      const data = await api.get<ApiKeyRow[]>("/api/developer/keys");
       setRows(Array.isArray(data) ? data : []);
     } catch (err: any) {
       toast.error(err?.message || t("load_failed"));
@@ -97,14 +97,11 @@ export default function DeveloperKeysPage() {
     }
     setIssuing(true);
     try {
-      const data = await api<ApiKeyIssued>("/api/developer/keys", {
-        method: "POST",
-        body: JSON.stringify({
+      const data = await api.post<ApiKeyIssued>("/api/developer/keys", {
           name: newName.trim(),
           scopes: newScopes,
           expires_at: newExpiry || null,
-        }),
-      });
+        });
       setJustIssued(data);
       setNewName(""); setNewScopes(["read"]); setNewExpiry("");
       await refresh();
@@ -118,8 +115,8 @@ export default function DeveloperKeysPage() {
   const rotate = useCallback(async (id: string) => {
     if (!confirm(t("confirm_rotate"))) return;
     try {
-      const data = await api<ApiKeyIssued>(
-        `/api/developer/keys/${id}/rotate`, { method: "POST" },
+      const data = await api.post<ApiKeyIssued>(
+        `/api/developer/keys/${id}/rotate`, {},
       );
       setJustIssued(data);
       toast.success(t("rotated"));
@@ -132,7 +129,7 @@ export default function DeveloperKeysPage() {
   const revoke = useCallback(async (id: string) => {
     if (!confirm(t("confirm_revoke"))) return;
     try {
-      await api(`/api/developer/keys/${id}/revoke`, { method: "POST" });
+      await api.post(`/api/developer/keys/${id}/revoke`, {});
       toast.success(t("revoked"));
       await refresh();
     } catch (err: any) {
@@ -143,7 +140,7 @@ export default function DeveloperKeysPage() {
   const loadUsage = useCallback(async (id: string) => {
     setUsageKeyId(id);
     try {
-      const data = await api<UsageRow[]>(`/api/developer/keys/${id}/usage`);
+      const data = await api.get<UsageRow[]>(`/api/developer/keys/${id}/usage`);
       setUsage(Array.isArray(data) ? data : []);
     } catch (err) {
       toast.error(t("usage_failed"));

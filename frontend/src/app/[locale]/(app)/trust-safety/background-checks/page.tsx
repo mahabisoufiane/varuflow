@@ -12,11 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
 
 const STATUS_TABS = ["all", "pending", "clear", "flagged", "expired"] as const;
 type Status = (typeof STATUS_TABS)[number];
@@ -67,11 +63,7 @@ export default function BackgroundChecksPage() {
       const params = new URLSearchParams();
       if (staffFilter) params.set("staff_id", staffFilter);
       if (statusFilter !== "all") params.set("status", statusFilter);
-      const res = await fetch(`${API}/api/background-checks?${params}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setChecks(await res.json());
+      setChecks(await api.get<BackgroundCheck[]>(`/api/background-checks?${params}`));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load checks");
     } finally {
@@ -86,11 +78,7 @@ export default function BackgroundChecksPage() {
 
   async function handleAction(id: string, action: "clear" | "flag") {
     try {
-      const res = await fetch(`${API}/api/background-checks/${id}/${action}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post(`/api/background-checks/${id}/${action}`, {});
       fetchChecks();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Action failed");
@@ -110,15 +98,7 @@ export default function BackgroundChecksPage() {
         expiry_date: fExpiry,
         reference_number: fRef,
       };
-      const res = await fetch(`${API}/api/background-checks`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post<BackgroundCheck>("/api/background-checks", body);
       setFStaffId("");
       setFProvider("");
       setFIssued("");

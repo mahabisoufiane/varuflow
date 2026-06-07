@@ -27,12 +27,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.inventory import Product
 from app.models.pos_quick_button import PosQuickButton
 from app.services import pos_quick_button as svc
 from app.services.audit import log_action
 
-router = APIRouter(prefix="/api/pos/quick-buttons", tags=["pos-quick-buttons"])
+router = APIRouter(prefix="/api/pos/quick-buttons", tags=["pos-quick-buttons"], dependencies=[Depends(require_module("pos"))])
 
 log = logging.getLogger(__name__)
 

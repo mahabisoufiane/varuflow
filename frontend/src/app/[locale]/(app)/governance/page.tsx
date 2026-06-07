@@ -3,6 +3,7 @@
 import { Link } from "@/i18n/navigation";
 import { ClipboardCheck, BookOpen, FileSignature, ShieldCheck, ArrowUpRight } from "lucide-react";
 import { useState, useEffect } from "react";
+import { api } from "@/lib/api-client";
 
 const MODULES = [
   { href: "/governance/approvals", icon: ClipboardCheck, title: "Approval Queue", desc: "Invoice and expense thresholds — review items awaiting CEO/owner sign-off.", color: "blue" },
@@ -11,13 +12,12 @@ const MODULES = [
 ];
 
 export default function GovernancePage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [pending, setPending] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch(`${apiBase}/api/governance/approvals/summary`, { credentials: "include" })
-      .then(r => r.ok ? r.json() : null)
-      .then(d => d && setPending(d.pending));
+    api.get<{ pending: number }>("/api/governance/approvals/summary")
+      .then(d => setPending(d.pending))
+      .catch(() => {});
   }, []);
 
   return (

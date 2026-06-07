@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,11 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
 
 interface VoiceResult {
   result_text: string;
@@ -39,8 +34,6 @@ const SUGGESTED_QUERIES = [
 ];
 
 export default function VoiceReportsPage() {
-  const params = useParams();
-
   const [transcript, setTranscript] = useState("");
   const [result, setResult] = useState<VoiceResult | null>(null);
   const [history, setHistory] = useState<VoiceHistoryItem[]>([]);
@@ -51,12 +44,8 @@ export default function VoiceReportsPage() {
   async function fetchHistory() {
     setHistoryLoading(true);
     try {
-      const res = await fetch(`${API}/api/voice/history`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setHistory(await res.json());
-    } catch (e: unknown) {
+      setHistory(await api.get<VoiceHistoryItem[]>("/api/voice/history"));
+    } catch {
       // non-critical, history can fail silently
     } finally {
       setHistoryLoading(false);
@@ -74,16 +63,7 @@ export default function VoiceReportsPage() {
     setError("");
     setResult(null);
     try {
-      const res = await fetch(`${API}/api/voice/query`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ transcript: text }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: VoiceResult = await res.json();
+      const data = await api.post<VoiceResult>("/api/voice/query", { transcript: text });
       setResult(data);
       if (queryText) setTranscript(queryText);
       await fetchHistory();

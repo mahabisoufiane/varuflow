@@ -53,6 +53,7 @@ export interface SeedPost {
   tableOfContents: TocItem[];
   bodyHtml: string;
   internalLinks: Array<{ href: string; label: string }>;
+  canonicalUrl?: string;
   externalLinks: Array<{ href: string; label: string }>;
   cta: { headline: string; body: string; buttonLabel: string; href: string };
 }

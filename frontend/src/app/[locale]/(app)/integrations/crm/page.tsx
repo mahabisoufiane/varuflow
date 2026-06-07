@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 
 type TabId = "hubspot" | "salesforce";
 type Status = { connected: boolean; last_sync_at?: string; last_sync_status?: string };
 
 export default function CrmIntegrationPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [tab, setTab] = useState<TabId>("hubspot");
   const [status, setStatus] = useState<Status>({ connected: false });
   const [loading, setLoading] = useState(false);
@@ -18,14 +18,11 @@ export default function CrmIntegrationPage() {
   const [sfToken, setSfToken] = useState("");
   const [sfRefresh, setSfRefresh] = useState("");
 
-  const fetch_ = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   async function loadStatus(provider: TabId) {
     setLoading(true);
     try {
-      const res = await fetch_(`/api/integrations/${provider}/status`);
-      if (res.ok) setStatus(await res.json());
+      const data = await api.get<Status>(`/api/integrations/${provider}/status`);
+      setStatus(data);
     } catch {}
     setLoading(false);
   }
@@ -38,26 +35,17 @@ export default function CrmIntegrationPage() {
       const body = tab === "hubspot"
         ? { access_token: hubToken }
         : { instance_url: sfInstance, access_token: sfToken, refresh_token: sfRefresh || undefined };
-      const res = await fetch_(`/api/integrations/${tab}/connect`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        toast.success(`${tab === "hubspot" ? "HubSpot" : "Salesforce"} connected`);
-        await loadStatus(tab);
-      } else {
-        const err = await res.json();
-        toast.error(err.detail || "Connection failed");
-      }
-    } catch {
-      toast.error("Network error");
+      await api.post(`/api/integrations/${tab}/connect`, body);
+      toast.success(`${tab === "hubspot" ? "HubSpot" : "Salesforce"} connected`);
+      await loadStatus(tab);
+    } catch (err: any) {
+      toast.error(err.message || "Connection failed");
     }
     setLoading(false);
   }
 
   async function disconnect() {
-    await fetch_(`/api/integrations/${tab}/disconnect`, { method: "DELETE" });
+    await api.delete(`/api/integrations/${tab}/disconnect`).catch(() => {});
     toast.success("Disconnected");
     await loadStatus(tab);
   }
@@ -65,17 +53,11 @@ export default function CrmIntegrationPage() {
   async function sync(action: string) {
     setSyncing(action);
     try {
-      const res = await fetch_(`/api/integrations/${tab}/${action}`, { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        toast.success(data.message || "Sync complete");
-        await loadStatus(tab);
-      } else {
-        const err = await res.json();
-        toast.error(err.detail || "Sync failed");
-      }
-    } catch {
-      toast.error("Sync error");
+      const data = await api.post<{ message?: string }>(`/api/integrations/${tab}/${action}`, {});
+      toast.success(data.message || "Sync complete");
+      await loadStatus(tab);
+    } catch (err: any) {
+      toast.error(err.message || "Sync failed");
     }
     setSyncing(null);
   }

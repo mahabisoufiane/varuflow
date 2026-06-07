@@ -34,8 +34,9 @@ from app.models.invoice_note import InvoiceNote
 from app.models.organization import OrgRole
 from app.services import invoice_note as svc_86
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/invoice-notes", tags=["invoice-notes"])
+router = APIRouter(prefix="/api/invoice-notes", tags=["invoice-notes"], dependencies=[Depends(require_module("invoicing"))])
 
 log = logging.getLogger(__name__)
 

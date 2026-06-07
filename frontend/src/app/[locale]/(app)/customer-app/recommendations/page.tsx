@@ -1,14 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
 
 interface Recommendation {
   id: string;
@@ -21,7 +19,6 @@ interface Recommendation {
 }
 
 export default function RecommendationsPage() {
-  const { locale } = useParams<{ locale: string }>();
   const [items, setItems] = useState<Recommendation[]>([]);
   const [filterCustomerId, setFilterCustomerId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,52 +26,38 @@ export default function RecommendationsPage() {
   const [newForm, setNewForm] = useState({ customer_id: "", title: "", reason: "", score: "0" });
   const [creating, setCreating] = useState(false);
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : "";
-
   async function fetchItems() {
     setLoading(true);
     setError("");
     try {
       const params = new URLSearchParams({ limit: "50" });
       if (filterCustomerId) params.set("customer_id", filterCustomerId);
-      const res = await fetch(`${API}/api/recommendations?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to load recommendations."); return; }
-      setItems(await res.json());
-    } catch {
-      setError("Network error.");
+      const data = await api.get<Recommendation[]>(`/api/recommendations?${params}`);
+      setItems(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load recommendations.");
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => { fetchItems(); }, []);
+  useEffect(() => { fetchItems(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function postAction(id: string, action: "shown" | "accept" | "reject") {
     try {
-      const res = await fetch(`${API}/api/recommendations/${id}/${action}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) { setError(`Action failed: ${action}`); return; }
+      await api.post(`/api/recommendations/${id}/${action}`, {});
       fetchItems();
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : `Action failed: ${action}`);
     }
   }
 
   async function deleteItem(id: string) {
     try {
-      const res = await fetch(`${API}/api/recommendations/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) { setError("Delete failed."); return; }
+      await api.delete(`/api/recommendations/${id}`);
       setItems(items.filter((i) => i.id !== id));
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Delete failed.");
     }
   }
 
@@ -82,17 +65,11 @@ export default function RecommendationsPage() {
     setCreating(true);
     setError("");
     try {
-      const res = await fetch(`${API}/api/recommendations`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ ...newForm, score: parseFloat(newForm.score) }),
-      });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to create recommendation."); return; }
+      await api.post("/api/recommendations", { ...newForm, score: parseFloat(newForm.score) });
       setNewForm({ customer_id: "", title: "", reason: "", score: "0" });
       fetchItems();
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to create recommendation.");
     } finally {
       setCreating(false);
     }

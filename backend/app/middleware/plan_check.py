@@ -17,6 +17,7 @@ from app.models.organization import OrgPlan, Organization, OrganizationMember
 from app.services.plan_limits import (
     ApproachingLimitError,
     LimitExceededError,
+    PLAN_MODULES,
     check_limit,
     is_feature_unlocked,
 )
@@ -124,6 +125,73 @@ def require_feature(feature_name: str):
                     "feature": feature_name,
                     "current_plan": plan.value,
                     "suggested_upgrade_url": f"{settings.FRONTEND_URL}/en/settings/billing",
+                },
+            )
+
+    return _check
+
+
+def require_module(module_key: str):
+    """Return a FastAPI dependency that enforces module-level access.
+
+    Checks two layers:
+    1. Plan tier — is this module available on the org's plan?
+    2. User assignment — is this user granted access to the module?
+
+    OWNER and ADMIN roles bypass the user assignment check (they have
+    access to all modules their plan allows). Only MEMBER-role users
+    with ``module_access_mode = 'RESTRICTED'`` are gated.
+
+    Usage:
+        @router.get("/sales")
+        async def list_sales(
+            _: None = Depends(require_module("pos")),
+            ...
+        ): ...
+    """
+    from app.middleware.auth import get_current_member
+    from app.models.modules import MemberModule
+    from app.models.organization import OrgRole
+
+    async def _check(
+        ctx: tuple = Depends(get_current_member),
+        db: AsyncSession = Depends(get_db),
+    ) -> None:
+        _user_dict, member = ctx
+        org_id = member.org_id
+        plan = await _get_org_plan(member.user_id, db)
+
+        plan_key = plan.value if hasattr(plan, "value") else str(plan)
+        allowed_modules = PLAN_MODULES.get(plan_key, frozenset())
+
+        if "*" not in allowed_modules and module_key not in allowed_modules:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "code": "MODULE_NOT_IN_PLAN",
+                    "module": module_key,
+                    "current_plan": plan_key,
+                },
+            )
+
+        if member.role in (OrgRole.OWNER, OrgRole.ADMIN):
+            return
+
+        if getattr(member, "module_access_mode", "ALL") == "ALL":
+            return
+
+        has_access = await db.scalar(
+            select(MemberModule.id).where(
+                MemberModule.member_id == member.id,
+                MemberModule.module_key == module_key,
+            )
+        )
+        if not has_access:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "code": "MODULE_NOT_ASSIGNED",
+                    "module": module_key,
                 },
             )
 

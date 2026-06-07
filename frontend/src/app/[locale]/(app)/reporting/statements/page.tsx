@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
 
 type StatementStatus = "pending" | "generating" | "ready" | "failed";
 type StatementFormat = "pdf" | "csv" | "json";
@@ -47,9 +42,6 @@ const statusBadge: Record<StatementStatus, string> = {
 };
 
 export default function StatementsPage() {
-  const params = useParams();
-  const locale = params.locale as string;
-
   const [requests, setRequests] = useState<Statement[]>([]);
   const [customerFilter, setCustomerFilter] = useState("");
   const [loading, setLoading] = useState(false);
@@ -67,11 +59,7 @@ export default function StatementsPage() {
     setError("");
     try {
       const query = customerFilter ? `?customer_id=${encodeURIComponent(customerFilter)}` : "";
-      const res = await fetch(`${API}/api/statements${query}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await api.get<Statement[]>(`/api/statements${query}`);
       setRequests(data);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load statements");
@@ -97,20 +85,12 @@ export default function StatementsPage() {
     setSubmitting(true);
     setError("");
     try {
-      const res = await fetch(`${API}/api/statements`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          customer_id: formCustomerId,
-          date_from: formDateFrom,
-          date_to: formDateTo,
-          format: formFormat,
-        }),
+      await api.post<Statement>("/api/statements", {
+        customer_id: formCustomerId,
+        date_from: formDateFrom,
+        date_to: formDateTo,
+        format: formFormat,
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       await fetchStatements();
       setFormCustomerId("");
       setFormDateFrom("");

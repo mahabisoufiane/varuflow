@@ -1,24 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { api } from "@/lib/api-client";
 import { toast } from "sonner";
-import { Building2, Plus, Edit2 } from "lucide-react";
+import { Building2, Plus } from "lucide-react";
 
 interface Entity { id: string; name: string; legal_name?: string; entity_type: string; reporting_currency?: string; parent_org_id?: string }
 
 export default function SubsidiariesPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [entities, setEntities] = useState<Entity[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: "", legal_name: "", reporting_currency: "SEK" });
   const [loading, setLoading] = useState(false);
 
-  const fetch_ = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   async function load() {
-    const res = await fetch_("/api/multi-entity/entities");
-    if (res.ok) setEntities((await res.json()).entities);
+    const result = await api.get<{ entities: Entity[] }>("/api/multi-entity/entities").catch(() => null);
+    if (result) setEntities(result.entities);
   }
 
   useEffect(() => { load(); }, []);
@@ -26,19 +23,14 @@ export default function SubsidiariesPage() {
   async function create() {
     if (!form.name) { toast.error("Name required"); return; }
     setLoading(true);
-    const res = await fetch_("/api/multi-entity/entities", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, entity_type: "subsidiary" }),
-    });
-    if (res.ok) {
+    try {
+      await api.post("/api/multi-entity/entities", { ...form, entity_type: "subsidiary" });
       toast.success("Subsidiary created");
       setShowForm(false);
       setForm({ name: "", legal_name: "", reporting_currency: "SEK" });
       await load();
-    } else {
-      const err = await res.json();
-      toast.error(err.detail || "Failed");
+    } catch (err: any) {
+      toast.error(err.message || "Failed");
     }
     setLoading(false);
   }

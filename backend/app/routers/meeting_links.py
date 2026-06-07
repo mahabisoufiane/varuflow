@@ -1,4 +1,10 @@
-"""Meeting link router: admin CRUD + public slot/booking endpoints."""
+"""Meeting link router: admin CRUD + public slot/booking endpoints.
+
+The admin endpoints (list, create, update, delete) require get_current_member.
+The slug-based endpoints (GET /{slug}, GET /{slug}/slots, POST /{slug}/book)
+are intentionally PUBLIC — they are embedded on the salon's own website so
+customers can book without a Varuflow account. Do NOT add auth to these.
+"""
 from __future__ import annotations
 
 import logging

@@ -42,8 +42,9 @@ from app.models.invoicing import Customer, Invoice, InvoiceStatus, Payment
 from app.models.organization import Organization
 from app.services import credit_note as svc_70
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/credit-notes", tags=["credit-notes"])
+router = APIRouter(prefix="/api/credit-notes", tags=["credit-notes"], dependencies=[Depends(require_module("invoicing"))])
 
 log = logging.getLogger(__name__)
 

@@ -23,8 +23,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.conflict_register import ConflictDeclaration
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/conflicts", tags=["conflict_of_interest"])
+router = APIRouter(prefix="/api/conflicts", tags=["conflict_of_interest"], dependencies=[Depends(require_module("hr"))])
 log = logging.getLogger(__name__)
 
 _ADMIN_ROLES = {"admin", "owner", "manager"}

@@ -19,13 +19,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.invoicing import Invoice, Customer, Payment
 from app.models.bank_feed import BankTransaction, BankAccount
 from app.models.payable_invoice import PayableInvoice
 from app.models.workflow_rules import WorkflowRule
 
 log = logging.getLogger(__name__)
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_module("ai"))])
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
 

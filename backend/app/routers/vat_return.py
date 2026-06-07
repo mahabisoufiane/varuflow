@@ -32,10 +32,11 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.expenses import Expense, ExpenseStatus
 from app.models.invoicing import Invoice, InvoiceLineItem, InvoiceStatus
 
-router = APIRouter(prefix="/api/accounting", tags=["vat"])
+router = APIRouter(prefix="/api/accounting", tags=["vat"], dependencies=[Depends(require_module("finance"))])
 log = logging.getLogger(__name__)
 
 

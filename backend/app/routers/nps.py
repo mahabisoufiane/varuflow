@@ -37,8 +37,9 @@ from app.services.nps import (
     submit_response as svc_submit_response,
 )
 from app.services.subscription_health import get_all_scores, mark_intervention
+from app.middleware.plan_check import require_module
 
-router = APIRouter(tags=["nps"])
+router = APIRouter(tags=["nps"], dependencies=[Depends(require_module("analytics"))])
 log = logging.getLogger(__name__)
 
 

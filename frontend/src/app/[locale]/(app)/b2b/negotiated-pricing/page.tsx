@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,14 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-
-function getToken() {
-  return typeof window !== "undefined"
-    ? localStorage.getItem("auth_token") ?? ""
-    : "";
-}
+import { api } from "@/lib/api-client";
 
 interface PriceOverride {
   id: string;
@@ -39,8 +31,6 @@ function truncate(str: string, len = 12) {
 }
 
 export default function NegotiatedPricingPage() {
-  const { locale } = useParams<{ locale: string }>();
-
   const [customerIdInput, setCustomerIdInput] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [overrides, setOverrides] = useState<PriceOverride[]>([]);
@@ -55,19 +45,9 @@ export default function NegotiatedPricingPage() {
     setLoading(true);
     setError("");
     try {
-      const [overridesRes, summaryRes] = await Promise.all([
-        fetch(`${API}/api/negotiated-pricing/${id}`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }),
-        fetch(`${API}/api/negotiated-pricing/${id}/summary`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }),
-      ]);
-      if (!overridesRes.ok) throw new Error(`Error ${overridesRes.status}`);
-      if (!summaryRes.ok) throw new Error(`Error ${summaryRes.status}`);
       const [overridesData, summaryData] = await Promise.all([
-        overridesRes.json(),
-        summaryRes.json(),
+        api.get<PriceOverride[]>(`/api/negotiated-pricing/${id}`),
+        api.get<PricingSummary>(`/api/negotiated-pricing/${id}/summary`),
       ]);
       setOverrides(overridesData);
       setSummary(summaryData);

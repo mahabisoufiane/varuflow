@@ -1,15 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
 
 interface KPI {
   id: string;
@@ -32,8 +27,6 @@ interface PushToken {
 }
 
 export default function MobileDashboardPage() {
-  const params = useParams();
-
   const [kpis, setKpis] = useState<KPI[]>([]);
   const [kpisLoading, setKpisLoading] = useState(false);
   const [kpisError, setKpisError] = useState("");
@@ -61,11 +54,7 @@ export default function MobileDashboardPage() {
     setKpisLoading(true);
     setKpisError("");
     try {
-      const res = await fetch(`${API}/api/mobile/kpis`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setKpis(await res.json());
+      setKpis(await api.get<KPI[]>("/api/mobile/kpis"));
     } catch (e: unknown) {
       setKpisError(e instanceof Error ? e.message : "Failed to load KPIs");
     } finally {
@@ -77,11 +66,7 @@ export default function MobileDashboardPage() {
     setConfigLoading(true);
     setConfigError("");
     try {
-      const res = await fetch(`${API}/api/mobile/kpi-config`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: KpiConfig = await res.json();
+      const data = await api.get<KpiConfig>("/api/mobile/kpi-config");
       setConfig(data);
       setKpiIds(data.kpi_ids.join(", "));
       setNotifEnabled(data.notification_deep_links_enabled);
@@ -97,11 +82,7 @@ export default function MobileDashboardPage() {
     setPtLoading(true);
     setPtError("");
     try {
-      const res = await fetch(`${API}/api/mobile/push-tokens`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setPushTokens(await res.json());
+      setPushTokens(await api.get<PushToken[]>("/api/mobile/push-tokens"));
     } catch (e: unknown) {
       setPtError(e instanceof Error ? e.message : "Failed to load push tokens");
     } finally {
@@ -120,19 +101,11 @@ export default function MobileDashboardPage() {
     setSavingConfig(true);
     setConfigError("");
     try {
-      const res = await fetch(`${API}/api/mobile/kpi-config`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          kpi_ids: kpiIds.split(",").map((s) => s.trim()).filter(Boolean),
-          notification_deep_links_enabled: notifEnabled,
-          refresh_interval_minutes: refreshInterval,
-        }),
+      await api.put<KpiConfig>("/api/mobile/kpi-config", {
+        kpi_ids: kpiIds.split(",").map((s) => s.trim()).filter(Boolean),
+        notification_deep_links_enabled: notifEnabled,
+        refresh_interval_minutes: refreshInterval,
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       await fetchConfig();
     } catch (e: unknown) {
       setConfigError(e instanceof Error ? e.message : "Failed to save config");
@@ -146,15 +119,7 @@ export default function MobileDashboardPage() {
     setPtSubmitting(true);
     setPtError("");
     try {
-      const res = await fetch(`${API}/api/mobile/push-tokens`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token: ptToken, platform: ptPlatform, device_label: ptLabel }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await api.post<PushToken>("/api/mobile/push-tokens", { token: ptToken, platform: ptPlatform, device_label: ptLabel });
       setPtToken("");
       setPtLabel("");
       await fetchPushTokens();
@@ -167,11 +132,7 @@ export default function MobileDashboardPage() {
 
   async function deleteToken(id: string) {
     try {
-      const res = await fetch(`${API}/api/mobile/push-tokens/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await api.delete(`/api/mobile/push-tokens/${id}`);
       await fetchPushTokens();
     } catch (e: unknown) {
       setPtError(e instanceof Error ? e.message : "Failed to delete token");

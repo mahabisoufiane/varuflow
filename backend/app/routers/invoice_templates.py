@@ -27,10 +27,12 @@ from app.middleware.auth import get_current_member
 from app.models.invoice_templates import InvoiceTemplate
 from app.services import template_renderer as tpl
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
 router = APIRouter(
     prefix="/api/invoice-templates",
     tags=["invoicing", "templates"],
+    dependencies=[Depends(require_module("invoicing"))],
 )
 
 

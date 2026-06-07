@@ -36,8 +36,9 @@ from app.models.checklist import (
     ChecklistRun,
     ChecklistRunItem,
 )
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/checklists", tags=["checklists"])
+router = APIRouter(prefix="/api/checklists", tags=["checklists"], dependencies=[Depends(require_module("hr"))])
 log = logging.getLogger(__name__)
 
 

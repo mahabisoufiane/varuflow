@@ -30,8 +30,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.merchant_subscriptions import MerchantSubscription, MerchantSubscriptionPlan
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/merchant-subscriptions", tags=["merchant_subscriptions"])
+router = APIRouter(prefix="/api/merchant-subscriptions", tags=["merchant_subscriptions"], dependencies=[Depends(require_module("crm"))])
 logger = logging.getLogger(__name__)
 
 VALID_INTERVALS = {"weekly", "monthly", "annual"}

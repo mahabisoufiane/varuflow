@@ -20,10 +20,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.loyalty_streak import LoyaltyStreak
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/streaks", tags=["loyalty-streaks"])
+router = APIRouter(prefix="/api/streaks", tags=["loyalty-streaks"], dependencies=[Depends(require_module("crm"))])
 
 
 class StreakUpsertIn(BaseModel):

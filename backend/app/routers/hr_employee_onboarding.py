@@ -27,10 +27,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.hr_onboarding_training import EmployeeOnboardingTask
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["hr-onboarding"])
+router = APIRouter(tags=["hr-onboarding"], dependencies=[Depends(require_module("hr"))])
 
 _CATEGORIES = {"it_setup", "access", "hr_admin", "equipment", "intro", "compliance", "general"}
 

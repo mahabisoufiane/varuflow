@@ -18,11 +18,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.cashflow_scenario import CashFlowScenario
 from app.models.invoicing import Invoice, Payment
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/cashflow-prediction", tags=["cashflow-prediction"])
+router = APIRouter(prefix="/api/cashflow-prediction", tags=["cashflow-prediction"], dependencies=[Depends(require_module("finance"))])
 
 
 # ── Engine ────────────────────────────────────────────────────────────────────

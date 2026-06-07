@@ -28,7 +28,7 @@ from app.middleware.auth import get_current_member
 from app.models.notifications import DeviceToken
 from app.models.organization import OrganizationMember
 
-router = APIRouter(prefix="/api/notifications", tags=["notifications"])
+router = APIRouter(prefix="/api/notifications", tags=["notifications"], dependencies=[Depends(require_module("settings"))])
 
 
 # ── Schemas ────────────────────────────────────────────────────────────────────
@@ -157,6 +157,7 @@ from fastapi import Request  # noqa: E402
 
 from app.models.organization import Organization, OrgRole  # noqa: E402
 from app.services.audit import log_action  # noqa: E402
+from app.middleware.plan_check import require_module
 
 
 class NightlySummarySettingsIn(BaseModel):

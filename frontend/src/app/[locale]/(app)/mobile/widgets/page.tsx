@@ -188,7 +188,7 @@ export default function HomeScreenWidgetsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="vf-section p-5 space-y-3" style={{ borderRadius: 14 }}>
+            <div key={i} className="vf-section p-5 space-y-3" >
               <div className="h-5 w-40 skeleton rounded" />
               <div className="h-4 w-56 skeleton rounded" />
               <div className="h-8 w-full skeleton rounded" />
@@ -206,14 +206,13 @@ export default function HomeScreenWidgetsPage() {
             return (
               <div
                 key={w.widget_type}
-                className="vf-section p-5 space-y-4"
-                style={{ borderRadius: 14, opacity: isSaving ? 0.7 : 1 }}
+                className={`vf-section p-5 space-y-4 rounded-[14px] ${isSaving ? "opacity-70" : ""}`}
               >
                 {/* Title row */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                      style={{ background: "var(--vf-bg-elevated)" }}>
+                      >
                       {meta.icon}
                     </div>
                     <div>
@@ -249,8 +248,7 @@ export default function HomeScreenWidgetsPage() {
                         value={widget.platform}
                         disabled={isSaving}
                         onChange={(e) => handleFieldChange(widget, "platform", e.target.value)}
-                        className="vf-input text-xs w-full"
-                        style={{ height: 34 }}
+                        className="vf-input text-xs w-full h-[34px]"
                       >
                         {PLATFORMS.map((p) => (
                           <option key={p.value} value={p.value}>{p.label}</option>
@@ -263,8 +261,7 @@ export default function HomeScreenWidgetsPage() {
                         value={widget.size}
                         disabled={isSaving}
                         onChange={(e) => handleFieldChange(widget, "size", e.target.value)}
-                        className="vf-input text-xs w-full"
-                        style={{ height: 34 }}
+                        className="vf-input text-xs w-full h-[34px]"
                       >
                         {SIZES.map((s) => (
                           <option key={s.value} value={s.value}>{s.label}</option>
@@ -277,7 +274,7 @@ export default function HomeScreenWidgetsPage() {
                 {/* Snapshot preview */}
                 {isActive && widget?.snapshot && (
                   <div className="rounded-xl p-3 text-xs vf-text-m font-mono"
-                    style={{ background: "var(--vf-bg-elevated)" }}>
+                    >
                     {JSON.stringify(widget.snapshot, null, 2)}
                   </div>
                 )}
@@ -308,7 +305,7 @@ export default function HomeScreenWidgetsPage() {
       {/* Instructions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* iOS */}
-        <div className="vf-section p-5" style={{ borderRadius: 14 }}>
+        <div className="vf-section p-5" >
           <div className="flex items-center gap-2 mb-4">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10">
               <Apple className="h-4 w-4 text-indigo-400" />
@@ -328,7 +325,7 @@ export default function HomeScreenWidgetsPage() {
         </div>
 
         {/* Android */}
-        <div className="vf-section p-5" style={{ borderRadius: 14 }}>
+        <div className="vf-section p-5" >
           <div className="flex items-center gap-2 mb-4">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
               <Smartphone className="h-4 w-4 text-emerald-400" />
@@ -349,8 +346,7 @@ export default function HomeScreenWidgetsPage() {
       </div>
 
       {/* Info note */}
-      <div className="flex items-start gap-3 rounded-xl p-4"
-        style={{ background: "rgba(99,102,241,0.05)", border: "1px solid rgba(99,102,241,0.15)" }}>
+      <div className="flex items-start gap-3 rounded-xl p-4 bg-indigo-500/[0.05] border border-indigo-500/[0.15]">
         <Info className="h-4 w-4 text-indigo-400 mt-0.5 shrink-0" />
         <p className="text-xs vf-text-2">
           Widget data is refreshed automatically every 15 minutes. Use the "Refresh data" button to force an immediate update.

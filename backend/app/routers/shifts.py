@@ -29,13 +29,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.bookings import Staff
 from app.models.shift import Shift, ShiftPunch, RosterPublication
 from app.models.shift_swap import ShiftSwapRequest
 from app.services import shift as svc
 from app.services.audit import log_action
 
-router = APIRouter(prefix="/api/shifts", tags=["shifts"])
+router = APIRouter(prefix="/api/shifts", tags=["shifts"], dependencies=[Depends(require_module("hr"))])
 
 log = logging.getLogger(__name__)
 

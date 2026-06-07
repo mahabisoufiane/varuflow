@@ -14,9 +14,10 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.job_cards import JobCard, JobCardPart, JobCardLabour, JobCardPhoto
 from app.models.invoicing import Invoice, InvoiceLineItem, Customer
+from app.middleware.plan_check import require_module
 
 log = logging.getLogger(__name__)
-router = APIRouter(tags=["job-cards"])
+router = APIRouter(tags=["job-cards"], dependencies=[Depends(require_module("manufacturing"))])
 
 
 # ── Schemas ────────────────────────────────────────────────────────────────────

@@ -22,8 +22,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.calendar_sync import CalendarSyncToken
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/calendar-sync", tags=["calendar-sync"])
+router = APIRouter(prefix="/api/calendar-sync", tags=["calendar-sync"], dependencies=[Depends(require_module("hr"))])
 logger = logging.getLogger(__name__)
 
 

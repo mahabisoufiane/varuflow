@@ -29,13 +29,10 @@ _INDEXES = [
 
 
 def upgrade() -> None:
-    # Use raw SQL with IF NOT EXISTS for idempotency in case a DBA added
-    # one of these indexes manually between releases.
     for name, table, cols in _INDEXES:
-        cols_sql = ", ".join(cols)
-        op.execute(f'CREATE INDEX IF NOT EXISTS {name} ON {table} ({cols_sql})')
+        op.create_index(name, table, cols, if_not_exists=True)
 
 
 def downgrade() -> None:
-    for name, _, _ in reversed(_INDEXES):
-        op.execute(f'DROP INDEX IF EXISTS {name}')
+    for name, table, _ in reversed(_INDEXES):
+        op.drop_index(name, if_exists=True)

@@ -13,7 +13,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member, get_current_user
+from app.models.modules import MemberModule
 from app.models.organization import OrgPlan, OrgRole, Organization, OrganizationMember
+from app.services.plan_limits import PLAN_MODULES
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -43,6 +45,8 @@ class MemberOut(BaseModel):
     email: str
     role: OrgRole
     organization: OrganizationOut
+    allowed_modules: list[str]
+    plan_modules: list[str]
 
 
 # ---- Endpoints ----
@@ -216,9 +220,30 @@ async def get_me(
     org = await db.get(Organization, member.org_id)
     if not org:
         raise HTTPException(status_code=404, detail="Organization not found")
+
+    plan_key = org.plan.value if hasattr(org.plan, "value") else str(org.plan)
+    plan_modules = PLAN_MODULES.get(plan_key, frozenset())
+
+    if "*" in plan_modules:
+        allowed_modules = ["*"]
+    elif member.role in (OrgRole.OWNER, OrgRole.ADMIN):
+        allowed_modules = sorted(plan_modules)
+    elif getattr(member, "module_access_mode", "ALL") == "ALL":
+        allowed_modules = sorted(plan_modules)
+    else:
+        rows = await db.execute(
+            select(MemberModule.module_key).where(
+                MemberModule.member_id == member.id
+            )
+        )
+        user_modules = {r[0] for r in rows.all()}
+        allowed_modules = sorted(plan_modules & user_modules)
+
     return MemberOut(
         user_id=current_user["user_id"],
         email=current_user["email"],
         role=member.role,
         organization=OrganizationOut.model_validate(org),
+        allowed_modules=allowed_modules,
+        plan_modules=sorted(plan_modules) if "*" not in plan_modules else ["*"],
     )

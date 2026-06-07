@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Ticket, Plus, X } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 interface Staff { id: string; name: string }
 interface Customer { id: string; name: string }
@@ -25,9 +26,6 @@ const PRIORITY_COLORS: Record<string, string> = {
 };
 
 export default function TicketsPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string, init?: RequestInit) => fetch(`${apiBase}${url}`, { credentials: "include", ...init });
-
   const [tickets, setTickets] = useState<TicketItem[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -42,9 +40,9 @@ export default function TicketsPage() {
     if (filterStatus) params.set("status", filterStatus);
     if (filterPriority) params.set("priority", filterPriority);
     const [t, s, c] = await Promise.all([
-      f(`/api/work/tickets${params.toString() ? "?" + params : ""}`).then(r => r.ok ? r.json() : []),
-      f("/api/hr/employees").then(r => r.ok ? r.json() : []),
-      f("/api/invoicing/customers").then(r => r.ok ? r.json() : []),
+      api.get<TicketItem[]>(`/api/work/tickets${params.toString() ? "?" + params : ""}`).catch(() => [] as TicketItem[]),
+      api.get<Staff[]>("/api/hr/employees").catch(() => [] as Staff[]),
+      api.get<Customer[]>("/api/invoicing/customers").catch(() => [] as Customer[]),
     ]);
     setTickets(t); setStaff(s); setCustomers(c); setLoading(false);
   }
@@ -54,18 +52,19 @@ export default function TicketsPage() {
   async function create() {
     if (!form.title.trim()) { toast.error("Title required"); return; }
     const body = { ...form, customer_id: form.customer_id || null, assigned_staff_id: form.assigned_staff_id || null, due_date: form.due_date || null, category: form.category || null };
-    const res = await f("/api/work/tickets", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    if (!res.ok) { toast.error("Failed"); return; }
-    toast.success("Ticket created"); setShowForm(false); setForm({ title: "", description: "", customer_id: "", assigned_staff_id: "", category: "", priority: "medium", due_date: "" }); load();
+    try {
+      await api.post<TicketItem>("/api/work/tickets", body);
+      toast.success("Ticket created"); setShowForm(false); setForm({ title: "", description: "", customer_id: "", assigned_staff_id: "", category: "", priority: "medium", due_date: "" }); load();
+    } catch { toast.error("Failed"); }
   }
 
   async function updateStatus(id: string, status: string) {
-    await f(`/api/work/tickets/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
+    await api.patch<TicketItem>(`/api/work/tickets/${id}`, { status });
     load();
   }
 
   async function remove(id: string) {
-    await f(`/api/work/tickets/${id}`, { method: "DELETE" });
+    await api.delete(`/api/work/tickets/${id}`);
     setTickets(prev => prev.filter(t => t.id !== id)); toast.success("Deleted");
   }
 

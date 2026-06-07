@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import {
   Navigation, Plus, CheckCircle2, MapPin, Shuffle, AlertTriangle,
   Camera, FileSignature, Bell, BarChart2, ChevronLeft, ExternalLink,
@@ -146,12 +147,11 @@ function SignaturePad({ onDone }: { onDone: (data: string | null) => void }) {
       <canvas
         ref={canvasRef}
         width={320} height={160}
-        className="w-full border-2 border-gray-300 rounded-lg bg-white touch-none"
+        className="w-full border-2 border-gray-300 rounded-lg bg-white touch-none cursor-crosshair"
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
         onPointerLeave={onUp}
-        style={{ cursor: "crosshair" }}
       />
       <div className="flex gap-2">
         <button onClick={clear} className="btn-secondary text-sm flex-1">Clear</button>
@@ -165,7 +165,6 @@ function SignaturePad({ onDone }: { onDone: (data: string | null) => void }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function RoutesPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [routes, setRoutes] = useState<Route[]>([]);
   const [selected, setSelected] = useState<Route | null>(null);
   const [showCreate, setShowCreate] = useState(false);
@@ -196,19 +195,18 @@ export default function RoutesPage() {
 
   // ── API helpers ──
 
-  const fetch_ = useCallback((url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts }), [apiBase]);
-
   async function load() {
     try {
-      const res = await fetch_("/api/mobile/routes?limit=50");
-      if (res.ok) setRoutes((await res.json()).routes);
+      const data = await api.get<{ routes?: Route[] }>("/api/mobile/routes?limit=50");
+      setRoutes(data.routes ?? []);
     } catch { /* silent */ }
   }
 
   async function refreshSelected(routeId: string) {
-    const res = await fetch_(`/api/mobile/routes/${routeId}`);
-    if (res.ok) setSelected(await res.json());
+    try {
+      const data = await api.get<Route>(`/api/mobile/routes/${routeId}`);
+      setSelected(data);
+    } catch {}
   }
 
   useEffect(() => { load(); }, []);
@@ -216,17 +214,13 @@ export default function RoutesPage() {
   // ── Create route ──
 
   async function createRoute() {
-    const res = await fetch_("/api/mobile/routes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, stops: [] }),
-    });
-    if (res.ok) {
+    try {
+      await api.post("/api/mobile/routes", { ...form, stops: [] });
       toast.success("Route created");
       setShowCreate(false);
       setForm({ name: "", driver_name: "", route_date: new Date().toISOString().split("T")[0], notification_threshold_minutes: 15 });
       await load();
-    } else {
+    } catch {
       toast.error("Failed to create route");
     }
   }
@@ -236,13 +230,11 @@ export default function RoutesPage() {
   async function optimizeRoute(routeId: string) {
     setOptimizing(true);
     try {
-      const res = await fetch_(`/api/mobile/routes/${routeId}/optimize`, { method: "POST" });
-      if (res.ok) {
-        toast.success("Route optimized");
-        setSelected(await res.json());
-      } else {
-        toast.error("Optimization failed");
-      }
+      const data = await api.post<Route>(`/api/mobile/routes/${routeId}/optimize`, {});
+      toast.success("Route optimized");
+      setSelected(data);
+    } catch {
+      toast.error("Optimization failed");
     } finally {
       setOptimizing(false);
     }
@@ -251,11 +243,11 @@ export default function RoutesPage() {
   // ── Arrive ──
 
   async function markArrived(routeId: string, stopId: string) {
-    const res = await fetch_(`/api/mobile/routes/${routeId}/stops/${stopId}/arrive`, { method: "POST" });
-    if (res.ok) {
+    try {
+      await api.post(`/api/mobile/routes/${routeId}/stops/${stopId}/arrive`, {});
       toast.success("Marked as arrived");
       await refreshSelected(routeId);
-    } else {
+    } catch {
       toast.error("Failed to mark arrived");
     }
   }
@@ -286,31 +278,20 @@ export default function RoutesPage() {
       // Upload photo if present
       let photoUrl: string | null = null;
       if (podPhotoFile) {
-        const fd = new FormData();
-        fd.append("file", podPhotoFile);
-        const up = await fetch_("/api/mobile/upload-pod-photo", { method: "POST", body: fd });
-        if (up.ok) {
-          const j = await up.json();
-          photoUrl = j.url;
-        }
+        const uploaded = await api.upload<{ url?: string }>("/api/mobile/upload-pod-photo", podPhotoFile);
+        photoUrl = uploaded.url ?? null;
       }
 
       const body: Record<string, unknown> = {};
       if (photoUrl) body.pod_photo_url = photoUrl;
       if (sigData) body.pod_signature_data = { data_url: sigData, captured_at: new Date().toISOString() };
 
-      const res = await fetch_(`/api/mobile/routes/${selected.id}/stops/${completeStop.id}/complete`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        toast.success("Stop completed");
-        setCompleteStop(null);
-        await refreshSelected(selected.id);
-      } else {
-        toast.error("Failed to complete stop");
-      }
+      await api.post(`/api/mobile/routes/${selected.id}/stops/${completeStop.id}/complete`, body);
+      toast.success("Stop completed");
+      setCompleteStop(null);
+      await refreshSelected(selected.id);
+    } catch {
+      toast.error("Failed to complete stop");
     } finally {
       setCompletingId(null);
     }
@@ -327,22 +308,16 @@ export default function RoutesPage() {
     if (!exceptionStop || !selected) return;
     setSubmittingExc(true);
     try {
-      const res = await fetch_(`/api/mobile/routes/${selected.id}/stops/${exceptionStop.id}/exception`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          exception_type: excForm.exception_type,
-          exception_reason: excForm.exception_reason || undefined,
-          reschedule_date: excForm.reschedule_date || undefined,
-        }),
+      await api.post(`/api/mobile/routes/${selected.id}/stops/${exceptionStop.id}/exception`, {
+        exception_type: excForm.exception_type,
+        exception_reason: excForm.exception_reason || undefined,
+        reschedule_date: excForm.reschedule_date || undefined,
       });
-      if (res.ok) {
-        toast.success("Exception recorded");
-        setExceptionStop(null);
-        await refreshSelected(selected.id);
-      } else {
-        toast.error("Failed to record exception");
-      }
+      toast.success("Exception recorded");
+      setExceptionStop(null);
+      await refreshSelected(selected.id);
+    } catch {
+      toast.error("Failed to record exception");
     } finally {
       setSubmittingExc(false);
     }
@@ -351,12 +326,15 @@ export default function RoutesPage() {
   // ── Notify customer ──
 
   async function notifyCustomer(routeId: string, stopId: string) {
-    const res = await fetch_(`/api/mobile/routes/${routeId}/stops/${stopId}/notify`, { method: "POST" });
-    const j = await res.json();
-    if (res.ok && j.sent) {
-      toast.success("Customer notified");
-    } else {
-      toast.info(j.reason || "Notification not sent");
+    try {
+      const j = await api.post<{ sent?: boolean; reason?: string }>(`/api/mobile/routes/${routeId}/stops/${stopId}/notify`, {});
+      if (j.sent) {
+        toast.success("Customer notified");
+      } else {
+        toast.info(j.reason || "Notification not sent");
+      }
+    } catch {
+      toast.error("Failed to notify customer");
     }
   }
 
@@ -365,9 +343,10 @@ export default function RoutesPage() {
   async function loadReport(routeId: string) {
     setLoadingReport(true);
     try {
-      const res = await fetch_(`/api/mobile/routes/${routeId}/report`);
-      if (res.ok) setReport(await res.json());
-      else toast.error("Failed to load report");
+      const data = await api.get<Report>(`/api/mobile/routes/${routeId}/report`);
+      setReport(data);
+    } catch {
+      toast.error("Failed to load report");
     } finally {
       setLoadingReport(false);
     }

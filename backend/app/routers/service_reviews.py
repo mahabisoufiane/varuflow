@@ -14,10 +14,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.service_review import ServiceReview
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/service-reviews", tags=["service-reviews"])
+router = APIRouter(prefix="/api/service-reviews", tags=["service-reviews"], dependencies=[Depends(require_module("analytics"))])
 
 
 # ── Schemas ──────────────────────────────────────────────────────────────────

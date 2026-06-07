@@ -22,9 +22,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.messaging import StaffMessage, StaffMessageRead
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/work/messages", tags=["messaging"])
+router = APIRouter(prefix="/api/work/messages", tags=["messaging"], dependencies=[Depends(require_module("crm"))])
 
 # Default channels every org has. In the future these could be stored in DB.
 DEFAULT_CHANNELS = ["general", "ops", "sales"]

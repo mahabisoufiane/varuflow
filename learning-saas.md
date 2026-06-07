@@ -515,8 +515,12 @@ This is how most users log in.
 
 A JWT (JSON Web Token) looks like this:
 ```
-eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyLXV1aWQiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJleHAiOjE3MDAwMDAwMDB9.signature
+header.payload.signature
 ```
+Example (decoded):
+- Header: `{"alg":"HS256"}`
+- Payload: `{"sub":"user-uuid","email":"user@example.com","exp":1700000000}`
+- Signature: HMAC-SHA256 of header + payload using server secret
 
 It has three parts separated by dots:
 1. **Header** — algorithm (`HS256`)

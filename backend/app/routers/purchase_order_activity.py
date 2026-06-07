@@ -25,10 +25,12 @@ from app.middleware.auth import get_current_member
 from app.models.audit import AuditLogEntry
 from app.models.inventory import PurchaseOrder
 from app.services import purchase_order_activity as svc_91
+from app.middleware.plan_check import require_module
 
 router = APIRouter(
     prefix="/api/purchase-order-activity",
     tags=["purchase-order-activity"],
+    dependencies=[Depends(require_module("inventory"))],
 )
 
 log = logging.getLogger(__name__)

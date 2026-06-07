@@ -12,9 +12,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.growth import MarketExpansionChecklist
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["market-expansion"])
+router = APIRouter(tags=["market-expansion"], dependencies=[Depends(require_module("analytics"))])
 
 # Default checklist template per country (categories: Legal, Financial, Operations, Marketing, Technology)
 _DEFAULT_ITEMS = [

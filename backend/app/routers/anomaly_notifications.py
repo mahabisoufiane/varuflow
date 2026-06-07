@@ -13,11 +13,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.anomaly_notification import AnomalyNotification
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/anomalies", tags=["anomaly-notifications"])
+router = APIRouter(prefix="/api/anomalies", tags=["anomaly-notifications"], dependencies=[Depends(require_module("ai"))])
 
 
 def _org_id(ctx: tuple) -> uuid.UUID:

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { RefreshCw } from "lucide-react";
 import {
   portalApi,
   PORTAL_TOKEN_KEY,
@@ -31,11 +32,14 @@ const STATUS_LABEL: Record<string, string> = {
   invoiced: "Fakturerad",
 };
 
+export const PORTAL_REORDER_KEY = "portal_reorder";
+
 export default function PortalOrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<OrderHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reordering, setReordering] = useState<string | null>(null);
 
   useEffect(() => {
     const token =
@@ -50,6 +54,22 @@ export default function PortalOrdersPage() {
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, [router]);
+
+  async function handleReorder(e: React.MouseEvent, invoiceId: string) {
+    e.preventDefault();
+    setReordering(invoiceId);
+    try {
+      const lines = await portalApi.get<{ product_id: string; quantity: number }[]>(
+        `/api/portal/orders/${invoiceId}/lines`
+      );
+      localStorage.setItem(PORTAL_REORDER_KEY, JSON.stringify(lines));
+      router.push("/portal/catalogue");
+    } catch {
+      setError("Kunde inte hämta orderrader. Försök igen.");
+    } finally {
+      setReordering(null);
+    }
+  }
 
   function handleSignOut() {
     localStorage.removeItem(PORTAL_TOKEN_KEY);
@@ -104,18 +124,14 @@ export default function PortalOrdersPage() {
       ) : (
         <div className="rounded-xl border bg-white overflow-hidden divide-y">
           {orders.map((o) => (
-            <Link
-              key={o.invoice_id}
-              href={`/portal/invoices/${o.invoice_id}`}
-              className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
-            >
-              <div className="space-y-0.5">
+            <div key={o.invoice_id} className="flex items-center justify-between px-5 py-4 hover:bg-gray-50">
+              <Link href={`/portal/invoices/${o.invoice_id}`} className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-900">{o.order_number}</p>
                 <p className="text-xs text-muted-foreground">
                   {new Date(o.created_at).toLocaleDateString("sv-SE")}
                 </p>
-              </div>
-              <div className="flex items-center gap-3">
+              </Link>
+              <div className="flex items-center gap-3 shrink-0">
                 <span className="font-mono text-sm font-medium">
                   {Number(o.total_sek).toLocaleString("sv-SE", {
                     minimumFractionDigits: 2,
@@ -129,8 +145,17 @@ export default function PortalOrdersPage() {
                 >
                   {STATUS_LABEL[o.status] ?? o.status}
                 </span>
+                <button
+                  onClick={(e) => handleReorder(e, o.invoice_id)}
+                  disabled={reordering === o.invoice_id}
+                  title="Beställ igen"
+                  className="flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:border-gray-400 hover:text-gray-900 disabled:opacity-50 transition-colors"
+                >
+                  <RefreshCw className={`h-3 w-3 ${reordering === o.invoice_id ? "animate-spin" : ""}`} />
+                  Beställ igen
+                </button>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}

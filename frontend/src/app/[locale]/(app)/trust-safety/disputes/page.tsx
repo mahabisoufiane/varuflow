@@ -12,11 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
 
 const STATUS_TABS = ["all", "open", "in_review", "resolved", "escalated"] as const;
 type DisputeStatus = (typeof STATUS_TABS)[number];
@@ -88,11 +84,7 @@ export default function DisputesPage() {
     try {
       const params = new URLSearchParams();
       if (statusFilter !== "all") params.set("status", statusFilter);
-      const res = await fetch(`${API}/api/disputes?${params}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setDisputes(await res.json());
+      setDisputes(await api.get<Dispute[]>(`/api/disputes?${params}`));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load disputes");
     } finally {
@@ -103,16 +95,12 @@ export default function DisputesPage() {
   async function loadDetail(dispute: Dispute) {
     setSelectedDispute(dispute);
     try {
-      const [detailRes, msgRes] = await Promise.all([
-        fetch(`${API}/api/disputes/${dispute.id}`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }),
-        fetch(`${API}/api/disputes/${dispute.id}/messages`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }),
+      const [detail, msgs] = await Promise.all([
+        api.get<Dispute>(`/api/disputes/${dispute.id}`).catch(() => null),
+        api.get<DisputeMessage[]>(`/api/disputes/${dispute.id}/messages`).catch(() => [] as DisputeMessage[]),
       ]);
-      if (detailRes.ok) setSelectedDispute(await detailRes.json());
-      if (msgRes.ok) setMessages(await msgRes.json());
+      if (detail) setSelectedDispute(detail);
+      setMessages(msgs);
     } catch {
       // non-fatal
     }
@@ -128,15 +116,7 @@ export default function DisputesPage() {
     if (!selectedDispute) return;
     setReplyLoading(true);
     try {
-      const res = await fetch(`${API}/api/disputes/${selectedDispute.id}/messages`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ sender_type: replySenderType, sender_name: replySenderName, body: replyBody }),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post(`/api/disputes/${selectedDispute.id}/messages`, { sender_type: replySenderType, sender_name: replySenderName, body: replyBody });
       setReplyBody("");
       loadDetail(selectedDispute);
     } catch (e: unknown) {
@@ -149,11 +129,7 @@ export default function DisputesPage() {
   async function handleDisputeAction(action: "resolve" | "escalate" | "close") {
     if (!selectedDispute) return;
     try {
-      const res = await fetch(`${API}/api/disputes/${selectedDispute.id}/${action}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post(`/api/disputes/${selectedDispute.id}/${action}`, {});
       fetchDisputes();
       setSelectedDispute(null);
       setMessages([]);
@@ -167,20 +143,12 @@ export default function DisputesPage() {
     setFormLoading(true);
     setFormError("");
     try {
-      const res = await fetch(`${API}/api/disputes`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          customer_id: fCustomerId,
-          type: fType,
-          description: fDescription,
-          opened_by: fOpenedBy,
-        }),
+      await api.post<Dispute>("/api/disputes", {
+        customer_id: fCustomerId,
+        type: fType,
+        description: fDescription,
+        opened_by: fOpenedBy,
       });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
       setFCustomerId(""); setFDescription("");
       fetchDisputes();
     } catch (e: unknown) {

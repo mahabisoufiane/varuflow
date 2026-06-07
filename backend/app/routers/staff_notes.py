@@ -22,9 +22,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.customer_staff_note import CustomerStaffNote
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/staff-notes", tags=["staff-notes"])
+router = APIRouter(prefix="/api/staff-notes", tags=["staff-notes"], dependencies=[Depends(require_module("hr"))])
 
 
 class StaffNoteIn(BaseModel):

@@ -11,11 +11,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.ceo import Scenario
 from app.models.organization import OrgPlan
 
 log = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/ceo/scenarios", tags=["scenario_planning"])
+router = APIRouter(prefix="/api/ceo/scenarios", tags=["scenario_planning"], dependencies=[Depends(require_module("analytics"))])
 
 
 def _require_pro(plan: OrgPlan) -> None:

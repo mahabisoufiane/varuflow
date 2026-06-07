@@ -30,6 +30,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.invoicing import Customer
 from app.models.loyalty import LoyaltyAccount, LoyaltyProgram, LoyaltyTransaction
 from app.services.audit import log_action
@@ -41,7 +42,7 @@ from app.services.loyalty_engine import (
     redeem_points,
 )
 
-router = APIRouter(prefix="/api/loyalty", tags=["loyalty"])
+router = APIRouter(prefix="/api/loyalty", tags=["loyalty"], dependencies=[Depends(require_module("crm"))])
 
 
 # ── Schemas ───────────────────────────────────────────────────────

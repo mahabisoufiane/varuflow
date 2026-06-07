@@ -3,13 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { Building2, Download } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 interface Institution { id: string; name: string; countries: string[]; logo?: string }
 interface Account { id: string; iban?: string; name?: string; currency?: string }
 type ConnectStatus = { connected: boolean; institution_id?: string }
 
 export default function BankingIntegrationPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [country, setCountry] = useState("SE");
   const [selected, setSelected] = useState("");
@@ -18,29 +18,23 @@ export default function BankingIntegrationPage() {
   const [importing, setImporting] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
 
-  const fetch_ = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   const loadAccounts = useCallback(async () => {
     try {
-      const res = await fetch_("/api/integrations/open-banking/accounts");
-      if (res.ok) {
-        const data = await res.json();
-        setAccounts(data.accounts || []);
-        setStatus({ connected: data.accounts?.length > 0 });
-      }
+      const data = await api.get<{ accounts?: Account[] }>("/api/integrations/open-banking/accounts");
+      setAccounts(data.accounts || []);
+      setStatus({ connected: (data.accounts?.length ?? 0) > 0 });
     } catch {}
-  }, [apiBase]);
+  }, []);
 
   useEffect(() => {
     async function loadInstitutions() {
       try {
-        const res = await fetch_(`/api/integrations/open-banking/providers?country=${country}`);
-        if (res.ok) setInstitutions((await res.json()).institutions);
+        const data = await api.get<{ institutions?: Institution[] }>(`/api/integrations/open-banking/providers?country=${country}`);
+        setInstitutions(data.institutions ?? []);
       } catch {}
     }
     loadInstitutions();
-  }, [country, apiBase]);
+  }, [country]);
 
   useEffect(() => { loadAccounts(); }, [loadAccounts]);
 
@@ -57,21 +51,13 @@ export default function BankingIntegrationPage() {
     if (!selected) { toast.error("Select a bank first"); return; }
     setConnecting(true);
     try {
-      const res = await fetch_("/api/integrations/open-banking/connect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ institution_id: selected, country }),
-      });
-      if (res.ok) {
-        const data = await res.json();
+      const data = await api.post<{ redirect_url?: string }>("/api/integrations/open-banking/connect", { institution_id: selected, country });
+      if (data.redirect_url) {
         window.open(data.redirect_url, "_blank", "noopener");
         toast.info("Complete the bank authorisation in the new tab, then return here.");
-      } else {
-        const err = await res.json();
-        toast.error(err.detail || "Connection failed");
       }
-    } catch {
-      toast.error("Network error");
+    } catch (err: any) {
+      toast.error(err.message || "Connection failed");
     }
     setConnecting(false);
   }
@@ -79,22 +65,16 @@ export default function BankingIntegrationPage() {
   async function importTransactions(accountId: string) {
     setImporting(accountId);
     try {
-      const res = await fetch_(`/api/integrations/open-banking/accounts/${accountId}/import`, { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        toast.success(data.message || `Imported ${data.imported} transactions`);
-      } else {
-        const err = await res.json();
-        toast.error(err.detail || "Import failed");
-      }
-    } catch {
-      toast.error("Import error");
+      const data = await api.post<{ message?: string; imported?: number }>(`/api/integrations/open-banking/accounts/${accountId}/import`, {});
+      toast.success(data.message || `Imported ${data.imported} transactions`);
+    } catch (err: any) {
+      toast.error(err.message || "Import failed");
     }
     setImporting(null);
   }
 
   async function disconnect() {
-    await fetch_("/api/integrations/open-banking/disconnect", { method: "DELETE" });
+    await api.delete("/api/integrations/open-banking/disconnect").catch(() => {});
     toast.success("Disconnected");
     setAccounts([]);
     setStatus({ connected: false });

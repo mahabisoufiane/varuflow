@@ -102,7 +102,7 @@ export default function GdprPage() {
       </header>
 
       {/* ── Export ─────────────────────────────────────────────── */}
-      <section className="vf-section p-6 space-y-3" style={{ borderRadius: 14 }}>
+      <section className="vf-section p-6 space-y-3" >
         <h2 className="text-lg font-medium flex items-center gap-2">
           <Download size={18} /> {t("exportTitle")}
         </h2>
@@ -119,7 +119,7 @@ export default function GdprPage() {
       </section>
 
       {/* ── Bokföring compliance export ────────────────────────── */}
-      <section className="vf-section p-6 space-y-3" style={{ borderRadius: 14 }}>
+      <section className="vf-section p-6 space-y-3" >
         <h2 className="text-lg font-medium flex items-center gap-2">
           <Download size={18} /> {t("bokforing_export_title")}
         </h2>
@@ -140,7 +140,7 @@ export default function GdprPage() {
       </section>
 
       {/* ── SIE4 accounting export ─────────────────────────────── */}
-      <section className="vf-section p-6 space-y-3" style={{ borderRadius: 14 }}>
+      <section className="vf-section p-6 space-y-3" >
         <h2 className="text-lg font-medium flex items-center gap-2">
           <Download size={18} /> {t("sie4_export_title")}
         </h2>
@@ -163,7 +163,7 @@ export default function GdprPage() {
       {/* ── Delete ─────────────────────────────────────────────── */}
       <section
         className="vf-section p-6 space-y-3 border border-red-500/40"
-        style={{ borderRadius: 14 }}
+        
       >
         <h2 className="text-lg font-medium flex items-center gap-2 text-red-600">
           <AlertTriangle size={18} /> {t("deleteTitle")}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { Globe, Plus, Check, X, ChevronRight, Flag } from "lucide-react";
 
 interface Market { code: string; name: string; currency: string; region: string }
@@ -29,8 +30,6 @@ function ProgressRing({ pct }: { pct: number }) {
 }
 
 export default function ExpansionPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string, init?: RequestInit) => fetch(`${apiBase}${url}`, { credentials: "include", ...init });
 
   const [markets, setMarkets] = useState<Market[]>([]);
   const [checklists, setChecklists] = useState<Checklist[]>([]);
@@ -42,8 +41,8 @@ export default function ExpansionPage() {
 
   useEffect(() => {
     Promise.all([
-      f("/api/growth/expansion/markets").then(r => r.ok ? r.json() : []).then(setMarkets),
-      f("/api/growth/expansion/checklists").then(r => r.ok ? r.json() : []).then(setChecklists),
+      api.get<Market[]>("/api/growth/expansion/markets").then(setMarkets).catch(() => {}),
+      api.get<Checklist[]>("/api/growth/expansion/checklists").then(setChecklists).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -53,27 +52,30 @@ export default function ExpansionPage() {
 
   async function addChecklist() {
     if (!selectedCountry) { toast.error("Select a country"); return; }
-    const res = await f("/api/growth/expansion/checklists", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ country_code: selectedCountry, target_launch_date: targetDate || null }),
-    });
-    if (!res.ok) { const e = await res.json(); toast.error(e.detail || "Failed"); return; }
-    const created = await res.json();
-    setChecklists(prev => [...prev, created]);
-    setActiveId(created.id);
-    setShowAdd(false);
-    setSelectedCountry("");
-    toast.success(`${created.country_name} checklist created`);
+    try {
+      const created = await api.post<Checklist>("/api/growth/expansion/checklists", {
+        country_code: selectedCountry,
+        target_launch_date: targetDate || null,
+      });
+      setChecklists(prev => [...prev, created]);
+      setActiveId(created.id);
+      setShowAdd(false);
+      setSelectedCountry("");
+      toast.success(`${created.country_name} checklist created`);
+    } catch (err: any) {
+      toast.error(err?.detail || "Failed");
+    }
   }
 
   async function toggleItem(checklistId: string, itemId: string, done: boolean) {
-    const res = await f(`/api/growth/expansion/checklists/${checklistId}/item`, {
-      method: "PATCH", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ item_id: itemId, done, notes: "" }),
-    });
-    if (!res.ok) { toast.error("Failed to update"); return; }
-    const updated = await res.json();
-    setChecklists(prev => prev.map(c => c.id === checklistId ? updated : c));
+    try {
+      const updated = await api.patch<Checklist>(`/api/growth/expansion/checklists/${checklistId}/item`, {
+        item_id: itemId, done, notes: "",
+      });
+      setChecklists(prev => prev.map(c => c.id === checklistId ? updated : c));
+    } catch {
+      toast.error("Failed to update");
+    }
   }
 
   if (loading) return <div className="animate-pulse space-y-4">{[1,2].map(i => <div key={i} className="h-24 rounded-xl bg-gray-100" />)}</div>;

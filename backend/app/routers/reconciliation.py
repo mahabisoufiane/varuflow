@@ -8,21 +8,32 @@ GET  /api/reconciliation/overpaid       — invoices where amount_paid > total
 GET  /api/reconciliation/by-method      — payments grouped by method
 """
 import logging
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import and_, func, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.invoicing import Invoice, Payment
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/reconciliation", tags=["reconciliation"])
+router = APIRouter(prefix="/api/reconciliation", tags=["reconciliation"], dependencies=[Depends(require_module("finance"))])
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
+def _paid_subq():
+    """Correlated subquery: sum of all payments received against an invoice."""
+    return (
+        select(func.coalesce(func.sum(Payment.amount), 0))
+        .where(Payment.invoice_id == Invoice.id)
+        .correlate(Invoice)
+        .scalar_subquery()
+    )
+
 
 def _payment_out(p: Payment) -> dict:
     return {
@@ -51,9 +62,12 @@ async def list_reconciled_payments(
     """All payments with their invoice match status."""
     try:
         org_id = member["org_id"]
-        q = select(Payment, Invoice).join(
-            Invoice, Payment.invoice_id == Invoice.id
-        ).where(Payment.org_id == org_id)
+        paid_col = _paid_subq().label("total_paid")
+        q = (
+            select(Payment, Invoice, paid_col)
+            .join(Invoice, Payment.invoice_id == Invoice.id)
+            .where(Payment.org_id == org_id)
+        )
 
         if method:
             q = q.where(Payment.method == method)
@@ -66,10 +80,10 @@ async def list_reconciled_payments(
         rows = (await db.execute(q)).all()
 
         result = []
-        for payment, invoice in rows:
-            total = float(invoice.total_amount or 0)
-            paid = float(invoice.amount_paid or 0)
-            if paid >= total:
+        for payment, invoice, total_paid in rows:
+            total = float(invoice.total_sek or 0)
+            paid = float(total_paid or 0)
+            if paid >= total and total > 0:
                 match_status = "matched"
             elif paid > 0:
                 match_status = "partial"
@@ -127,7 +141,7 @@ async def reconciliation_summary(
 
         # Payment count
         payment_count = await db.scalar(
-            select(func.count()).where(
+            select(func.count()).select_from(Payment).where(
                 Payment.org_id == org_id,
                 Payment.payment_date >= from_d,
             )
@@ -149,30 +163,30 @@ async def reconciliation_summary(
             for r in method_rows
         ]
 
-        # Unmatched invoices (status not PAID, no payments)
+        # Use paid subquery for per-invoice aggregate counts
+        paid_subq = _paid_subq()
+
         unmatched_count = await db.scalar(
-            select(func.count()).where(
+            select(func.count()).select_from(Invoice).where(
                 Invoice.org_id == org_id,
                 Invoice.status.notin_(["PAID", "CANCELLED", "VOID", "DRAFT"]),
-                Invoice.amount_paid == 0,
+                paid_subq == 0,
             )
         ) or 0
 
-        # Partial invoices
         partial_count = await db.scalar(
-            select(func.count()).where(
+            select(func.count()).select_from(Invoice).where(
                 Invoice.org_id == org_id,
                 Invoice.status.notin_(["PAID", "CANCELLED", "VOID"]),
-                Invoice.amount_paid > 0,
-                Invoice.amount_paid < Invoice.total_amount,
+                paid_subq > 0,
+                paid_subq < Invoice.total_sek,
             )
         ) or 0
 
-        # Overpaid invoices
         overpaid_count = await db.scalar(
-            select(func.count()).where(
+            select(func.count()).select_from(Invoice).where(
                 Invoice.org_id == org_id,
-                Invoice.amount_paid > Invoice.total_amount,
+                paid_subq > Invoice.total_sek,
             )
         ) or 0
 
@@ -206,12 +220,13 @@ async def unmatched_invoices(
     """Invoices expecting payment but with no payments recorded."""
     try:
         org_id = member["org_id"]
+        paid_subq = _paid_subq()
         rows = (await db.execute(
             select(Invoice)
             .where(
                 Invoice.org_id == org_id,
                 Invoice.status.notin_(["PAID", "CANCELLED", "VOID", "DRAFT"]),
-                Invoice.amount_paid == 0,
+                paid_subq == 0,
             )
             .order_by(Invoice.due_date.asc().nullslast())
             .limit(limit).offset(offset)
@@ -222,7 +237,7 @@ async def unmatched_invoices(
                 "id": str(inv.id),
                 "invoice_number": inv.invoice_number,
                 "customer_id": str(inv.customer_id) if inv.customer_id else None,
-                "total_amount": float(inv.total_amount or 0),
+                "total_amount": float(inv.total_sek or 0),
                 "currency": inv.currency,
                 "due_date": inv.due_date.isoformat() if inv.due_date else None,
                 "status": inv.status,
@@ -249,31 +264,33 @@ async def partial_invoices(
     """Invoices with partial payments — outstanding balance > 0."""
     try:
         org_id = member["org_id"]
+        paid_subq = _paid_subq()
+        paid_col = paid_subq.label("amount_paid")
         rows = (await db.execute(
-            select(Invoice)
+            select(Invoice, paid_col)
             .where(
                 Invoice.org_id == org_id,
                 Invoice.status.notin_(["PAID", "CANCELLED", "VOID"]),
-                Invoice.amount_paid > 0,
-                Invoice.amount_paid < Invoice.total_amount,
+                paid_subq > 0,
+                paid_subq < Invoice.total_sek,
             )
             .order_by(Invoice.due_date.asc().nullslast())
             .limit(limit).offset(offset)
-        )).scalars().all()
+        )).all()
 
         return [
             {
                 "id": str(inv.id),
                 "invoice_number": inv.invoice_number,
                 "customer_id": str(inv.customer_id) if inv.customer_id else None,
-                "total_amount": float(inv.total_amount or 0),
-                "amount_paid": float(inv.amount_paid or 0),
-                "outstanding": float((inv.total_amount or 0) - (inv.amount_paid or 0)),
+                "total_amount": float(inv.total_sek or 0),
+                "amount_paid": float(paid or 0),
+                "outstanding": float((inv.total_sek or 0) - (paid or 0)),
                 "currency": inv.currency,
                 "due_date": inv.due_date.isoformat() if inv.due_date else None,
                 "status": inv.status,
             }
-            for inv in rows
+            for inv, paid in rows
         ]
     except HTTPException:
         raise
@@ -292,26 +309,28 @@ async def overpaid_invoices(
     """Invoices where total payments exceed the invoice total."""
     try:
         org_id = member["org_id"]
+        paid_subq = _paid_subq()
+        paid_col = paid_subq.label("amount_paid")
         rows = (await db.execute(
-            select(Invoice)
+            select(Invoice, paid_col)
             .where(
                 Invoice.org_id == org_id,
-                Invoice.amount_paid > Invoice.total_amount,
+                paid_subq > Invoice.total_sek,
             )
-            .order_by(Invoice.updated_at.desc())
-        )).scalars().all()
+            .order_by(Invoice.created_at.desc())
+        )).all()
 
         return [
             {
                 "id": str(inv.id),
                 "invoice_number": inv.invoice_number,
                 "customer_id": str(inv.customer_id) if inv.customer_id else None,
-                "total_amount": float(inv.total_amount or 0),
-                "amount_paid": float(inv.amount_paid or 0),
-                "overpaid_by": float((inv.amount_paid or 0) - (inv.total_amount or 0)),
+                "total_amount": float(inv.total_sek or 0),
+                "amount_paid": float(paid or 0),
+                "overpaid_by": float((paid or 0) - (inv.total_sek or 0)),
                 "currency": inv.currency,
             }
-            for inv in rows
+            for inv, paid in rows
         ]
     except HTTPException:
         raise

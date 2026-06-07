@@ -24,8 +24,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.service_photo_update import ServicePhotoUpdate
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/photos", tags=["photos"])
+router = APIRouter(prefix="/api/photos", tags=["photos"], dependencies=[Depends(require_module("crm"))])
 log = logging.getLogger(__name__)
 
 

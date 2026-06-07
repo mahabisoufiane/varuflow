@@ -12,11 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
 
 function purchaseStatusClass(status: string) {
   const map: Record<string, string> = {
@@ -71,11 +67,7 @@ export default function InsurancePage() {
     setAddonsLoading(true);
     setAddonsError("");
     try {
-      const res = await fetch(`${API}/api/insurance/addons`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setAddons(await res.json());
+      setAddons(await api.get<InsuranceAddon[]>("/api/insurance/addons"));
     } catch (e: unknown) {
       setAddonsError(e instanceof Error ? e.message : "Failed to load add-ons");
     } finally {
@@ -89,11 +81,7 @@ export default function InsurancePage() {
     try {
       const params = new URLSearchParams();
       if (customerFilter) params.set("customer_id", customerFilter);
-      const res = await fetch(`${API}/api/insurance/purchases?${params}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setPurchases(await res.json());
+      setPurchases(await api.get<InsurancePurchase[]>(`/api/insurance/purchases?${params}`));
     } catch (e: unknown) {
       setPurchasesError(e instanceof Error ? e.message : "Failed to load purchases");
     } finally {
@@ -108,15 +96,7 @@ export default function InsurancePage() {
 
   async function toggleAddon(id: string, active: boolean) {
     try {
-      const res = await fetch(`${API}/api/insurance/addons/${id}`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ active: !active }),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.patch<InsuranceAddon>(`/api/insurance/addons/${id}`, { active: !active });
       fetchAddons();
     } catch (e: unknown) {
       setAddonsError(e instanceof Error ? e.message : "Action failed");
@@ -135,15 +115,7 @@ export default function InsurancePage() {
         coverage_description: fCoverage,
       };
       if (fServiceId) body.service_id = fServiceId;
-      const res = await fetch(`${API}/api/insurance/addons`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post<InsuranceAddon>("/api/insurance/addons", body);
       setFName(""); setFServiceId(""); setFPrice(""); setFDescription(""); setFCoverage("");
       fetchAddons();
     } catch (e: unknown) {
@@ -155,11 +127,7 @@ export default function InsurancePage() {
 
   async function handlePurchaseAction(id: string, action: "claim" | "refund") {
     try {
-      const res = await fetch(`${API}/api/insurance/purchases/${id}/${action}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post(`/api/insurance/purchases/${id}/${action}`, {});
       fetchPurchases();
     } catch (e: unknown) {
       setPurchasesError(e instanceof Error ? e.message : "Action failed");

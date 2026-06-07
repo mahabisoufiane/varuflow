@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
 
 interface DescriptionResult {
   id: string;
@@ -34,8 +29,6 @@ interface DescriptionHistoryItem {
 }
 
 export default function ProductDescriptionsPage() {
-  const params = useParams();
-
   const [productId, setProductId] = useState("");
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
@@ -50,11 +43,7 @@ export default function ProductDescriptionsPage() {
   async function fetchHistory() {
     setHistoryLoading(true);
     try {
-      const res = await fetch(`${API}/api/ai/product-descriptions`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setHistory(await res.json());
+      setHistory(await api.get<DescriptionHistoryItem[]>("/api/ai/product-descriptions"));
     } catch {
       // non-critical
     } finally {
@@ -72,22 +61,13 @@ export default function ProductDescriptionsPage() {
     setError("");
     setGenerated(null);
     try {
-      const res = await fetch(`${API}/api/ai/product-descriptions/generate`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          product_id: productId || undefined,
-          name,
-          category,
-          features: features.split(",").map((f) => f.trim()).filter(Boolean),
-          tone,
-        }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setGenerated(await res.json());
+      setGenerated(await api.post<DescriptionResult>("/api/ai/product-descriptions/generate", {
+        product_id: productId || undefined,
+        name,
+        category,
+        features: features.split(",").map((f) => f.trim()).filter(Boolean),
+        tone,
+      }));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Generation failed");
     } finally {
@@ -98,15 +78,7 @@ export default function ProductDescriptionsPage() {
   async function handleAccept() {
     if (!generated) return;
     try {
-      const res = await fetch(`${API}/api/ai/product-descriptions/${generated.id}/accept`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ apply_to_product: !!generated.product_id }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await api.post(`/api/ai/product-descriptions/${generated.id}/accept`, { apply_to_product: !!generated.product_id });
       setGenerated(null);
       await fetchHistory();
     } catch (e: unknown) {
@@ -117,10 +89,7 @@ export default function ProductDescriptionsPage() {
   async function handleReject() {
     if (!generated) return;
     try {
-      await fetch(`${API}/api/ai/product-descriptions/${generated.id}/reject`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      await api.post(`/api/ai/product-descriptions/${generated.id}/reject`, {});
     } catch {
       // ignore
     } finally {

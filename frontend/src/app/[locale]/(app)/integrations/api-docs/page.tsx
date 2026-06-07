@@ -59,7 +59,7 @@ export default function ApiDocsPage() {
             target={s.href.startsWith("http") ? "_blank" : undefined}
             rel="noopener noreferrer"
             className="group vf-section p-5 flex items-start gap-4 hover:shadow-card transition-all"
-            style={{ borderRadius: 14 }}
+            
             onMouseEnter={e => (e.currentTarget.style.background = "var(--vf-bg-elevated)")}
             onMouseLeave={e => (e.currentTarget.style.background = "var(--vf-bg-surface)")}
           >
@@ -79,7 +79,7 @@ export default function ApiDocsPage() {
       </div>
 
       {/* Embedded Swagger UI */}
-      <div className="vf-section overflow-hidden" style={{ borderRadius: 14 }}>
+      <div className="vf-section overflow-hidden" >
         <div className="vf-section-header">
           <h2 className="text-[13px] font-semibold vf-text-1">{t("interactiveDocs")}</h2>
           <a
@@ -105,8 +105,7 @@ export default function ApiDocsPage() {
       <div id="auth" className="vf-section p-5 space-y-3">
         <h2 className="text-[13px] font-semibold vf-text-1">{t("authentication")}</h2>
         <p className="text-xs vf-text-m">{t("authGuideDesc")}</p>
-        <div className="rounded-xl p-4 font-mono text-xs"
-          style={{ background: "var(--vf-bg-elevated)", border: "1px solid var(--vf-border)" }}>
+        <div className="rounded-xl p-4 font-mono text-xs bg-[var(--vf-bg-elevated)] border border-[var(--vf-border)]">
           <p className="text-indigo-400">{"// Include in every request:"}</p>
           <p className="vf-text-1 mt-1">{"Authorization: Bearer <your-api-key>"}</p>
         </div>

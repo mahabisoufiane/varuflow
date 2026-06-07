@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Clock, AlertTriangle } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 interface OvertimeEntry { staff_id: string; staff_name: string; total_hours: number; is_overtime: boolean }
 
@@ -10,9 +11,6 @@ function addDays(d: Date, n: number) { const r = new Date(d); r.setDate(r.getDat
 function getMonday(d: Date) { const day = d.getDay(); return addDays(d, day === 0 ? -6 : 1 - day); }
 
 export default function OvertimePage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string) => fetch(`${apiBase}${url}`, { credentials: "include" });
-
   const [data, setData] = useState<OvertimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [weekStart, setWeekStart] = useState<Date>(getMonday(new Date()));
@@ -21,7 +19,9 @@ export default function OvertimePage() {
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   useEffect(() => {
-    f(`/api/scheduling/overtime?week_start=${weekStr}`).then(r => r.ok ? r.json() : []).then(d => { setData(d); setLoading(false); });
+    api.get<OvertimeEntry[]>(`/api/scheduling/overtime?week_start=${weekStr}`)
+      .then(d => { setData(d); setLoading(false); })
+      .catch(() => { setLoading(false); });
   }, [weekStr]);
 
   const overtimeCount = data.filter(d => d.is_overtime).length;

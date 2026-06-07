@@ -25,9 +25,11 @@ from app.middleware.auth import get_current_member
 from app.models.audit import AuditLogEntry
 from app.models.inventory import Warehouse
 from app.services import warehouse_activity as svc_85
+from app.middleware.plan_check import require_module
 
 router = APIRouter(
     prefix="/api/warehouse-activity", tags=["warehouse-activity"],
+    dependencies=[Depends(require_module("inventory"))],
 )
 
 log = logging.getLogger(__name__)

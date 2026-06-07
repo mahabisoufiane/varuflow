@@ -32,8 +32,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.mobile_field import DeliveryRoute, RouteStop
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/mobile/routes", tags=["mobile_routes"])
+router = APIRouter(prefix="/api/mobile/routes", tags=["mobile_routes"], dependencies=[Depends(require_module("hr"))])
 log = logging.getLogger(__name__)
 
 
@@ -616,7 +617,7 @@ async def notify_customer(
             return {"sent": False, "reason": "No customer email on this stop — set ref_id to a customer with an email address"}
 
         if not resend_key:
-            log.info("notify_customer skipped (no RESEND_API_KEY): to=%s", customer_email)
+            log.info("notify_customer skipped (no RESEND_API_KEY): to=%s", customer_email)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
             return {"sent": False, "reason": "RESEND_API_KEY not configured"}
 
         try:

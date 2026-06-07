@@ -79,10 +79,10 @@ export default function NewCustomerPage() {
       </div>
 
       {/* ── Form card ───────────────────────────────────────────────── */}
-      <form onSubmit={handleSubmit} className="vf-section p-6 space-y-5" style={{ borderRadius: 16 }}>
+      <form onSubmit={handleSubmit} className="vf-section p-6 space-y-5 rounded-2xl">
 
         {/* Section label */}
-        <div className="pb-1" style={{ borderBottom: "1px solid var(--vf-divider)" }}>
+        <div className="pb-1 border-b border-[var(--vf-divider)]">
           <p className="text-[11px] font-semibold uppercase tracking-widest vf-text-m">Company details</p>
         </div>
 
@@ -111,15 +111,14 @@ export default function NewCustomerPage() {
 
         {/* Error */}
         {error && (
-          <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm text-red-400"
-            style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+          <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm text-red-400 bg-red-500/[0.08] border border-red-500/20">
             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 pt-2" style={{ borderTop: "1px solid var(--vf-divider)" }}>
+        <div className="flex items-center justify-end gap-3 pt-2 border-t border-[var(--vf-divider)]">
           <Link href="/customers" className="vf-btn-ghost text-sm">
             Cancel
           </Link>

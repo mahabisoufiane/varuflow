@@ -7,6 +7,7 @@ import {
 import { toast } from "sonner";
 import Link from "next/link";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 interface Stage {
   slug: string;
@@ -64,6 +65,7 @@ function fmt(v: number | null, currency = "SEK") {
 export default function CrmPipelinePage() {
   const [data, setData] = useState<PipelineData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<(Deal & { activities?: any[] }) | null>(null);
   const [showNew, setShowNew] = useState(false);
@@ -91,7 +93,14 @@ export default function CrmPipelinePage() {
       const res = await api.get<PipelineData>("/api/crm/pipeline");
       setData(res);
       if (res.stages?.[0]?.slug) setNewStage(res.stages[0].slug);
-    } catch { toast.error("Failed to load pipeline"); }
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        const e = err as any;
+        setPlanBlocked({ module: e.module ?? "crm", currentPlan: e.currentPlan ?? "FREE" });
+      } else {
+        toast.error("Failed to load pipeline");
+      }
+    }
     finally { setLoading(false); }
   }, []);
 
@@ -188,6 +197,10 @@ export default function CrmPipelinePage() {
         return a + (d.value ?? 0) * p;
       }, 0);
     }, 0);
+
+  if (planBlocked) {
+    return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="CRM Pipeline" />;
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">

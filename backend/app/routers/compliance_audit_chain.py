@@ -19,10 +19,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.audit import AuditLogEntry
 from app.services.audit_chain import verify_chain, GENESIS_HASH
 
-router = APIRouter(prefix="/api/compliance/audit-chain", tags=["compliance_audit_chain"])
+router = APIRouter(prefix="/api/compliance/audit-chain", tags=["compliance_audit_chain"], dependencies=[Depends(require_module("compliance"))])
 log = logging.getLogger(__name__)
 
 

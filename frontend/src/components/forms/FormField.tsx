@@ -268,7 +268,8 @@ export function FormField(props: FormFieldProps) {
   }
 
   // ── Text/Number/Date/etc. ─────────────────────────────────────────
-  const kind = props.kind ?? "text";
+  const inputProps = props as InputProps;
+  const kind = inputProps.kind ?? "text";
   const {
     value,
     defaultValue,
@@ -281,7 +282,7 @@ export function FormField(props: FormFieldProps) {
     autoFocus,
     pattern,
     disabled,
-  } = props;
+  } = inputProps;
 
   // Browser `type` is slightly different from our semantic kind.
   // `decimal` stays `type="text"` because Safari's number input strips
@@ -325,9 +326,9 @@ export function FormField(props: FormFieldProps) {
           step={step}
           autoComplete={autoComplete}
           autoFocus={autoFocus}
-          inputMode={props.inputMode ?? inputModeFor(
-            kind === "password" ? "text" : kind,
-          )}
+          inputMode={inputProps.inputMode ?? (kind === "date" || kind === "password" ? undefined : inputModeFor(
+            kind as "text" | "number" | "decimal" | "email" | "tel" | "url" | "search",
+          ))}
           pattern={
             pattern ?? (kind === "number" ? "[0-9]*" : undefined)
           }

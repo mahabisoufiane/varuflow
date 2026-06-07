@@ -132,8 +132,7 @@ export default function TimezonesPage() {
             </div>
             <div className="sm:col-span-2 flex gap-2 justify-end">
               <button type="button" onClick={() => setShowForm(false)}
-                className="rounded-lg px-4 py-2 text-xs font-medium vf-text-m"
-                style={{ border: "1px solid var(--vf-border)" }}>
+                className="vf-btn-secondary text-xs">
                 {t("cancel")}
               </button>
               <button type="submit" className="vf-btn text-xs">{t("add")}</button>
@@ -153,14 +152,14 @@ export default function TimezonesPage() {
         ) : locations.length === 0 ? (
           <div className="py-14 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl"
-              style={{ background: "var(--vf-bg-elevated)" }}>
+              >
               <Globe className="h-6 w-6 vf-text-m" />
             </div>
             <p className="text-sm font-medium vf-text-2">{t("noLocations")}</p>
             <p className="text-xs vf-text-m mt-1">{t("addLocationToStart")}</p>
           </div>
         ) : (
-          <div className="divide-y" style={{ borderColor: "var(--vf-divider)" }}>
+          <div className="vf-divide">
             {locations.map(loc => (
               <div key={loc.id} className="flex items-center gap-4 px-5 py-4 vf-row">
                 <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${

@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 interface Category {
   id: string;
@@ -64,6 +65,16 @@ interface CategoryTotal {
   count: number;
 }
 
+interface ExpenseListResponse {
+  items: Expense[];
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+}
+
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
 function statusBadge(status: Expense["status"]) {
@@ -79,6 +90,7 @@ export default function ExpensesPage() {
   const [totals, setTotals] = useState<CategoryTotal[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [planBlocked, setPlanBlocked] = useState<{module: string; plan: string} | null>(null);
   const [form, setForm] = useState({
     category_id: "",
     amount: "",
@@ -92,20 +104,25 @@ export default function ExpensesPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [cats, rows, agg] = await Promise.all([
+      const [cats, res, agg] = await Promise.all([
         api.get<Category[]>("/api/expenses/categories"),
-        api.get<Expense[]>("/api/expenses"),
+        api.get<ExpenseListResponse>("/api/expenses"),
         api.get<CategoryTotal[]>("/api/expenses/analytics/by-category"),
       ]);
       setCategories(cats);
-      setExpenses(rows);
+      setExpenses(res.items);
       setTotals(agg);
       if (cats.length > 0 && !form.category_id) {
         const preferred = cats.find((c) => c.is_default) ?? cats[0];
         setForm((f) => ({ ...f, category_id: preferred.id }));
       }
-    } catch {
-      toast.error(t("load_failed"));
+    } catch (e) {
+      if (isPlanGateError(e)) {
+        const err = e as Error & { module?: string; currentPlan?: string };
+        setPlanBlocked({ module: err.module ?? "finance", plan: err.currentPlan ?? "FREE" });
+      } else {
+        toast.error(t("load_failed"));
+      }
     } finally {
       setLoading(false);
     }
@@ -198,8 +215,12 @@ export default function ExpensesPage() {
     }
   };
 
-  const exportCsv = () => {
-    window.open("/api/expenses/export.csv", "_blank");
+  const exportCsv = async () => {
+    try {
+      await api.downloadBlob("/api/expenses/export.csv", "expenses.csv");
+    } catch {
+      // api.downloadBlob already shows a toast on error
+    }
   };
 
   // Mobile receipt capture — `capture="environment"` opens the rear
@@ -221,6 +242,17 @@ export default function ExpensesPage() {
       <div className="flex items-center justify-center p-12">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
+    );
+  }
+
+  if (planBlocked) {
+    return (
+      <PlanGateBlock
+        module={planBlocked.module}
+        currentPlan={planBlocked.plan}
+        featureName="Expense Tracking"
+        description="Log expenses, attach receipts, and manage approvals with the Finance module."
+      />
     );
   }
 

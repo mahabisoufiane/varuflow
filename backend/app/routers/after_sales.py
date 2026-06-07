@@ -39,7 +39,8 @@ from app.models.after_sales import (
 )
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/after-sales", tags=["after-sales"])
+from app.middleware.plan_check import require_module
+router = APIRouter(prefix="/api/after-sales", tags=["after-sales"], dependencies=[Depends(require_module("analytics"))])
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────

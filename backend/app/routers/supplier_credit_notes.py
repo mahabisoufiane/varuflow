@@ -34,6 +34,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.inventory import PurchaseOrder, Supplier
 from app.models.organization import Organization
 from app.models.supplier_credit_note import (
@@ -44,6 +45,7 @@ from app.services.audit import log_action
 
 router = APIRouter(
     prefix="/api/supplier-credit-notes", tags=["supplier-credit-notes"],
+    dependencies=[Depends(require_module("finance"))],
 )
 
 log = logging.getLogger(__name__)

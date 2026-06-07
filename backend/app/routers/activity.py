@@ -33,8 +33,9 @@ from app.middleware.auth import get_current_member
 from app.models.activity_event import ActivityEvent
 from app.services import activity as svc
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/activity", tags=["activity"])
+router = APIRouter(prefix="/api/activity", tags=["activity"], dependencies=[Depends(require_module("analytics"))])
 
 log = logging.getLogger(__name__)
 

@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
 
 interface KbCategory {
   id: string;
@@ -37,8 +32,6 @@ interface KbArticle {
 }
 
 export default function KnowledgeBasePage() {
-  const params = useParams();
-
   const [categories, setCategories] = useState<KbCategory[]>([]);
   const [articles, setArticles] = useState<KbArticle[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -70,16 +63,9 @@ export default function KnowledgeBasePage() {
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const headers = {
-    Authorization: `Bearer ${getToken()}`,
-    "Content-Type": "application/json",
-  };
-
   async function loadCategories() {
     try {
-      const res = await fetch(`${API}/api/kb/categories`, { headers });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
+      const data = await api.get<KbCategory[] | { items: KbCategory[] }>("/api/kb/categories");
       setCategories(Array.isArray(data) ? data : data.items ?? []);
     } catch {
       // non-blocking
@@ -91,9 +77,7 @@ export default function KnowledgeBasePage() {
     setError("");
     try {
       const qs = search ? `?search=${encodeURIComponent(search)}` : "";
-      const res = await fetch(`${API}/api/kb/articles${qs}`, { headers });
-      if (!res.ok) throw new Error("Failed to load articles");
-      const data = await res.json();
+      const data = await api.get<KbArticle[] | { items: KbArticle[] }>(`/api/kb/articles${qs}`);
       setArticles(Array.isArray(data) ? data : data.items ?? []);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load articles");
@@ -118,12 +102,7 @@ export default function KnowledgeBasePage() {
     setCatSaving(true);
     setCatError("");
     try {
-      const res = await fetch(`${API}/api/kb/categories`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ name: catName, sort_order: catOrder ? Number(catOrder) : 0 }),
-      });
-      if (!res.ok) throw new Error("Failed to add category");
+      await api.post("/api/kb/categories", { name: catName, sort_order: catOrder ? Number(catOrder) : 0 });
       setCatName("");
       setCatOrder("");
       loadCategories();
@@ -137,8 +116,7 @@ export default function KnowledgeBasePage() {
   async function handleDeleteCategory(id: string) {
     if (!confirm("Delete this category?")) return;
     try {
-      const res = await fetch(`${API}/api/kb/categories/${id}`, { method: "DELETE", headers });
-      if (!res.ok) throw new Error();
+      await api.delete(`/api/kb/categories/${id}`);
       loadCategories();
     } catch {
       setError("Failed to delete category");
@@ -156,12 +134,7 @@ export default function KnowledgeBasePage() {
       };
       if (artForm.category_id) body.category_id = artForm.category_id;
 
-      const res = await fetch(`${API}/api/kb/articles`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error("Failed to create article");
+      await api.post("/api/kb/articles", body);
       setArtOpen(false);
       setArtForm({ title: "", category_id: "", body: "", is_published: false });
       loadArticles(searchTerm);
@@ -176,12 +149,7 @@ export default function KnowledgeBasePage() {
     setEditSaving(true);
     setEditError("");
     try {
-      const res = await fetch(`${API}/api/kb/articles/${id}`, {
-        method: "PATCH",
-        headers,
-        body: JSON.stringify(editForm),
-      });
-      if (!res.ok) throw new Error("Failed to update article");
+      await api.patch(`/api/kb/articles/${id}`, editForm);
       setEditId(null);
       loadArticles(searchTerm);
     } catch (e: unknown) {
@@ -194,8 +162,7 @@ export default function KnowledgeBasePage() {
   async function handleDeleteArticle(id: string) {
     if (!confirm("Delete this article?")) return;
     try {
-      const res = await fetch(`${API}/api/kb/articles/${id}`, { method: "DELETE", headers });
-      if (!res.ok) throw new Error();
+      await api.delete(`/api/kb/articles/${id}`);
       loadArticles(searchTerm);
     } catch {
       setError("Failed to delete article");

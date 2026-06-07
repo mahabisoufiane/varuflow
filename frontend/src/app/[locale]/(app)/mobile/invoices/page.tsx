@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import {
   FileText, Plus, Wifi, WifiOff, RefreshCw, Trash2,
   Search, CheckCircle2, Clock, AlertCircle, X,
@@ -130,7 +131,6 @@ function LineItemRow({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function OfflineInvoicesPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [isOnline, setIsOnline] = useState(true);
   const [invoices, setInvoices] = useState<OfflineInvoice[]>([]);
   const [customers, setCustomers] = useState<CachedCustomer[]>([]);
@@ -154,9 +154,6 @@ export default function OfflineInvoicesPage() {
     { description: "", quantity: 1, unit_price: 0, tax_rate: 25 },
   ]);
 
-  const fetch_ = useCallback((url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts }), [apiBase]);
-
   // Online/offline
   useEffect(() => {
     setIsOnline(navigator.onLine);
@@ -179,22 +176,22 @@ export default function OfflineInvoicesPage() {
     if (!isOnline) { toast.error("Cannot refresh cache while offline"); return; }
     setCacheLoading(true);
     try {
-      const [cRes, pRes] = await Promise.all([
-        fetch_("/api/invoicing/customers?limit=500&is_active=true"),
-        fetch_("/api/inventory/items?limit=1000"),
+      const [custData, prodData] = await Promise.all([
+        api.get<{ customers?: CachedCustomer[] } | CachedCustomer[]>("/api/invoicing/customers?limit=500&is_active=true").catch(() => null),
+        api.get<{ items?: CachedProduct[] } | CachedProduct[]>("/api/inventory/items?limit=1000").catch(() => null),
       ]);
-      if (cRes.ok) {
-        const data = await cRes.json();
-        const cached: CachedCustomer[] = (data.customers || data).map((c: { id: string; company_name: string; email?: string }) => ({
+      if (custData) {
+        const list = (custData as any).customers ?? custData as CachedCustomer[];
+        const cached: CachedCustomer[] = list.map((c: { id: string; company_name: string; email?: string }) => ({
           id: c.id, company_name: c.company_name, email: c.email,
         }));
         saveLocal(CUSTOMERS_CACHE_KEY, cached);
         setCustomers(cached);
         toast.success(`Cached ${cached.length} customers`);
       }
-      if (pRes.ok) {
-        const data = await pRes.json();
-        const cached: CachedProduct[] = (data.items || data).map((p: { id: string; name: string; sku?: string; price?: number; tax_rate?: number }) => ({
+      if (prodData) {
+        const list = (prodData as any).items ?? prodData as CachedProduct[];
+        const cached: CachedProduct[] = list.map((p: { id: string; name: string; sku?: string; price?: number; tax_rate?: number }) => ({
           id: p.id, name: p.name, sku: p.sku,
           price: p.price, tax_rate: p.tax_rate,
         }));
@@ -213,6 +210,7 @@ export default function OfflineInvoicesPage() {
     if (isOnline && customers.length === 0) {
       refreshCache();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
   function updateInvoices(updated: OfflineInvoice[]) {
@@ -299,27 +297,13 @@ export default function OfflineInvoicesPage() {
             product_id: l.product_id || undefined,
           })),
         };
-        const res = await fetch_("/api/invoicing/invoices", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Idempotency-Key": inv.client_sync_id,
-          },
-          body: JSON.stringify(body),
-        });
-
+        const created = await api.post<{ invoice_number?: string }>("/api/invoicing/invoices", body);
         const idx = updated.findIndex(i => i.client_sync_id === inv.client_sync_id);
-        if (res.ok) {
-          const created = await res.json();
-          updated[idx] = { ...updated[idx], sync_status: "synced", server_invoice_number: created.invoice_number };
-          toast.success(`Synced invoice ${created.invoice_number}`);
-        } else {
-          const e = await res.json();
-          updated[idx] = { ...updated[idx], sync_status: "error", error_message: e.detail || "Unknown error" };
-        }
-      } catch {
+        updated[idx] = { ...updated[idx], sync_status: "synced", server_invoice_number: created.invoice_number };
+        toast.success(`Synced invoice ${created.invoice_number}`);
+      } catch (err: any) {
         const idx = updated.findIndex(i => i.client_sync_id === inv.client_sync_id);
-        updated[idx] = { ...updated[idx], sync_status: "error", error_message: "Network error" };
+        updated[idx] = { ...updated[idx], sync_status: "error", error_message: err.message || "Network error" };
       }
     }
 

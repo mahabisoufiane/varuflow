@@ -34,8 +34,9 @@ from app.models.organization import OrgRole
 from app.models.product_note import ProductNote
 from app.services import product_note as svc_80
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/product-notes", tags=["product-notes"])
+router = APIRouter(prefix="/api/product-notes", tags=["product-notes"], dependencies=[Depends(require_module("inventory"))])
 
 log = logging.getLogger(__name__)
 

@@ -45,11 +45,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.commissions import CommissionEntry, CommissionRule, CommissionRun
 from app.services.audit import log_action
 from app.services.commission_calculator import render_run_csv as _calc_render_run_csv, summarise_run
 
-router = APIRouter(prefix="/api/commissions", tags=["commissions"])
+router = APIRouter(prefix="/api/commissions", tags=["commissions"], dependencies=[Depends(require_module("finance"))])
 
 
 def _org(ctx: tuple) -> uuid.UUID:

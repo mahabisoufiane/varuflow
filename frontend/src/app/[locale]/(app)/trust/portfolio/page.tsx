@@ -1,15 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
 
 interface Photo {
   id: string;
@@ -22,8 +17,6 @@ interface Photo {
 }
 
 export default function PortfolioPage() {
-  const params = useParams();
-
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [staffFilter, setStaffFilter] = useState("");
   const [featuredOnly, setFeaturedOnly] = useState(false);
@@ -42,20 +35,13 @@ export default function PortfolioPage() {
   const [addError, setAddError] = useState("");
   const [addLoading, setAddLoading] = useState(false);
 
-  const headers = {
-    Authorization: `Bearer ${getToken()}`,
-    "Content-Type": "application/json",
-  };
-
   async function loadPhotos() {
     setLoading(true);
     setError("");
     try {
       const qs = new URLSearchParams({ featured_only: String(featuredOnly) });
       if (staffFilter) qs.set("staff_id", staffFilter);
-      const res = await fetch(`${API}/api/portfolio?${qs}`, { headers });
-      if (!res.ok) throw new Error("Failed to load portfolio");
-      const data = await res.json();
+      const data = await api.get<Photo[] | { items?: Photo[] }>(`/api/portfolio?${qs}`);
       setPhotos(Array.isArray(data) ? data : data.items ?? []);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load portfolio");
@@ -82,12 +68,7 @@ export default function PortfolioPage() {
       if (addForm.service_id) body.service_id = addForm.service_id;
       if (addForm.description) body.description = addForm.description;
 
-      const res = await fetch(`${API}/api/portfolio`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error("Failed to add photo");
+      await api.post<Photo>("/api/portfolio", body);
       setAddOpen(false);
       setAddForm({
         staff_id: "", service_id: "", title: "", photo_url: "", description: "", is_featured: false,
@@ -102,11 +83,7 @@ export default function PortfolioPage() {
 
   async function handleFeature(id: string) {
     try {
-      const res = await fetch(`${API}/api/portfolio/${id}/feature`, {
-        method: "POST",
-        headers,
-      });
-      if (!res.ok) throw new Error();
+      await api.post(`/api/portfolio/${id}/feature`, {});
       loadPhotos();
     } catch {
       setError("Failed to feature photo");
@@ -116,8 +93,7 @@ export default function PortfolioPage() {
   async function handleDelete(id: string) {
     if (!confirm("Delete this photo?")) return;
     try {
-      const res = await fetch(`${API}/api/portfolio/${id}`, { method: "DELETE", headers });
-      if (!res.ok) throw new Error();
+      await api.delete(`/api/portfolio/${id}`);
       loadPhotos();
     } catch {
       setError("Failed to delete photo");

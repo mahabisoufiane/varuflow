@@ -34,8 +34,9 @@ from app.models.organization import OrgRole
 from app.models.warehouse_note import WarehouseNote
 from app.services import warehouse_note as svc_83
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/warehouse-notes", tags=["warehouse-notes"])
+router = APIRouter(prefix="/api/warehouse-notes", tags=["warehouse-notes"], dependencies=[Depends(require_module("inventory"))])
 
 log = logging.getLogger(__name__)
 

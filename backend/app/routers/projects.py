@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.projects import (
     Project, ProjectTask, ProjectMilestone, ProjectExpense,
     ProjectTimeEntry, ProjectRetainer,
@@ -18,7 +19,7 @@ from app.models.invoicing import Invoice, InvoiceLineItem, Customer
 
 log = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_module("hr"))])
 
 # ── Invoice number helper (mirrors invoicing router) ──────────────────────────
 

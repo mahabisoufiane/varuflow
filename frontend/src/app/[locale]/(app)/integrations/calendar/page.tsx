@@ -107,18 +107,18 @@ export default function CalendarSyncPage() {
         ) : calendars.length === 0 ? (
           <div className="py-14 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl"
-              style={{ background: "var(--vf-bg-elevated)" }}>
+              >
               <Calendar className="h-6 w-6 vf-text-m" />
             </div>
             <p className="text-sm font-medium vf-text-2">{t("noCalendarsConnected")}</p>
             <p className="text-xs vf-text-m mt-1">{t("connectCalendarBelow")}</p>
           </div>
         ) : (
-          <div className="divide-y" style={{ borderColor: "var(--vf-divider)" }}>
+          <div className="vf-divide">
             {calendars.map(cal => (
               <div key={cal.id} className="flex items-center gap-4 px-5 py-4">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                  style={{ background: "var(--vf-bg-elevated)" }}>
+                  >
                   <Calendar className="h-4 w-4 vf-text-m" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -133,7 +133,7 @@ export default function CalendarSyncPage() {
                 </div>
                 {/* Sync direction toggle */}
                 <div className="flex items-center gap-1 rounded-lg p-1"
-                  style={{ background: "var(--vf-bg-elevated)" }}>
+                  >
                   {(["push", "pull", "both"] as SyncDirection[]).map(dir => (
                     <button
                       key={dir}
@@ -172,12 +172,11 @@ export default function CalendarSyncPage() {
               key={key}
               disabled={connectedProviders.has(key) || connecting === key}
               onClick={() => handleConnect(key)}
-              className={`flex items-center gap-3 rounded-xl px-4 py-3 border transition-all ${
+              className={`flex items-center gap-3 rounded-xl px-4 py-3 border border-[var(--vf-border)] bg-[var(--vf-bg-surface)] transition-all ${
                 connectedProviders.has(key)
                   ? "opacity-40 cursor-not-allowed"
                   : "hover:shadow-card cursor-pointer"
               }`}
-              style={{ border: "1px solid var(--vf-border)", background: "var(--vf-bg-surface)" }}
             >
               <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${color}`}>
                 {connecting === key ? (

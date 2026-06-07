@@ -40,6 +40,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.bookings import Appointment, Service, Staff
 from app.models.organization import Organization
 from app.schemas.bookings import (
@@ -64,7 +65,7 @@ from app.services.booking_engine import (
 )
 from app.services.booking_reminders import schedule_reminders_for_appointment
 
-router = APIRouter(prefix="/api/bookings", tags=["bookings"])
+router = APIRouter(prefix="/api/bookings", tags=["bookings"], dependencies=[Depends(require_module("crm"))])
 
 
 def _org(ctx: tuple) -> uuid.UUID:

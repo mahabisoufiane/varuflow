@@ -26,8 +26,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.supplier_sustainability import SupplierSustainabilityRating
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/supplier-sustainability", tags=["supplier_sustainability"])
+router = APIRouter(prefix="/api/supplier-sustainability", tags=["supplier_sustainability"], dependencies=[Depends(require_module("inventory"))])
 log = logging.getLogger(__name__)
 
 

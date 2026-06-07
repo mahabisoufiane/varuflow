@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
 
 interface Review {
   id: string;
@@ -48,8 +43,6 @@ function Stars({ rating }: { rating: number }) {
 }
 
 export default function ReviewsPage() {
-  const params = useParams();
-
   const [reviews, setReviews] = useState<Review[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(false);
@@ -77,11 +70,6 @@ export default function ReviewsPage() {
   const [replyText, setReplyText] = useState("");
   const [replyLoading, setReplyLoading] = useState(false);
 
-  const headers = {
-    Authorization: `Bearer ${getToken()}`,
-    "Content-Type": "application/json",
-  };
-
   async function loadData() {
     setLoading(true);
     setError("");
@@ -91,19 +79,13 @@ export default function ReviewsPage() {
       if (ratingFilter) params.set("rating", ratingFilter);
       if (isVerified) params.set("is_verified", "true");
 
-      const [rRes, sRes] = await Promise.all([
-        fetch(`${API}/api/service-reviews?${params}`, { headers }),
-        fetch(
-          `${API}/api/service-reviews/summary${serviceFilter ? `?service_id=${serviceFilter}` : ""}`,
-          { headers }
-        ),
+      const [rData, sData] = await Promise.all([
+        api.get<Review[] | { items?: Review[] }>(`/api/service-reviews?${params}`),
+        api.get<Summary>(`/api/service-reviews/summary${serviceFilter ? `?service_id=${serviceFilter}` : ""}`).catch(() => null),
       ]);
 
-      if (!rRes.ok) throw new Error("Failed to load reviews");
-      const rData = await rRes.json();
       setReviews(Array.isArray(rData) ? rData : rData.items ?? []);
-
-      if (sRes.ok) setSummary(await sRes.json());
+      if (sData) setSummary(sData);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load reviews");
     } finally {
@@ -128,12 +110,7 @@ export default function ReviewsPage() {
       };
       if (addForm.booking_id) body.booking_id = addForm.booking_id;
 
-      const res = await fetch(`${API}/api/service-reviews`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error("Failed to add review");
+      await api.post<Review>("/api/service-reviews", body);
       setAddOpen(false);
       setAddForm({ customer_id: "", booking_id: "", reviewer_name: "", rating: "5", body: "" });
       loadData();
@@ -147,12 +124,7 @@ export default function ReviewsPage() {
   async function handleReply(id: string) {
     setReplyLoading(true);
     try {
-      const res = await fetch(`${API}/api/service-reviews/${id}/reply`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ reply: replyText }),
-      });
-      if (!res.ok) throw new Error("Failed to post reply");
+      await api.post(`/api/service-reviews/${id}/reply`, { reply: replyText });
       setReplyId(null);
       setReplyText("");
       loadData();
@@ -165,12 +137,7 @@ export default function ReviewsPage() {
 
   async function handleTogglePublish(review: Review) {
     try {
-      const res = await fetch(`${API}/api/service-reviews/${review.id}/publish`, {
-        method: "PATCH",
-        headers,
-        body: JSON.stringify({ is_published: !review.is_published }),
-      });
-      if (!res.ok) throw new Error();
+      await api.patch<unknown>(`/api/service-reviews/${review.id}/publish`, { is_published: !review.is_published });
       loadData();
     } catch {
       setError("Failed to update publish status");
@@ -180,8 +147,7 @@ export default function ReviewsPage() {
   async function handleDelete(id: string) {
     if (!confirm("Delete this review?")) return;
     try {
-      const res = await fetch(`${API}/api/service-reviews/${id}`, { method: "DELETE", headers });
-      if (!res.ok) throw new Error();
+      await api.delete(`/api/service-reviews/${id}`);
       loadData();
     } catch {
       setError("Failed to delete review");

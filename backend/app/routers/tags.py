@@ -35,8 +35,9 @@ from app.models.invoicing import Customer, Invoice
 from app.models.tag import Tag, TagAssignment
 from app.services import tag as svc
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/tags", tags=["tags"])
+router = APIRouter(prefix="/api/tags", tags=["tags"], dependencies=[Depends(require_module("inventory"))])
 
 log = logging.getLogger(__name__)
 

@@ -32,10 +32,12 @@ from app.models.credit_note import CreditNote, CreditNoteStatus
 from app.models.invoicing import Customer, Invoice, Payment
 from app.services import customer_statement as svc_72
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
 router = APIRouter(
     prefix="/api/customer-statements",
     tags=["customer-statements"],
+    dependencies=[Depends(require_module("invoicing"))],
 )
 
 log = logging.getLogger(__name__)

@@ -59,8 +59,8 @@ interface MonthShift {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const STAFF_PALETTE = [
-  "#6366f1", "#f59e0b", "#10b981", "#ef4444",
-  "#3b82f6", "#8b5cf6", "#f97316", "#14b8a6",
+  "#4A6CF7", "#D97706", "#059669", "#DC2626",
+  "#3b82f6", "#7C3AED", "#f97316", "#14b8a6",
 ];
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -753,7 +753,7 @@ export default function ShiftsPage() {
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Colour</label>
                 <div className="flex items-center gap-2 mt-1">
-                  <input type="color" className="h-8 w-12 rounded border cursor-pointer" value={form.color || "#6366f1"} onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))} />
+                  <input type="color" className="h-8 w-12 rounded border cursor-pointer" value={form.color || "#4A6CF7"} onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))} />
                   <div className="flex gap-1">
                     {STAFF_PALETTE.map((c) => (
                       <button key={c} onClick={() => setForm((f) => ({ ...f, color: c }))} className="w-5 h-5 rounded-sm border-2 transition-all" style={{ backgroundColor: c, borderColor: form.color === c ? "white" : c }} />

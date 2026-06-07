@@ -41,8 +41,9 @@ from app.models.inventory import Supplier
 from app.models.supplier_tag import SupplierTag, SupplierTagAssignment
 from app.services import supplier_tag as svc_77
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/supplier-tags", tags=["supplier-tags"])
+router = APIRouter(prefix="/api/supplier-tags", tags=["supplier-tags"], dependencies=[Depends(require_module("inventory"))])
 
 log = logging.getLogger(__name__)
 

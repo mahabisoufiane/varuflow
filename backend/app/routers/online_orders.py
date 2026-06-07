@@ -22,10 +22,13 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.ecommerce import OnlineOrder, OnlineOrderItem, Storefront
 from app.models.organization import OrganizationMember
+from app.middleware.plan_check import require_module
 
 log = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(
+    dependencies=[Depends(require_module("invoicing"))],
+)
 
 
 async def _get_order(

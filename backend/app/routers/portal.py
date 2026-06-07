@@ -896,6 +896,48 @@ async def list_portal_orders(
     ]
 
 
+class ReorderLine(BaseModel):
+    product_id: str
+    quantity: int
+
+
+@router.get("/orders/{invoice_id}/lines", response_model=list[ReorderLine])
+async def get_order_lines(
+    invoice_id: str,
+    ctx: tuple = Depends(get_portal_customer),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the line items of a past order so the customer can reorder.
+
+    Only returns lines for invoices that belong to the logged-in customer.
+    """
+    customer_id, org_id = ctx
+    try:
+        inv_uuid = uuid.UUID(invoice_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    invoice = (await db.execute(
+        select(Invoice).where(
+            Invoice.id == inv_uuid,
+            Invoice.customer_id == customer_id,
+            Invoice.org_id == org_id,
+        )
+    )).scalar_one_or_none()
+    if invoice is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    lines = (await db.execute(
+        select(InvoiceLineItem).where(InvoiceLineItem.invoice_id == invoice.id)
+    )).scalars().all()
+
+    return [
+        ReorderLine(product_id=str(line.product_id), quantity=int(line.quantity))
+        for line in lines
+        if line.product_id is not None
+    ]
+
+
 # ── OTP second factor (Item 51) ─────────────────────────────────────────────
 #
 # An alternative login path to magic-link: the customer requests a

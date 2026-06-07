@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 interface Employee {
   id: string;
@@ -43,6 +44,7 @@ export default function HrPage() {
   const locale = useLocale();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterDept, setFilterDept] = useState("");
@@ -58,7 +60,13 @@ export default function HrPage() {
     const qs = params.toString();
     api.get(`/api/hr/employees${qs ? "?" + qs : ""}`)
       .then(setEmployees)
-      .catch(() => toast.error("Failed to load employees"))
+      .catch((err) => {
+        if (isPlanGateError(err)) {
+          setPlanBlocked({ module: (err as any).module ?? "hr", currentPlan: (err as any).currentPlan ?? "FREE" });
+        } else {
+          toast.error("Failed to load employees");
+        }
+      })
       .finally(() => setLoading(false));
   }
 
@@ -84,6 +92,10 @@ export default function HrPage() {
     } finally {
       setAdding(false);
     }
+  }
+
+  if (planBlocked) {
+    return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="HR & People" />;
   }
 
   return (

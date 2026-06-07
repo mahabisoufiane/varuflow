@@ -29,12 +29,13 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.fixed_assets import AssetDepreciation, FixedAsset
 from app.models.organization import OrgRole
 from app.services.audit import log_action
 from app.services import ledger as ledger_svc
 
-router = APIRouter(prefix="/api/accounting/assets", tags=["fixed_assets"])
+router = APIRouter(prefix="/api/accounting/assets", tags=["fixed_assets"], dependencies=[Depends(require_module("finance"))])
 log = logging.getLogger(__name__)
 
 

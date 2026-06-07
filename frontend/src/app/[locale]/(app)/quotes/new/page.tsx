@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/api-client";
 
 interface LineItem { description: string; quantity: string; unit_price: string; }
 
@@ -19,11 +20,12 @@ export default function NewQuotePage() {
       valid_until: form.valid_until || null,
       items: items.filter(i => i.description).map(i => ({ description: i.description, quantity: parseFloat(i.quantity) || 1, unit_price: parseFloat(i.unit_price) || 0 })),
     };
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quotes`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      credentials: "include", body: JSON.stringify(body),
-    });
-    if (res.ok) { const data = await res.json(); router.push(`/quotes/${data.id}`); }
+    try {
+      const data = await api.post<{ id: string }>("/api/quotes", body);
+      router.push(`/quotes/${data.id}`);
+    } catch {
+      // error is shown by api client via toast
+    }
   };
 
   return (

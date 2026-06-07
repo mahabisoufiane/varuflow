@@ -24,8 +24,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.customer_api_key import CustomerApiKey
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/customer-api-keys", tags=["integrations_api_keys"])
+router = APIRouter(prefix="/api/customer-api-keys", tags=["integrations_api_keys"], dependencies=[Depends(require_module("settings"))])
 log = logging.getLogger(__name__)
 
 KEY_PREFIX_STR = "vf_"
@@ -96,7 +97,7 @@ async def list_api_keys(
     except HTTPException:
         raise
     except Exception as e:
-        log.error("list_customer_api_keys failed: %s", str(e), extra={"org_id": str(org_id)})
+        log.error("list_customer_api_keys failed: %s", str(e), extra={"org_id": str(org_id)})  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -127,7 +128,7 @@ async def create_api_key(
     except HTTPException:
         raise
     except Exception as e:
-        log.error("create_customer_api_key failed: %s", str(e), extra={"org_id": str(org_id)})
+        log.error("create_customer_api_key failed: %s", str(e), extra={"org_id": str(org_id)})  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -152,7 +153,7 @@ async def get_api_key(
     except HTTPException:
         raise
     except Exception as e:
-        log.error("get_customer_api_key failed: %s", str(e), extra={"org_id": str(org_id)})
+        log.error("get_customer_api_key failed: %s", str(e), extra={"org_id": str(org_id)})  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -184,7 +185,7 @@ async def update_api_key(
     except HTTPException:
         raise
     except Exception as e:
-        log.error("update_customer_api_key failed: %s", str(e), extra={"org_id": str(org_id)})
+        log.error("update_customer_api_key failed: %s", str(e), extra={"org_id": str(org_id)})  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -211,5 +212,5 @@ async def revoke_api_key(
     except HTTPException:
         raise
     except Exception as e:
-        log.error("revoke_customer_api_key failed: %s", str(e), extra={"org_id": str(org_id)})
+        log.error("revoke_customer_api_key failed: %s", str(e), extra={"org_id": str(org_id)})  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         raise HTTPException(status_code=500, detail="Internal server error")

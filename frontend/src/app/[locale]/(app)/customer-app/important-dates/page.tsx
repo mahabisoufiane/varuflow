@@ -1,14 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
 
 interface ImportantDate {
   id: string;
@@ -22,7 +20,6 @@ interface ImportantDate {
 }
 
 export default function ImportantDatesPage() {
-  const { locale } = useParams<{ locale: string }>();
   const [items, setItems] = useState<ImportantDate[]>([]);
   const [filterCustomerId, setFilterCustomerId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,22 +30,16 @@ export default function ImportantDatesPage() {
   });
   const [creating, setCreating] = useState(false);
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : "";
-
   async function fetchItems() {
     setLoading(true);
     setError("");
     try {
       const params = new URLSearchParams({ upcoming_days: "30" });
       if (filterCustomerId) params.set("customer_id", filterCustomerId);
-      const res = await fetch(`${API}/api/important-dates?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to load dates."); return; }
-      setItems(await res.json());
-    } catch {
-      setError("Network error.");
+      const data = await api.get<ImportantDate[]>(`/api/important-dates?${params}`);
+      setItems(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load dates.");
     } finally {
       setLoading(false);
     }
@@ -58,14 +49,10 @@ export default function ImportantDatesPage() {
 
   async function deleteItem(id: string) {
     try {
-      const res = await fetch(`${API}/api/important-dates/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) { setError("Delete failed."); return; }
+      await api.delete(`/api/important-dates/${id}`);
       setItems(items.filter((i) => i.id !== id));
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Delete failed.");
     }
   }
 
@@ -81,17 +68,11 @@ export default function ImportantDatesPage() {
         send_discount: newForm.send_discount,
       };
       if (newForm.discount_pct) body.discount_pct = parseFloat(newForm.discount_pct);
-      const res = await fetch(`${API}/api/important-dates`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to create date."); return; }
+      await api.post("/api/important-dates", body);
       setNewForm({ customer_id: "", label: "birthday", date: "", send_greeting: false, send_discount: false, discount_pct: "" });
       fetchItems();
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to create date.");
     } finally {
       setCreating(false);
     }

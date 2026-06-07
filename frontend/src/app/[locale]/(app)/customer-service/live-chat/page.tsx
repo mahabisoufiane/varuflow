@@ -1,14 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
 
 type SessionStatus = "all" | "open" | "in_progress" | "resolved";
 
@@ -51,8 +46,6 @@ function domain(url: string | null) {
 }
 
 export default function LiveChatPage() {
-  const params = useParams();
-
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [statusFilter, setStatusFilter] = useState<SessionStatus>("all");
   const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
@@ -65,19 +58,12 @@ export default function LiveChatPage() {
   const [replySending, setReplySending] = useState(false);
   const [resolving, setResolving] = useState(false);
 
-  const headers = {
-    Authorization: `Bearer ${getToken()}`,
-    "Content-Type": "application/json",
-  };
-
   async function loadSessions(status: SessionStatus) {
     setLoadingSessions(true);
     setError("");
     try {
       const qs = status !== "all" ? `?status=${status}` : "";
-      const res = await fetch(`${API}/api/live-chat/sessions${qs}`, { headers });
-      if (!res.ok) throw new Error("Failed to load sessions");
-      const data = await res.json();
+      const data = await api.get<ChatSession[] | { items: ChatSession[] }>(`/api/live-chat/sessions${qs}`);
       setSessions(Array.isArray(data) ? data : data.items ?? []);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load sessions");
@@ -89,9 +75,7 @@ export default function LiveChatPage() {
   async function loadMessages(sessionId: string) {
     setLoadingMessages(true);
     try {
-      const res = await fetch(`${API}/api/live-chat/sessions/${sessionId}/messages`, { headers });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
+      const data = await api.get<ChatMessage[] | { items: ChatMessage[] }>(`/api/live-chat/sessions/${sessionId}/messages`);
       setMessages(Array.isArray(data) ? data : data.items ?? []);
     } catch {
       setMessages([]);
@@ -115,15 +99,10 @@ export default function LiveChatPage() {
     if (!selectedSession || !replyText.trim()) return;
     setReplySending(true);
     try {
-      const res = await fetch(
-        `${API}/api/live-chat/sessions/${selectedSession.id}/messages`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ sender_type: "staff", body: replyText }),
-        }
-      );
-      if (!res.ok) throw new Error();
+      await api.post(`/api/live-chat/sessions/${selectedSession.id}/messages`, {
+        sender_type: "staff",
+        body: replyText,
+      });
       setReplyText("");
       loadMessages(selectedSession.id);
     } catch {
@@ -137,11 +116,7 @@ export default function LiveChatPage() {
     if (!selectedSession) return;
     setResolving(true);
     try {
-      const res = await fetch(
-        `${API}/api/live-chat/sessions/${selectedSession.id}/resolve`,
-        { method: "POST", headers }
-      );
-      if (!res.ok) throw new Error();
+      await api.post(`/api/live-chat/sessions/${selectedSession.id}/resolve`, {});
       loadSessions(statusFilter);
       setSelectedSession((s) => s ? { ...s, status: "resolved" } : null);
     } catch {

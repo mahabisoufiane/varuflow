@@ -25,7 +25,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
-from app.middleware.plan_check import require_plan
+from app.middleware.plan_check import require_plan, require_module
 from app.models.organization import OrgPlan
 from app.services import forecasting_engine as svc
 from app.services.audit import log_action
@@ -33,6 +33,7 @@ from app.services.audit import log_action
 router = APIRouter(
     prefix="/api/analytics/forecasting",
     tags=["analytics", "forecasting"],
+    dependencies=[Depends(require_module("analytics"))],
 )
 
 

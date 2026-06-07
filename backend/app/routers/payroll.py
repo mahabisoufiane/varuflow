@@ -29,12 +29,13 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.accounting import JournalEntry, JournalLine
 from app.models.organization import OrgRole
 from app.models.payroll import PayrollEntry, PayrollRun
 from app.services.audit import log_action
 
-router = APIRouter(prefix="/api/accounting/payroll", tags=["payroll"])
+router = APIRouter(prefix="/api/accounting/payroll", tags=["payroll"], dependencies=[Depends(require_module("finance"))])
 log = logging.getLogger(__name__)
 
 # Swedish arbetsgivaravgift rate 2024

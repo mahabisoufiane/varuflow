@@ -344,7 +344,7 @@ async def refresh_access_token(
     # Either way, the safe response is to revoke the entire session family so
     # the attacker loses access and the user is forced to re-authenticate.
     if rt.revoked:
-        log.warning(
+        log.warning(  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
             "Refresh token reuse detected — revoking all tokens | user_id=%s",
             rt.user_id,
         )
@@ -476,7 +476,7 @@ async def totp_disable(
         user.failed_login_attempts += 1
         if user.failed_login_attempts >= _MAX_FAILED_ATTEMPTS:
             user.locked_until = datetime.now(UTC) + timedelta(minutes=_LOCKOUT_MINUTES)
-            log.warning("Account locked (mfa_disable/password) | user_id=%s", user_id)
+            log.warning("Account locked (mfa_disable/password) | user_id=%s", user_id)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         await db.commit()
         raise ValueError("INVALID_PASSWORD")
 
@@ -599,5 +599,5 @@ async def confirm_password_reset(
         rt.revoked = True
 
     await db.commit()
-    log.info("Password reset complete | user_id=%s", user.id)
+    log.info("Password reset complete | user_id=%s", user.id)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
     return user.id

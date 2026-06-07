@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api-client";
 import {
   PlusCircle, MessageCircle, RefreshCw, Send, CheckCheck,
   ChevronDown, ChevronUp, Paperclip, X,
@@ -60,11 +59,6 @@ function truncate(str: string, n: number) {
 }
 
 export default function CustomerChatPage() {
-  const router = useRouter();
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale ?? "en";
-  const supabase = createClient();
-
   const [threads, setThreads] = useState<ChatThread[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("open");
@@ -81,28 +75,16 @@ export default function CustomerChatPage() {
   const [showNew, setShowNew] = useState(false);
   const [newThreadForm, setNewThreadForm] = useState({ customer_id: "", subject: "" });
 
-  async function getToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }
-  function apiUrl(p: string) { return `${process.env.NEXT_PUBLIC_API_URL}${p}`; }
-
   async function load() {
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push(`/${locale}/auth/login`); return; }
       const query = statusFilter === "all" ? "" : `?status=${statusFilter}`;
-      const [threadsRes, unreadRes] = await Promise.all([
-        fetch(apiUrl(`/api/chat/threads${query}`), { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(apiUrl("/api/chat/unread-count"), { headers: { Authorization: `Bearer ${token}` } }),
+      const [threadsData, unreadData] = await Promise.all([
+        api.get<ChatThread[]>(`/api/chat/threads${query}`),
+        api.get<{ count: number }>("/api/chat/unread-count"),
       ]);
-      if (threadsRes.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (threadsRes.ok) setThreads(await threadsRes.json());
-      if (unreadRes.ok) {
-        const u = await unreadRes.json();
-        setUnreadCount(u.count ?? 0);
-      }
+      setThreads(threadsData);
+      setUnreadCount(unreadData.count ?? 0);
     } catch {
       toast.error("Failed to load chat threads");
     } finally {
@@ -115,15 +97,8 @@ export default function CustomerChatPage() {
 
   async function loadThread(id: string) {
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/chat/threads/${id}`), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setMessages((prev) => ({ ...prev, [id]: data.messages ?? [] }));
-      }
+      const data = await api.get<{ messages: ChatMessage[] }>(`/api/chat/threads/${id}`);
+      setMessages((prev) => ({ ...prev, [id]: data.messages ?? [] }));
     } catch {
       toast.error("Failed to load messages");
     }
@@ -142,29 +117,18 @@ export default function CustomerChatPage() {
     if (!newMsg.trim()) return;
     setSendingMsg(true);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/chat/threads/${threadId}/messages`), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          sender_type: "staff",
-          body: newMsg,
-          attachment_url: attachmentUrl || null,
-        }),
+      await api.post(`/api/chat/threads/${threadId}/messages`, {
+        sender_type: "staff",
+        body: newMsg,
+        attachment_url: attachmentUrl || null,
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to send message");
-        return;
-      }
       toast.success("Message sent");
       setNewMsg("");
       setAttachmentUrl("");
       setShowAttachment(false);
       await loadThread(threadId);
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setSendingMsg(false);
     }
@@ -172,12 +136,7 @@ export default function CustomerChatPage() {
 
   async function markRead(messageId: string, threadId: string) {
     try {
-      const token = await getToken();
-      if (!token) return;
-      await fetch(apiUrl(`/api/chat/messages/${messageId}/read`), {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.patch(`/api/chat/messages/${messageId}/read`, {});
       setMessages((prev) => ({
         ...prev,
         [threadId]: (prev[threadId] ?? []).map((m) =>
@@ -192,22 +151,11 @@ export default function CustomerChatPage() {
   async function updateThreadStatus(threadId: string, status: "resolved" | "closed") {
     setActionLoading(threadId + "_" + status);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/chat/threads/${threadId}`), {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ status }),
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to update status");
-        return;
-      }
+      await api.patch(`/api/chat/threads/${threadId}`, { status });
       toast.success(`Thread marked as ${status}`);
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -217,27 +165,16 @@ export default function CustomerChatPage() {
     if (!newThreadForm.customer_id.trim()) { toast.error("Customer ID is required"); return; }
     setActionLoading("create_thread");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl("/api/chat/threads"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          customer_id: newThreadForm.customer_id,
-          subject: newThreadForm.subject || null,
-        }),
+      await api.post("/api/chat/threads", {
+        customer_id: newThreadForm.customer_id,
+        subject: newThreadForm.subject || null,
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to create thread");
-        return;
-      }
       toast.success("Thread created");
       setShowNew(false);
       setNewThreadForm({ customer_id: "", subject: "" });
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }

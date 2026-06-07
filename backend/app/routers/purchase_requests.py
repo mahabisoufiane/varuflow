@@ -12,9 +12,10 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.purchase_request import PurchaseRequest, PurchaseRequestItem
 from app.models.inventory import PurchaseOrder, PurchaseOrderItem
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["purchase-requests"])
+router = APIRouter(tags=["purchase-requests"], dependencies=[Depends(require_module("inventory"))])
 
 
 class ItemIn(BaseModel):

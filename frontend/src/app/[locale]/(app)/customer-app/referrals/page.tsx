@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,8 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
 
 type ReferralStatus = "pending" | "qualified" | "rewarded";
 
@@ -32,7 +30,6 @@ const STATUS_TABS: Array<{ label: string; value: string }> = [
 ];
 
 export default function ReferralsPage() {
-  const { locale } = useParams<{ locale: string }>();
   const [items, setItems] = useState<Referral[]>([]);
   const [filterReferrerId, setFilterReferrerId] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -42,8 +39,6 @@ export default function ReferralsPage() {
   const [creating, setCreating] = useState(false);
   const [rewardPointsMap, setRewardPointsMap] = useState<Record<string, string>>({});
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : "";
-
   async function fetchItems() {
     setLoading(true);
     setError("");
@@ -51,32 +46,24 @@ export default function ReferralsPage() {
       const params = new URLSearchParams();
       if (filterReferrerId) params.set("referrer_customer_id", filterReferrerId);
       if (statusFilter) params.set("status", statusFilter);
-      const res = await fetch(`${API}/api/loyalty-referrals?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to load referrals."); return; }
-      setItems(await res.json());
-    } catch {
-      setError("Network error.");
+      const data = await api.get<Referral[]>(`/api/loyalty-referrals?${params}`);
+      setItems(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load referrals.");
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => { fetchItems(); }, [statusFilter]);
+  useEffect(() => { fetchItems(); }, [statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function qualify(id: string) {
     setError("");
     try {
-      const res = await fetch(`${API}/api/loyalty-referrals/${id}/qualify`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) { setError("Qualify failed."); return; }
+      await api.post(`/api/loyalty-referrals/${id}/qualify`, {});
       fetchItems();
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Qualify failed.");
     }
   }
 
@@ -84,15 +71,10 @@ export default function ReferralsPage() {
     const pts = parseInt(rewardPointsMap[id] || "0");
     setError("");
     try {
-      const res = await fetch(`${API}/api/loyalty-referrals/${id}/reward`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ reward_points: pts }),
-      });
-      if (!res.ok) { setError("Reward failed."); return; }
+      await api.post(`/api/loyalty-referrals/${id}/reward`, { reward_points: pts });
       fetchItems();
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Reward failed.");
     }
   }
 
@@ -101,17 +83,11 @@ export default function ReferralsPage() {
     setCreating(true);
     setError("");
     try {
-      const res = await fetch(`${API}/api/loyalty-referrals`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ referrer_customer_id: newReferrerId }),
-      });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to create referral."); return; }
+      await api.post("/api/loyalty-referrals", { referrer_customer_id: newReferrerId });
       setNewReferrerId("");
       fetchItems();
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to create referral.");
     } finally {
       setCreating(false);
     }

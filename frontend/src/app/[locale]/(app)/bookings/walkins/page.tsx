@@ -61,7 +61,7 @@ export default function WalkInsPage() {
 
   async function handleConvert(id: string) {
     try {
-      await api.post(`/api/bookings/waitlist/${id}/convert`);
+      await api.post(`/api/bookings/waitlist/${id}/convert`, {});
       toast.success(t("convertedToBooking"));
       fetchQueue();
     } catch {

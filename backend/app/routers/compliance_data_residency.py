@@ -18,10 +18,11 @@ from typing import Optional
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.organization import Organization
 from app.services.audit_chain import write_audit_entry
 
-router = APIRouter(prefix="/api/compliance/data-residency", tags=["compliance_data_residency"])
+router = APIRouter(prefix="/api/compliance/data-residency", tags=["compliance_data_residency"], dependencies=[Depends(require_module("compliance"))])
 log = logging.getLogger(__name__)
 
 REGIONS = {

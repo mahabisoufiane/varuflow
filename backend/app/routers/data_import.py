@@ -26,8 +26,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.import_job import ImportJob
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/data-import", tags=["data_import"])
+router = APIRouter(prefix="/api/data-import", tags=["data_import"], dependencies=[Depends(require_module("inventory"))])
 log = logging.getLogger(__name__)
 
 # ── Constants ─────────────────────────────────────────────────────────────────

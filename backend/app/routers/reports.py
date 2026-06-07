@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.invoicing import Invoice
 from app.models.bookings import Appointment, Staff
 from app.models.shift import Shift, ShiftPunch
@@ -17,7 +18,7 @@ from app.models.petty_cash import PettyCashTransaction
 from app.models.projects import ProjectTimeEntry
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["reports"])
+router = APIRouter(tags=["reports"], dependencies=[Depends(require_module("analytics"))])
 
 
 @router.get("/api/reports/manager-dashboard")

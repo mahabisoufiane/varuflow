@@ -188,7 +188,7 @@ export default function CashflowPredictionPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={d => d.slice(5)} />
               <YAxis tick={{ fontSize: 11 }} tickFormatter={v => v.toLocaleString("sv-SE", { minimumFractionDigits: 0, maximumFractionDigits: 0 })} />
-              <Tooltip formatter={(v: number) => v.toLocaleString("sv-SE", { maximumFractionDigits: 0 })} />
+              <Tooltip formatter={(v) => (v as number).toLocaleString("sv-SE", { maximumFractionDigits: 0 })} />
               <Legend />
               <Area type="monotone" dataKey="best" name="Best Case" stroke="#22c55e" fill="url(#best)" strokeWidth={1.5} dot={false} />
               <Area type="monotone" dataKey="expected" name="Expected" stroke="#3b82f6" fill="url(#expected)" strokeWidth={2} dot={false} />

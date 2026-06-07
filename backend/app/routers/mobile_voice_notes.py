@@ -26,8 +26,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.mobile_field import VoiceNote
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/mobile/voice-notes", tags=["mobile_voice_notes"])
+router = APIRouter(prefix="/api/mobile/voice-notes", tags=["mobile_voice_notes"], dependencies=[Depends(require_module("hr"))])
 log = logging.getLogger(__name__)
 
 ENTITY_TYPES = {"customer", "supplier", "route_stop", "invoice"}

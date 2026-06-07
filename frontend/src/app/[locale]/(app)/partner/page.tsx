@@ -302,8 +302,7 @@ export default function PartnerDashboardPage() {
         </h2>
         {referrals.length === 0 ? (
           <div
-            className="rounded-xl px-6 py-12 text-center"
-            style={{ border: "1px dashed rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.02)" }}
+            className="rounded-xl px-6 py-12 text-center border border-dashed border-white/10 bg-white/[0.02]"
           >
             <p className="vf-text-2 text-sm">No referrals yet. Share your link to get started.</p>
           </div>

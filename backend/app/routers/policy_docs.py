@@ -10,9 +10,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.governance import PolicyDocument
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["policy-docs"])
+router = APIRouter(tags=["policy-docs"], dependencies=[Depends(require_module("settings"))])
 
 _CATEGORIES = {"hr", "finance", "it", "legal", "operations", "security", "other"}
 _EDIT_ROLES = {"OWNER", "ADMIN"}

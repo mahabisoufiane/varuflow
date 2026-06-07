@@ -41,8 +41,9 @@ from app.models.invoicing import Invoice
 from app.models.invoice_tag import InvoiceTag, InvoiceTagAssignment
 from app.services import invoice_tag as svc_87
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/invoice-tags", tags=["invoice-tags"])
+router = APIRouter(prefix="/api/invoice-tags", tags=["invoice-tags"], dependencies=[Depends(require_module("invoicing"))])
 
 log = logging.getLogger(__name__)
 

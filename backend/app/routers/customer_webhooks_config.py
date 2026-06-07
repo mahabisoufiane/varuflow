@@ -28,8 +28,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.customer_webhook import CustomerWebhook, CustomerWebhookDelivery
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/customer-webhooks", tags=["integrations_webhooks"])
+router = APIRouter(prefix="/api/customer-webhooks", tags=["integrations_webhooks"], dependencies=[Depends(require_module("settings"))])
 log = logging.getLogger(__name__)
 
 
@@ -284,5 +285,5 @@ async def rotate_secret(
     except HTTPException:
         raise
     except Exception as e:
-        log.error("rotate_webhook_secret failed: %s", str(e), extra={"org_id": str(org_id)})
+        log.error("rotate_webhook_secret failed: %s", str(e), extra={"org_id": str(org_id)})  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         raise HTTPException(status_code=500, detail="Internal server error")

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Factory, Plus, Loader2, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 interface WorkOrder {
   id: string;
@@ -22,6 +23,7 @@ interface Bom {
   id: string;
   name: string;
   product_id: string;
+  is_kit?: boolean;
 }
 
 interface Warehouse {
@@ -50,6 +52,7 @@ export default function ManufacturingPage() {
   const [boms, setBoms] = useState<Bom[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ bom_id: "", warehouse_id: "", planned_qty: 1, notes: "" });
   const [completing, setCompleting] = useState<string | null>(null);
@@ -65,8 +68,12 @@ export default function ManufacturingPage() {
       setOrders(wos);
       setBoms(bomList);
       setWarehouses(whList);
-    } catch {
-      toast.error("Failed to load work orders");
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "manufacturing", currentPlan: (err as any).currentPlan ?? "FREE" });
+      } else {
+        toast.error("Failed to load work orders");
+      }
     } finally {
       setLoading(false);
     }
@@ -105,6 +112,10 @@ export default function ManufacturingPage() {
   }
 
   const bomMap = Object.fromEntries(boms.map((b) => [b.id, b.name]));
+
+  if (planBlocked) {
+    return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Manufacturing" />;
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto">

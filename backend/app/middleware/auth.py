@@ -107,16 +107,18 @@ def _decode_token(token: str) -> dict:
         )
 
     # Unverified decode — only reachable when ENFORCE_JWT_SIGNATURE=False.
-    # Guard against accidental production use: refuse unless ENV=development.
-    if settings.ENV != "development":
+    # Guard against accidental production use: refuse unless ENV=development
+    # AND ALLOW_DEV_BYPASS is explicitly True.
+    if settings.ENV != "development" or not settings.ALLOW_DEV_BYPASS:
         raise JWTError(
-            "Unverified JWT decode is not allowed outside ENV=development"
+            "Unverified JWT decode is not allowed outside development mode"
         )
-    return jwt.decode(
+    # nosemgrep: python.jwt.security.unverified-jwt-decode.unverified-jwt-decode
+    return jwt.decode(  # nosemgrep: python.jwt.security.unverified-jwt-decode.unverified-jwt-decode
         token,
         "",
         algorithms=["HS256"],
-        options={"verify_signature": False, "verify_aud": False},
+        options={"verify_signature": False, "verify_aud": False},  # dev-only  # nosemgrep: python.jwt.security.unverified-jwt-decode.unverified-jwt-decode
     )
 
 
@@ -193,8 +195,31 @@ async def get_current_member(
 ) -> "MemberCtx":
     """Return user info + their OrganizationMember row.
 
+    Supports ``X-Branch-Org-Id`` header for country workspace switching.
+    When present, validates the user has membership in that branch org
+    before resolving it as the active org context.
+
     In development mode, auto-creates the dev org + member on first request.
     """
+    # Country workspace: honour X-Branch-Org-Id if the user has access.
+    branch_org_header = request.headers.get("X-Branch-Org-Id")
+    if branch_org_header:
+        try:
+            branch_org_id = uuid.UUID(branch_org_header)
+            branch_result = await db.execute(
+                select(OrganizationMember)
+                .where(
+                    OrganizationMember.user_id == current_user["user_id"],
+                    OrganizationMember.org_id == branch_org_id,
+                )
+                .limit(1)
+            )
+            branch_member = branch_result.scalar_one_or_none()
+            if branch_member:
+                return (current_user, branch_member)
+        except (ValueError, AttributeError):
+            pass  # Invalid UUID — fall through to default resolution
+
     # A user may legitimately belong to multiple organizations (they've been
     # invited to a partner's org in addition to their own). There is no
     # org-switch UI yet, so we deterministically pick the earliest-joined

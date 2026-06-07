@@ -248,10 +248,10 @@ export default function CohortAnalysisPage() {
                     }
                   />
                   <Tooltip
-                    formatter={(v: number) =>
+                    formatter={(v) =>
                       metric === "retention_rate"
-                        ? `${(v * 100).toFixed(1)}%`
-                        : v.toLocaleString("sv-SE", { maximumFractionDigits: 0 })
+                        ? `${((v as number) * 100).toFixed(1)}%`
+                        : (v as number).toLocaleString("sv-SE", { maximumFractionDigits: 0 })
                     }
                     labelFormatter={l => `Month +${l}`}
                   />

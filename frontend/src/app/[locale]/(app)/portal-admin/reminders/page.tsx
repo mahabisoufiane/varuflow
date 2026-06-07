@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api-client";
 
 interface Reminder { id: string; invoice_id: string; customer_id: string; reminder_type: string; scheduled_for: string; sent_at: string | null; email_subject: string; }
 
@@ -9,20 +10,18 @@ export default function PortalAdminRemindersPage() {
   const [form, setForm] = useState({ invoice_id: "", customer_id: "", reminder_type: "gentle", scheduled_for: "", email_subject: "", email_body: "" });
 
   const load = () => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/portal-admin/reminders`, { credentials: "include" })
-      .then(r => r.ok ? r.json() : []).then(setReminders);
+    api.get<Reminder[]>("/api/portal-admin/reminders").then(setReminders).catch(() => {});
   };
 
   useEffect(() => { load(); }, []);
 
   const create = async () => {
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/portal-admin/reminders`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      credentials: "include", body: JSON.stringify(form),
-    });
-    setShowCreate(false);
-    setForm({ invoice_id: "", customer_id: "", reminder_type: "gentle", scheduled_for: "", email_subject: "", email_body: "" });
-    load();
+    try {
+      await api.post("/api/portal-admin/reminders", form);
+      setShowCreate(false);
+      setForm({ invoice_id: "", customer_id: "", reminder_type: "gentle", scheduled_for: "", email_subject: "", email_body: "" });
+      load();
+    } catch { /* toast handled by api client */ }
   };
 
   const typeBadge = (t: string) => {

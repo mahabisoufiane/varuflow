@@ -23,10 +23,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.ai_recommendation import AiRecommendation
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/recommendations", tags=["ai-recommendations"])
+router = APIRouter(prefix="/api/recommendations", tags=["ai-recommendations"], dependencies=[Depends(require_module("ai"))])
 
 
 class RecommendationIn(BaseModel):

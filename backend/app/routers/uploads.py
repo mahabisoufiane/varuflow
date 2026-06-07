@@ -23,10 +23,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_user
 from app.config import settings
+from app.middleware.plan_check import require_module
 
 log = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/uploads", tags=["uploads"])
+router = APIRouter(prefix="/api/uploads", tags=["uploads"], dependencies=[Depends(require_module("inventory"))])
 
 # Maximum file size: 20 MB
 MAX_BYTES = 20 * 1024 * 1024

@@ -11,12 +11,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.bookings import Staff
 from app.models.hr_onboarding_training import EmployeeTrainingRecord
 from app.models.training_management import MandatoryTrainingRequirement, TrainingRequest
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["hr-training"])
+router = APIRouter(tags=["hr-training"], dependencies=[Depends(require_module("hr"))])
 
 _CATEGORIES = {"safety", "compliance", "technical", "soft_skills", "product", "language", "other"}
 _STATUSES = {"not_started", "in_progress", "completed", "expired"}

@@ -1,0 +1,71 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
+  line-height: 1.5;
+}
+
+body {
+  font-family: var(--vf-font-sans);
+  color: var(--vf-text-primary);
+  background: var(--vf-bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: var(--vf-text-heading);
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+::selection {
+  background: var(--vf-brand-primary-subtle);
+  color: var(--vf-text-heading);
+}
+
+[dir="rtl"] {
+  font-family: var(--vf-font-arabic, var(--vf-font-sans));
+}

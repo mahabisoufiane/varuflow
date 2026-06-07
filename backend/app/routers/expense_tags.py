@@ -35,8 +35,9 @@ from app.models.expenses import Expense
 from app.models.expense_tag import ExpenseTag, ExpenseTagAssignment
 from app.services import expense_tag as svc_95
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/expense-tags", tags=["expense-tags"])
+router = APIRouter(prefix="/api/expense-tags", tags=["expense-tags"], dependencies=[Depends(require_module("finance"))])
 
 log = logging.getLogger(__name__)
 

@@ -22,8 +22,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.quote_comparison import QuoteComparison
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/quote-comparisons", tags=["quote-comparisons"])
+router = APIRouter(prefix="/api/quote-comparisons", tags=["quote-comparisons"], dependencies=[Depends(require_module("finance"))])
 logger = logging.getLogger(__name__)
 
 

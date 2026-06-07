@@ -25,9 +25,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.sms_outbox import SmsMessage, SmsOptOut
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/sms-outbox", tags=["sms_outbox"])
+router = APIRouter(prefix="/api/sms-outbox", tags=["sms_outbox"], dependencies=[Depends(require_module("crm"))])
 
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
 

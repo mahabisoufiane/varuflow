@@ -32,8 +32,9 @@ from app.middleware.auth import get_current_member
 from app.models.invoicing import Customer, Invoice, InvoiceStatus
 from app.models.inventory import Product, StockLevel, StockMovement, StockMovementType as MovementType
 from app.models.webhook import WebhookEndpoint
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/integrations/zapier", tags=["integrations_automation"])
+router = APIRouter(prefix="/api/integrations/zapier", tags=["integrations_automation"], dependencies=[Depends(require_module("settings"))])
 log = logging.getLogger(__name__)
 
 TRIGGER_CATALOG = [

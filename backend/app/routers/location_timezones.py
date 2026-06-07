@@ -21,8 +21,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.location_timezone import OrgLocationTimezone
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/location-timezones", tags=["settings"])
+router = APIRouter(prefix="/api/location-timezones", tags=["settings"], dependencies=[Depends(require_module("settings"))])
 log = logging.getLogger(__name__)
 
 

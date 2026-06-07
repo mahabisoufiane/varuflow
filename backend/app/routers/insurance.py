@@ -27,8 +27,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.insurance import InsuranceClaim, InsurancePolicy
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/insurance", tags=["insurance"])
+router = APIRouter(prefix="/api/insurance", tags=["insurance"], dependencies=[Depends(require_module("finance"))])
 log = logging.getLogger(__name__)
 
 

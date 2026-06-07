@@ -31,9 +31,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.cap_table import DilutionScenario, ShareClass, Shareholder, Shareholding
 
-router = APIRouter(prefix="/api/cap-table", tags=["cap-table"])
+router = APIRouter(prefix="/api/cap-table", tags=["cap-table"], dependencies=[Depends(require_module("finance"))])
 log = logging.getLogger(__name__)
 
 

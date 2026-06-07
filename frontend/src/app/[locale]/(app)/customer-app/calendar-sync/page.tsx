@@ -1,18 +1,10 @@
 "use client";
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-
-function getToken() {
-  return typeof window !== "undefined"
-    ? localStorage.getItem("auth_token") ?? ""
-    : "";
-}
 
 interface CalendarConfig {
   provider: string;
@@ -22,8 +14,6 @@ interface CalendarConfig {
 }
 
 export default function CalendarSyncPage() {
-  const { locale } = useParams<{ locale: string }>();
-
   const [customerIdInput, setCustomerIdInput] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [configs, setConfigs] = useState<CalendarConfig[]>([]);
@@ -48,16 +38,12 @@ export default function CalendarSyncPage() {
 
   async function loadConfigs() {
     if (!customerIdInput.trim()) return;
-    setCustomerId(customerIdInput.trim());
+    const cid = customerIdInput.trim();
+    setCustomerId(cid);
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(
-        `${API}/api/calendar-sync?customer_id=${encodeURIComponent(customerIdInput.trim())}`,
-        { headers: { Authorization: `Bearer ${getToken()}` } }
-      );
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data = await res.json();
+      const data = await api.get<CalendarConfig | CalendarConfig[]>(`/api/calendar-sync?customer_id=${encodeURIComponent(cid)}`);
       setConfigs(Array.isArray(data) ? data : [data]);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load calendar configs");
@@ -72,18 +58,10 @@ export default function CalendarSyncPage() {
     setIcalLoading(true);
     setIcalError("");
     try {
-      const res = await fetch(`${API}/api/calendar-sync/${customerId}/ical`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          calendar_id: icalCalendarId || undefined,
-          sync_enabled: icalSyncEnabled,
-        }),
+      await api.put(`/api/calendar-sync/${customerId}/ical`, {
+        calendar_id: icalCalendarId || undefined,
+        sync_enabled: icalSyncEnabled,
       });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
       await loadConfigs();
     } catch (e: unknown) {
       setIcalError(e instanceof Error ? e.message : "Failed to configure iCal");
@@ -96,11 +74,7 @@ export default function CalendarSyncPage() {
     if (!customerId) return;
     setIcalFeedLoading(true);
     try {
-      const res = await fetch(`${API}/api/calendar-sync/${customerId}/ics`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data = await res.json();
+      const data = await api.get<{ url?: string; ics_url?: string }>(`/api/calendar-sync/${customerId}/ics`);
       setIcalFeedUrl(data.url ?? data.ics_url ?? "");
     } catch (e: unknown) {
       setIcalError(e instanceof Error ? e.message : "Failed to get iCal feed URL");
@@ -115,18 +89,10 @@ export default function CalendarSyncPage() {
     setGoogleLoading(true);
     setGoogleError("");
     try {
-      const res = await fetch(`${API}/api/calendar-sync/${customerId}/google`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          calendar_id: googleCalendarId || undefined,
-          sync_enabled: googleSyncEnabled,
-        }),
+      await api.put(`/api/calendar-sync/${customerId}/google`, {
+        calendar_id: googleCalendarId || undefined,
+        sync_enabled: googleSyncEnabled,
       });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
       await loadConfigs();
     } catch (e: unknown) {
       setGoogleError(e instanceof Error ? e.message : "Failed to configure Google Calendar");
@@ -139,14 +105,7 @@ export default function CalendarSyncPage() {
     if (!customerId) return;
     setError("");
     try {
-      const res = await fetch(
-        `${API}/api/calendar-sync/${customerId}/${provider}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }
-      );
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.delete(`/api/calendar-sync/${customerId}/${provider}`);
       setConfigs((prev) => prev.filter((c) => c.provider !== provider));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to delete config");

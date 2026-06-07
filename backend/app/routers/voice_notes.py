@@ -23,8 +23,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.customer_voice_note import CustomerVoiceNote
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/voice-notes", tags=["voice-notes"])
+router = APIRouter(prefix="/api/voice-notes", tags=["voice-notes"], dependencies=[Depends(require_module("ai"))])
 log = logging.getLogger(__name__)
 
 _VALID_SENDER_TYPES = {"customer", "staff"}

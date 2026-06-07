@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,11 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
 
 type Severity = "info" | "warning" | "critical";
 
@@ -43,8 +38,6 @@ const severityClass: Record<Severity, string> = {
 };
 
 export default function AnomaliesPage() {
-  const params = useParams();
-
   const [items, setItems] = useState<Anomaly[]>([]);
   const [unread, setUnread] = useState<UnreadCount>({ total: 0, critical: 0 });
   const [severityFilter, setSeverityFilter] = useState<"all" | Severity>("all");
@@ -54,11 +47,8 @@ export default function AnomaliesPage() {
 
   const fetchUnread = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/anomalies/unread-count`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) return;
-      setUnread(await res.json());
+      const data = await api.get<UnreadCount>("/api/anomalies/unread-count");
+      setUnread(data);
     } catch {
       // non-critical
     }
@@ -72,11 +62,7 @@ export default function AnomaliesPage() {
       if (severityFilter !== "all") params.set("severity", severityFilter);
       if (isReadFilter === "unread") params.set("is_read", "false");
       const query = params.toString() ? `?${params.toString()}` : "";
-      const res = await fetch(`${API}/api/anomalies${query}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setItems(await res.json());
+      setItems(await api.get<Anomaly[]>(`/api/anomalies${query}`));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load anomalies");
     } finally {
@@ -92,11 +78,7 @@ export default function AnomaliesPage() {
   async function markAllRead() {
     setError("");
     try {
-      const res = await fetch(`${API}/api/anomalies/read-all`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await api.post("/api/anomalies/read-all", {});
       await Promise.all([fetchUnread(), fetchAnomalies()]);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to mark all read");
@@ -105,11 +87,7 @@ export default function AnomaliesPage() {
 
   async function markRead(id: string) {
     try {
-      const res = await fetch(`${API}/api/anomalies/${id}/read`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await api.post(`/api/anomalies/${id}/read`, {});
       await Promise.all([fetchUnread(), fetchAnomalies()]);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to mark read");

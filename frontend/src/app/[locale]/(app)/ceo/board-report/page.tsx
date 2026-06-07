@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { FileBarChart2, Download, Check } from "lucide-react";
 
 const SECTIONS = [
@@ -21,7 +22,6 @@ const PERIODS = [
 ];
 
 export default function BoardReportPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [title, setTitle] = useState("Q2 2026 Board Report");
   const [period, setPeriod] = useState("ytd");
   const [sections, setSections] = useState<Set<string>>(new Set(["pnl", "customers", "kpi_goals"]));
@@ -39,18 +39,12 @@ export default function BoardReportPage() {
     if (sections.size === 0) { toast.error("Select at least one section"); return; }
     setGenerating(true);
     try {
-      const res = await fetch(`${apiBase}/api/ceo/board-report`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, period, include_sections: Array.from(sections) }),
-      });
-      if (!res.ok) { const e = await res.json(); toast.error(e.detail || "Generation failed"); return; }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = `${title.replace(/\s+/g, "-").toLowerCase()}.pdf`; a.click();
-      URL.revokeObjectURL(url);
+      await api.downloadBlob(
+        "/api/ceo/board-report",
+        `${title.replace(/\s+/g, "-").toLowerCase()}.pdf`,
+        "POST",
+        { title, period, include_sections: Array.from(sections) },
+      );
       toast.success("Board report downloaded");
     } finally {
       setGenerating(false);

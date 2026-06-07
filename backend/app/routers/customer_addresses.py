@@ -22,8 +22,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.customer_address import CustomerAddress
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/addresses", tags=["addresses"])
+router = APIRouter(prefix="/api/addresses", tags=["addresses"], dependencies=[Depends(require_module("invoicing"))])
 logger = logging.getLogger(__name__)
 
 

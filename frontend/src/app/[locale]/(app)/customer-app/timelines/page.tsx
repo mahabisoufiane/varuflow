@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api-client";
 import { RefreshCw, Trash2, PlusCircle, CheckCircle2, Clock, SkipForward, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -33,11 +32,6 @@ const EVENT_STATUS_CONFIG: Record<string, { dot: string; label: string }> = {
 };
 
 export default function TimelinesPage() {
-  const router = useRouter();
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale ?? "en";
-  const supabase = createClient();
-
   const [timelines, setTimelines] = useState<Timeline[]>([]);
   const [selected, setSelected] = useState<Timeline | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,26 +42,14 @@ export default function TimelinesPage() {
   const [createForm, setCreateForm] = useState({ title: "", appointment_id: "" });
   const [stageForm, setStageForm] = useState({ stage: "", label: "", description: "" });
 
-  async function getToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }
-  function apiUrl(p: string) { return `${process.env.NEXT_PUBLIC_API_URL}${p}`; }
-
   async function load() {
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push(`/${locale}/auth/login`); return; }
-      const res = await fetch(apiUrl("/api/timelines"), { headers: { Authorization: `Bearer ${token}` } });
-      if (res.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (res.ok) {
-        const data: Timeline[] = await res.json();
-        setTimelines(data);
-        if (selected) {
-          const updated = data.find((t) => t.id === selected.id);
-          setSelected(updated ?? null);
-        }
+      const data = await api.get<Timeline[]>("/api/timelines");
+      setTimelines(data);
+      if (selected) {
+        const updated = data.find((t) => t.id === selected.id);
+        setSelected(updated ?? null);
       }
     } catch {
       toast.error("Failed to load timelines");
@@ -82,25 +64,16 @@ export default function TimelinesPage() {
     if (!createForm.title.trim()) { toast.error("Title is required"); return; }
     setActionLoading("create");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl("/api/timelines"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ title: createForm.title, appointment_id: createForm.appointment_id || null }),
+      const created = await api.post<Timeline>("/api/timelines", {
+        title: createForm.title,
+        appointment_id: createForm.appointment_id || null,
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to create timeline");
-        return;
-      }
-      const created: Timeline = await res.json();
       toast.success("Timeline created");
       setCreateForm({ title: "", appointment_id: "" });
       await load();
       setSelected(created);
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -110,23 +83,12 @@ export default function TimelinesPage() {
     if (!selected || !titleDraft.trim()) return;
     setActionLoading("title");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/timelines/${selected.id}`), {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ title: titleDraft }),
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to update title");
-        return;
-      }
+      await api.patch(`/api/timelines/${selected.id}`, { title: titleDraft });
       toast.success("Title updated");
       setEditingTitle(false);
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -136,22 +98,12 @@ export default function TimelinesPage() {
     if (!selected) return;
     setActionLoading("del_timeline");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/timelines/${selected.id}`), {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to delete");
-        return;
-      }
+      await api.delete(`/api/timelines/${selected.id}`);
       toast.success("Timeline deleted");
       setSelected(null);
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -165,23 +117,16 @@ export default function TimelinesPage() {
     }
     setActionLoading("add_stage");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/timelines/${selected.id}/events`), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ stage: stageForm.stage, label: stageForm.label, description: stageForm.description || null }),
+      await api.post(`/api/timelines/${selected.id}/events`, {
+        stage: stageForm.stage,
+        label: stageForm.label,
+        description: stageForm.description || null,
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to add stage");
-        return;
-      }
       toast.success("Stage added");
       setStageForm({ stage: "", label: "", description: "" });
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -191,21 +136,10 @@ export default function TimelinesPage() {
     if (!selected) return;
     setActionLoading("evt_" + eventId);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/timelines/${selected.id}/events/${eventId}`), {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ status }),
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to update event");
-        return;
-      }
+      await api.patch(`/api/timelines/${selected.id}/events/${eventId}`, { status });
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -215,21 +149,11 @@ export default function TimelinesPage() {
     if (!selected) return;
     setActionLoading("del_evt_" + eventId);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/timelines/${selected.id}/events/${eventId}`), {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to delete event");
-        return;
-      }
+      await api.delete(`/api/timelines/${selected.id}/events/${eventId}`);
       toast.success("Event removed");
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }

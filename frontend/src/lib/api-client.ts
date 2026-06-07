@@ -29,6 +29,28 @@ function getSupabase() {
   return _supabaseClient;
 }
 
+// ---------------------------------------------------------------------------
+// Workspace (branch org) helpers — Phase 5 Country Workspaces
+// ---------------------------------------------------------------------------
+
+const BRANCH_ORG_KEY = "vf_active_branch_org_id";
+
+/** Returns the active branch org ID from localStorage, or null if not set. */
+export function getActiveBranchOrgId(): string | null {
+  if (typeof localStorage === "undefined") return null;
+  return localStorage.getItem(BRANCH_ORG_KEY);
+}
+
+/** Persists the active branch org ID so all subsequent requests use it. */
+export function setActiveBranchOrgId(orgId: string | null): void {
+  if (typeof localStorage === "undefined") return;
+  if (orgId) {
+    localStorage.setItem(BRANCH_ORG_KEY, orgId);
+  } else {
+    localStorage.removeItem(BRANCH_ORG_KEY);
+  }
+}
+
 /**
  * Resolves the current session JWT to attach as an Authorization header.
  *
@@ -81,12 +103,14 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
  */
 type RequestOptions = RequestInit & { _retried?: boolean };
 
-async function request<T>(
+async function request<T = any>(
   path: string,
   options: RequestOptions = {},
   timeoutMs = REQUEST_TIMEOUT_MS
 ): Promise<T> {
   const authHeaders = await getAuthHeaders();
+  const branchOrgId = getActiveBranchOrgId();
+  if (branchOrgId) authHeaders["X-Branch-Org-Id"] = branchOrgId;
 
   // Offline queue for mutations (PWA background sync). If the browser is
   // offline when a non-GET request is made we persist the request to
@@ -184,7 +208,14 @@ async function request<T>(
     // Only toast unexpected server errors — let pages handle business-logic 4xx
     // by inspecting the thrown Error themselves if they need custom UI.
     if (res.status >= 500) toast.error(message);
-    throw new Error(message);
+    const err = new Error(message) as Error & { status?: number; code?: string; module?: string; currentPlan?: string };
+    err.status = res.status;
+    if (typeof body.detail === "object" && body.detail !== null && "code" in body.detail) {
+      err.code = body.detail.code;
+      err.module = body.detail.module;
+      err.currentPlan = body.detail.current_plan;
+    }
+    throw err;
   }
 
   if (res.status === 204) return undefined as T;
@@ -201,7 +232,21 @@ async function request<T>(
  */
 function humanizeError(detail: unknown, status: number): string {
   if (status === 401) return "Your session has expired — please sign in again.";
-  if (status === 403) return "You do not have permission to perform this action.";
+  if (status === 403) {
+    if (typeof detail === "object" && detail !== null && "code" in detail) {
+      const d = detail as { code: string; module?: string; current_plan?: string };
+      if (d.code === "MODULE_NOT_IN_PLAN") {
+        return `This feature requires a plan upgrade. Your current plan: ${d.current_plan ?? "FREE"}.`;
+      }
+      if (d.code === "FEATURE_NOT_AVAILABLE") {
+        return `This feature is not available on your current plan.`;
+      }
+      if (d.code === "PLAN_LIMIT_EXCEEDED") {
+        return `You've reached your plan limit. Upgrade to continue.`;
+      }
+    }
+    return "You do not have permission to perform this action.";
+  }
   if (status === 404) return "The requested resource could not be found.";
   if (status === 422) return "The form data is invalid — check your inputs and try again.";
   if (status >= 500) return "Something went wrong on our end. We have been notified.";
@@ -215,22 +260,22 @@ function humanizeError(detail: unknown, status: number): string {
 
 export const api = {
   /** GET request — resolves to parsed JSON of type T. */
-  get: <T>(path: string) => request<T>(path),
+  get: <T = any>(path: string) => request<T>(path),
 
   /** POST request with a JSON body. */
-  post: <T>(path: string, data: unknown) =>
+  post: <T = any>(path: string, data: unknown) =>
     request<T>(path, { method: "POST", body: JSON.stringify(data) }),
 
   /** PUT request with a JSON body — replaces the entire resource. */
-  put: <T>(path: string, data: unknown) =>
+  put: <T = any>(path: string, data: unknown) =>
     request<T>(path, { method: "PUT", body: JSON.stringify(data) }),
 
   /** PATCH request with a JSON body — partial update. */
-  patch: <T>(path: string, data: unknown) =>
+  patch: <T = any>(path: string, data: unknown) =>
     request<T>(path, { method: "PATCH", body: JSON.stringify(data) }),
 
   /** DELETE request — use the response type T for any body returned. */
-  delete: <T>(path: string, headers?: Record<string, string>) =>
+  delete: <T = any>(path: string, headers?: Record<string, string>) =>
     request<T>(path, { method: "DELETE", headers }),
 
   /**
@@ -370,3 +415,18 @@ export const api = {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   },
 };
+
+const apiClient = {
+  get: <T>(path: string, opts?: { headers?: Record<string, string> }) =>
+    request<T>(path, opts ? { headers: opts.headers } : {}),
+  post: <T>(path: string, data?: unknown, opts?: { headers?: Record<string, string> }) =>
+    request<T>(path, { method: "POST", body: data ? JSON.stringify(data) : undefined, headers: opts?.headers }),
+  put: <T>(path: string, data: unknown, opts?: { headers?: Record<string, string> }) =>
+    request<T>(path, { method: "PUT", body: JSON.stringify(data), headers: opts?.headers }),
+  patch: <T>(path: string, data: unknown, opts?: { headers?: Record<string, string> }) =>
+    request<T>(path, { method: "PATCH", body: JSON.stringify(data), headers: opts?.headers }),
+  delete: <T>(path: string, opts?: { headers?: Record<string, string> }) =>
+    request<T>(path, { method: "DELETE", headers: opts?.headers }),
+};
+
+export default apiClient;

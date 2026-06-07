@@ -26,9 +26,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.ab_test import AbTest, AbTestVariant
 
-router = APIRouter(prefix="/api/ab-testing", tags=["ab-testing"])
+router = APIRouter(prefix="/api/ab-testing", tags=["ab-testing"], dependencies=[Depends(require_module("crm"))])
 log = logging.getLogger(__name__)
 
 

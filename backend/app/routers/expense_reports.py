@@ -42,6 +42,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.expense_report import (
     ExpenseReport, ExpenseReportItem, ExpenseReportStatus,
 )
@@ -50,7 +51,7 @@ from app.models.organization import OrgRole
 from app.services import expense_report as svc_100
 from app.services.audit import log_action
 
-router = APIRouter(prefix="/api/expense-reports", tags=["expense-reports"])
+router = APIRouter(prefix="/api/expense-reports", tags=["expense-reports"], dependencies=[Depends(require_module("finance"))])
 
 log = logging.getLogger(__name__)
 

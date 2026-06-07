@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Plus, Play, Trash2, ChevronRight, Table2, Filter, Layers } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 const SOURCES = ["invoices", "customers", "expenses", "products"] as const;
 const FIELDS: Record<string, { text: string[]; numeric: string[] }> = {
@@ -14,11 +15,11 @@ const FIELDS: Record<string, { text: string[]; numeric: string[] }> = {
 const AGG_FNS = ["sum", "avg", "count", "min", "max"] as const;
 const OPS = ["=", "!=", ">", ">=", "<", "<="] as const;
 
-interface Filter { field: string; op: string; value: string }
+interface ReportFilter { field: string; op: string; value: string }
 interface Aggregate { fn: string; field: string; alias: string }
 interface ReportConfig {
   source: string;
-  filters: Filter[];
+  filters: ReportFilter[];
   group_by: string[];
   aggregates: Aggregate[];
   sort_by: string;
@@ -37,7 +38,6 @@ const defaultConfig = (source = "invoices"): ReportConfig => ({
 });
 
 export default function ReportBuilderPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [saved, setSaved] = useState<SavedReport[]>([]);
   const [config, setConfig] = useState<ReportConfig>(defaultConfig());
   const [result, setResult] = useState<RunResult | null>(null);
@@ -45,11 +45,10 @@ export default function ReportBuilderPage() {
   const [saveName, setSaveName] = useState("");
   const [showSave, setShowSave] = useState(false);
 
-  const f = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   useEffect(() => {
-    f("/api/bi/reports").then(r => r.ok ? r.json() : { reports: [] }).then(d => setSaved(d.reports));
+    api.get<{reports: SavedReport[]}>("/api/bi/reports")
+      .then(d => setSaved(d.reports))
+      .catch(() => {});
   }, []);
 
   const fieldOptions = FIELDS[config.source] || { text: [], numeric: [] };
@@ -58,42 +57,42 @@ export default function ReportBuilderPage() {
   async function preview() {
     setRunning(true);
     try {
-      const res = await f("/api/bi/reports/preview", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "preview", config }),
-      });
-      if (res.ok) setResult(await res.json());
-      else { const e = await res.json(); toast.error(e.detail || "Error"); }
+      const res = await api.post<RunResult>("/api/bi/reports/preview", { name: "preview", config });
+      setResult(res);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Error");
     } finally { setRunning(false); }
   }
 
   async function saveReport() {
     if (!saveName.trim()) { toast.error("Enter a name"); return; }
-    const res = await f("/api/bi/reports", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: saveName, config }),
-    });
-    if (res.ok) {
+    try {
+      await api.post("/api/bi/reports", { name: saveName, config });
       toast.success("Report saved");
       setShowSave(false);
       setSaveName("");
-      f("/api/bi/reports").then(r => r.ok ? r.json() : { reports: [] }).then(d => setSaved(d.reports));
-    } else toast.error("Save failed");
+      api.get<{reports: SavedReport[]}>("/api/bi/reports")
+        .then(d => setSaved(d.reports))
+        .catch(() => {});
+    } catch {
+      toast.error("Save failed");
+    }
   }
 
   async function runSaved(id: string) {
     setRunning(true);
     try {
-      const res = await f(`/api/bi/reports/${id}/run`, { method: "POST" });
-      if (res.ok) setResult(await res.json());
-      else toast.error("Run failed");
+      const res = await api.post<RunResult>(`/api/bi/reports/${id}/run`, {});
+      setResult(res);
+    } catch {
+      toast.error("Run failed");
     } finally { setRunning(false); }
   }
 
   async function deleteSaved(id: string) {
-    await f(`/api/bi/reports/${id}`, { method: "DELETE" });
+    try {
+      await api.delete(`/api/bi/reports/${id}`);
+    } catch {}
     setSaved(r => r.filter(x => x.id !== id));
     toast.success("Deleted");
   }
@@ -104,7 +103,7 @@ export default function ReportBuilderPage() {
   function removeFilter(i: number) {
     setConfig(c => ({ ...c, filters: c.filters.filter((_, idx) => idx !== i) }));
   }
-  function updateFilter(i: number, patch: Partial<Filter>) {
+  function updateFilter(i: number, patch: Partial<ReportFilter>) {
     setConfig(c => ({ ...c, filters: c.filters.map((f, idx) => idx === i ? { ...f, ...patch } : f) }));
   }
 

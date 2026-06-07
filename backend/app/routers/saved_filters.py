@@ -34,8 +34,9 @@ from app.models.organization import OrgRole
 from app.models.saved_filter import SavedFilter
 from app.services import saved_filter as svc
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/saved-filters", tags=["saved-filters"])
+router = APIRouter(prefix="/api/saved-filters", tags=["saved-filters"], dependencies=[Depends(require_module("settings"))])
 
 log = logging.getLogger(__name__)
 

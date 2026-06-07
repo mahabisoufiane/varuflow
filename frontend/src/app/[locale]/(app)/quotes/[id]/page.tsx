@@ -1,9 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Copy, Download, Check } from "lucide-react";
-
-const API = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 interface LineItem { id: string; description: string; quantity: number; unit_price: number; tax_rate: number; line_total: number; }
 interface QuoteDetail { id: string; title: string; quote_number: string | null; revision: number; status: string; cover_text: string | null; scope: string | null; terms: string | null; subtotal: number; vat_amount: number; total: number; currency: string; valid_until: string | null; customer_id: string; invoice_id: string | null; parent_quote_id: string | null; decline_reason: string | null; public_token: string | null; line_items: LineItem[]; }
@@ -14,19 +13,18 @@ export default function QuoteDetailPage() {
   const [copied, setCopied] = useState(false);
 
   const load = () => {
-    fetch(`${API}/api/quotes/${params.id}`, { credentials: "include" })
-      .then(r => r.ok ? r.json() : null).then(setQuote);
+    api.get<QuoteDetail>(`/api/quotes/${params.id}`).then(setQuote).catch(() => {});
   };
 
   useEffect(() => { load(); }, [params.id]);
 
   const action = async (path: string) => {
-    await fetch(`${API}/api/quotes/${params.id}/${path}`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: "{}" });
+    await api.post(`/api/quotes/${params.id}/${path}`, {}).catch(() => {});
     load();
   };
 
   const downloadPdf = () => {
-    window.open(`${API}/api/quotes/${params.id}/pdf`, "_blank");
+    window.open(api.downloadUrl(`/api/quotes/${params.id}/pdf`), "_blank");
   };
 
   const copyLink = () => {

@@ -27,9 +27,10 @@ from app.middleware.auth import get_current_member
 from app.models.reviews import Review, ReviewRequest
 from app.services import review_service as svc
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
 
-router = APIRouter(prefix="/api/reviews", tags=["reviews"])
+router = APIRouter(prefix="/api/reviews", tags=["reviews"], dependencies=[Depends(require_module("crm"))])
 
 
 # ═══════════════════════════════════════════════════════════════════

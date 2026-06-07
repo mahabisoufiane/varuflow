@@ -87,7 +87,10 @@ export default function SurveysPage() {
       const token = await getToken();
       if (!token) return;
       const res = await fetch(apiUrl(`/api/nps/surveys/${id}/responses`), { headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) setResponses((r) => ({ ...r, [id]: await res.json() }));
+      if (res.ok) {
+        const data = await res.json();
+        setResponses((r) => ({ ...r, [id]: data }));
+      }
     } catch { /* silent */ }
   }
 

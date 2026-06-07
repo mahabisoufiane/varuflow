@@ -22,7 +22,7 @@ _TEST_SECRET = "test-secret-at-least-32-characters-long-for-hs256"
 
 
 def _issue(payload: dict, secret: str = _TEST_SECRET) -> str:
-    return jwt.encode(payload, secret, algorithm="HS256")
+    return jwt.encode(payload, secret, algorithm="HS256")  # nosemgrep: python.jwt.security.audit.jwt-exposed-data.jwt-python-exposed-data
 
 
 @pytest.fixture

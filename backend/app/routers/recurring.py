@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
-from app.middleware.plan_check import require_plan
+from app.middleware.plan_check import require_module, require_plan
 from app.models.invoicing import (
     Customer,
     Invoice,
@@ -24,7 +24,7 @@ from app.models.organization import OrgPlan
 router = APIRouter(
     prefix="/api/recurring",
     tags=["recurring"],
-    dependencies=[Depends(require_plan(OrgPlan.PRO))],
+    dependencies=[Depends(require_plan(OrgPlan.PRO)), Depends(require_module("invoicing"))],
 )
 
 # A second router mounted under the same /api/recurring prefix for endpoints
@@ -47,6 +47,8 @@ class RecurringCreate(BaseModel):
     frequency: RecurringFrequency
     next_run_date: date
     template_invoice_id: uuid.UUID
+    auto_send: bool = False
+    auto_send_method: str = "email"
 
 
 class RecurringOut(BaseModel):
@@ -57,6 +59,8 @@ class RecurringOut(BaseModel):
     next_run_date: date
     is_active: bool
     template_invoice_id: uuid.UUID | None
+    auto_send: bool
+    auto_send_method: str
 
     model_config = {"from_attributes": True}
 
@@ -89,6 +93,8 @@ async def list_recurring(
             next_run_date=r.next_run_date,
             is_active=r.is_active,
             template_invoice_id=r.template_invoice_id,
+            auto_send=r.auto_send,
+            auto_send_method=r.auto_send_method,
         )
         for r in rows
     ]
@@ -133,6 +139,8 @@ async def create_recurring(
         next_run_date=body.next_run_date,
         template_invoice_id=body.template_invoice_id,
         is_active=True,
+        auto_send=body.auto_send,
+        auto_send_method=body.auto_send_method,
     )
     db.add(rec)
     await db.commit()
@@ -146,6 +154,8 @@ async def create_recurring(
         next_run_date=rec.next_run_date,
         is_active=rec.is_active,
         template_invoice_id=rec.template_invoice_id,
+        auto_send=rec.auto_send,
+        auto_send_method=rec.auto_send_method,
     )
 
 
@@ -175,6 +185,8 @@ async def toggle_recurring(
         next_run_date=rec.next_run_date,
         is_active=rec.is_active,
         template_invoice_id=rec.template_invoice_id,
+        auto_send=rec.auto_send,
+        auto_send_method=rec.auto_send_method,
     )
 
 

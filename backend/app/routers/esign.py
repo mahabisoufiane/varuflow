@@ -23,6 +23,7 @@ import json
 import logging
 import uuid
 from datetime import datetime, timedelta, timezone
+from html import escape as html_escape
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -34,10 +35,11 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.esign import ESignAuditEntry, ESignRequest, ESignSignatory
 
 log = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/esign", tags=["esign"])
+router = APIRouter(prefix="/api/esign", tags=["esign"], dependencies=[Depends(require_module("finance"))])
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -92,7 +94,7 @@ async def _send_invitation_email(signatory: ESignSignatory, request: ESignReques
     resend_key = os.getenv("RESEND_API_KEY", "")
     from_email = os.getenv("SMTP_FROM", "noreply@varuflow.se")
     if not resend_key:
-        log.info("esign_invite not sent (no RESEND_API_KEY): to=%s url=%s", signatory.email, sign_url)
+        log.info("esign_invite not sent (no RESEND_API_KEY): to=%s url=%s", signatory.email, sign_url)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         return
     try:
         import httpx
@@ -101,10 +103,10 @@ async def _send_invitation_email(signatory: ESignSignatory, request: ESignReques
             "to": [signatory.email],
             "subject": f"Signature requested: {request.title}",
             "html": (
-                f"<p>Hello {signatory.name},</p>"
-                f"<p>You have been requested to sign <strong>{request.title}</strong>.</p>"
-                f"{f'<p>{request.message}</p>' if request.message else ''}"
-                f"<p><a href='{sign_url}' style='background:#000;color:#fff;padding:10px 20px;"
+                f"<p>Hello {html_escape(signatory.name)},</p>"
+                f"<p>You have been requested to sign <strong>{html_escape(request.title)}</strong>.</p>"  # nosemgrep: python.django.security.injection.raw-html-format.raw-html-format
+                f"{f'<p>{html_escape(request.message)}</p>' if request.message else ''}"  # nosemgrep: python.django.security.injection.raw-html-format.raw-html-format
+                f"<p><a href='{html_escape(sign_url)}' style='background:#000;color:#fff;padding:10px 20px;"
                 f"border-radius:6px;text-decoration:none;font-family:sans-serif;'>Review &amp; Sign</a></p>"
                 f"<p style='font-size:12px;color:#888'>This link is unique to you. Do not share it.</p>"
             ),

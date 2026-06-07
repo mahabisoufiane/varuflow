@@ -16,11 +16,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
-from app.middleware.plan_check import require_plan
+from app.middleware.plan_check import require_module, require_plan
 from app.models.inventory import Product, PurchaseOrder, PurchaseOrderStatus, StockLevel, StockMovement, Warehouse
 from app.models.invoicing import Customer, Invoice, InvoiceLineItem, InvoiceStatus, Payment
 from app.models.organization import OrgPlan
-router = APIRouter(prefix="/api/analytics", tags=["analytics"])
+router = APIRouter(prefix="/api/analytics", tags=["analytics"], dependencies=[Depends(require_module("analytics"))])
 
 NAVY = colors.HexColor("#1a2332")
 LIGHT_GRAY = colors.HexColor("#f3f4f6")

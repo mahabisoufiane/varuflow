@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, Shield, Download, RefreshCw } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 interface Entry {
   id: string; sequence_no?: number; action: string; actor_user_id?: string;
@@ -15,43 +16,38 @@ interface VerifyResult {
 }
 
 export default function AuditChainPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [result, setResult] = useState<VerifyResult | null>(null);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [verifying, setVerifying] = useState(false);
   const [page, setPage] = useState(1);
   const LIMIT = 50;
 
-  const fetch_ = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   async function verify() {
     setVerifying(true);
     try {
-      const res = await fetch_("/api/compliance/audit-chain/verify");
-      if (res.ok) setResult(await res.json());
-      else toast.error("Verification request failed");
-    } catch { toast.error("Network error"); }
+      const data = await api.get<VerifyResult>("/api/compliance/audit-chain/verify");
+      setResult(data);
+    } catch { toast.error("Verification request failed"); }
     setVerifying(false);
   }
 
   async function loadEntries() {
-    const res = await fetch_(`/api/compliance/audit-chain/entries?page=${page}&limit=${LIMIT}`);
-    if (res.ok) setEntries((await res.json()).entries);
+    try {
+      const data = await api.get<{ entries: Entry[] }>(`/api/compliance/audit-chain/entries?page=${page}&limit=${LIMIT}`);
+      setEntries(data.entries);
+    } catch { /* non-critical */ }
   }
 
   useEffect(() => { verify(); loadEntries(); }, []);
   useEffect(() => { loadEntries(); }, [page]);
 
   async function exportNDJSON() {
-    const res = await fetch_("/api/compliance/audit-chain/export", { method: "POST" });
-    if (!res.ok) { toast.error("Export failed"); return; }
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = "audit_log.ndjson"; a.click();
-    URL.revokeObjectURL(url);
-    toast.success("Audit log exported");
+    try {
+      await api.downloadBlob("/api/compliance/audit-chain/export", "audit_log.ndjson", "POST");
+      toast.success("Audit log exported");
+    } catch {
+      toast.error("Export failed");
+    }
   }
 
   function truncate(h: string) { return h === "0".repeat(64) ? "genesis" : `${h.slice(0, 12)}…`; }
@@ -84,10 +80,10 @@ export default function AuditChainPage() {
             : <XCircle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
           }
           <div>
-            <p className={`font-semibold text-base ${result.ok ? "text-green-900" : "text-red-900"}`}>
+            <p className={`font-semibold text-base ${result.ok ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
               {result.ok ? "Chain Intact" : "Chain Violation Detected"}
             </p>
-            <p className="text-sm mt-0.5" style={{ color: result.ok ? "#166534" : "#7f1d1d" }}>
+            <p className={`text-sm mt-0.5 ${result.ok ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
               {result.message}
             </p>
             {!result.ok && result.first_broken_id && (

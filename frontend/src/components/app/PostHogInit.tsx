@@ -48,7 +48,7 @@ export default function PostHogInit() {
         });
 
         // Attach to window so analytics.ts can reach it via window.posthog
-        (window as Record<string, unknown>).posthog = posthog;
+        (window as unknown as Record<string, unknown>).posthog = posthog;
       })
       .catch(() => {
         // posthog-js not installed or failed to load — silent no-op
@@ -58,7 +58,7 @@ export default function PostHogInit() {
   // ── Manual pageview on route change ───────────────────────────────────────
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const ph = (window as Record<string, unknown>).posthog as
+    const ph = (window as unknown as Record<string, unknown>).posthog as
       | { capture?: (e: string, p: object) => void }
       | undefined;
     if (!ph?.capture) return;

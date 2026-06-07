@@ -14,10 +14,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.statement_request import StatementRequest
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/statements", tags=["statement-requests"])
+router = APIRouter(prefix="/api/statements", tags=["statement-requests"], dependencies=[Depends(require_module("invoicing"))])
 
 
 def _org_id(ctx: tuple) -> uuid.UUID:

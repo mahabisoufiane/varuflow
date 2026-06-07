@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api-client";
 
 interface StaffAttendance {
   staff_id: string;
@@ -25,9 +26,9 @@ export default function AttendanceReportPage() {
   });
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports/attendance?week_start=${weekStart}`, { credentials: "include" })
-      .then(r => r.ok ? r.json() : null)
-      .then(setData);
+    api.get<AttendanceData>(`/api/reports/attendance?week_start=${weekStart}`)
+      .then(setData)
+      .catch(() => {});
   }, [weekStart]);
 
   const prevWeek = () => { const d = new Date(weekStart); d.setDate(d.getDate() - 7); setWeekStart(d.toISOString().split("T")[0]); };

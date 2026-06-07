@@ -14,9 +14,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.quality_control import QcChecklist, QcInspection
+from app.middleware.plan_check import require_module
 
 log = logging.getLogger(__name__)
-router = APIRouter()
+router = APIRouter(
+    dependencies=[Depends(require_module("inventory"))],
+)
 
 VALID_APPLIES_TO = {"work_order", "batch"}
 VALID_STATUSES = {"pending", "passed", "failed"}

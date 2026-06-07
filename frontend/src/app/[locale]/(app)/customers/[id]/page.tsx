@@ -300,7 +300,7 @@ export default function CustomerDetailPage() {
 
       {/* ── Invoice history ─────────────────────────────────────────────── */}
       <div className="vf-section rounded-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "var(--vf-border)" }}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--vf-border)]">
           <h2 className="text-sm font-semibold vf-text-1 flex items-center gap-2">
             <FileText className="h-4 w-4" />Invoice history
           </h2>
@@ -317,7 +317,7 @@ export default function CustomerDetailPage() {
             <p className="text-sm vf-text-m">No invoices yet for this customer.</p>
           </div>
         ) : (
-          <div className="divide-y" style={{ borderColor: "var(--vf-border)" }}>
+          <div className="vf-divide">
             {invoices.map(inv => (
               <Link
                 key={inv.id}
@@ -343,8 +343,7 @@ export default function CustomerDetailPage() {
       {/* ── Edit modal ─────────────────────────────────────────────────── */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent
-          className="sm:max-w-[480px]"
-          style={{ background: "var(--vf-bg-surface)", borderColor: "var(--vf-border)", borderRadius: 16 }}
+          className="sm:max-w-[480px] rounded-2xl border-[var(--vf-border)] bg-[var(--vf-bg-surface)]"
         >
           <DialogHeader>
             <DialogTitle className="vf-text-1 text-base font-semibold">

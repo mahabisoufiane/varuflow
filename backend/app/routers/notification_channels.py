@@ -26,8 +26,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.integration_config import NotificationChannel
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/integrations/notifications", tags=["integrations_notifications"])
+router = APIRouter(prefix="/api/integrations/notifications", tags=["integrations_notifications"], dependencies=[Depends(require_module("settings"))])
 log = logging.getLogger(__name__)
 
 SUPPORTED_EVENTS = [

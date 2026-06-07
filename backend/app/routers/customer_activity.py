@@ -25,9 +25,11 @@ from app.middleware.auth import get_current_member
 from app.models.audit import AuditLogEntry
 from app.models.invoicing import Customer
 from app.services import customer_activity as svc_75
+from app.middleware.plan_check import require_module
 
 router = APIRouter(
     prefix="/api/customer-activity", tags=["customer-activity"],
+    dependencies=[Depends(require_module("invoicing"))],
 )
 
 log = logging.getLogger(__name__)

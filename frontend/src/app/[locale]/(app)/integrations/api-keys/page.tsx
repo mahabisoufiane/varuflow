@@ -117,8 +117,7 @@ export default function ApiKeysPage() {
                 <p className="text-xs vf-text-m">{t("keyCreatedWarning")}</p>
               </div>
             </div>
-            <div className="rounded-xl p-3 font-mono text-xs"
-              style={{ background: "var(--vf-bg-elevated)", border: "1px solid var(--vf-border)" }}>
+            <div className="rounded-xl p-3 font-mono text-xs bg-[var(--vf-bg-elevated)] border border-[var(--vf-border)]">
               <div className="flex items-center gap-2">
                 <span className="flex-1 break-all vf-text-1">
                   {revealedKey ? newKey.plaintext_key : "•".repeat(48)}
@@ -180,8 +179,7 @@ export default function ApiKeysPage() {
             </div>
             <div className="flex gap-2 justify-end">
               <button type="button" onClick={() => setShowForm(false)}
-                className="rounded-lg px-4 py-2 text-xs font-medium vf-text-m"
-                style={{ border: "1px solid var(--vf-border)" }}>
+                className="vf-btn-secondary text-xs">
                 {t("cancel")}
               </button>
               <button type="submit" className="vf-btn text-xs">{t("generate")}</button>
@@ -202,13 +200,13 @@ export default function ApiKeysPage() {
         ) : keys.length === 0 ? (
           <div className="py-14 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl"
-              style={{ background: "var(--vf-bg-elevated)" }}>
+              >
               <Key className="h-6 w-6 vf-text-m" />
             </div>
             <p className="text-sm font-medium vf-text-2">{t("noApiKeys")}</p>
           </div>
         ) : (
-          <div className="divide-y" style={{ borderColor: "var(--vf-divider)" }}>
+          <div className="vf-divide">
             {keys.map(key => (
               <div key={key.id} className="flex items-center gap-4 px-5 py-4 vf-row">
                 <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${

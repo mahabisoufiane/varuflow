@@ -14,10 +14,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.lock_screen_alert import LockScreenAlert
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/lock-screen-alerts", tags=["lock-screen-alerts"])
+router = APIRouter(prefix="/api/lock-screen-alerts", tags=["lock-screen-alerts"], dependencies=[Depends(require_module("pos"))])
 
 
 def _org_id(ctx: tuple) -> uuid.UUID:

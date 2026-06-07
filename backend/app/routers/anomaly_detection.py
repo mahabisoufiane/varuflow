@@ -17,13 +17,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.anomaly import AnomalyFinding
 from app.models.expenses import Expense
 from app.models.inventory import PurchaseOrder, PurchaseOrderItem
 from app.models.invoicing import Customer, Invoice, Payment
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/anomalies", tags=["anomaly-detection"])
+router = APIRouter(prefix="/api/anomalies", tags=["anomaly-detection"], dependencies=[Depends(require_module("ai"))])
 
 
 # ── Scanner helpers ───────────────────────────────────────────────────────────

@@ -14,10 +14,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.return_pickup import ReturnPickupRequest
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/return-pickups", tags=["return-pickups"])
+router = APIRouter(prefix="/api/return-pickups", tags=["return-pickups"], dependencies=[Depends(require_module("invoicing"))])
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────

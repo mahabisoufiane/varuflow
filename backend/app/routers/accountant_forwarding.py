@@ -20,8 +20,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.accountant_forwarding import AccountantForwarding
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/accountant-forwarding", tags=["accountant-forwarding"])
+router = APIRouter(prefix="/api/accountant-forwarding", tags=["accountant-forwarding"], dependencies=[Depends(require_module("finance"))])
 logger = logging.getLogger(__name__)
 
 

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,8 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
 
 interface BirthdayVoucher {
   id: string;
@@ -24,7 +22,6 @@ interface BirthdayVoucher {
 }
 
 export default function BirthdayVouchersPage() {
-  const { locale } = useParams<{ locale: string }>();
   const [items, setItems] = useState<BirthdayVoucher[]>([]);
   const [filterCustomerId, setFilterCustomerId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,22 +32,16 @@ export default function BirthdayVouchersPage() {
   });
   const [creating, setCreating] = useState(false);
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : "";
-
   async function fetchItems() {
     setLoading(true);
     setError("");
     try {
       const params = new URLSearchParams();
       if (filterCustomerId) params.set("customer_id", filterCustomerId);
-      const res = await fetch(`${API}/api/birthday-vouchers?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to load vouchers."); return; }
-      setItems(await res.json());
-    } catch {
-      setError("Network error.");
+      const data = await api.get<BirthdayVoucher[]>(`/api/birthday-vouchers?${params}`);
+      setItems(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load vouchers.");
     } finally {
       setLoading(false);
     }
@@ -62,21 +53,15 @@ export default function BirthdayVouchersPage() {
     setCreating(true);
     setError("");
     try {
-      const res = await fetch(`${API}/api/birthday-vouchers`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...newForm,
-          discount_value: parseFloat(newForm.discount_value) || 0,
-          generated_for_year: parseInt(newForm.generated_for_year),
-        }),
+      await api.post("/api/birthday-vouchers", {
+        ...newForm,
+        discount_value: parseFloat(newForm.discount_value) || 0,
+        generated_for_year: parseInt(newForm.generated_for_year),
       });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to generate voucher."); return; }
       setNewForm({ customer_id: "", discount_type: "pct", discount_value: "", valid_from: "", valid_until: "", generated_for_year: new Date().getFullYear().toString() });
       fetchItems();
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to generate voucher.");
     } finally {
       setCreating(false);
     }
@@ -85,14 +70,10 @@ export default function BirthdayVouchersPage() {
   async function redeemVoucher(id: string) {
     setError("");
     try {
-      const res = await fetch(`${API}/api/birthday-vouchers/${id}/redeem`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) { setError("Redeem failed."); return; }
+      await api.post(`/api/birthday-vouchers/${id}/redeem`, {});
       fetchItems();
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Redeem failed.");
     }
   }
 

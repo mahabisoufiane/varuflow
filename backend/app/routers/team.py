@@ -18,9 +18,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.middleware.auth import get_current_member, require_mfa_if_enforced
+from app.models.modules import MemberModule
 from app.models.organization import OrgPlan, OrgRole, Organization, OrganizationMember
 from app.services.audit import log_action
-from app.services.plan_limits import RESOURCE_USERS, LimitExceededError, check_limit
+from app.services.plan_limits import PLAN_MODULES, RESOURCE_USERS, LimitExceededError, check_limit
 
 router = APIRouter(prefix="/api/team", tags=["team"])
 
@@ -402,3 +403,116 @@ def _temp_password() -> str:
     import string
     chars = string.ascii_letters + string.digits + "!@#$"
     return "".join(secrets.choice(chars) for _ in range(20))
+
+
+# ── Module assignment ─────────────────────────────────────────────────────────
+
+class ModuleAssignmentRequest(BaseModel):
+    modules: list[str]
+    access_mode: str = "RESTRICTED"
+
+
+@router.get("/{member_id}/modules")
+async def get_member_modules(
+    member_id: uuid.UUID,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    _, caller = ctx
+    _require_owner_or_admin(caller)
+
+    target = await db.scalar(
+        select(OrganizationMember).where(
+            OrganizationMember.id == member_id,
+            OrganizationMember.org_id == caller.org_id,
+        )
+    )
+    if not target:
+        raise HTTPException(status_code=404, detail="Member not found")
+
+    rows = await db.execute(
+        select(MemberModule.module_key).where(MemberModule.member_id == member_id)
+    )
+    assigned = [r[0] for r in rows.all()]
+
+    org = await db.get(Organization, caller.org_id)
+    plan_key = org.plan.value if hasattr(org.plan, "value") else str(org.plan)
+    plan_modules = PLAN_MODULES.get(plan_key, frozenset())
+
+    return {
+        "member_id": str(member_id),
+        "access_mode": target.module_access_mode,
+        "assigned_modules": assigned,
+        "plan_modules": sorted(plan_modules) if "*" not in plan_modules else ["*"],
+    }
+
+
+@router.put("/{member_id}/modules")
+async def set_member_modules(
+    member_id: uuid.UUID,
+    body: ModuleAssignmentRequest,
+    request: Request,
+    ctx: tuple = Depends(require_mfa_if_enforced),
+    db: AsyncSession = Depends(get_db),
+):
+    current_user, caller = ctx
+    _require_owner_or_admin(caller)
+
+    target = await db.scalar(
+        select(OrganizationMember).where(
+            OrganizationMember.id == member_id,
+            OrganizationMember.org_id == caller.org_id,
+        )
+    )
+    if not target:
+        raise HTTPException(status_code=404, detail="Member not found")
+
+    if target.role in (OrgRole.OWNER, OrgRole.ADMIN):
+        raise HTTPException(
+            status_code=422,
+            detail="Cannot restrict modules for owners or admins",
+        )
+
+    org = await db.get(Organization, caller.org_id)
+    plan_key = org.plan.value if hasattr(org.plan, "value") else str(org.plan)
+    plan_modules = PLAN_MODULES.get(plan_key, frozenset())
+
+    if "*" not in plan_modules:
+        invalid = set(body.modules) - plan_modules
+        if invalid:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Modules not available on current plan: {sorted(invalid)}",
+            )
+
+    target.module_access_mode = body.access_mode
+
+    existing = await db.execute(
+        select(MemberModule).where(MemberModule.member_id == member_id)
+    )
+    for row in existing.scalars().all():
+        await db.delete(row)
+
+    caller_uid = current_user["user_id"]
+    if isinstance(caller_uid, str):
+        caller_uid = uuid.UUID(caller_uid)
+
+    for module_key in body.modules:
+        db.add(MemberModule(
+            member_id=member_id,
+            module_key=module_key,
+            granted_by=caller_uid,
+        ))
+
+    await log_action(
+        db,
+        action="team.modules_updated",
+        org_id=caller.org_id,
+        actor_user_id=caller_uid,
+        target_type="organization_member",
+        target_id=str(member_id),
+        request=request,
+        extra={"modules": body.modules, "access_mode": body.access_mode},
+    )
+    await db.commit()
+    return {"status": "updated", "modules": body.modules, "access_mode": body.access_mode}
