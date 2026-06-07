@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface KeyResult {
   id: string;
@@ -44,6 +45,19 @@ const LEVEL_COLORS: Record<string, string> = {
   company:    "bg-blue-100 text-blue-700 border-blue-200",
   department: "bg-purple-100 text-purple-700 border-purple-200",
   individual: "bg-green-100 text-green-700 border-green-200",
+};
+
+const LEVEL_MODULE: Record<string, keyof typeof styles> = {
+  company:    "levelCompany",
+  department: "levelDepartment",
+  individual: "levelIndividual",
+};
+
+const KR_STATUS_COLOR_MODULE: Record<string, keyof typeof styles> = {
+  on_track:  "krOnTrack",
+  at_risk:   "krAtRisk",
+  off_track: "krOffTrack",
+  completed: "krCompleted",
 };
 
 const KR_STATUS_CONFIG: Record<string, { color: string; icon: React.ElementType }> = {
@@ -357,7 +371,7 @@ function ObjectiveCard({
   onSaveKr: () => void;
   onCancelKr: () => void;
 }) {
-  const levelClass = LEVEL_COLORS[obj.level] ?? "bg-gray-100 text-gray-600";
+  const levelClass = LEVEL_MODULE[obj.level] ?? "levelCompany";
 
   return (
     <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
@@ -372,7 +386,7 @@ function ObjectiveCard({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className={`rounded-full border px-2 py-0.5 text-xs font-medium capitalize ${levelClass}`}>
+            <span className={`${styles[levelClass]} capitalize`}>
               {obj.level}
             </span>
             {obj.department && (
@@ -408,7 +422,7 @@ function ObjectiveCard({
             const Icon = cfg.icon;
             return (
               <div key={kr.id} className="flex items-center gap-3 rounded-lg bg-white border px-4 py-3">
-                <Icon className={`h-4 w-4 flex-shrink-0 ${cfg.color}`} />
+                <Icon className={`h-4 w-4 flex-shrink-0 ${styles[KR_STATUS_COLOR_MODULE[kr.status] ?? "krOnTrack"]}`} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-800 truncate">{kr.title}</p>
                   <ProgressBar value={kr.progress_pct} className="mt-1.5 max-w-xs" />

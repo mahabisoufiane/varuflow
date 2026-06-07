@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { ClipboardList, Plus, Loader2, Star, Users, FileText, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -55,6 +56,16 @@ const STATUS_BADGE: Record<string, string> = {
   self_submitted: "bg-purple-100 text-purple-800",
   reviewed: "bg-blue-100 text-blue-800",
   completed: "bg-green-100 text-green-800",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft:          "statusDraft",
+  open:           "statusOpen",
+  closed:         "statusClosed",
+  pending:        "statusPending",
+  self_submitted: "statusSelfSubmitted",
+  reviewed:       "statusReviewed",
+  completed:      "statusCompleted",
 };
 
 const FREQ_LABELS: Record<string, string> = {
@@ -268,7 +279,7 @@ export default function ReviewsPage() {
                   <p className="font-medium">{c.name}</p>
                   <p className="vf-text-m">{c.start_date} – {c.end_date}</p>
                   <div className="flex gap-1 mt-0.5">
-                    <span className={`px-1.5 py-0.5 rounded-full text-xs ${STATUS_BADGE[c.status] ?? ""}`}>{c.status}</span>
+                    <span className={styles[STATUS_MODULE[c.status] ?? "statusDraft"]}>{c.status}</span>
                     <span className="px-1.5 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">{FREQ_LABELS[c.cycle_frequency] ?? c.cycle_frequency}</span>
                   </div>
                 </button>
@@ -311,7 +322,7 @@ export default function ReviewsPage() {
                         className={`w-full text-left p-2 rounded-lg text-xs hover:bg-gray-50 ${selectedReview?.id === r.id ? "bg-indigo-50" : ""}`}>
                         <div className="flex items-center justify-between">
                           <span className="font-medium truncate">{r.staff_name || r.staff_id.slice(0, 8) + "…"}</span>
-                          <span className={`px-1.5 py-0.5 rounded-full text-xs ${STATUS_BADGE[r.status] ?? ""}`}>{r.status}</span>
+                          <span className={styles[STATUS_MODULE[r.status] ?? "statusDraft"]}>{r.status}</span>
                         </div>
                         {r.overall_rating && <StarRow value={r.overall_rating} labels={ratingLabels} />}
                       </button>
@@ -341,7 +352,7 @@ export default function ReviewsPage() {
                             <td className="py-1 pr-2 font-medium">{r.staff_name || "—"}</td>
                             <td className="py-1"><StarRow value={r.overall_rating} labels={ratingLabels} /></td>
                             <td className="py-1">
-                              <span className={`px-1.5 rounded-full ${STATUS_BADGE[r.status] ?? ""}`}>{r.status}</span>
+                              <span className={styles[STATUS_MODULE[r.status] ?? "statusDraft"]}>{r.status}</span>
                             </td>
                           </tr>
                         ))}
@@ -362,7 +373,7 @@ export default function ReviewsPage() {
             <div className="space-y-4">
               {/* Title + actions */}
               <div className="flex items-center justify-between">
-                <span className={`px-2 py-0.5 rounded-full text-xs ${STATUS_BADGE[selectedReview.status] ?? ""}`}>
+                <span className={styles[STATUS_MODULE[selectedReview.status] ?? "statusDraft"]}>
                   {selectedReview.status}
                 </span>
                 <div className="flex gap-1.5">
