@@ -13,6 +13,7 @@ import OnboardingChecklist from "@/components/app/OnboardingChecklist";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { cn } from "@/lib/utils";
+import styles from "./page.module.scss";
 
 /* ── Types ──────────────────────────────────────────────────────────────────── */
 interface StockLevel {
@@ -54,7 +55,7 @@ function Sk({ className }: { className?: string }) {
 }
 
 /* ── Sparkline ───────────────────────────────────────────────────────────────── */
-function Sparkline({ data, color = "#6366f1", w = 72, h = 30 }: {
+function Sparkline({ data, color = "#4A6CF7", w = 72, h = 30 }: {
   data: number[]; color?: string; w?: number; h?: number;
 }) {
   const uid = useId().replace(/:/g, "");
@@ -246,7 +247,7 @@ export default function DashboardPage() {
           iconCls="text-indigo-400 bg-indigo-500/10"
           href="/invoices?status=SENT"
           spark={revData}
-          sparkColor="#6366f1"
+          sparkColor="#4A6CF7"
         />
         <KpiCard
           label="Invoiced this month"
@@ -305,8 +306,7 @@ export default function DashboardPage() {
                 </p>
               </div>
               {overdueCount > 0 && (
-                <div className="flex items-center gap-1.5 rounded-full px-3 py-1.5"
-                  style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)" }}>
+                <div className={styles.overdueBadge}>
                   <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
                   <span className="text-[11px] font-semibold text-red-400">{overdueCount} overdue</span>
                 </div>
@@ -323,8 +323,7 @@ export default function DashboardPage() {
             )}
 
             {collectedThisMonth > 0 && (
-              <div className="mb-5 inline-flex items-center gap-2 rounded-lg px-3 py-2"
-                style={{ background: "rgba(16,185,129,0.10)", border: "1px solid rgba(16,185,129,0.22)" }}>
+              <div className={cn("mb-5", styles.collectedBadge)}>
                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
                 <span className="text-[11px] text-emerald-500 font-medium">
                   {fmt(collectedThisMonth)} kr collected this month
@@ -520,8 +519,7 @@ function KpiCard({ label, value, sub, trend, icon, iconCls, href, spark, sparkCo
 }) {
   return (
     <Link href={href}
-      className="group relative overflow-hidden vf-section p-4 hover:shadow-card transition-all duration-150"
-      style={{ borderRadius: 14 }}>
+      className="group relative overflow-hidden vf-section p-4 hover:shadow-card transition-all duration-150 rounded-[14px]">
       <div className="flex items-start justify-between mb-3">
         <span className={cn("inline-flex h-9 w-9 items-center justify-center rounded-xl", iconCls)}>{icon}</span>
         {spark && spark.length > 1 && sparkColor && (

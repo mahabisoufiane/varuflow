@@ -1,0 +1,68 @@
+@use '../../styles/mixins' as *;
+@use '../../styles/shadows' as *;
+@use '../../styles/radii' as *;
+
+.card {
+  @include card-surface;
+  padding: 1.5rem;
+}
+
+.elevated {
+  box-shadow: $vf-shadow-elevated;
+}
+
+.compact {
+  padding: 1rem;
+}
+
+.noPadding {
+  padding: 0;
+}
+
+.interactive {
+  cursor: pointer;
+  @include transition;
+
+  &:hover {
+    border-color: var(--vf-brand-primary);
+    box-shadow: $vf-shadow-md;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--vf-border);
+}
+
+.title {
+  @include text('md');
+  font-weight: 600;
+  color: var(--vf-text-heading);
+}
+
+.subtitle {
+  @include text('sm');
+  color: var(--vf-text-muted);
+  margin-top: 0.125rem;
+}
+
+.body {
+  padding: 1.5rem;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--vf-border);
+}

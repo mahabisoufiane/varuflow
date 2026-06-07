@@ -5,6 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { cx } from "@/lib/cx";
+import styles from "./page.module.scss";
 import {
   Building2, Mail, Phone, MessageCircle, Plus, Search, FileText, ArrowRight, X,
   Hash, Globe, MapPin, Clock, AlertCircle, Users,
@@ -178,10 +180,8 @@ export default function CustomersPage() {
           {[1, 2, 3, 4].map(i => <div key={i} className="h-28 skeleton rounded-xl" />)}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl px-6 py-20 text-center"
-          style={{ border: "1px dashed var(--vf-border-strong)", background: "var(--vf-bg-surface)" }}>
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl"
-            style={{ background: "var(--vf-bg-elevated)" }}>
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>
             <Users className="h-6 w-6 vf-text-m" />
           </div>
           <p className="text-sm font-semibold vf-text-2">
@@ -201,18 +201,14 @@ export default function CustomersPage() {
           {filtered.map(c => (
             <div
               key={c.id}
-              className="group vf-section flex items-start gap-4 p-5 hover:shadow-card transition-all"
-              style={{ borderRadius: 14 }}
-              onMouseEnter={e => (e.currentTarget.style.background = "var(--vf-bg-elevated)")}
-              onMouseLeave={e => (e.currentTarget.style.background = "var(--vf-bg-surface)")}
+              className={cx("group vf-section flex items-start gap-4 p-5 hover:shadow-card", styles.card)}
             >
               <Avatar name={c.company_name} />
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-semibold vf-text-1 leading-tight truncate">{c.company_name}</p>
-                  <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold vf-text-m"
-                    style={{ background: "var(--vf-bg-elevated)", border: "1px solid var(--vf-border-strong)" }}>
+                  <span className={styles.badge}>
                     Net {c.payment_terms_days}d
                   </span>
                 </div>
@@ -244,8 +240,7 @@ export default function CustomersPage() {
                   </button>
                   <Link
                     href={`/invoices/new?customer=${c.id}` as Parameters<typeof Link>[0]["href"]}
-                    className="inline-flex items-center gap-1 rounded-lg px-2.5 h-7 text-[11px] font-semibold text-indigo-500 transition-colors"
-                    style={{ background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)" }}
+                    className={styles.invoiceBtn}
                   >
                     <FileText className="h-3 w-3" />Invoice
                   </Link>
@@ -265,8 +260,7 @@ export default function CustomersPage() {
       {/* ── Create / Edit modal ────────────────────────────────────── */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className="sm:max-w-[480px]"
-          style={{ background: "var(--vf-bg-surface)", borderColor: "var(--vf-border)", borderRadius: 16 }}
+          className="sm:max-w-[480px] rounded-2xl border-[var(--vf-border)] bg-[var(--vf-bg-surface)]"
         >
           <DialogHeader>
             <DialogTitle className="vf-text-1 text-base font-semibold">
@@ -298,14 +292,13 @@ export default function CustomersPage() {
             </div>
 
             {formError && (
-              <div className="flex items-start gap-2.5 rounded-xl px-3.5 py-2.5 text-sm text-red-400"
-                style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+              <div className={styles.errorBanner}>
                 <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                 <span>{formError}</span>
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-2" style={{ borderTop: "1px solid var(--vf-divider)" }}>
+            <div className={cx("flex justify-end gap-2 pt-2", styles.divider)}>
               <button type="button" onClick={() => setOpen(false)} className="vf-btn-ghost text-xs px-4">
                 Cancel
               </button>

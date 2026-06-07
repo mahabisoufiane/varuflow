@@ -1,0 +1,17 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+.inputSm {
+  height: 36px;
+}
+
+.dividerRow {
+  border-bottom: 1px solid var(--vf-divider);
+}
+
+.suggestedCard {
+  border-radius: $vf-radius-xl;
+  padding: 0.75rem;
+  background: var(--vf-bg-elevated);
+  border: 1px solid var(--vf-border);
+}

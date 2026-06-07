@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { cx } from "@/lib/cx";
+import styles from "./page.module.scss";
 import {
   Mic, Plus, Trash2, X, Play, Edit2, Clock,
   CheckCircle2, Lightbulb,
@@ -164,7 +166,7 @@ export default function ShortcutsPage() {
 
       {/* Add / Edit Form */}
       {showForm && (
-        <div className="vf-section p-5" style={{ borderRadius: 14 }}>
+        <div className="vf-section p-5" >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-[13px] font-semibold vf-text-1">
               {editingId ? "Edit shortcut" : "Add shortcut"}
@@ -180,8 +182,7 @@ export default function ShortcutsPage() {
                 <select
                   value={form.platform}
                   onChange={(e) => setForm({ ...form, platform: e.target.value as VoiceShortcut["platform"] })}
-                  className="vf-input text-xs w-full"
-                  style={{ height: 36 }}
+                  className={cx("vf-input text-xs w-full", styles.inputSm)}
                   disabled={submitting}
                 >
                   <option value="siri">Siri</option>
@@ -194,8 +195,7 @@ export default function ShortcutsPage() {
                 <select
                   value={form.action_type}
                   onChange={(e) => setForm({ ...form, action_type: e.target.value })}
-                  className="vf-input text-xs w-full"
-                  style={{ height: 36 }}
+                  className={cx("vf-input text-xs w-full", styles.inputSm)}
                   disabled={submitting}
                 >
                   {ACTION_TYPES.map((a) => (
@@ -210,8 +210,7 @@ export default function ShortcutsPage() {
                 value={form.phrase}
                 onChange={(e) => setForm({ ...form, phrase: e.target.value })}
                 placeholder={`e.g. "Hey Siri, check my Varuflow revenue"`}
-                className="vf-input text-xs w-full"
-                style={{ height: 36 }}
+                className={cx("vf-input text-xs w-full", styles.inputSm)}
                 disabled={submitting}
               />
             </div>
@@ -221,8 +220,7 @@ export default function ShortcutsPage() {
                 value={form.response_template}
                 onChange={(e) => setForm({ ...form, response_template: e.target.value })}
                 placeholder={`e.g. "Today's revenue is {amount}"`}
-                className="vf-input text-xs w-full"
-                style={{ height: 36 }}
+                className={cx("vf-input text-xs w-full", styles.inputSm)}
                 disabled={submitting}
               />
               <p className="text-[11px] vf-text-m mt-1">Use {"{"}<span>variables</span>{"}"} in your template</p>
@@ -247,7 +245,7 @@ export default function ShortcutsPage() {
 
         {loading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex gap-4 px-5 py-4" style={{ borderBottom: "1px solid var(--vf-divider)" }}>
+            <div key={i} className={cx("flex gap-4 px-5 py-4", styles.dividerRow)}>
               <div className="h-4 w-48 skeleton rounded" />
               <div className="h-4 w-24 skeleton rounded ml-auto" />
             </div>
@@ -255,7 +253,7 @@ export default function ShortcutsPage() {
         ) : shortcuts.length === 0 ? (
           <div className="py-16 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl"
-              style={{ background: "var(--vf-bg-elevated)" }}>
+              >
               <Mic className="h-6 w-6 vf-text-m" />
             </div>
             <p className="text-sm font-medium vf-text-2">No shortcuts configured</p>
@@ -266,8 +264,7 @@ export default function ShortcutsPage() {
             const meta = PLATFORM_META[s.platform];
             const actionLabel = ACTION_TYPES.find((a) => a.value === s.action_type)?.label ?? s.action_type;
             return (
-              <div key={s.id} className="px-5 py-4"
-                style={{ borderBottom: i < shortcuts.length - 1 ? "1px solid var(--vf-divider)" : "none" }}>
+              <div key={s.id} className={cx("px-5 py-4", i < shortcuts.length - 1 ? styles.dividerRow : "")}>
                 <div className="flex items-start gap-3">
                   <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl mt-0.5", meta.bg)}>
                     <Mic className={cn("h-4 w-4", meta.color)} />
@@ -330,15 +327,14 @@ export default function ShortcutsPage() {
       </div>
 
       {/* Suggested shortcuts */}
-      <div className="vf-section p-5" style={{ borderRadius: 14 }}>
+      <div className="vf-section p-5" >
         <div className="flex items-center gap-2 mb-4">
           <Lightbulb className="h-4 w-4 text-amber-400" />
           <h2 className="text-[13px] font-semibold vf-text-1">Suggested shortcuts</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {SUGGESTED_SHORTCUTS.map((s, i) => (
-            <div key={i} className="rounded-xl p-3"
-              style={{ background: "var(--vf-bg-elevated)", border: "1px solid var(--vf-border)" }}>
+            <div key={i} className={styles.suggestedCard}>
               <p className="text-[13px] font-semibold vf-text-1 italic mb-1">&ldquo;{s.phrase}&rdquo;</p>
               <div className="flex items-center justify-between">
                 <p className="text-xs vf-text-m">{s.action}</p>

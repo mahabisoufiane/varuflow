@@ -1,0 +1,12 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+.headerBadge {
+  background: var(--vf-brand-primary, #4A6CF7);
+}
+
+.elevatedCard {
+  border: 1px solid var(--vf-border);
+  background: var(--vf-bg-elevated);
+  border-radius: $vf-radius-xl;
+}

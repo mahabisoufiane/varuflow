@@ -1,0 +1,51 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+.kpiCard {
+  padding: 1rem;
+  border-radius: $vf-radius-xl;
+}
+
+.alertBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  border-radius: $vf-radius-xl;
+  background: rgba(220, 38, 38, 0.04);
+  border: 1px solid rgba(220, 38, 38, 0.15);
+}
+
+.alertDot {
+  border-radius: $vf-radius-lg;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.progressBg {
+  background: var(--vf-bg-elevated);
+}
+
+.emptyIcon {
+  border-radius: $vf-radius-2xl;
+  background: var(--vf-bg-elevated);
+}
+
+.tableHeader {
+  border-bottom: 1px solid var(--vf-border);
+  background: var(--vf-bg-elevated);
+}
+
+.tableRow {
+  border-bottom: 1px solid var(--vf-divider);
+}
+
+.skeletonRow {
+  border-bottom: 1px solid var(--vf-divider);
+}
+
+.tabBar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border-bottom: 1px solid var(--vf-border);
+}
