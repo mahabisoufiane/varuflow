@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FileText, Plus } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface PurchaseOrder {
   id: string; status: "DRAFT" | "SENT" | "RECEIVED"; total: string; notes: string | null;
@@ -17,6 +18,12 @@ const STATUS_COLORS: Record<string, string> = {
   DRAFT: "bg-gray-100 text-gray-700",
   SENT: "bg-blue-100 text-blue-700",
   RECEIVED: "bg-green-100 text-green-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  DRAFT:    "statusDraft",
+  SENT:     "statusSent",
+  RECEIVED: "statusReceived",
 };
 
 export default function PurchaseOrdersPage() {
@@ -93,7 +100,7 @@ export default function PurchaseOrdersPage() {
                   <td className="px-4 py-3 font-mono text-xs">{po.id.slice(0, 8).toUpperCase()}</td>
                   <td className="px-4 py-3 font-medium">{po.supplier.name}</td>
                   <td className="px-4 py-3 text-center">
-                    <span className={`rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[po.status]}`}>{po.status}</span>
+                    <span className={styles[STATUS_MODULE[po.status] ?? "statusDraft"]}>{po.status}</span>
                   </td>
                   <td className="px-4 py-3 text-right font-mono">{Number(po.total).toLocaleString("sv-SE", { minimumFractionDigits: 2 })}</td>
                   <td className="px-4 py-3 text-muted-foreground text-xs">{new Date(po.created_at).toLocaleDateString("sv-SE")}</td>

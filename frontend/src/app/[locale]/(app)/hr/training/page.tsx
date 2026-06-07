@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import { GraduationCap, Plus, AlertTriangle, Check, X, Award, Clock } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Staff { id: string; name: string }
 interface TrainingRecord {
@@ -27,11 +28,28 @@ const STATUS_COLORS: Record<string, string> = {
   expired: "bg-red-100 text-red-700",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  not_started: "statusNotStarted",
+  in_progress: "statusInProgress",
+  completed:   "statusCompleted",
+  expired:     "statusExpired",
+};
+
 const CAT_COLORS: Record<string, string> = {
   safety: "bg-red-50 text-red-700", compliance: "bg-orange-50 text-orange-700",
   technical: "bg-blue-50 text-blue-700", soft_skills: "bg-purple-50 text-purple-700",
   product: "bg-teal-50 text-teal-700", language: "bg-green-50 text-green-700",
   other: "bg-gray-100 text-gray-600",
+};
+
+const CAT_MODULE: Record<string, keyof typeof styles> = {
+  safety:     "catSafety",
+  compliance: "catCompliance",
+  technical:  "catTechnical",
+  soft_skills: "catSoftSkills",
+  product:    "catProduct",
+  language:   "catLanguage",
+  other:      "catOther",
 };
 
 const CATEGORIES = ["safety", "compliance", "technical", "soft_skills", "product", "language", "other"];
@@ -252,8 +270,8 @@ export default function TrainingPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-gray-900">{rec.training_name}</span>
                     {rec.is_required && <span className="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">Required</span>}
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[rec.status]}`}>{rec.status.replace("_", " ")}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded ${CAT_COLORS[rec.category] || CAT_COLORS.other}`}>{rec.category.replace("_", " ")}</span>
+                    <span className={styles[STATUS_MODULE[rec.status] ?? "statusNotStarted"]}>{rec.status.replace("_", " ")}</span>
+                    <span className={styles[CAT_MODULE[rec.category] ?? "catOther"]}>{rec.category.replace("_", " ")}</span>
                     {rec.is_expired && <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded flex items-center gap-1"><AlertTriangle className="h-3 w-3" />Expired</span>}
                     {rec.expiring_soon && !rec.is_expired && <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded flex items-center gap-1"><Clock className="h-3 w-3" />Expiring soon</span>}
                   </div>
