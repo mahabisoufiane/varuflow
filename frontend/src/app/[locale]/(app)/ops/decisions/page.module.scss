@@ -1,0 +1,32 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Decision area badges ───────────────────────────────────────────────────────
+
+.areaBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.75rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.areaProduct    { @extend .areaBadge; background: #dbeafe; color: #1d4ed8; }
+.areaFinance    { @extend .areaBadge; background: #dcfce7; color: #166534; }
+.areaHr         { @extend .areaBadge; background: #f3e8ff; color: #7e22ce; }
+.areaOperations { @extend .areaBadge; background: #ffedd5; color: #c2410c; }
+.areaStrategy   { @extend .areaBadge; background: #e0e7ff; color: #4338ca; }
+.areaOther      { @extend .areaBadge; background: #f3f4f6; color: #4b5563; }
+
+// ── Decision status badges ─────────────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusPending    { @extend .statusBadge; background: #f3f4f6; color: #4b5563; }
+.statusInProgress { @extend .statusBadge; background: #dbeafe; color: #1d4ed8; }
+.statusCompleted  { @extend .statusBadge; background: #dcfce7; color: #166534; }
+.statusReversed   { @extend .statusBadge; background: #fee2e2; color: #b91c1c; }

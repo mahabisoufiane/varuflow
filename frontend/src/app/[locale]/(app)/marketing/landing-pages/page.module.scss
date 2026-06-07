@@ -1,0 +1,14 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Landing page status badges ─────────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusDraft     { @extend .statusBadge; background: #f3f4f6; color: #4b5563; }
+.statusPublished { @extend .statusBadge; background: #dcfce7; color: #166534; }

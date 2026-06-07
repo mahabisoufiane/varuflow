@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface LandingPage {
   id: string;
@@ -24,6 +25,11 @@ interface LandingPage {
 const STATUS_COLOR: Record<string, string> = {
   draft: "bg-gray-100 text-gray-600",
   published: "bg-green-100 text-green-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft:     "statusDraft",
+  published: "statusPublished",
 };
 
 function slugify(s: string) {
@@ -233,7 +239,7 @@ export default function LandingPagesPage() {
                   {p.published_at && (
                     <span className="text-xs text-muted-foreground">{new Date(p.published_at).toLocaleDateString()}</span>
                   )}
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLOR[p.status] ?? STATUS_COLOR.draft}`}>
+                  <span className={styles[STATUS_MODULE[p.status] ?? "statusDraft"]}>
                     {p.status}
                   </span>
                   <div className="flex items-center gap-2">

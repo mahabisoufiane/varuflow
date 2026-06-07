@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, BarChart3, RefreshCw, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface EsgReport {
   id: string;
@@ -34,6 +35,11 @@ interface EsgReport {
 const STATUS_COLORS: Record<string, string> = {
   draft:     "bg-gray-100 text-gray-600",
   published: "bg-green-100 text-green-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft:     "statusDraft",
+  published: "statusPublished",
 };
 
 export default function EsgPage() {
@@ -281,7 +287,7 @@ export default function EsgPage() {
                     <p className="text-sm font-medium text-gray-900">{report.title}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{report.report_year}</p>
                   </div>
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize flex-shrink-0 ${STATUS_COLORS[report.status] ?? "bg-gray-100 text-gray-600"}`}>
+                  <span className={styles[STATUS_MODULE[report.status] ?? "statusDraft"]}>
                     {report.status}
                   </span>
                   <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
