@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, Shield, RefreshCw, Trash2, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface Risk {
   id: string;
@@ -27,12 +28,27 @@ const CATEGORY_COLORS: Record<string, string> = {
   legal:        "bg-red-100 text-red-700",
 };
 
+const CATEGORY_MODULE: Record<string, keyof typeof styles> = {
+  supply_chain: "categorySupplyChain",
+  key_person:   "categoryKeyPerson",
+  currency:     "categoryCurrency",
+  legal:        "categoryLegal",
+};
+
 const STATUS_COLORS: Record<string, string> = {
   identified: "bg-blue-100 text-blue-700",
   monitoring: "bg-yellow-100 text-yellow-700",
   mitigating: "bg-amber-100 text-amber-700",
   resolved:   "bg-green-100 text-green-700",
   accepted:   "bg-gray-100 text-gray-600",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  identified: "statusIdentified",
+  monitoring: "statusMonitoring",
+  mitigating: "statusMitigating",
+  resolved:   "statusResolved",
+  accepted:   "statusAccepted",
 };
 
 function riskScoreColor(score: number) {
@@ -268,10 +284,10 @@ export default function RiskRegisterPage() {
                       : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
                   </div>
                   <p className="flex-1 text-sm font-medium text-gray-900 min-w-0 truncate">{risk.title}</p>
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0 ${CATEGORY_COLORS[risk.category] ?? "bg-gray-100 text-gray-600"}`}>
+                  <span className={styles[CATEGORY_MODULE[risk.category] ?? "categoryLegal"]}>
                     {risk.category.replace("_", " ")}
                   </span>
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0 capitalize ${STATUS_COLORS[risk.status] ?? "bg-gray-100 text-gray-600"}`}>
+                  <span className={styles[STATUS_MODULE[risk.status] ?? "statusAccepted"]}>
                     {risk.status}
                   </span>
                   <span className="text-sm text-gray-700 w-8 text-center flex-shrink-0">{risk.likelihood}</span>

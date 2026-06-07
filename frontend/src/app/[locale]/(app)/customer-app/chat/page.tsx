@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface ChatMessage {
   id: string;
@@ -41,6 +42,12 @@ const STATUS_BADGE: Record<string, string> = {
   open:     "bg-green-100 text-green-700",
   resolved: "bg-blue-100 text-blue-700",
   closed:   "bg-gray-100 text-gray-500",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  open:     "statusOpen",
+  resolved: "statusResolved",
+  closed:   "statusClosed",
 };
 
 function relativeTime(iso: string | null): string {
@@ -296,7 +303,7 @@ export default function CustomerChatPage() {
                       {thread.subject ?? "No subject"} · {relativeTime(thread.last_message_at)}
                     </p>
                   </div>
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGE[thread.status] ?? "bg-gray-100 text-gray-500"}`}>
+                  <span className={styles[STATUS_MODULE[thread.status] ?? "statusClosed"]}>
                     {thread.status}
                   </span>
                   {isExpanded ? (
