@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface Project {
   id: string;
@@ -32,6 +33,13 @@ const STATUS_BADGE: Record<string, string> = {
   on_hold: "bg-yellow-100 text-yellow-800",
   completed: "bg-blue-100 text-blue-800",
   cancelled: "bg-red-100 text-red-800",
+};
+
+const STATUS_MODULE_CLASS: Record<string, keyof typeof styles> = {
+  active: "badgeActive",
+  on_hold: "badgeOnHold",
+  completed: "badgeCompleted",
+  cancelled: "badgeCancelled",
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -98,45 +106,45 @@ export default function ProjectsPage() {
       </div>
 
       {showForm && (
-        <div className="border rounded-lg p-4 mb-6 grid grid-cols-2 gap-3 max-w-2xl">
+        <div className={styles.formCard}>
           <div className="col-span-2">
-            <label className="text-xs font-medium text-muted-foreground">Project Name</label>
-            <input className="border rounded px-2 py-1.5 text-sm w-full mt-1" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+            <label className={styles.formLabel}>Project Name</label>
+            <input className={styles.formInput} value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
           </div>
           <div className="col-span-2">
-            <label className="text-xs font-medium text-muted-foreground">Description</label>
-            <textarea className="border rounded px-2 py-1.5 text-sm w-full mt-1 resize-none" rows={2} value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
+            <label className={styles.formLabel}>Description</label>
+            <textarea className={`${styles.formInput} resize-none`} rows={2} value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Customer</label>
-            <select className="border rounded px-2 py-1.5 text-sm w-full mt-1" value={form.customer_id} onChange={(e) => setForm((f) => ({ ...f, customer_id: e.target.value }))}>
+            <label className={styles.formLabel}>Customer</label>
+            <select className={styles.formInput} value={form.customer_id} onChange={(e) => setForm((f) => ({ ...f, customer_id: e.target.value }))}>
               <option value="">— none —</option>
               {customers.map((c) => <option key={c.id} value={c.id}>{c.company_name}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Type</label>
-            <select className="border rounded px-2 py-1.5 text-sm w-full mt-1" value={form.project_type} onChange={(e) => setForm((f) => ({ ...f, project_type: e.target.value }))}>
+            <label className={styles.formLabel}>Type</label>
+            <select className={styles.formInput} value={form.project_type} onChange={(e) => setForm((f) => ({ ...f, project_type: e.target.value }))}>
               <option value="time_material">Time & Material</option>
               <option value="fixed">Fixed Price</option>
               <option value="retainer">Retainer</option>
             </select>
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Budget (SEK)</label>
-            <input type="number" step="1000" className="border rounded px-2 py-1.5 text-sm w-full mt-1" value={form.budget} onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))} />
+            <label className={styles.formLabel}>Budget (SEK)</label>
+            <input type="number" step="1000" className={styles.formInput} value={form.budget} onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))} />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Default Hourly Rate</label>
-            <input type="number" step="50" className="border rounded px-2 py-1.5 text-sm w-full mt-1" value={form.default_hourly_rate} onChange={(e) => setForm((f) => ({ ...f, default_hourly_rate: e.target.value }))} />
+            <label className={styles.formLabel}>Default Hourly Rate</label>
+            <input type="number" step="50" className={styles.formInput} value={form.default_hourly_rate} onChange={(e) => setForm((f) => ({ ...f, default_hourly_rate: e.target.value }))} />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Start Date</label>
-            <input type="date" className="border rounded px-2 py-1.5 text-sm w-full mt-1" value={form.start_date} onChange={(e) => setForm((f) => ({ ...f, start_date: e.target.value }))} />
+            <label className={styles.formLabel}>Start Date</label>
+            <input type="date" className={styles.formInput} value={form.start_date} onChange={(e) => setForm((f) => ({ ...f, start_date: e.target.value }))} />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground">End Date</label>
-            <input type="date" className="border rounded px-2 py-1.5 text-sm w-full mt-1" value={form.end_date} onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))} />
+            <label className={styles.formLabel}>End Date</label>
+            <input type="date" className={styles.formInput} value={form.end_date} onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))} />
           </div>
           <div className="col-span-2 flex gap-2">
             <button onClick={create} className="bg-primary text-primary-foreground rounded px-3 py-1.5 text-sm">Create</button>
@@ -150,18 +158,18 @@ export default function ProjectsPage() {
       ) : projects.length === 0 ? (
         <p className="text-sm text-muted-foreground">No projects yet. Create your first project to get started.</p>
       ) : (
-        <div className="grid grid-cols-3 gap-4">
+        <div className={styles.kanbanGrid}>
           {["active", "on_hold", "completed"].map((status) => (
             <div key={status}>
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3 capitalize">
+              <p className={styles.columnHeader}>
                 {status.replace("_", " ")} ({byStatus(status).length})
               </p>
               <div className="space-y-3">
                 {byStatus(status).map((p) => (
-                  <button key={p.id} onClick={() => router.push(`/${locale}/projects/${p.id}`)} className="w-full text-left border rounded-lg p-3 hover:bg-accent transition-colors">
+                  <button key={p.id} onClick={() => router.push(`/${locale}/projects/${p.id}`)} className={styles.projectCard}>
                     <div className="flex items-start justify-between mb-1">
                       <p className="font-medium text-sm leading-tight">{p.name}</p>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ml-2 shrink-0 ${STATUS_BADGE[p.status]}`}>{TYPE_LABELS[p.project_type] ?? p.project_type}</span>
+                      <span className={`${styles.typeBadge} ${styles[STATUS_MODULE_CLASS[p.status] ?? "badgeActive"]}`}>{TYPE_LABELS[p.project_type] ?? p.project_type}</span>
                     </div>
                     {p.customer_name && <p className="text-xs text-muted-foreground">{p.customer_name}</p>}
                     {p.budget && <p className="text-xs text-muted-foreground mt-1">Budget: {p.budget.toLocaleString()} SEK</p>}

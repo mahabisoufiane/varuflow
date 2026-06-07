@@ -21,6 +21,7 @@ import { useCallback, useEffect, useState } from "react";
 import { BookOpen, ChevronDown, ChevronUp, Loader2, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -278,16 +279,12 @@ export default function AccountingPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-white/10">
+      <div className={styles.tabBar}>
         {tabs.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
-              tab === t.id
-                ? "bg-indigo-500/20 text-indigo-300 border-b-2 border-indigo-400"
-                : "vf-text-m hover:text-white"
-            }`}
+            className={`${styles.tab} ${tab === t.id ? styles.tabActive : ""}`}
           >
             {t.label}
           </button>
@@ -473,14 +470,14 @@ export default function AccountingPage() {
               {journal?.items.map(entry => (
                 <div key={entry.id} className="vf-section overflow-hidden">
                   <div
-                    className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors"
+                    className={styles.entryHeader}
                     onClick={() => setExpandedEntry(expandedEntry === entry.id ? null : entry.id)}
                   >
                     <div className="flex items-center gap-4">
                       <span className="font-mono text-xs vf-text-m w-24 shrink-0">{entry.entry_date}</span>
                       <span className="text-sm vf-text-1 font-medium">{entry.description}</span>
                       {entry.source_type && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 vf-text-m">{entry.source_type}</span>
+                        <span className={styles.entryBadge}>{entry.source_type}</span>
                       )}
                       {entry.reference && (
                         <span className="text-xs vf-text-m">{entry.reference}</span>
@@ -491,8 +488,8 @@ export default function AccountingPage() {
                       : <ChevronDown className="w-4 h-4 vf-text-m" />}
                   </div>
                   {expandedEntry === entry.id && (
-                    <div className="border-t border-white/10 px-4 py-3">
-                      <table className="w-full text-xs">
+                    <div className={styles.entryDetail}>
+                      <table className={styles.journalTable}>
                         <thead>
                           <tr className="vf-text-m border-b border-white/5">
                             <th className="text-left py-1.5 font-medium">Account</th>
