@@ -1,0 +1,16 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Work order status badges ───────────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusOpen       { @extend .statusBadge; background: #dbeafe; color: #1d4ed8; }
+.statusInProgress { @extend .statusBadge; background: #fef3c7; color: #b45309; }
+.statusCompleted  { @extend .statusBadge; background: #dcfce7; color: #166534; }
+.statusCancelled  { @extend .statusBadge; background: #f3f4f6; color: #6b7280; }

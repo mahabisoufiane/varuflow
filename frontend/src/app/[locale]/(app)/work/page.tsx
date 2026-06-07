@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import { ClipboardList, Plus, X, Check, LayoutGrid, List, AlertCircle, MessageSquare, ChevronRight } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Staff { id: string; name: string; }
 interface TaskComment { id: string; staff_id: string | null; body: string; created_at: string; }
@@ -25,12 +26,24 @@ const STATUS_COLORS: Record<Status, string> = {
   blocked: "bg-orange-100 text-orange-800",
   done: "bg-green-100 text-green-700",
 };
+const STATUS_MODULE: Record<Status, keyof typeof styles> = {
+  todo:        "statusTodo",
+  in_progress: "statusInProgress",
+  blocked:     "statusBlocked",
+  done:        "statusDone",
+};
 const KANBAN_BG: Record<Status, string> = { todo: "bg-gray-50", in_progress: "bg-blue-50", blocked: "bg-orange-50", done: "bg-green-50" };
 const PRIORITY_COLORS: Record<string, string> = {
   low: "bg-gray-200 text-gray-500",
   medium: "bg-amber-100 text-amber-700",
   high: "bg-red-100 text-red-700",
   urgent: "bg-red-200 text-red-900 font-semibold",
+};
+const PRIORITY_MODULE: Record<string, keyof typeof styles> = {
+  low:    "priorityLow",
+  medium: "priorityMedium",
+  high:   "priorityHigh",
+  urgent: "priorityUrgent",
 };
 
 function SubtaskInput({ onAdd }: { onAdd: (title: string) => void }) {
@@ -211,7 +224,7 @@ export default function TasksPage() {
           {STATUSES.map(col => (
             <div key={col} className={`rounded-xl ${KANBAN_BG[col]} p-3 min-h-[200px]`}>
               <div className="flex items-center justify-between mb-3">
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[col]}`}>{STATUS_LABELS[col]}</span>
+                <span className={styles[STATUS_MODULE[col]]}>{STATUS_LABELS[col]}</span>
                 <span className="text-xs text-gray-400">{byStatus(col).length}</span>
               </div>
               <div className="space-y-2">
@@ -223,7 +236,7 @@ export default function TasksPage() {
                       {task.is_overdue && <AlertCircle className="h-3.5 w-3.5 text-red-500 flex-shrink-0 mt-0.5" />}
                     </div>
                     <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${PRIORITY_COLORS[task.priority]}`}>{task.priority}</span>
+                      <span className={styles[PRIORITY_MODULE[task.priority] ?? "priorityMedium"]}>{task.priority}</span>
                       {task.assignee_id && <span className="text-xs text-gray-500">{(staffMap[task.assignee_id] || "?").split(" ")[0]}</span>}
                       {task.due_date && <span className="text-xs text-gray-400">{task.due_date}</span>}
                     </div>
@@ -248,8 +261,8 @@ export default function TasksPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`font-medium text-gray-900 ${task.status === "done" ? "line-through text-gray-400" : ""}`}>{task.title}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${PRIORITY_COLORS[task.priority]}`}>{task.priority}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[task.status as Status] ?? "bg-gray-100"}`}>{STATUS_LABELS[task.status as Status] || task.status}</span>
+                  <span className={styles[PRIORITY_MODULE[task.priority] ?? "priorityMedium"]}>{task.priority}</span>
+                  <span className={styles[STATUS_MODULE[task.status as Status] ?? "statusTodo"]}>{STATUS_LABELS[task.status as Status] || task.status}</span>
                   {task.is_overdue && <span className="text-xs text-red-600 font-medium flex items-center gap-0.5"><AlertCircle className="h-3 w-3" /> Overdue</span>}
                   {task.is_recurring && <span className="text-xs text-indigo-600">↻ {task.recurrence_rule}</span>}
                 </div>
@@ -276,8 +289,8 @@ export default function TasksPage() {
                 <div>
                   <h2 className="text-xl font-bold text-gray-900">{selected.title}</h2>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[selected.status as Status] ?? "bg-gray-100"}`}>{STATUS_LABELS[selected.status as Status] || selected.status}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${PRIORITY_COLORS[selected.priority]}`}>{selected.priority}</span>
+                    <span className={styles[STATUS_MODULE[selected.status as Status] ?? "statusTodo"]}>{STATUS_LABELS[selected.status as Status] || selected.status}</span>
+                    <span className={styles[PRIORITY_MODULE[selected.priority] ?? "priorityMedium"]}>{selected.priority}</span>
                     {selected.is_overdue && <span className="text-xs text-red-600 font-medium">⚠ Overdue</span>}
                   </div>
                 </div>

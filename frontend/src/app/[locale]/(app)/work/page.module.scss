@@ -1,0 +1,30 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+// ── Work task status badges ────────────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusTodo       { @extend .statusBadge; background: #f3f4f6; color: #6b7280; }
+.statusInProgress { @extend .statusBadge; background: #dbeafe; color: #1d4ed8; }
+.statusBlocked    { @extend .statusBadge; background: #ffedd5; color: #9a3412; }
+.statusDone       { @extend .statusBadge; background: #dcfce7; color: #166534; }
+
+// ── Priority badges ────────────────────────────────────────────────────────────
+
+.priorityBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.priorityLow    { @extend .priorityBadge; background: #e5e7eb; color: #6b7280; }
+.priorityMedium { @extend .priorityBadge; background: #fef3c7; color: #b45309; }
+.priorityHigh   { @extend .priorityBadge; background: #fee2e2; color: #b91c1c; }
+.priorityUrgent { @extend .priorityBadge; background: #fecaca; color: #7f1d1d; font-weight: 600; }

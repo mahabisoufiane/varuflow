@@ -1,0 +1,17 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Announcement category badges ──────────────────────────────────────────────
+
+.categoryBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.categoryHrUpdate     { @extend .categoryBadge; background: #dbeafe; color: #1d4ed8; }
+.categoryPolicy       { @extend .categoryBadge; background: #fef9c3; color: #854d0e; }
+.categoryOperational  { @extend .categoryBadge; background: #f3f4f6; color: #374151; }
+.categoryCelebration  { @extend .categoryBadge; background: #fce7f3; color: #be185d; }
+.categoryGeneral      { @extend .categoryBadge; background: #e0e7ff; color: #3730a3; }

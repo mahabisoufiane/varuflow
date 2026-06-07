@@ -1,0 +1,15 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Anomaly severity badges ────────────────────────────────────────────────────
+
+.severityBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+}
+
+.severityInfo     { @extend .severityBadge; background: #dbeafe; color: #1e40af; }
+.severityWarning  { @extend .severityBadge; background: #fef9c3; color: #854d0e; }
+.severityCritical { @extend .severityBadge; background: #fee2e2; color: #991b1b; }
