@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Mail, Plus, Send, Clock } from "lucide-react";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface Campaign {
   id: string;
@@ -21,9 +22,9 @@ interface Campaign {
 }
 
 function StatusBadge({ status }: { status: Campaign["status"] }) {
-  if (status === "SENT") return <Badge className="bg-green-100 text-green-800">Sent</Badge>;
-  if (status === "SCHEDULED") return <Badge className="bg-blue-100 text-blue-800">Scheduled</Badge>;
-  return <Badge variant="secondary">Draft</Badge>;
+  if (status === "SENT") return <span className={styles.badgeSent}>Sent</span>;
+  if (status === "SCHEDULED") return <span className={styles.badgeScheduled}>Scheduled</span>;
+  return <span className={styles.badgeDraft}>Draft</span>;
 }
 
 export default function CampaignsListPage() {
@@ -68,7 +69,7 @@ export default function CampaignsListPage() {
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <div className="rounded-xl border bg-white px-6 py-12 text-center">
+        <div className={styles.emptyState}>
           <Mail className="mx-auto h-10 w-10 text-gray-300" />
           <h3 className="mt-3 font-medium text-gray-900">No campaigns yet</h3>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -82,7 +83,7 @@ export default function CampaignsListPage() {
           </Button>
         </div>
       ) : (
-        <div className="rounded-xl border bg-white overflow-hidden">
+        <div className={styles.tableCard}>
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left">
               <tr>
@@ -95,7 +96,7 @@ export default function CampaignsListPage() {
             </thead>
             <tbody>
               {rows.map((c) => (
-                <tr key={c.id} className="border-t hover:bg-gray-50">
+                <tr key={c.id} className={styles.tableRow}>
                   <td className="px-4 py-3">
                     <Link href={`/campaigns/${c.id}`} className="font-medium text-[#1a2332] hover:underline">
                       {c.name}
