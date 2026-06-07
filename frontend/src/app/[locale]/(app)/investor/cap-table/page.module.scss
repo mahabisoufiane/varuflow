@@ -1,0 +1,95 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Shareholder type badges ───────────────────────────────────────────────────
+
+.typeBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.typeFounder {
+  @extend .typeBadge;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.typeInvestor {
+  @extend .typeBadge;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.typeEmployee {
+  @extend .typeBadge;
+  background: #f3e8ff;
+  color: #7e22ce;
+}
+
+.typeOther {
+  @extend .typeBadge;
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+// ── KPI summary bar ───────────────────────────────────────────────────────────
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.summaryCard {
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  padding: 1rem;
+  background: var(--vf-bg-surface);
+}
+
+// ── Shareholder table ─────────────────────────────────────────────────────────
+
+.tableCard {
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  overflow: hidden;
+  background: var(--vf-bg-surface);
+}
+
+.tableRow {
+  display: grid;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--vf-border);
+  font-size: 0.8125rem;
+  transition: background 100ms ease;
+
+  &:hover {
+    background: var(--vf-bg-elevated);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+// ── Progress bar ──────────────────────────────────────────────────────────────
+
+.progBar {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: $vf-radius-full;
+  overflow: hidden;
+}
+
+.progFill {
+  height: 100%;
+  background: var(--vf-brand-primary, #1a2332);
+  border-radius: $vf-radius-full;
+}

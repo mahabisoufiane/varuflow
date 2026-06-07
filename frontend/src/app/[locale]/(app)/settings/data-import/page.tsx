@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 type WizardStep = "source" | "upload" | "mapping" | "validate" | "execute" | "done";
 
@@ -54,6 +55,13 @@ const STATUS_COLORS: Record<string, string> = {
   processing: "bg-blue-100 text-blue-700",
   done:       "bg-green-100 text-green-700",
   failed:     "bg-red-100 text-red-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:    "statusPending",
+  processing: "statusProcessing",
+  done:       "statusDone",
+  failed:     "statusFailed",
 };
 
 export default function DataImportPage() {
@@ -545,7 +553,7 @@ export default function DataImportPage() {
                       {" · "}{new Date(job.created_at).toLocaleDateString()}
                     </p>
                   </div>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[job.status] ?? "bg-gray-100 text-gray-600"}`}>
+                  <span className={styles[STATUS_MODULE[job.status] ?? "statusPending"]}>
                     {job.status}
                   </span>
                   {job.status === "pending" && (
