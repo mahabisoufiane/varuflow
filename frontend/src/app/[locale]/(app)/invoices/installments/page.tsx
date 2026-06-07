@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl"
 import { api } from "@/lib/api-client"
 import { CalendarClock, Plus, CheckCircle, AlertCircle, Clock } from "lucide-react"
 import { toast } from "sonner"
+import styles from "./page.module.scss"
 
 interface Installment {
   id: string
@@ -26,6 +27,12 @@ const statusConfig = {
   active: { label: "Active", className: "bg-blue-100 text-blue-800", icon: Clock },
   completed: { label: "Completed", className: "bg-green-100 text-green-800", icon: CheckCircle },
   overdue: { label: "Overdue", className: "bg-red-100 text-red-800", icon: AlertCircle },
+}
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  active:    "statusActive",
+  completed: "statusCompleted",
+  overdue:   "statusOverdue",
 }
 
 export default function InstallmentsPage() {
@@ -86,7 +93,7 @@ export default function InstallmentsPage() {
                     <p className="vf-text-1 font-medium">{plan.customer_name}</p>
                     <p className="vf-text-m text-sm">Invoice {plan.invoice_number}</p>
                   </div>
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${cfg.className}`}>
+                  <span className={styles[STATUS_MODULE[plan.status] ?? "statusActive"]}>
                     <StatusIcon className="w-3 h-3" />
                     {cfg.label}
                   </span>

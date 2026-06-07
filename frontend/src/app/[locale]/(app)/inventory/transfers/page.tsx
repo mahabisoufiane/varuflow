@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Truck, Plus, ArrowRight } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface TransferItem {
   id: string;
@@ -37,6 +38,14 @@ const STATUS_COLORS: Record<Transfer["status"], string> = {
   PARTIAL: "bg-amber-100 text-amber-700",
   RECEIVED: "bg-green-100 text-green-700",
   CANCELLED: "bg-red-100 text-red-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  DRAFT:      "statusDraft",
+  IN_TRANSIT: "statusInTransit",
+  PARTIAL:    "statusPartial",
+  RECEIVED:   "statusReceived",
+  CANCELLED:  "statusCancelled",
 };
 
 export default function StockTransfersPage() {
@@ -118,7 +127,7 @@ export default function StockTransfersPage() {
                 return (
                   <tr key={t.id} className="border-t">
                     <td className="px-4 py-2">
-                      <Badge className={STATUS_COLORS[t.status]}>{t.status}</Badge>
+                      <span className={styles[STATUS_MODULE[t.status] ?? "statusDraft"]}>{t.status}</span>
                     </td>
                     <td className="px-4 py-2 text-xs font-mono text-gray-600">
                       {t.from_warehouse_id.slice(0, 8)} → {t.to_warehouse_id.slice(0, 8)}

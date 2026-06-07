@@ -1,0 +1,19 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Peppol registration status badges ───────────────────────────────────────
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: $vf-radius-full;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statusActive   { @extend .statusBadge; background: #dcfce7; color: #166534; }
+.statusPending  { @extend .statusBadge; background: #fef9c3; color: #a16207; }
+.statusInactive { @extend .statusBadge; background: #f3f4f6; color: #1f2937; }
+.statusError    { @extend .statusBadge; background: #fee2e2; color: #991b1b; }

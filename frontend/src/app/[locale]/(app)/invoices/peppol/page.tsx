@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl"
 import { api } from "@/lib/api-client"
 import { Globe, CheckCircle, XCircle, Settings, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
+import styles from "./page.module.scss"
 
 interface PeppolStatus {
   registered: boolean
@@ -20,6 +21,13 @@ const registrationLabels: Record<string, { label: string; className: string }> =
   pending: { label: "Pending", className: "bg-yellow-100 text-yellow-800" },
   inactive: { label: "Inactive", className: "bg-gray-100 text-gray-800" },
   error: { label: "Error", className: "bg-red-100 text-red-800" },
+}
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  active:   "statusActive",
+  pending:  "statusPending",
+  inactive: "statusInactive",
+  error:    "statusError",
 }
 
 export default function PeppolPage() {
@@ -95,7 +103,7 @@ export default function PeppolPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${regCfg.className}`}>
+            <span className={styles[STATUS_MODULE[status?.registration_status ?? "inactive"] ?? "statusInactive"]}>
               {status?.registered ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
               {regCfg.label}
             </span>

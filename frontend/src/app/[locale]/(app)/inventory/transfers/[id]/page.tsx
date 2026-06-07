@@ -7,6 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Truck, ArrowLeft, Send, PackageCheck, Ban } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface TransferItem {
   id: string;
@@ -36,6 +37,14 @@ const STATUS_COLORS: Record<Transfer["status"], string> = {
   PARTIAL: "bg-amber-100 text-amber-700",
   RECEIVED: "bg-green-100 text-green-700",
   CANCELLED: "bg-red-100 text-red-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  DRAFT:      "statusDraft",
+  IN_TRANSIT: "statusInTransit",
+  PARTIAL:    "statusPartial",
+  RECEIVED:   "statusReceived",
+  CANCELLED:  "statusCancelled",
 };
 
 export default function TransferDetailPage() {
@@ -100,7 +109,7 @@ export default function TransferDetailPage() {
             <p className="text-xs text-gray-500 font-mono">{t.id}</p>
           </div>
         </div>
-        <Badge className={STATUS_COLORS[t.status]}>{t.status}</Badge>
+        <span className={styles[STATUS_MODULE[t.status] ?? "statusDraft"]}>{t.status}</span>
       </div>
 
       <div className="rounded-xl border bg-white p-4 space-y-3">

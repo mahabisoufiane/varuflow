@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, Leaf, RefreshCw, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface CarbonEntry {
   id: string;
@@ -32,6 +33,12 @@ const SCOPE_COLORS: Record<number, string> = {
   1: "bg-orange-100 text-orange-700",
   2: "bg-yellow-100 text-yellow-700",
   3: "bg-blue-100 text-blue-700",
+};
+
+const SCOPE_MODULE: Record<string, keyof typeof styles> = {
+  "1": "scope1",
+  "2": "scope2",
+  "3": "scope3",
 };
 
 const SCOPE_CARD_COLORS: Record<number, { bg: string; text: string; label: string }> = {
@@ -276,7 +283,7 @@ export default function CarbonPage() {
           </div>
           {entries.map((entry) => (
             <div key={entry.id} className="flex items-center gap-4 px-5 py-3.5 flex-wrap">
-              <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0 ${SCOPE_COLORS[entry.scope] ?? "bg-gray-100 text-gray-600"}`}>
+              <span className={styles[SCOPE_MODULE[String(entry.scope)] ?? "scope1"]}>
                 Scope {entry.scope}
               </span>
               <div className="flex-1 min-w-0">

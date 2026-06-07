@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { api } from "@/lib/api-client";
 import { Plus, Pencil, UserCircle } from "lucide-react";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface Employee {
   id: string;
@@ -18,6 +19,12 @@ const statusColors: Record<Employee["status"], string> = {
   active: "bg-green-100 text-green-800",
   on_leave: "bg-yellow-100 text-yellow-800",
   terminated: "bg-red-100 text-red-800",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  active:     "statusActive",
+  on_leave:   "statusOnLeave",
+  terminated: "statusTerminated",
 };
 
 const statusLabels: Record<Employee["status"], string> = {
@@ -88,7 +95,7 @@ export default function EmployeesPage() {
                   <td className="vf-text-1 px-4 py-3">{emp.role}</td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[emp.status]}`}
+                      className={styles[STATUS_MODULE[emp.status] ?? "statusActive"]}
                     >
                       {statusLabels[emp.status]}
                     </span>

@@ -5,6 +5,7 @@ import { api } from "@/lib/api-client";
 import { RefreshCw, UserPlus, ChevronDown, ChevronRight, PlusCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface GroupParticipant {
   id: string;
@@ -30,6 +31,12 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending: { label: "Pending", color: "bg-amber-100 text-amber-700" },
   confirmed: { label: "Confirmed", color: "bg-green-100 text-green-700" },
   cancelled: { label: "Cancelled", color: "bg-gray-100 text-gray-500" },
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:   "statusPending",
+  confirmed: "statusConfirmed",
+  cancelled: "statusCancelled",
 };
 
 type StatusFilter = "all" | "pending" | "confirmed" | "cancelled";
@@ -303,7 +310,7 @@ export default function GroupBookingsPage() {
                       Split Payment
                     </span>
                   )}
-                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.color}`}>
+                  <span className={styles[STATUS_MODULE[b.status] ?? "statusPending"]}>
                     {cfg.label}
                   </span>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
