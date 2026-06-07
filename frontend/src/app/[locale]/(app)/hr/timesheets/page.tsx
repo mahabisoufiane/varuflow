@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 import {
   ChevronLeft,
   ChevronRight,
@@ -52,6 +53,13 @@ const STATUS_STYLE: Record<string, string> = {
   submitted: "bg-blue-100 text-blue-700",
   approved: "bg-emerald-100 text-emerald-700",
   rejected: "bg-rose-100 text-rose-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft: "statusDraft",
+  submitted: "statusSubmitted",
+  approved: "statusApproved",
+  rejected: "statusRejected",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -325,7 +333,7 @@ export default function TimesheetsPage() {
                 >
                   <td className="px-4 py-3 font-medium">{ts.staff_name}</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLE[ts.status]}`}>
+                    <span className={styles[STATUS_MODULE[ts.status] ?? "statusDraft"]}>
                       {STATUS_LABEL[ts.status]}
                     </span>
                   </td>
@@ -369,7 +377,7 @@ export default function TimesheetsPage() {
                 <h2 className="font-semibold text-base">{detail.staff_name}</h2>
                 <p className="text-xs vf-text-m mt-0.5">
                   Week of {detail.week_start} ·{" "}
-                  <span className={`px-1.5 py-0.5 rounded-full ${STATUS_STYLE[detail.status]}`}>
+                  <span className={styles[STATUS_MODULE[detail.status] ?? "statusDraft"]}>
                     {STATUS_LABEL[detail.status]}
                   </span>
                 </p>

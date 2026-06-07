@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -66,7 +67,7 @@ function TxRow({
   const isCredit = amount >= 0;
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 border-b last:border-0 hover:bg-gray-50 group">
+    <div className={styles.txRow}>
       <div className={`w-1.5 h-10 rounded-full flex-shrink-0 ${isCredit ? "bg-green-400" : "bg-red-400"}`} />
       <div className="flex-1 min-w-0">
         <p className="text-sm text-gray-800 truncate">{tx.description}</p>
@@ -79,7 +80,7 @@ function TxRow({
           )}
         </p>
       </div>
-      <span className={`font-mono text-sm font-semibold w-28 text-right flex-shrink-0 ${isCredit ? "text-green-600" : "text-red-500"}`}>
+      <span className={`w-28 text-right flex-shrink-0 ${isCredit ? styles.amountCredit : styles.amountDebit}`}>
         {isCredit ? "+" : ""}{fmt(tx.amount)} SEK
       </span>
       {tx.status === "UNMATCHED" && (
