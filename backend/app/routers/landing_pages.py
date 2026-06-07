@@ -26,8 +26,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.landing_page import LandingPage
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/landing-pages", tags=["landing-pages"])
+router = APIRouter(prefix="/api/landing-pages", tags=["landing-pages"], dependencies=[Depends(require_module("crm"))])
 log = logging.getLogger(__name__)
 
 

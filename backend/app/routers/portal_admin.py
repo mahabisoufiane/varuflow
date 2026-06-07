@@ -110,7 +110,29 @@ async def admin_tickets_list(
         if assigned_staff_id:
             q = q.where(PortalTicket.assigned_staff_id == uuid.UUID(assigned_staff_id))
         rows = (await db.execute(q.order_by(PortalTicket.created_at.desc()))).scalars().all()
-        return [{"id": str(t.id), "customer_id": str(t.customer_id), "subject": t.subject, "status": t.status, "priority": t.priority, "assigned_staff_id": str(t.assigned_staff_id) if t.assigned_staff_id else None, "created_at": t.created_at.isoformat()} for t in rows]
+        now = datetime.now(timezone.utc)
+        result = []
+        for t in rows:
+            sla_overdue = bool(
+                t.sla_hours and t.status not in ("resolved", "closed") and t.created_at and
+                (now - t.created_at).total_seconds() / 3600 > t.sla_hours
+            )
+            result.append({
+                "id": str(t.id),
+                "customer_id": str(t.customer_id),
+                "subject": t.subject,
+                "description": t.description,
+                "status": t.status,
+                "priority": t.priority,
+                "ticket_type": t.ticket_type,
+                "sla_hours": t.sla_hours,
+                "sla_overdue": sla_overdue,
+                "resolved_at": t.resolved_at.isoformat() if t.resolved_at else None,
+                "csat_token": t.csat_token,
+                "assigned_staff_id": str(t.assigned_staff_id) if t.assigned_staff_id else None,
+                "created_at": t.created_at.isoformat(),
+            })
+        return result
     except HTTPException:
         raise
     except Exception as e:

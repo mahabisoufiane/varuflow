@@ -264,8 +264,7 @@ export default function SettingsPage() {
                 </div>
               ))}
               {companyError && (
-                <p className="text-xs text-red-400 rounded-lg px-3 py-2"
-                  className={styles.errorMsg}>
+                <p className={cx("text-xs text-red-400 rounded-lg px-3 py-2", styles.errorMsg)}>
                   {companyError}
                 </p>
               )}
@@ -300,8 +299,7 @@ export default function SettingsPage() {
                 </div>
               ))}
               {pwError && (
-                <p className="text-xs text-red-400 rounded-lg px-3 py-2"
-                  className={styles.errorMsg}>
+                <p className={cx("text-xs text-red-400 rounded-lg px-3 py-2", styles.errorMsg)}>
                   {pwError}
                 </p>
               )}
@@ -380,8 +378,7 @@ export default function SettingsPage() {
                             <option value="MEMBER">Member</option>
                           </select>
                         ) : (
-                          <span className="rounded-full px-2.5 py-0.5 text-xs font-medium vf-text-m capitalize"
-                            className={styles.roleBadge}>
+                          <span className={cx("rounded-full px-2.5 py-0.5 text-xs font-medium vf-text-m capitalize", styles.roleBadge)}>
                             {m.role.toLowerCase()}
                           </span>
                         )}
@@ -389,13 +386,12 @@ export default function SettingsPage() {
                         {isOwner && m.role === "MEMBER" && (
                           <button
                             onClick={() => toggleModulePanel(m.id)}
-                            className={cn(
+                            className={cx(cn(
                               "h-7 flex items-center gap-1 px-2 rounded-lg text-[11px] font-medium transition-colors",
                               isPanelOpen
                                 ? "bg-indigo-500/15 text-indigo-400"
                                 : "vf-text-m hover:vf-text-2",
-                            )}
-                            className={styles.iconBtn}
+                            ), styles.iconBtn)}
                             title="Assign modules">
                             <Settings2 className="h-3.5 w-3.5" />
                             <span className="hidden sm:inline">Modules</span>
@@ -404,8 +400,7 @@ export default function SettingsPage() {
                         )}
                         {isOwner && (
                           <button onClick={() => handleRemove(m.id)}
-                            className="h-7 w-7 flex items-center justify-center rounded-lg vf-text-m hover:text-red-400 transition-colors"
-                            className={styles.iconBtn}>
+                            className={cx("h-7 w-7 flex items-center justify-center rounded-lg vf-text-m hover:text-red-400 transition-colors", styles.iconBtn)}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         )}
@@ -438,10 +433,10 @@ export default function SettingsPage() {
                               <p className="text-xs vf-text-m col-span-3">Loading…</p>
                             )}
                             {planMods.map((mod) => (
-                              <label key={mod} className={cn(
+                              <label key={mod} className={cx(cn(
                                 "flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer select-none text-[12px] transition-colors",
                                 checked.includes(mod) ? "bg-indigo-500/10 text-indigo-400" : "vf-text-2 hover:bg-[var(--vf-hover)]"
-                              )} className={styles.iconBtn}>
+                              ), styles.iconBtn)}>
                                 <input type="checkbox"
                                   checked={checked.includes(mod)}
                                   onChange={() => setModuleEdits(s => ({
@@ -562,8 +557,7 @@ function BillingTab({ plan }: { plan: string }) {
         </div>
 
         {plan === "FREE" && (
-          <div className="rounded-xl p-4 space-y-3"
-            className={styles.brandCard}>
+          <div className={cx("rounded-xl p-4 space-y-3", styles.brandCard)}>
             <p className="text-sm font-medium text-indigo-400">Upgrade to Varuflow PRO</p>
             <ul className="space-y-1.5">
               {["Unlimited invoices", "Team members", "Peppol XML export", "Analytics", "Priority support"].map(f => (
@@ -628,8 +622,7 @@ function IntegrationsTab() {
       <div className="vf-section p-6 space-y-5" >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl"
-              className={styles.brandCard}>
+            <div className={cx("flex h-10 w-10 items-center justify-center rounded-xl", styles.brandCard)}>
               <span className="text-lg font-bold text-indigo-400">F</span>
             </div>
             <div>
@@ -640,13 +633,11 @@ function IntegrationsTab() {
           {loading ? (
             <div className="h-8 w-24 skeleton rounded-lg" />
           ) : status?.connected ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-emerald-400"
-              className={styles.statusConnected}>
+            <span className={cx("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-emerald-400", styles.statusConnected)}>
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse-dot" />Connected
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium vf-text-m"
-              className={styles.roleBadge}>
+            <span className={cx("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium vf-text-m", styles.roleBadge)}>
               Not connected
             </span>
           )}
@@ -670,8 +661,7 @@ function IntegrationsTab() {
                 {syncing === "customers" ? "Syncing…" : "Pull customers ← Fortnox"}
               </button>
               <button onClick={handleDisconnect}
-                className="ml-auto inline-flex items-center gap-1.5 rounded-lg px-3 h-9 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
-                className={styles.disconnectBtn}>
+                className={cx("ml-auto inline-flex items-center gap-1.5 rounded-lg px-3 h-9 text-xs text-red-400 hover:bg-red-500/10 transition-colors", styles.disconnectBtn)}>
                 <Link2Off className="h-3.5 w-3.5" />Disconnect
               </button>
             </div>
@@ -752,8 +742,7 @@ function NotificationsTab() {
     <div className="space-y-4">
       <div className="vf-section p-6 space-y-5" >
         <div className="flex items-center gap-3 mb-1">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl"
-            className={styles.brandIcon}>
+          <div className={cx("flex h-9 w-9 items-center justify-center rounded-xl", styles.brandIcon)}>
             <Bell className="h-4 w-4 text-indigo-400" />
           </div>
           <div>
@@ -763,16 +752,13 @@ function NotificationsTab() {
         </div>
 
         {permission === "unsupported" && (
-          <div className="rounded-xl px-4 py-3 text-sm text-amber-300"
-            className={styles.warningBanner}>
+          <div className={cx("rounded-xl px-4 py-3 text-sm text-amber-300", styles.warningBanner)}>
             Your browser doesn&apos;t support push notifications.
           </div>
         )}
         {permission === "granted" && (
-          <div className="flex items-center gap-3 rounded-xl px-4 py-3"
-            className={styles.successBanner}>
-            <span className="flex h-8 w-8 items-center justify-center rounded-full"
-              className={styles.successIcon}>
+          <div className={cx("flex items-center gap-3 rounded-xl px-4 py-3", styles.successBanner)}>
+            <span className={cx("flex h-8 w-8 items-center justify-center rounded-full", styles.successIcon)}>
               <Check className="h-4 w-4 text-emerald-400" />
             </span>
             <div>
@@ -782,8 +768,7 @@ function NotificationsTab() {
           </div>
         )}
         {permission === "denied" && (
-          <div className="rounded-xl px-4 py-3 text-sm text-red-400"
-            className={styles.errorMsg}>
+          <div className={cx("rounded-xl px-4 py-3 text-sm text-red-400", styles.errorMsg)}>
             Notifications are blocked. Click the lock icon in your browser&apos;s address bar to allow them.
           </div>
         )}
@@ -838,8 +823,7 @@ function NotificationsTab() {
 
       <div className="vf-section p-6 space-y-3" >
         <div className="flex items-center gap-3 mb-1">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl"
-            className={styles.brandIcon}>
+          <div className={cx("flex h-9 w-9 items-center justify-center rounded-xl", styles.brandIcon)}>
             <Smartphone className="h-4 w-4 text-indigo-400" />
           </div>
           <h2 className="text-[13px] font-semibold vf-text-1">Install app</h2>
@@ -896,8 +880,7 @@ function NightlySummaryCard() {
   return (
     <div className="vf-section p-6 space-y-4" >
       <div className="flex items-center gap-3 mb-1">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl"
-          className={styles.brandIcon}>
+        <div className={cx("flex h-9 w-9 items-center justify-center rounded-xl", styles.brandIcon)}>
           <Bell className="h-4 w-4 text-indigo-400" />
         </div>
         <div>
@@ -938,8 +921,7 @@ function NightlySummaryCard() {
             </button>
           </label>
 
-          <div className="flex items-center gap-3 pt-3"
-            className={styles.divider}>
+          <div className={cx("flex items-center gap-3 pt-3", styles.divider)}>
             <Label htmlFor="nightly-summary-time" className="text-sm vf-text-1 flex-1">
               Send at (Europe/Stockholm)
             </Label>

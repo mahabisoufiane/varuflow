@@ -18,9 +18,10 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.inventory import Product, StockLevel, Warehouse
 from app.models.kits import KitAssembly, KitComponent, KitDefinition
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/kits", tags=["kitting"])
+router = APIRouter(prefix="/api/kits", tags=["kitting"], dependencies=[Depends(require_module("inventory"))])
 
 
 # ── Pydantic schemas ──────────────────────────────────────────────────────────

@@ -34,8 +34,9 @@ from app.middleware.auth import get_current_member
 from app.models.inventory import Product
 from app.models.multi_entity import FranchiseAgreement, FranchiseCatalogPush, RoyaltyBilling
 from app.models.organization import Organization
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/franchise", tags=["franchise"])
+router = APIRouter(prefix="/api/franchise", tags=["franchise"], dependencies=[Depends(require_module("analytics"))])
 log = logging.getLogger(__name__)
 
 

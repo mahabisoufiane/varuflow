@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Wrench, Plus, X, MapPin } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 interface Staff { id: string; name: string }
 interface Customer { id: string; name: string }
@@ -20,9 +21,6 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function WorkOrdersPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string, init?: RequestInit) => fetch(`${apiBase}${url}`, { credentials: "include", ...init });
-
   const [orders, setOrders] = useState<WorkOrder[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -34,9 +32,9 @@ export default function WorkOrdersPage() {
   async function load() {
     const params = filterStatus ? `?status=${filterStatus}` : "";
     const [o, s, c] = await Promise.all([
-      f(`/api/work/work-orders${params}`).then(r => r.ok ? r.json() : []),
-      f("/api/hr/employees").then(r => r.ok ? r.json() : []),
-      f("/api/invoicing/customers").then(r => r.ok ? r.json() : []),
+      api.get<WorkOrder[]>(`/api/work/work-orders${params}`).catch(() => [] as WorkOrder[]),
+      api.get<Staff[]>("/api/hr/employees").catch(() => [] as Staff[]),
+      api.get<Customer[]>("/api/invoicing/customers").catch(() => [] as Customer[]),
     ]);
     setOrders(o); setStaff(s); setCustomers(c); setLoading(false);
   }
@@ -46,18 +44,19 @@ export default function WorkOrdersPage() {
   async function create() {
     if (!form.title.trim()) { toast.error("Title required"); return; }
     const body = { ...form, customer_id: form.customer_id || null, assigned_staff_id: form.assigned_staff_id || null, scheduled_date: form.scheduled_date || null };
-    const res = await f("/api/work/work-orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    if (!res.ok) { toast.error("Failed"); return; }
-    toast.success("Work order created"); setShowForm(false); setForm({ title: "", description: "", customer_id: "", assigned_staff_id: "", priority: "medium", scheduled_date: "", location: "" }); load();
+    try {
+      await api.post<WorkOrder>("/api/work/work-orders", body);
+      toast.success("Work order created"); setShowForm(false); setForm({ title: "", description: "", customer_id: "", assigned_staff_id: "", priority: "medium", scheduled_date: "", location: "" }); load();
+    } catch { toast.error("Failed"); }
   }
 
   async function updateStatus(id: string, status: string) {
-    await f(`/api/work/work-orders/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
+    await api.patch<WorkOrder>(`/api/work/work-orders/${id}`, { status });
     load();
   }
 
   async function remove(id: string) {
-    await f(`/api/work/work-orders/${id}`, { method: "DELETE" });
+    await api.delete(`/api/work/work-orders/${id}`);
     setOrders(prev => prev.filter(o => o.id !== id)); toast.success("Deleted");
   }
 

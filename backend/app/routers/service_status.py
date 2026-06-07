@@ -23,8 +23,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.service_status_alert import ServiceStatusAlert
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/service-status", tags=["service-status"])
+router = APIRouter(prefix="/api/service-status", tags=["service-status"], dependencies=[Depends(require_module("pos"))])
 log = logging.getLogger(__name__)
 
 _VALID_ALERT_TYPES = {

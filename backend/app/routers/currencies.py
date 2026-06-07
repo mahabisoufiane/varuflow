@@ -33,8 +33,9 @@ from app.services.currency import (
     store_rates,
     symbol_for,
 )
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/currencies", tags=["currencies"])
+router = APIRouter(prefix="/api/currencies", tags=["currencies"], dependencies=[Depends(require_module("settings"))])
 
 
 # ── Schemas ───────────────────────────────────────────────────────

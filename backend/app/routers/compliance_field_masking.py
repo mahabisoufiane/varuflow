@@ -23,10 +23,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.compliance import FieldMaskingRule
 from app.services.field_masking import DEFAULT_MEMBER_RULES, mask_value
 
-router = APIRouter(prefix="/api/compliance/field-masking", tags=["compliance_field_masking"])
+router = APIRouter(prefix="/api/compliance/field-masking", tags=["compliance_field_masking"], dependencies=[Depends(require_module("compliance"))])
 log = logging.getLogger(__name__)
 
 VALID_ROLES = {"member", "viewer", "accountant"}

@@ -8,7 +8,7 @@ test.describe('Dashboard & Navigation', () => {
     await expect(kpiStrip).toBeVisible({ timeout: 10_000 });
     // Expect at least 3 metric cards inside the strip
     const cards = kpiStrip.locator('[data-testid="metric-card"]');
-    await expect(cards).toHaveCountGreaterThan(2);
+    await expect(cards).toHaveCount(3);
   });
 
   test('locked/Pro features show upgrade prompt on Starter plan', async ({ authedPage: page }) => {

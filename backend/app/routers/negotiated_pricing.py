@@ -18,9 +18,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.customer_price_override import CustomerPriceOverride
 
-router = APIRouter(prefix="/api/negotiated-pricing", tags=["negotiated-pricing"])
+router = APIRouter(prefix="/api/negotiated-pricing", tags=["negotiated-pricing"], dependencies=[Depends(require_module("crm"))])
 logger = logging.getLogger(__name__)
 
 

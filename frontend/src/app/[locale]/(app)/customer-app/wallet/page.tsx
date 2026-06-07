@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api-client";
 import { RefreshCw, CreditCard, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -26,11 +25,6 @@ const PLATFORM_BADGE: Record<string, string> = {
 type PlatformFilter = "all" | "apple" | "google";
 
 export default function WalletPassesPage() {
-  const router = useRouter();
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale ?? "en";
-  const supabase = createClient();
-
   const [passes, setPasses] = useState<WalletPass[]>([]);
   const [loading, setLoading] = useState(true);
   const [platformFilter, setPlatformFilter] = useState<PlatformFilter>("all");
@@ -38,22 +32,11 @@ export default function WalletPassesPage() {
   const [showIssueForm, setShowIssueForm] = useState(false);
   const [issueForm, setIssueForm] = useState({ customer_id: "", platform: "apple", tier: "" });
 
-  async function getToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }
-  function apiUrl(p: string) { return `${process.env.NEXT_PUBLIC_API_URL}${p}`; }
-
   async function load() {
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push(`/${locale}/auth/login`); return; }
-      const res = await fetch(apiUrl("/api/wallet"), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (res.ok) setPasses(await res.json());
+      const data = await api.get<WalletPass[]>("/api/wallet");
+      setPasses(data);
     } catch {
       toast.error("Failed to load wallet passes");
     } finally {
@@ -66,17 +49,7 @@ export default function WalletPassesPage() {
   async function syncPass(id: string) {
     setActionLoading(id + "_sync");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/wallet/${id}/sync`), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Sync failed");
-        return;
-      }
+      await api.post(`/api/wallet/${id}/sync`, {});
       toast.success("Pass synced");
       await load();
     } catch {
@@ -89,17 +62,7 @@ export default function WalletPassesPage() {
   async function revokePass(id: string) {
     setActionLoading(id + "_revoke");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/wallet/${id}/revoke`), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Revoke failed");
-        return;
-      }
+      await api.post(`/api/wallet/${id}/revoke`, {});
       toast.success("Pass revoked");
       await load();
     } catch {
@@ -113,22 +76,11 @@ export default function WalletPassesPage() {
     if (!issueForm.customer_id.trim()) { toast.error("Customer ID is required"); return; }
     setActionLoading("issue");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl("/api/wallet"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          customer_id: issueForm.customer_id,
-          platform: issueForm.platform,
-          tier: issueForm.tier || null,
-        }),
+      await api.post("/api/wallet", {
+        customer_id: issueForm.customer_id,
+        platform: issueForm.platform,
+        tier: issueForm.tier || null,
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to issue pass");
-        return;
-      }
       toast.success("Wallet pass issued");
       setShowIssueForm(false);
       setIssueForm({ customer_id: "", platform: "apple", tier: "" });

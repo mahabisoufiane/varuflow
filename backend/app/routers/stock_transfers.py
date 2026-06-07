@@ -48,8 +48,9 @@ from app.services.email import (
 )
 
 log = logging.getLogger(__name__)
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/stock-transfers", tags=["stock-transfers"])
+router = APIRouter(prefix="/api/stock-transfers", tags=["stock-transfers"], dependencies=[Depends(require_module("inventory"))])
 
 
 # ═══════════════════════════════════════════════════════════════════

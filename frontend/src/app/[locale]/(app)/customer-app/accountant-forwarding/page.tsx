@@ -1,18 +1,10 @@
 "use client";
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-
-function getToken() {
-  return typeof window !== "undefined"
-    ? localStorage.getItem("auth_token") ?? ""
-    : "";
-}
 
 interface ForwardingConfig {
   customer_id: string;
@@ -21,8 +13,6 @@ interface ForwardingConfig {
 }
 
 export default function AccountantForwardingPage() {
-  const { locale } = useParams<{ locale: string }>();
-
   const [customerIdInput, setCustomerIdInput] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [config, setConfig] = useState<ForwardingConfig | null>(null);
@@ -35,25 +25,21 @@ export default function AccountantForwardingPage() {
 
   async function loadConfig() {
     if (!customerIdInput.trim()) return;
-    setCustomerId(customerIdInput.trim());
+    const cid = customerIdInput.trim();
+    setCustomerId(cid);
     setLoading(true);
     setError("");
     setConfig(null);
     try {
-      const res = await fetch(
-        `${API}/api/accountant-forwarding/${encodeURIComponent(customerIdInput.trim())}`,
-        { headers: { Authorization: `Bearer ${getToken()}` } }
-      );
-      if (res.status === 404) {
-        setConfig(null);
-      } else if (!res.ok) {
-        throw new Error(`Error ${res.status}`);
-      } else {
-        const data = await res.json();
-        setConfig(data);
-      }
+      const data = await api.get<ForwardingConfig>(`/api/accountant-forwarding/${encodeURIComponent(cid)}`);
+      setConfig(data);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to load config");
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.includes("404")) {
+        setConfig(null); // No config yet — normal case
+      } else {
+        setError(msg || "Failed to load config");
+      }
     } finally {
       setLoading(false);
     }
@@ -65,19 +51,10 @@ export default function AccountantForwardingPage() {
     setFormLoading(true);
     setFormError("");
     try {
-      const res = await fetch(
-        `${API}/api/accountant-forwarding/${customerId}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ accountant_email: emailInput, is_active: true }),
-        }
-      );
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data = await res.json();
+      const data = await api.put<ForwardingConfig>(`/api/accountant-forwarding/${customerId}`, {
+        accountant_email: emailInput,
+        is_active: true,
+      });
       setConfig(data);
       setEmailInput("");
     } catch (e: unknown) {
@@ -91,14 +68,7 @@ export default function AccountantForwardingPage() {
     if (!customerId) return;
     setError("");
     try {
-      const res = await fetch(
-        `${API}/api/accountant-forwarding/${customerId}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }
-      );
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.delete(`/api/accountant-forwarding/${customerId}`);
       setConfig((prev) => prev ? { ...prev, is_active: false } : null);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to deactivate");
@@ -109,22 +79,10 @@ export default function AccountantForwardingPage() {
     if (!customerId || !config) return;
     setError("");
     try {
-      const res = await fetch(
-        `${API}/api/accountant-forwarding/${customerId}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            accountant_email: config.accountant_email,
-            is_active: true,
-          }),
-        }
-      );
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data = await res.json();
+      const data = await api.put<ForwardingConfig>(`/api/accountant-forwarding/${customerId}`, {
+        accountant_email: config.accountant_email,
+        is_active: true,
+      });
       setConfig(data);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to reactivate");

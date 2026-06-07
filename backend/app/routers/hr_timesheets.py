@@ -30,13 +30,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.bookings import Staff
 from app.models.employee_contracts import EmployeeContract
 from app.models.shift import Shift, ShiftPunch
 from app.models.timesheet import Timesheet, TimesheetLine
 
 log = logging.getLogger(__name__)
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_module("hr"))])
 
 _DEFAULT_WEEKLY_HOURS = Decimal("40")
 

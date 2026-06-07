@@ -33,8 +33,9 @@ from app.models.expenses import Expense, ExpenseCategory, ExpenseStatus
 from app.models.mileage_log import MileageLog
 from app.services import mileage as svc_98
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/mileage-logs", tags=["mileage-logs"])
+router = APIRouter(prefix="/api/mileage-logs", tags=["mileage-logs"], dependencies=[Depends(require_module("hr"))])
 
 log = logging.getLogger(__name__)
 

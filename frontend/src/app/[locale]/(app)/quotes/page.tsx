@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { api } from "@/lib/api-client";
 
 interface QuoteSummary { id: string; quote_number: string | null; revision: number; title: string; status: string; total: number; currency: string; customer_id: string; valid_until: string | null; created_at: string | null; }
 
@@ -10,8 +11,7 @@ export default function QuotesPage() {
 
   const load = () => {
     const params = filter ? `?status=${filter}` : "";
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quotes${params}`, { credentials: "include" })
-      .then(r => r.ok ? r.json() : []).then(setQuotes);
+    api.get<QuoteSummary[]>(`/api/quotes${params}`).then(setQuotes).catch(() => {});
   };
 
   useEffect(() => { load(); }, [filter]);

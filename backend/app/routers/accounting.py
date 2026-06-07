@@ -33,11 +33,12 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.invoicing import Customer, Invoice, InvoiceStatus
 from app.models.organization import Organization, OrgRole
 from app.services.audit import log_action
 
-router = APIRouter(prefix="/api/accounting", tags=["accounting"])
+router = APIRouter(prefix="/api/accounting", tags=["accounting"], dependencies=[Depends(require_module("finance"))])
 log = logging.getLogger(__name__)
 
 # BAS chart account numbers + human-readable labels that go into #KONTO.

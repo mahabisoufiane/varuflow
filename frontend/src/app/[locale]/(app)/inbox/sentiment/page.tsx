@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
 
 function sentimentClass(s: string) {
   const map: Record<string, string> = {
@@ -63,16 +59,10 @@ export default function SentimentPage() {
     setAnalyzeError("");
     setResult(null);
     try {
-      const res = await fetch(`${API}/api/inbox/sentiment/analyze`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message_id: analyzeId }),
+      const data = await api.post<SentimentResult>("/api/inbox/sentiment/analyze", {
+        message_id: analyzeId,
       });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setResult(await res.json());
+      setResult(data);
     } catch (e: unknown) {
       setAnalyzeError(e instanceof Error ? e.message : "Analysis failed");
     } finally {
@@ -84,11 +74,8 @@ export default function SentimentPage() {
     setFlaggedLoading(true);
     setFlaggedError("");
     try {
-      const res = await fetch(`${API}/api/inbox/sentiment/flagged`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setFlagged(await res.json());
+      const data = await api.get<FlaggedThread[]>("/api/inbox/sentiment/flagged");
+      setFlagged(data);
     } catch (e: unknown) {
       setFlaggedError(e instanceof Error ? e.message : "Failed to load flagged threads");
     } finally {

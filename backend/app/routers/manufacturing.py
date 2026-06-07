@@ -14,12 +14,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.bom import BomHeader, BomLine
 from app.models.inventory import Product, StockLevel, StockMovement, StockMovementType
 from app.models.work_orders_mfg import WorkOrder, WorkOrderLabourLine, WorkOrderMaterialLine
 
 log = logging.getLogger(__name__)
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_module("manufacturing"))])
 
 VALID_WO_STATUSES = {"draft", "planned", "in_progress", "completed", "cancelled"}
 

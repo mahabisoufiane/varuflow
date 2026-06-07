@@ -39,7 +39,7 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "var(--vf-bg-primary)" }}>
+    <div className="dark min-h-screen flex flex-col" style={{ background: "#070B12" }}>
       <header
         className="sticky top-0 z-50 border-b"
         style={{

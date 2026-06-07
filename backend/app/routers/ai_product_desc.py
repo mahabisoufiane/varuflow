@@ -14,11 +14,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.ai_product_description import AiProductDescription
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/ai/product-descriptions", tags=["ai-product-descriptions"])
+router = APIRouter(prefix="/api/ai/product-descriptions", tags=["ai-product-descriptions"], dependencies=[Depends(require_module("ai"))])
 
 
 def _org_id(ctx: tuple) -> uuid.UUID:

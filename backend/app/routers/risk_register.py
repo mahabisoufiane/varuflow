@@ -24,9 +24,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.risk import RiskItem
 
-router = APIRouter(prefix="/api/risk", tags=["risk_register"])
+router = APIRouter(prefix="/api/risk", tags=["risk_register"], dependencies=[Depends(require_module("compliance"))])
 log = logging.getLogger(__name__)
 
 _LIKELIHOOD_MAP = {"low": 1, "medium": 2, "high": 3, "critical": 4}

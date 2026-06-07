@@ -71,7 +71,7 @@ export default function OnboardingChecklist() {
           particleCount: 140,
           spread: 90,
           origin: { y: 0.35 },
-          colors: ["#6366f1", "#10b981", "#f59e0b", "#ec4899"],
+          colors: ["#4A6CF7", "#059669", "#D97706", "#ec4899"],
         });
       })
       .catch(() => {/* offline or blocked — silent */});

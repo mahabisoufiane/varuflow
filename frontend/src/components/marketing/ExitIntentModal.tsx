@@ -19,7 +19,11 @@ function getCookie(name: string): string {
     ?.split("=")[1] ?? "";
 }
 
-export default function ExitIntentModal() {
+export default function ExitIntentModal(_props: {
+  headline?: string;
+  subheadline?: string;
+  ctaLabel?: string;
+}) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {

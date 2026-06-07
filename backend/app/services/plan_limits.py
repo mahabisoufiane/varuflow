@@ -127,6 +127,37 @@ PLAN_FEATURES: dict[str, frozenset[str]] = {
     "ENTERPRISE": _ENTERPRISE_FEATURES,
 }
 
+# ── Module-to-plan mapping ───────────────────────────────────────────────────
+# Defines which app modules are available per plan tier.
+# Used by require_module() middleware to gate route access.
+PLAN_MODULES: dict[str, frozenset[str]] = {
+    # Core tools only — enough to create invoices, track stock, and manage
+    # basic settings. Excludes POS, analytics, CRM, HR, Finance, and AI
+    # to create clear upgrade incentives for growing businesses.
+    "FREE": frozenset({
+        "dashboard",   # overview page only (no BI reports)
+        "invoicing",   # invoices, quotes, customers, shop orders
+        "inventory",   # products, suppliers, stock counts, transfers
+        "settings",    # account, team (≤3 users), integrations
+    }),
+    # Full business operations suite — everything a scaling team needs.
+    "PRO": frozenset({
+        "dashboard",
+        "analytics",   # BI dashboards, reports, forecasting, cohorts
+        "pos",         # cash register + Z-reports + sessions
+        "invoicing",
+        "inventory",
+        "crm",         # pipeline, leads, forecast, B2B hub
+        "hr",          # employees, scheduling, timesheets, projects
+        "finance",     # accounting, payroll, budget, CEO dashboard, reconciliation
+        "ai",          # AI advisor, automations, workflows, email drafts
+        "manufacturing",  # BOMs, work orders, production planning
+        "settings",
+    }),
+    # Unlimited resources + platform features (white-label, API, multi-entity).
+    "ENTERPRISE": frozenset({"*"}),
+}
+
 # Threshold at which an ApproachingLimitError is raised instead of blocking.
 WARNING_THRESHOLD = 0.80
 

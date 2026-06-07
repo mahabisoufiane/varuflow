@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,14 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-
-function getToken() {
-  return typeof window !== "undefined"
-    ? localStorage.getItem("auth_token") ?? ""
-    : "";
-}
+import { api } from "@/lib/api-client";
 
 type MemberRole = "admin" | "approver" | "requester";
 
@@ -53,8 +45,6 @@ function truncate(str: string, len = 8) {
 }
 
 export default function OrgMembersPage() {
-  const { locale } = useParams<{ locale: string }>();
-
   const [customerIdInput, setCustomerIdInput] = useState("");
   const [customerId, setCustomerId] = useState("");
 
@@ -86,11 +76,8 @@ export default function OrgMembersPage() {
     setMembersLoading(true);
     setMembersError("");
     try {
-      const res = await fetch(`${API}/api/customer-org/${id}/members`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setMembers(await res.json());
+      const data = await api.get<OrgMember[]>(`/api/customer-org/${id}/members`);
+      setMembers(data);
     } catch (e: unknown) {
       setMembersError(e instanceof Error ? e.message : "Failed to load members");
     } finally {
@@ -102,11 +89,8 @@ export default function OrgMembersPage() {
     setApprovalsLoading(true);
     setApprovalsError("");
     try {
-      const res = await fetch(`${API}/api/customer-org/${id}/approvals`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setApprovals(await res.json());
+      const data = await api.get<Approval[]>(`/api/customer-org/${id}/approvals`);
+      setApprovals(data);
     } catch (e: unknown) {
       setApprovalsError(e instanceof Error ? e.message : "Failed to load approvals");
     } finally {
@@ -120,19 +104,11 @@ export default function OrgMembersPage() {
     setInviteLoading(true);
     setInviteError("");
     try {
-      const res = await fetch(`${API}/api/customer-org/${customerId}/members`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          member_email: inviteEmail,
-          member_name: inviteName || undefined,
-          role: inviteRole,
-        }),
+      await api.post(`/api/customer-org/${customerId}/members`, {
+        member_email: inviteEmail,
+        member_name: inviteName || undefined,
+        role: inviteRole,
       });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
       setInviteEmail("");
       setInviteName("");
       setInviteRole("requester");
@@ -148,14 +124,7 @@ export default function OrgMembersPage() {
     if (!customerId) return;
     setMembersError("");
     try {
-      const res = await fetch(
-        `${API}/api/customer-org/${customerId}/members/${memberId}/deactivate`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }
-      );
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post(`/api/customer-org/${customerId}/members/${memberId}/deactivate`, {});
       await loadMembers(customerId);
     } catch (e: unknown) {
       setMembersError(e instanceof Error ? e.message : "Failed to deactivate member");
@@ -169,14 +138,7 @@ export default function OrgMembersPage() {
     if (!customerId) return;
     setApprovalsError("");
     try {
-      const res = await fetch(
-        `${API}/api/customer-org/${customerId}/approvals/${approvalId}/${action}`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }
-      );
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post(`/api/customer-org/${customerId}/approvals/${approvalId}/${action}`, {});
       await loadApprovals(customerId);
     } catch (e: unknown) {
       setApprovalsError(e instanceof Error ? e.message : `Failed to ${action}`);

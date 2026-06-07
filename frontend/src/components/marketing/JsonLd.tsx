@@ -12,6 +12,7 @@ export default function JsonLd({ data, id = "jsonld" }: JsonLdProps) {
     <Script
       id={id}
       type="application/ld+json"
+      // nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );

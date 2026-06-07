@@ -14,9 +14,10 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.bom import BomHeader, BomLine
 from app.models.inventory import Product
+from app.middleware.plan_check import require_module
 
 log = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/manufacturing/boms", tags=["bom"])
+router = APIRouter(prefix="/api/manufacturing/boms", tags=["bom"], dependencies=[Depends(require_module("manufacturing"))])
 
 
 def _row(obj: Any) -> dict:

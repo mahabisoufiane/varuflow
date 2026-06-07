@@ -28,8 +28,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.sop import SopDocument, SopVersion
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/sop", tags=["sop"])
+router = APIRouter(prefix="/api/sop", tags=["sop"], dependencies=[Depends(require_module("hr"))])
 log = logging.getLogger(__name__)
 
 _VALID_STATUSES = {"draft", "published", "archived"}

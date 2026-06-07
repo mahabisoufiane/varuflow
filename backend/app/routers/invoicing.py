@@ -69,6 +69,7 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.idempotency import IdempotencyKey
 from app.models.invoicing import (
     Customer,
@@ -93,7 +94,7 @@ from app.schemas.invoicing import (
 )
 from app.services.plan_limits import RESOURCE_INVOICES_PER_MONTH, LimitExceededError, check_limit
 
-router = APIRouter(prefix="/api/invoicing", tags=["invoicing"])
+router = APIRouter(prefix="/api/invoicing", tags=["invoicing"], dependencies=[Depends(require_module("invoicing"))])
 
 NAVY = colors.HexColor("#1a2332")
 LIGHT_GRAY = colors.HexColor("#f3f4f6")

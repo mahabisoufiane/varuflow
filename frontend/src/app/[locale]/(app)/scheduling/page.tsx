@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Calendar, AlertTriangle } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 interface ShiftEntry { id: string; start_at: string; end_at: string; notes: string | null }
 interface StaffRoster { staff_id: string; staff_name: string; shifts: ShiftEntry[] }
+interface OvertimeEntry { staff_id: string; total_hours: number; is_overtime: boolean }
 
 function isoDate(d: Date) { return d.toISOString().slice(0, 10); }
 function addDays(d: Date, n: number) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
@@ -13,11 +15,8 @@ function getMonday(d: Date) { const day = d.getDay(); return addDays(d, day === 
 const DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function RosterPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string) => fetch(`${apiBase}${url}`, { credentials: "include" });
-
   const [roster, setRoster] = useState<StaffRoster[]>([]);
-  const [overtime, setOvertime] = useState<{ staff_id: string; total_hours: number; is_overtime: boolean }[]>([]);
+  const [overtime, setOvertime] = useState<OvertimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [weekStart, setWeekStart] = useState<Date>(getMonday(new Date()));
 
@@ -26,8 +25,8 @@ export default function RosterPage() {
 
   useEffect(() => {
     Promise.all([
-      f(`/api/scheduling/roster?week_start=${weekStr}`).then(r => r.ok ? r.json() : []),
-      f(`/api/scheduling/overtime?week_start=${weekStr}`).then(r => r.ok ? r.json() : []),
+      api.get<StaffRoster[]>(`/api/scheduling/roster?week_start=${weekStr}`).catch(() => [] as StaffRoster[]),
+      api.get<OvertimeEntry[]>(`/api/scheduling/overtime?week_start=${weekStr}`).catch(() => [] as OvertimeEntry[]),
     ]).then(([r, o]) => { setRoster(r); setOvertime(o); setLoading(false); });
   }, [weekStr]);
 

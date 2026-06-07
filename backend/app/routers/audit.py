@@ -24,8 +24,9 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.audit import AuditLogEntry
 from app.models.organization import OrgRole
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/audit", tags=["audit"])
+router = APIRouter(prefix="/api/audit", tags=["audit"], dependencies=[Depends(require_module("settings"))])
 
 log = logging.getLogger(__name__)
 

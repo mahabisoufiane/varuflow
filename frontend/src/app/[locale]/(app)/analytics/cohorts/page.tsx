@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 
 interface RetentionPoint { month_offset: number; retained: number; rate: number }
 interface Cohort { cohort_month: string; cohort_size: number; retention: RetentionPoint[] }
@@ -18,19 +19,17 @@ function heatColor(rate: number): string {
 }
 
 export default function CohortsPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [data, setData] = useState<CohortsData | null>(null);
   const [months, setMonths] = useState(12);
   const [loading, setLoading] = useState(false);
 
-  const f = (url: string) => fetch(`${apiBase}${url}`, { credentials: "include" });
-
   async function load(m: number) {
     setLoading(true);
     try {
-      const res = await f(`/api/bi/cohorts?months=${m}`);
-      if (res.ok) setData(await res.json());
-      else { const e = await res.json(); toast.error(e.detail || "Failed"); }
+      const result = await api.get<CohortsData>(`/api/bi/cohorts?months=${m}`);
+      setData(result);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed");
     } finally { setLoading(false); }
   }
 

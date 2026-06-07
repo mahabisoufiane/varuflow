@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Calendar, Users } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 interface LeaveRequest {
   id: string; staff_id: string; staff_name?: string;
@@ -45,9 +46,6 @@ function overlapsDays(leave: LeaveRequest, days: string[]) {
 }
 
 export default function LeaveCalendarPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string) => fetch(`${apiBase}${url}`, { credentials: "include" });
-
   const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
   const [staff, setStaff] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,14 +58,13 @@ export default function LeaveCalendarPage() {
 
   useEffect(() => {
     // Load approved leaves for a 3-month window
-    const from = isoDate(addDays(weekStart, -30));
-    const to = isoDate(addDays(weekStart, 90));
     Promise.all([
-      f(`/api/hr/leave?status=approved`).then(r => r.ok ? r.json() : []),
-      f("/api/hr/employees").then(r => r.ok ? r.json() : []),
+      api.get<LeaveRequest[] | { leaves?: LeaveRequest[] }>("/api/hr/leave?status=approved").catch(() => []),
+      api.get<any[]>("/api/hr/employees").catch(() => []),
     ]).then(([lvs, emps]) => {
-      setLeaves(lvs);
-      setStaff(emps.map((e: any) => ({ id: e.id, name: e.name })));
+      const leaveArr = Array.isArray(lvs) ? lvs : (lvs as any).leaves ?? [];
+      setLeaves(leaveArr);
+      setStaff((emps as any[]).map((e: any) => ({ id: e.id, name: e.name })));
       setLoading(false);
     });
   }, []);

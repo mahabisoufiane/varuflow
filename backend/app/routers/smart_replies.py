@@ -15,10 +15,11 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.smart_reply_log import SmartReplyLog
 from app.models.unified_message import UnifiedInboxThread, UnifiedMessage
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/inbox/smart-reply", tags=["smart-replies"])
+router = APIRouter(prefix="/api/inbox/smart-reply", tags=["smart-replies"], dependencies=[Depends(require_module("ai"))])
 
 
 # ── Schemas ──────────────────────────────────────────────────────────────────

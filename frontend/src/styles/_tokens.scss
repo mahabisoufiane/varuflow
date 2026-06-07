@@ -1,0 +1,11 @@
+// Re-exports for SCSS modules that need access to all design tokens.
+// CSS custom properties are defined in globals.css (processed by PostCSS/Tailwind).
+// This file provides SCSS-side variables (shadows, radii, typography maps) via @use.
+
+@forward 'colors';
+@forward 'typography';
+@forward 'spacing';
+@forward 'shadows';
+@forward 'radii';
+@forward 'transitions';
+@forward 'breakpoints';

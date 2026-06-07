@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Eye, EyeOff, Trash2, Plus, Wand2 } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 interface Rule { id: string; role: string; resource: string; field: string; mask_style: string; enabled: boolean }
 interface PreviewResult { original: Record<string, unknown>; masked: Record<string, unknown> }
@@ -27,7 +28,6 @@ const SAMPLE_DATA: Record<string, Record<string, unknown>> = {
 };
 
 export default function FieldMaskingPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [rules, setRules] = useState<Rule[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [preview, setPreview] = useState<PreviewResult | null>(null);
@@ -35,55 +35,46 @@ export default function FieldMaskingPage() {
   const [prevResource, setPrevResource] = useState("invoice");
   const [form, setForm] = useState({ role: "member", resource: "invoice", field: "total_amount", mask_style: "obfuscate" });
 
-  const fetch_ = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   async function load() {
-    const res = await fetch_("/api/compliance/field-masking");
-    if (res.ok) setRules((await res.json()).rules);
+    try {
+      const data = await api.get<{ rules: Rule[] }>("/api/compliance/field-masking");
+      setRules(data.rules);
+    } catch { /* non-critical */ }
   }
 
   useEffect(() => { load(); }, []);
 
   async function installDefaults() {
-    const res = await fetch_("/api/compliance/field-masking/defaults", { method: "POST" });
-    if (res.ok) {
-      const data = await res.json();
+    try {
+      const data = await api.post<{ message: string }>("/api/compliance/field-masking/defaults", {});
       toast.success(data.message);
       await load();
-    } else toast.error("Failed");
+    } catch { toast.error("Failed"); }
   }
 
   async function addRule() {
-    const res = await fetch_("/api/compliance/field-masking", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    if (res.ok) {
+    try {
+      await api.post<Rule>("/api/compliance/field-masking", form);
       toast.success("Rule saved");
       setShowForm(false);
       await load();
-    } else {
-      const err = await res.json();
-      toast.error(err.detail || "Failed");
-    }
+    } catch { toast.error("Failed"); }
   }
 
   async function deleteRule(id: string) {
-    await fetch_(`/api/compliance/field-masking/${id}`, { method: "DELETE" });
-    setRules(r => r.filter(x => x.id !== id));
-    toast.success("Rule removed");
+    try {
+      await api.delete(`/api/compliance/field-masking/${id}`);
+      setRules(r => r.filter(x => x.id !== id));
+      toast.success("Rule removed");
+    } catch { toast.error("Failed to remove rule"); }
   }
 
   async function loadPreview() {
-    const sample = SAMPLE_DATA[prevResource] || {};
-    const res = await fetch_("/api/compliance/field-masking/preview", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ resource: prevResource, role: prevRole, sample }),
-    });
-    if (res.ok) setPreview(await res.json());
+    try {
+      const sample = SAMPLE_DATA[prevResource] || {};
+      const data = await api.post<PreviewResult>("/api/compliance/field-masking/preview", { resource: prevResource, role: prevRole, sample });
+      setPreview(data);
+    } catch { /* non-critical */ }
   }
 
   const styleColor: Record<string, string> = {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { TrendingUp, TrendingDown, Minus, ChevronDown } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 const SECTORS = ["wholesale", "retail", "manufacturing", "food_beverage", "construction", "services"] as const;
 
@@ -45,29 +46,22 @@ function DeltaBadge({ org, industry, higherIsBetter, unit }: { org: number | nul
 }
 
 export default function BenchmarksPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [sector, setSector] = useState<string>("wholesale");
   const [data, setData] = useState<BenchmarkData | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const f = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   async function load(s: string) {
     setLoading(true);
     try {
-      const res = await f(`/api/bi/benchmarks?sector=${s}`);
-      if (res.ok) setData(await res.json());
-      else { const e = await res.json(); toast.error(e.detail || "Failed"); }
+      const result = await api.get<BenchmarkData>(`/api/bi/benchmarks?sector=${s}`);
+      setData(result);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed");
     } finally { setLoading(false); }
   }
 
   async function saveSector(s: string) {
-    await f("/api/bi/benchmarks/sector", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sector: s }),
-    });
+    await api.patch("/api/bi/benchmarks/sector", { sector: s });
     toast.success("Sector saved");
   }
 

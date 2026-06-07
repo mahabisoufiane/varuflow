@@ -64,7 +64,7 @@ export default function ResetPasswordPage() {
     return (
       <div className="flex min-h-screen items-center justify-center px-6" style={{ background:"var(--vf-bg-primary)" }}>
         <div className="flex items-center gap-3 text-sm" style={{ color:"var(--vf-text-muted)" }}>
-          <Loader2 className="h-4 w-4 animate-spin text-[#6366F1]" />
+          <Loader2 className="h-4 w-4 animate-spin text-[#4A6CF7]" />
           {t("auth.verifyingLink")}
         </div>
       </div>
@@ -98,7 +98,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-sm space-y-8 animate-fade-in">
         {/* Logo */}
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#6366F1] to-[#4F46E5]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#4A6CF7] to-[#3B5CE6]">
             <Zap className="h-4 w-4 text-white" />
           </div>
           <span className="text-base font-bold tracking-tight" style={{ color:"var(--vf-text-primary)" }}>Varuflow</span>

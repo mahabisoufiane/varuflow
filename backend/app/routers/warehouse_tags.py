@@ -41,8 +41,9 @@ from app.models.inventory import Warehouse
 from app.models.warehouse_tag import WarehouseTag, WarehouseTagAssignment
 from app.services import warehouse_tag as svc_84
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/warehouse-tags", tags=["warehouse-tags"])
+router = APIRouter(prefix="/api/warehouse-tags", tags=["warehouse-tags"], dependencies=[Depends(require_module("inventory"))])
 
 log = logging.getLogger(__name__)
 

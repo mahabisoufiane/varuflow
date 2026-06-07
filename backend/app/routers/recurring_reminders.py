@@ -30,8 +30,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.recurring_reminder import RecurringReminder, ReminderOccurrence
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/reminders", tags=["reminders"])
+router = APIRouter(prefix="/api/reminders", tags=["reminders"], dependencies=[Depends(require_module("invoicing"))])
 log = logging.getLogger(__name__)
 
 

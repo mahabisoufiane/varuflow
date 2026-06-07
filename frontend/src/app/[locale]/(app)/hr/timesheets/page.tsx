@@ -127,7 +127,7 @@ export default function TimesheetsPage() {
   async function generate() {
     setGenerating(true);
     try {
-      const res = await api.post<{ generated: number }>(`/api/hr/timesheets/generate?week_start=${weekIso}`);
+      const res = await api.post<{ generated: number }>(`/api/hr/timesheets/generate?week_start=${weekIso}`, {});
       toast.success(`Generated ${res.generated} timesheet(s)`);
       await load();
     } catch {

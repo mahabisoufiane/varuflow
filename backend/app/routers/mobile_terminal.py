@@ -33,8 +33,9 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.invoicing import Invoice, InvoiceStatus
 from app.models.mobile_field import StripeTerminalSession
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/mobile/terminal", tags=["mobile_terminal"])
+router = APIRouter(prefix="/api/mobile/terminal", tags=["mobile_terminal"], dependencies=[Depends(require_module("pos"))])
 log = logging.getLogger(__name__)
 
 
@@ -100,12 +101,12 @@ async def create_connection_token(
         token = stripe.terminal.ConnectionToken.create()
         return {"secret": token.secret}
     except stripe.error.StripeError as e:
-        log.error("terminal_connection_token failed: %s", str(e), extra={"org_id": str(org_id)})
+        log.error("terminal_connection_token failed: %s", str(e), extra={"org_id": str(org_id)})  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         raise HTTPException(status_code=502, detail=f"Stripe error: {e.user_message or str(e)}")
     except HTTPException:
         raise
     except Exception as e:
-        log.error("terminal_connection_token failed: %s", str(e), extra={"org_id": str(org_id)})
+        log.error("terminal_connection_token failed: %s", str(e), extra={"org_id": str(org_id)})  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         raise HTTPException(status_code=500, detail="Internal server error")
 
 

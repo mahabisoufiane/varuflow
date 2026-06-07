@@ -27,10 +27,11 @@ from app.middleware.auth import get_current_member
 from app.models.operator_referrals import OperatorReferral
 from app.services.audit import log_action
 from app.services.partner_commissions import generate_operator_referral_code
+from app.middleware.plan_check import require_module
 
 log = logging.getLogger(__name__)
 
-router = APIRouter(tags=["operator-referrals"])
+router = APIRouter(tags=["operator-referrals"], dependencies=[Depends(require_module("crm"))])
 
 _DAILY_GENERATE_LIMIT = 50
 

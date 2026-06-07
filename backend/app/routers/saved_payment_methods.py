@@ -22,9 +22,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.saved_payment_method import SavedPaymentMethod
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/payment-methods", tags=["saved-payment-methods"])
+router = APIRouter(prefix="/api/payment-methods", tags=["saved-payment-methods"], dependencies=[Depends(require_module("invoicing"))])
 
 
 class PaymentMethodIn(BaseModel):

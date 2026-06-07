@@ -29,13 +29,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.expense_note import ExpenseNote
 from app.models.expenses import Expense
 from app.models.organization import OrgRole
 from app.services import expense_note as svc_94
 from app.services.audit import log_action
 
-router = APIRouter(prefix="/api/expense-notes", tags=["expense-notes"])
+router = APIRouter(prefix="/api/expense-notes", tags=["expense-notes"], dependencies=[Depends(require_module("finance"))])
 
 log = logging.getLogger(__name__)
 

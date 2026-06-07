@@ -26,8 +26,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.marketing_attribution import AttributionEvent, AttributionSource
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/attribution", tags=["attribution"])
+router = APIRouter(prefix="/api/attribution", tags=["attribution"], dependencies=[Depends(require_module("analytics"))])
 log = logging.getLogger(__name__)
 
 

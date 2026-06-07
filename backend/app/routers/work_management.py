@@ -10,9 +10,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.work_management import WmTask, WmAnnouncement, MeetingNote, OpsWorkOrder, Ticket
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["work-management"])
+router = APIRouter(tags=["work-management"], dependencies=[Depends(require_module("hr"))])
 
 # ─── Tasks ───────────────────────────────────────────────────────────────────
 

@@ -13,10 +13,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.report_builder import SavedReport, RbScheduledReport
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/reports-builder", tags=["report-builder"])
+router = APIRouter(prefix="/api/reports-builder", tags=["report-builder"], dependencies=[Depends(require_module("analytics"))])
 
 # ── Safe entity → table + allowed fields map ─────────────────────────────────
 # Only these entities and fields can be queried. This prevents arbitrary SQL injection

@@ -30,8 +30,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.okr import OkrKeyResult, OkrObjective
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/okr", tags=["okr"])
+router = APIRouter(prefix="/api/okr", tags=["okr"], dependencies=[Depends(require_module("hr"))])
 log = logging.getLogger(__name__)
 
 _VALID_LEVELS  = {"company", "department", "individual"}

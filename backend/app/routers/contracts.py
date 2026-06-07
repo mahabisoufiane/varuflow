@@ -29,12 +29,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.customer_contract import ContractStatus, CustomerContract
 from app.models.invoicing import Customer
 from app.services import customer_contract as svc
 from app.services.audit import log_action
 
-router = APIRouter(prefix="/api/contracts", tags=["contracts"])
+router = APIRouter(prefix="/api/contracts", tags=["contracts"], dependencies=[Depends(require_module("crm"))])
 
 log = logging.getLogger(__name__)
 

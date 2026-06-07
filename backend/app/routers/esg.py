@@ -27,8 +27,9 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.carbon import CarbonEntry
 from app.models.esg import EsgReport
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/esg", tags=["esg"])
+router = APIRouter(prefix="/api/esg", tags=["esg"], dependencies=[Depends(require_module("analytics"))])
 log = logging.getLogger(__name__)
 
 

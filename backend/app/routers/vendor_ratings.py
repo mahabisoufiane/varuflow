@@ -17,9 +17,10 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.inventory import Supplier
 from app.models.vendor_ratings import VendorManualRating, VendorRatingCache
+from app.middleware.plan_check import require_module
 
 log = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/vendor-ratings", tags=["vendor_ratings"])
+router = APIRouter(prefix="/api/vendor-ratings", tags=["vendor_ratings"], dependencies=[Depends(require_module("inventory"))])
 
 
 def _row(obj: Any) -> dict:
@@ -34,6 +35,10 @@ class ManualRatingCreate(BaseModel):
     purchase_order_id: Optional[uuid.UUID] = None
     delivery_ok: Optional[bool] = None
     quality_ok: Optional[bool] = None
+
+
+class ManualRatingCreateBody(ManualRatingCreate):
+    supplier_id: uuid.UUID
 
 
 # ── Cache refresh helper ───────────────────────────────────────────────────────
@@ -156,27 +161,61 @@ async def list_vendor_ratings(
     auth=Depends(get_current_member),
     db: AsyncSession = Depends(get_db),
 ):
-    """List rating cache for all suppliers in this org."""
+    """List all manual ratings (history) for this org, most recent first."""
     user, member = auth
     org_id = member.org_id
     try:
-        q = select(VendorRatingCache).where(VendorRatingCache.org_id == org_id)
-
-        if min_score is not None:
-            q = q.where(VendorRatingCache.overall_score >= Decimal(str(min_score)))
-
-        sort_col = {
-            "on_time_rate": VendorRatingCache.on_time_rate,
-            "quality_score": VendorRatingCache.quality_score,
-        }.get(sort_by, VendorRatingCache.overall_score)
-        q = q.order_by(sort_col.desc())
-
-        caches = (await db.execute(q)).scalars().all()
-        return [_row(c) for c in caches]
+        ratings = (await db.execute(
+            select(VendorManualRating)
+            .where(VendorManualRating.org_id == org_id)
+            .order_by(VendorManualRating.created_at.desc())
+            .limit(200)
+        )).scalars().all()
+        return [_row(r) for r in ratings]
     except HTTPException:
         raise
     except Exception as e:
         log.error(f"list_vendor_ratings failed: {e}", extra={"org_id": org_id})
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.post("", status_code=201)
+async def add_manual_rating_body(
+    body: ManualRatingCreateBody,
+    auth=Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    """Add a manual rating with supplier_id in request body, then refresh cache."""
+    user, member = auth
+    org_id = member.org_id
+    try:
+        supplier = (await db.execute(
+            select(Supplier).where(Supplier.id == body.supplier_id, Supplier.org_id == org_id)
+        )).scalar_one_or_none()
+        if not supplier:
+            raise HTTPException(status_code=404, detail="Supplier not found")
+
+        rating = VendorManualRating(
+            org_id=org_id,
+            supplier_id=body.supplier_id,
+            purchase_order_id=body.purchase_order_id,
+            stars=body.stars,
+            comment=body.comment,
+            rated_by_staff_id=user.get("user_id"),
+            delivery_ok=body.delivery_ok,
+            quality_ok=body.quality_ok,
+        )
+        db.add(rating)
+        await db.flush()
+
+        await _refresh_cache(db, org_id, body.supplier_id)
+        await db.commit()
+        await db.refresh(rating)
+        return _row(rating)
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"add_manual_rating_body failed: {e}", extra={"org_id": org_id})
         raise HTTPException(status_code=500, detail="Internal server error")
 
 

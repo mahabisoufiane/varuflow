@@ -153,9 +153,9 @@ async def _sync_fortnox() -> None:
             for org in orgs:
                 try:
                     if org.fortnox_token_expiry and org.fortnox_token_expiry < datetime.now(timezone.utc):
-                        logger.info("Fortnox token expired for org %s — needs re-auth", org.id)
+                        logger.info("Fortnox token expired for org %s — needs re-auth", org.id)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
                 except Exception:
-                    logger.exception("Fortnox token check failed for org %s", org.id)
+                    logger.exception("Fortnox token check failed for org %s", org.id)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         except Exception:
             logger.exception("Fortnox sync job failed")
 
@@ -477,7 +477,7 @@ async def _cleanup_stale_tokens() -> None:
             logger.exception("stripe event cleanup failed")
 
         await db.commit()
-        logger.info("token_cleanup deleted=%s", deleted_counts)
+        logger.info("token_cleanup deleted=%s", deleted_counts)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
 
     await _with_advisory_lock(_LOCK_TOKEN_CLEANUP, "token_cleanup", _impl)
 

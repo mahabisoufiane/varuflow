@@ -106,7 +106,7 @@ export default function DocumentsPage() {
       const path = showExpiringOnly
         ? "/api/documents/expiring"
         : `/api/documents${params.toString() ? `?${params.toString()}` : ""}`;
-      const data = await api<DocumentRow[]>(path);
+      const data = await api.get<DocumentRow[]>(path);
       setRows(Array.isArray(data) ? data : []);
     } catch (err) {
       toast.error(t("load_failed"));
@@ -142,7 +142,7 @@ export default function DocumentsPage() {
         is_shared: newShared,
         description: newDescription.trim() || null,
       };
-      await api("/api/documents", { method: "POST", body: JSON.stringify(body) });
+      await api.post("/api/documents", body);
       toast.success(t("uploaded"));
       setNewName(""); setNewCategory("other"); setNewTags("");
       setNewExpiry(""); setNewShared(true); setNewLinkedType("");
@@ -158,10 +158,7 @@ export default function DocumentsPage() {
 
   const toggleShared = useCallback(async (row: DocumentRow) => {
     try {
-      await api(`/api/documents/${row.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({ is_shared: !row.is_shared }),
-      });
+      await api.patch(`/api/documents/${row.id}`, { is_shared: !row.is_shared });
       await refresh();
     } catch (err) {
       toast.error(t("update_failed"));
@@ -171,7 +168,7 @@ export default function DocumentsPage() {
   const remove = useCallback(async (id: string) => {
     if (!confirm(t("confirm_delete"))) return;
     try {
-      await api(`/api/documents/${id}`, { method: "DELETE" });
+      await api.delete(`/api/documents/${id}`);
       toast.success(t("deleted"));
       await refresh();
     } catch (err) {

@@ -12,10 +12,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.ceo import KpiGoal
 
 log = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/ceo/goals", tags=["kpi_goals"])
+router = APIRouter(prefix="/api/ceo/goals", tags=["kpi_goals"], dependencies=[Depends(require_module("analytics"))])
 
 # ── Supported metric keys ──────────────────────────────────────────────────────
 

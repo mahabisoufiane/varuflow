@@ -4,8 +4,6 @@ import { List, Search, ChevronDown, Target } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api-client";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "";
-
 interface Deal {
   id: string; title: string; stage: string; value: number | null; currency: string;
   close_date: string | null; customer_id: string | null; probability: number | null;

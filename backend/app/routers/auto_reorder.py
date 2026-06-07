@@ -32,8 +32,9 @@ from app.services.auto_reorder import (
     preview_auto_reorder,
     run_auto_reorder,
 )
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/auto-reorder", tags=["auto-reorder"])
+router = APIRouter(prefix="/api/auto-reorder", tags=["auto-reorder"], dependencies=[Depends(require_module("inventory"))])
 
 
 def _org(ctx: tuple) -> uuid.UUID:

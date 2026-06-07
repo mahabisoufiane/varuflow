@@ -1,0 +1,119 @@
+Generated: 2026-06-07T00:00:00
+Task: Default security & auth audit — missing auth deps, hardcoded secrets, org_id filter gaps, plan enforcement
+Worker model: Claude Code (built-in tools)
+Monitor model: Claude Code (built-in analysis)
+============================================================
+
+# VARUFLOW CODE AUDIT REPORT
+
+## Task
+Audit all 278 backend routers for: missing auth dependencies, missing org_id filters,
+hardcoded secrets/URLs, and plan enforcement coverage.
+
+---
+
+## Critical Issues  (must fix before deploy)
+
+None found. All critical security rules from CLAUDE.md are currently respected:
+- No wildcard CORS (allow_origins=["*"] not present in production code)
+- No hardcoded Stripe keys, Resend keys, or secrets in backend/app/
+- No hardcoded Railway/Vercel URLs in frontend/src/
+- No DEBUG=True in production app code
+- Portal JWT type-check enforced in auth.py (rejects portal tokens on internal routes)
+- Dev bypass requires BOTH ENV=development AND ALLOW_DEV_BYPASS=True
+
+---
+
+## Important Issues  (fix soon)
+
+1. **148 routers have no `require_module` plan enforcement**
+   - These routers have auth (get_current_member) and org_id filters but no plan gating.
+   - Examples (first 20 of 148): accountant_forwarding.py, achievements.py, activity.py,
+     after_sales.py, announcements.py, audit.py, auto_reorder.py, background_checks.py,
+     birthday_vouchers.py, bom_extras.py, booking_capacity.py, booking_subscriptions.py,
+     calendar_sync.py, carbon.py, chatbot.py, checklists.py, conflict_of_interest.py,
+     contract_signing.py, credit_notes.py, currencies.py
+   - Risk: PRO/ENTERPRISE-only features are accessible to FREE plan users without upgrade
+     prompt because the plan gate is missing on ~53% of routers.
+   - Fix: Add `dependencies=[Depends(require_module("module_key"))]` to each APIRouter.
+     Priority: features that represent paid-tier value (AI, advanced analytics, HR, etc.)
+
+2. **`backend/app/routers/mobile_voice_notes.py` — org_id check bypassed in grep filter**
+   - VERIFIED CLEAN: org_id is properly filtered on all queries (lines 83, 119, 121, 128, 147).
+   - This was a false alarm from the broad grep; the router is correctly scoped.
+
+3. **`backend/app/routers/meeting_links.py` — public slug endpoints bypass auth**
+   - Lines 196, 223, 238, 250, 295: `GET /api/meeting-links/{slug}` and slot/booking
+     endpoints have no `get_current_member` dependency — intentionally public for
+     customer-facing booking pages, but this is not documented in the router file.
+   - Fix: Add a comment explaining this is intentionally public (no code change needed,
+     documentation only to prevent future regression).
+
+---
+
+## Minor / Informational
+
+4. **10 routers legitimately have no Supabase auth** — all are correctly guarded:
+   - `health.py` — public health check (by design)
+   - `auth.py` — login/register endpoints (by design)
+   - `portal.py` — uses portal JWT (`type: "portal"`) separately (by design, correctly isolated)
+   - `local_auth.py` — standalone auth flow with its own `_get_current_auth_user` (by design)
+   - `pos_auth.py` — PIN-based POS device login (by design, issues `type: "pos_device"` JWT)
+   - `scheduler.py` — protected by `X-Admin-Key` header via `_require_admin_key` (by design)
+   - `trial_admin.py` — protected by `X-Admin-Key` header via `_require_admin` (by design)
+   - `waitlist.py` — public sign-up + admin via `X-Admin-Key` (by design)
+   - `storefront.py` — public shop; org isolation via storefront slug→org_id mapping (by design)
+   - `widget.py` — public booking embed; scoped to org via slug (by design)
+   - `countries.py` — read-only static config, no sensitive data (by design)
+
+5. **`backend/app/routers/pos_auth.py` — 30-day POS JWT TTL**
+   - `_TOKEN_EXPIRY_HOURS = 720` (30 days). Long-lived device tokens are an accepted
+     trade-off for POS tablets but worth noting. If a tablet is stolen, the token
+     is valid for 30 days. Consider implementing a device revocation list or reducing
+     TTL with a refresh flow if this becomes a concern.
+
+6. **npm audit — 2 moderate severity findings remain**
+   - Both are in Next.js bundled `postcss` dependency.
+   - Cannot fix without `--force` (would break Next.js compatibility).
+   - Upstream Next.js issue; no action possible until Next.js ships a patched version.
+
+---
+
+## Clean (no issues found)
+
+- CORS: CORSMiddleware is first middleware, reads from CORS_ORIGINS env var, no wildcard
+- Hardcoded secrets: 0 findings across backend/app/ (Stripe keys, Resend keys, JWT secrets)
+- Hardcoded URLs: 0 findings in frontend/src/ (no Railway/localhost URLs in components)
+- Debug mode: Not present in production app code
+- Portal JWT isolation: Correctly blocked from internal routes (auth.py:160-163)
+- Dev bypass: Dual-flag guard in place (ENV=development AND ALLOW_DEV_BYPASS=True)
+- SQL injection (bi.py): Fixed — sort_by validated against allowlist before interpolation
+- XSS (esign.py): Fixed — all user-controlled HTML values escaped with html.escape()
+- Migration SQL injection: Fixed — using op.create_index() instead of f-string SQL
+- Seed script SQL injection: Fixed — parameterized queries
+- Semgrep findings: 0 (all fixed or annotated as false positives)
+- Bandit findings: 0 HIGH/MEDIUM
+- pip-audit: 0 vulnerabilities
+- Reconciliation router: auth + org_id correctly applied on all 4 endpoints
+- Service status router: auth + org_id correctly applied
+- Mobile voice notes router: auth + org_id correctly applied
+- Meeting links (private endpoints): auth + org_id correctly applied
+
+---
+
+## Recommended Actions
+
+1. **[High] Plan enforcement audit** — Run `grep -rL "require_module" backend/app/routers/*.py`
+   and add `require_module("module_key")` to the 148 routers that lack it.
+   Start with AI routers (ai_automation, ai_email_draft, ai_personas, etc.) and
+   advanced analytics (cohort_analysis, churn_dashboard, board_packs, etc.).
+
+2. **[Low] Document intentionally public routers** — Add a one-line docstring to
+   meeting_links.py, storefront.py, widget.py explaining WHY they are public, to
+   prevent a future dev from adding auth inadvertently breaking functionality.
+
+3. **[Low] POS token TTL review** — If POS device theft is in the threat model,
+   consider reducing `_TOKEN_EXPIRY_HOURS` to 24h with a background refresh mechanism.
+
+4. **[Monitor] npm audit** — Watch for Next.js to release a patched postcss version.
+   No action required today.

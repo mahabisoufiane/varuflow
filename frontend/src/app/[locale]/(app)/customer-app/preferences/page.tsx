@@ -1,11 +1,9 @@
 "use client";
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
 
 interface Prefs {
   favorite_staff_user_id: string;
@@ -26,7 +24,6 @@ const defaultPrefs: Prefs = {
 };
 
 export default function PreferencesPage() {
-  const { locale } = useParams<{ locale: string }>();
   const [customerId, setCustomerId] = useState("");
   const [prefs, setPrefs] = useState<Prefs>(defaultPrefs);
   const [loading, setLoading] = useState(false);
@@ -35,24 +32,17 @@ export default function PreferencesPage() {
   const [success, setSuccess] = useState("");
   const [loaded, setLoaded] = useState(false);
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : "";
-
   async function handleLoad() {
     if (!customerId.trim()) return;
     setLoading(true);
     setError("");
     setSuccess("");
     try {
-      const res = await fetch(`${API}/api/preferences/${customerId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to load preferences."); return; }
-      const data = await res.json();
+      const data = await api.get<Prefs>(`/api/preferences/${customerId}`);
       setPrefs({ ...defaultPrefs, ...data });
       setLoaded(true);
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load preferences.");
     } finally {
       setLoading(false);
     }
@@ -63,16 +53,10 @@ export default function PreferencesPage() {
     setError("");
     setSuccess("");
     try {
-      const res = await fetch(`${API}/api/preferences/${customerId}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify(prefs),
-      });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to save preferences."); return; }
+      await api.put(`/api/preferences/${customerId}`, prefs);
       setSuccess("Preferences saved.");
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to save preferences.");
     } finally {
       setSaving(false);
     }
@@ -81,7 +65,7 @@ export default function PreferencesPage() {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Customer Preferences</h1>
-      <p className="text-muted-foreground">View and edit a customer's preferences (favorite stylist, preferred time, allergies, communication channel).</p>
+      <p className="text-muted-foreground">View and edit a customer&apos;s preferences (favorite stylist, preferred time, allergies, communication channel).</p>
 
       <Card>
         <CardHeader><CardTitle>Load Customer</CardTitle></CardHeader>

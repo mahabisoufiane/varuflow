@@ -12,11 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
 
 const STATUS_TABS = ["all", "pending", "submitted", "approved", "rejected"] as const;
 type Status = (typeof STATUS_TABS)[number];
@@ -63,12 +59,7 @@ export default function IdentityVerificationPage() {
       const params = new URLSearchParams();
       if (customerFilter) params.set("customer_id", customerFilter);
       if (statusFilter !== "all") params.set("status", statusFilter);
-      const res = await fetch(`${API}/api/identity-verification?${params}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data = await res.json();
-      setVerifications(data);
+      setVerifications(await api.get<Verification[]>(`/api/identity-verification?${params}`));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load verifications");
     } finally {
@@ -83,11 +74,7 @@ export default function IdentityVerificationPage() {
 
   async function handleAction(id: string, action: "approve" | "reject") {
     try {
-      const res = await fetch(`${API}/api/identity-verification/${id}/${action}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post(`/api/identity-verification/${id}/${action}`, {});
       fetchVerifications();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Action failed");
@@ -105,15 +92,7 @@ export default function IdentityVerificationPage() {
         document_type: formDocType,
       };
       if (formBookingId) body.booking_id = formBookingId;
-      const res = await fetch(`${API}/api/identity-verification`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post<Verification>("/api/identity-verification", body);
       setFormCustomerId("");
       setFormBookingId("");
       setFormProvider("manual");

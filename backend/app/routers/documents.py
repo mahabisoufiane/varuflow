@@ -29,9 +29,10 @@ from app.models.documents import Document
 from app.models.organization import OrgRole
 from app.services import document_service as svc
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
 
-router = APIRouter(prefix="/api/documents", tags=["documents"])
+router = APIRouter(prefix="/api/documents", tags=["documents"], dependencies=[Depends(require_module("inventory"))])
 
 
 # ═══════════════════════════════════════════════════════════════════

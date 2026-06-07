@@ -20,13 +20,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.bookings import Staff
 from app.models.leave_entitlement import LeaveEntitlement, PublicHoliday
 from app.models.leave_requests import LeaveRequest
 from app.models.staff_availability import StaffAvailabilityOverride
 
 log = logging.getLogger(__name__)
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_module("hr"))])
 
 VALID_LEAVE_TYPES = {"annual", "sick", "parental", "unpaid", "public_holiday", "other"}
 VALID_STATUSES = {"pending", "approved", "rejected", "cancelled"}

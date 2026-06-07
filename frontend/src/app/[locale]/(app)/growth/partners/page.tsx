@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { Users, Plus, Handshake, Check, X, ChevronDown, ChevronUp, DollarSign } from "lucide-react";
 
 interface PartnerProgram { id: string; name: string; commission_type: string; commission_rate: number; currency: string; is_active: boolean }
@@ -22,8 +24,9 @@ const DEAL_STAGE_COLORS: Record<string, string> = {
 };
 
 export default function PartnersPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string, init?: RequestInit) => fetch(`${apiBase}${url}`, { credentials: "include", ...init });
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
 
   const [programs, setPrograms] = useState<PartnerProgram[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
@@ -44,9 +47,9 @@ export default function PartnersPage() {
 
   useEffect(() => {
     Promise.all([
-      f("/api/growth/programs").then(r => r.ok ? r.json() : []).then(setPrograms),
-      f("/api/growth/partners").then(r => r.ok ? r.json() : []).then(setPartners),
-      f("/api/growth/deals").then(r => r.ok ? r.json() : []).then(setDeals),
+      api.get<PartnerProgram[]>("/api/growth/programs").then(setPrograms).catch(() => {}),
+      api.get<Partner[]>("/api/growth/partners").then(setPartners).catch(() => {}),
+      api.get<Deal[]>("/api/growth/deals").then(setDeals).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -55,48 +58,51 @@ export default function PartnersPage() {
       toast.error("Company name and email are required");
       return;
     }
-    const res = await f("/api/growth/partners", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...newPartner, program_id: newPartner.program_id || null }),
-    });
-    if (!res.ok) { toast.error("Failed to create partner"); return; }
-    const created = await res.json();
-    setPartners(prev => [created, ...prev]);
-    setShowPartnerForm(false);
-    setNewPartner({ company_name: "", contact_name: "", contact_email: "", program_id: "" });
-    toast.success("Partner added");
+    try {
+      const created = await api.post<Partner>("/api/growth/partners", {
+        ...newPartner,
+        program_id: newPartner.program_id || null,
+      });
+      setPartners(prev => [created, ...prev]);
+      setShowPartnerForm(false);
+      setNewPartner({ company_name: "", contact_name: "", contact_email: "", program_id: "" });
+      toast.success("Partner added");
+    } catch {
+      toast.error("Failed to create partner");
+    }
   }
 
   async function createProgram() {
     if (!newProgram.name) { toast.error("Name is required"); return; }
-    const res = await f("/api/growth/programs", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newProgram),
-    });
-    if (!res.ok) { toast.error("Failed to create program"); return; }
-    const created = await res.json();
-    setPrograms(prev => [created, ...prev]);
-    setShowProgramForm(false);
-    toast.success("Program created");
+    try {
+      const created = await api.post<PartnerProgram>("/api/growth/programs", newProgram);
+      setPrograms(prev => [created, ...prev]);
+      setShowProgramForm(false);
+      toast.success("Program created");
+    } catch {
+      toast.error("Failed to create program");
+    }
   }
 
   async function updateDealStage(dealId: string, stage: string) {
-    const res = await f(`/api/growth/deals/${dealId}/stage`, {
-      method: "PATCH", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ stage }),
-    });
-    if (!res.ok) { toast.error("Failed to update deal"); return; }
-    const updated = await res.json();
-    setDeals(prev => prev.map(d => d.id === dealId ? updated : d));
-    // Refresh partner totals
-    f("/api/growth/partners").then(r => r.ok ? r.json() : null).then(d => d && setPartners(d));
-    toast.success("Deal updated");
+    try {
+      const updated = await api.patch<Deal>(`/api/growth/deals/${dealId}/stage`, { stage });
+      setDeals(prev => prev.map(d => d.id === dealId ? updated : d));
+      api.get<Partner[]>("/api/growth/partners").then(setPartners).catch(() => {});
+      toast.success("Deal updated");
+    } catch {
+      toast.error("Failed to update deal");
+    }
   }
 
   async function deletePartner(id: string) {
-    await f(`/api/growth/partners/${id}`, { method: "DELETE" });
-    setPartners(prev => prev.filter(p => p.id !== id));
-    toast.success("Partner removed");
+    try {
+      await api.delete(`/api/growth/partners/${id}`);
+      setPartners(prev => prev.filter(p => p.id !== id));
+      toast.success("Partner removed");
+    } catch {
+      toast.error("Failed to remove partner");
+    }
   }
 
   const partnerDeals = (partnerId: string) => deals.filter(d => d.partner_id === partnerId);

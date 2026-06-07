@@ -36,8 +36,9 @@ from app.models.invoicing import Customer, Invoice
 from app.models.organization import OrganizationMember
 from app.models.search_history import SearchHistory
 from app.services import search as svc
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/search", tags=["search"])
+router = APIRouter(prefix="/api/search", tags=["search"], dependencies=[Depends(require_module("settings"))])
 
 log = logging.getLogger(__name__)
 

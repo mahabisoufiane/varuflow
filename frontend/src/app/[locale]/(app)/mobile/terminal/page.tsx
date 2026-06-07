@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import {
   CreditCard, Wifi, CheckCircle2, XCircle, RefreshCw,
   Smartphone, Receipt, RotateCcw, Info,
@@ -24,7 +25,6 @@ const STATUS_COLORS: Record<string, string> = {
 const CURRENCIES = ["SEK", "EUR", "NOK", "DKK", "USD"];
 
 export default function TerminalPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [readers, setReaders] = useState<Reader[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [amount, setAmount] = useState("");
@@ -40,18 +40,15 @@ export default function TerminalPage() {
   const [refundAmount, setRefundAmount] = useState("");
   const [refunding, setRefunding] = useState(false);
 
-  const fetch_ = useCallback((url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts }), [apiBase]);
-
   async function loadData() {
     setLoadingReaders(true);
     try {
-      const [rRes, sRes] = await Promise.all([
-        fetch_("/api/mobile/terminal/readers"),
-        fetch_("/api/mobile/terminal/sessions?limit=25"),
+      const [readersData, sessionsData] = await Promise.all([
+        api.get<{ readers?: Reader[] }>("/api/mobile/terminal/readers").catch(() => null),
+        api.get<{ sessions?: Session[] }>("/api/mobile/terminal/sessions?limit=25").catch(() => null),
       ]);
-      if (rRes.ok) setReaders((await rRes.json()).readers || []);
-      if (sRes.ok) setSessions((await sRes.json()).sessions || []);
+      if (readersData) setReaders(readersData.readers ?? []);
+      if (sessionsData) setSessions(sessionsData.sessions ?? []);
     } catch { /* offline */ }
     finally { setLoadingReaders(false); }
   }
@@ -64,54 +61,40 @@ export default function TerminalPage() {
     if (!selectedReader) { toast.error("Select a reader first"); return; }
     setLoading(true);
     try {
-      const res = await fetch_("/api/mobile/terminal/create-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: amt,
-          currency: currency.toLowerCase(),
-          reader_id: selectedReader,
-          description: description || undefined,
-        }),
+      const sess = await api.post<Session>("/api/mobile/terminal/create-payment", {
+        amount: amt,
+        currency: currency.toLowerCase(),
+        reader_id: selectedReader,
+        description: description || undefined,
       });
-      if (res.ok) {
-        const sess = await res.json();
-        setSessions(s => [sess, ...s]);
-        toast.success("Payment initiated — present card to reader");
-        setAmount(""); setDescription("");
-      } else {
-        const err = await res.json();
-        toast.error(err.detail || "Failed to create payment");
-      }
-    } catch {
-      toast.error("Network error");
+      setSessions(s => [sess, ...s]);
+      toast.success("Payment initiated — present card to reader");
+      setAmount(""); setDescription("");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create payment");
     }
     setLoading(false);
   }
 
   async function capture(piId: string, sessId: string) {
-    const res = await fetch_(`/api/mobile/terminal/capture/${piId}`, { method: "POST" });
-    if (res.ok) {
-      const updated = await res.json();
+    try {
+      const updated = await api.post<Session>(`/api/mobile/terminal/capture/${piId}`, {});
       setSessions(s => s.map(x => x.id === sessId ? updated : x));
       toast.success("Payment captured");
-      // Send receipt if email provided
       if (receiptEmail && updated.payment_intent_id) {
-        // Fire-and-forget receipt via Stripe (handled client-side note)
-        // Stripe Terminal handles email receipts via PaymentIntent receipt_email
         toast.info(`Receipt: set receipt_email on PaymentIntent for automated delivery`);
       }
-    } else {
+    } catch {
       toast.error("Capture failed");
     }
   }
 
   async function cancelPayment(piId: string, sessId: string) {
-    const res = await fetch_(`/api/mobile/terminal/cancel/${piId}`, { method: "POST" });
-    if (res.ok) {
+    try {
+      await api.post(`/api/mobile/terminal/cancel/${piId}`, {});
       setSessions(s => s.map(x => x.id === sessId ? { ...x, status: "canceled" } : x));
       toast.success("Payment cancelled");
-    } else {
+    } catch {
       toast.error("Cancel failed");
     }
   }
@@ -122,24 +105,17 @@ export default function TerminalPage() {
     if (!refundAmount || isNaN(amt) || amt <= 0) { toast.error("Enter refund amount"); return; }
     setRefunding(true);
     try {
-      const res = await fetch_("/api/invoicing/refund", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          payment_intent_id: refundSess.payment_intent_id,
-          amount: amt,
-          reason: "requested_by_customer",
-        }),
+      await api.post("/api/invoicing/refund", {
+        payment_intent_id: refundSess.payment_intent_id,
+        amount: amt,
+        reason: "requested_by_customer",
       });
-      if (res.ok) {
-        toast.success("Refund issued");
-        setSessions(s => s.map(x => x.id === refundSess.id ? { ...x, status: "refunded" } : x));
-        setRefundSess(null);
-        setRefundAmount("");
-      } else {
-        const e = await res.json();
-        toast.error(e.detail || "Refund failed");
-      }
+      toast.success("Refund issued");
+      setSessions(s => s.map(x => x.id === refundSess.id ? { ...x, status: "refunded" } : x));
+      setRefundSess(null);
+      setRefundAmount("");
+    } catch (err: any) {
+      toast.error(err.message || "Refund failed");
     } finally {
       setRefunding(false);
     }

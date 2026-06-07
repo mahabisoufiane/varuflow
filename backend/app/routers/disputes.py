@@ -14,10 +14,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.dispute import Dispute, DisputeMessage
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/disputes", tags=["disputes"])
+router = APIRouter(prefix="/api/disputes", tags=["disputes"], dependencies=[Depends(require_module("invoicing"))])
 
 
 # ── Schemas ──────────────────────────────────────────────────────────────────

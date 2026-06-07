@@ -12,11 +12,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.quotes import Quote, QuoteLineItem
 from app.models.invoicing import Invoice, InvoiceLineItem
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["quotes"])
+router = APIRouter(tags=["quotes"], dependencies=[Depends(require_module("crm"))])
 public_router = APIRouter(tags=["quotes-public"])
 
 

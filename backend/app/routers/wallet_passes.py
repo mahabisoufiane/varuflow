@@ -28,8 +28,9 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.loyalty import LoyaltyAccount
 from app.models.wallet_pass import WalletPass
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/wallet", tags=["wallet-passes"])
+router = APIRouter(prefix="/api/wallet", tags=["wallet-passes"], dependencies=[Depends(require_module("pos"))])
 log = logging.getLogger(__name__)
 
 

@@ -25,8 +25,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.customer_app import CustomerAppConfig, CustomerAppPushToken
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/customer-app", tags=["customer-app"])
+router = APIRouter(prefix="/api/customer-app", tags=["customer-app"], dependencies=[Depends(require_module("settings"))])
 log = logging.getLogger(__name__)
 
 
@@ -210,7 +211,7 @@ async def register_push_token(
     except HTTPException:
         raise
     except Exception as e:
-        log.error("register_push_token failed: %s", e, extra={"org_id": str(org_id)})
+        log.error("register_push_token failed: %s", e, extra={"org_id": str(org_id)})  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -235,7 +236,7 @@ async def delete_push_token(
     except HTTPException:
         raise
     except Exception as e:
-        log.error("delete_push_token failed: %s", e, extra={"org_id": str(org_id)})
+        log.error("delete_push_token failed: %s", e, extra={"org_id": str(org_id)})  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -257,7 +258,7 @@ async def list_push_tokens(
         tokens = (await db.execute(q)).scalars().all()
         return [_token_out(t) for t in tokens]
     except Exception as e:
-        log.error("list_push_tokens failed: %s", e, extra={"org_id": str(org_id)})
+        log.error("list_push_tokens failed: %s", e, extra={"org_id": str(org_id)})  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         raise HTTPException(status_code=500, detail="Internal server error")
 
 

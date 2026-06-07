@@ -24,9 +24,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.marketing_broadcast import MarketingBroadcast
 
-router = APIRouter(prefix="/api/broadcasts", tags=["broadcasts"])
+router = APIRouter(prefix="/api/broadcasts", tags=["broadcasts"], dependencies=[Depends(require_module("crm"))])
 log = logging.getLogger(__name__)
 
 

@@ -34,6 +34,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.gift_cards import BundleRedemption, GiftCard, ServiceBundle
 from app.services.audit import log_action
 from app.services.gift_card_service import (
@@ -44,7 +45,7 @@ from app.services.gift_card_service import (
     redeem_gift_card,
 )
 
-router = APIRouter(prefix="/api/gift-cards", tags=["gift-cards"])
+router = APIRouter(prefix="/api/gift-cards", tags=["gift-cards"], dependencies=[Depends(require_module("crm"))])
 
 
 def _org(ctx: tuple) -> uuid.UUID:

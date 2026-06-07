@@ -35,9 +35,11 @@ from app.models.inventory import Supplier
 from app.models.supplier_contact import SupplierContact
 from app.services import supplier_contact as svc_78
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
 router = APIRouter(
     prefix="/api/supplier-contacts", tags=["supplier-contacts"],
+    dependencies=[Depends(require_module("inventory"))],
 )
 
 log = logging.getLogger(__name__)

@@ -35,9 +35,11 @@ from app.models.customer_contact import CustomerContact
 from app.models.invoicing import Customer
 from app.services import customer_contact as svc_74
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
 router = APIRouter(
     prefix="/api/customer-contacts", tags=["customer-contacts"],
+    dependencies=[Depends(require_module("invoicing"))],
 )
 
 log = logging.getLogger(__name__)

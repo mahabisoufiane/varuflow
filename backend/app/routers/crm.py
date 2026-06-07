@@ -15,11 +15,12 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.crm import Deal, DealActivity, DealStage
 
 log = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_module("crm"))])
 
 # Built-in stages — used when an org has no custom stages configured.
 # slug → {label, color, probability, is_won, is_lost}

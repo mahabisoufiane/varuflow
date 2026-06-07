@@ -110,7 +110,7 @@ const ptComponents: PortableTextComponents = {
 export function SanityBody({ body }: { body: unknown[] }) {
   return (
     <div className="text-slate-300 text-base leading-relaxed">
-      <PortableText value={body} components={ptComponents} />
+      <PortableText value={body as import("@portabletext/types").TypedObject[]} components={ptComponents} />
     </div>
   );
 }

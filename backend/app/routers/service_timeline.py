@@ -27,8 +27,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.service_timeline import ServiceTimeline, ServiceTimelineEvent
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/timelines", tags=["timelines"])
+router = APIRouter(prefix="/api/timelines", tags=["timelines"], dependencies=[Depends(require_module("pos"))])
 log = logging.getLogger(__name__)
 
 _VALID_STATUSES = {"pending", "in_progress", "completed", "skipped"}

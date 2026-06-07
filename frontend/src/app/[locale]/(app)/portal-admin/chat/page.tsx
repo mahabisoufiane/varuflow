@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api-client";
 
 interface UnreadCustomer { customer_id: string; unread_count: number; last_message_at: string | null; }
 interface Message { id: string; sender_type: string; body: string; created_at: string; }
@@ -11,22 +12,17 @@ export default function PortalAdminChatPage() {
   const [input, setInput] = useState("");
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/portal-admin/chat/unread`, { credentials: "include" })
-      .then(r => r.ok ? r.json() : []).then(setCustomers);
+    api.get<UnreadCustomer[]>("/api/portal-admin/chat/unread").then(setCustomers).catch(() => {});
   }, []);
 
   const openChat = async (customerId: string) => {
     setSelected(customerId);
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/portal-admin/chat/${customerId}`, { credentials: "include" });
-    if (res.ok) setMessages(await res.json());
+    api.get<Message[]>(`/api/portal-admin/chat/${customerId}`).then(setMessages).catch(() => {});
   };
 
   const send = async () => {
     if (!input.trim() || !selected) return;
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/portal-admin/chat/${selected}`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      credentials: "include", body: JSON.stringify({ body: input }),
-    });
+    await api.post(`/api/portal-admin/chat/${selected}`, { body: input });
     setInput("");
     openChat(selected);
   };

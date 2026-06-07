@@ -140,9 +140,8 @@ async def seed(db: AsyncSession) -> None:
 
         # Check if member row already exists
         existing = await db.scalar(
-            select(text("1")).select_from(
-                text("organization_members")
-            ).where(text(f"user_id = '{uid}'"))
+            text("SELECT 1 FROM organization_members WHERE user_id = :uid"),
+            {"uid": str(uid)},
         )
         if existing:
             print(f"  {u['email']} — member row already exists, skipping")

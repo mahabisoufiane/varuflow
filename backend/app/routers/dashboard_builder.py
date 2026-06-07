@@ -14,12 +14,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.dashboard_builder import DashboardLayout, ScheduledDashboard
 from app.models.inventory import Product, StockLevel
 from app.models.invoicing import Customer, Invoice
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/dashboard-builder", tags=["dashboard-builder"])
+router = APIRouter(prefix="/api/dashboard-builder", tags=["dashboard-builder"], dependencies=[Depends(require_module("analytics"))])
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

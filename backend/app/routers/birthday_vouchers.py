@@ -22,9 +22,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.birthday_voucher import BirthdayVoucher
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/birthday-vouchers", tags=["birthday-vouchers"])
+router = APIRouter(prefix="/api/birthday-vouchers", tags=["birthday-vouchers"], dependencies=[Depends(require_module("crm"))])
 
 
 class VoucherIn(BaseModel):

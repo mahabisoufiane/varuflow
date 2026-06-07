@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
 
 interface PriceSuggestion {
   id: string;
@@ -37,8 +32,6 @@ interface PriceHistoryItem {
 }
 
 export default function PricingPage() {
-  const params = useParams();
-
   const [productId, setProductId] = useState("");
   const [productName, setProductName] = useState("");
   const [category, setCategory] = useState("");
@@ -55,11 +48,7 @@ export default function PricingPage() {
   async function fetchHistory() {
     setHistoryLoading(true);
     try {
-      const res = await fetch(`${API}/api/ai/pricing`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setHistory(await res.json());
+      setHistory(await api.get<PriceHistoryItem[]>("/api/ai/pricing"));
     } catch {
       // non-critical
     } finally {
@@ -77,23 +66,14 @@ export default function PricingPage() {
     setError("");
     setSuggestion(null);
     try {
-      const res = await fetch(`${API}/api/ai/pricing/suggest`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          product_id: productId || undefined,
-          product_name: productName,
-          category,
-          cost_price: parseFloat(costPrice),
-          target_margin_pct: targetMargin ? parseFloat(targetMargin) : undefined,
-          current_price: currentPrice ? parseFloat(currentPrice) : undefined,
-        }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setSuggestion(await res.json());
+      setSuggestion(await api.post<PriceSuggestion>("/api/ai/pricing/suggest", {
+        product_id: productId || undefined,
+        product_name: productName,
+        category,
+        cost_price: parseFloat(costPrice),
+        target_margin_pct: targetMargin ? parseFloat(targetMargin) : undefined,
+        current_price: currentPrice ? parseFloat(currentPrice) : undefined,
+      }));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Suggestion failed");
     } finally {
@@ -104,17 +84,9 @@ export default function PricingPage() {
   async function handleAccept() {
     if (!suggestion) return;
     try {
-      const res = await fetch(`${API}/api/ai/pricing/${suggestion.id}/accept`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          accepted_price: acceptedPrice ? parseFloat(acceptedPrice) : suggestion.suggested_price,
-        }),
+      await api.post(`/api/ai/pricing/${suggestion.id}/accept`, {
+        accepted_price: acceptedPrice ? parseFloat(acceptedPrice) : suggestion.suggested_price,
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setSuggestion(null);
       setAcceptedPrice("");
       await fetchHistory();
@@ -126,10 +98,7 @@ export default function PricingPage() {
   async function handleReject() {
     if (!suggestion) return;
     try {
-      await fetch(`${API}/api/ai/pricing/${suggestion.id}/reject`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      await api.post(`/api/ai/pricing/${suggestion.id}/reject`, {});
     } catch {
       // ignore
     } finally {

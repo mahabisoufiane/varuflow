@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,8 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
 
 interface Achievement {
   id: string;
@@ -29,7 +27,6 @@ interface EarnedAchievement {
 }
 
 export default function AchievementsPage() {
-  const { locale } = useParams<{ locale: string }>();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -46,20 +43,14 @@ export default function AchievementsPage() {
   const [earnedLoading, setEarnedLoading] = useState(false);
   const [earnedError, setEarnedError] = useState("");
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : "";
-
   async function fetchAchievements() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${API}/api/achievements`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to load achievements."); return; }
-      setAchievements(await res.json());
-    } catch {
-      setError("Network error.");
+      const data = await api.get<Achievement[]>("/api/achievements");
+      setAchievements(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load achievements.");
     } finally {
       setLoading(false);
     }
@@ -71,17 +62,11 @@ export default function AchievementsPage() {
     setCreating(true);
     setError("");
     try {
-      const res = await fetch(`${API}/api/achievements`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ ...newForm, trigger_value: parseFloat(newForm.trigger_value) || 0 }),
-      });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to create achievement."); return; }
+      await api.post("/api/achievements", { ...newForm, trigger_value: parseFloat(newForm.trigger_value) || 0 });
       setNewForm({ title: "", description: "", trigger_type: "visit_count", trigger_value: "", badge_color: "#FFD700" });
       fetchAchievements();
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to create achievement.");
     } finally {
       setCreating(false);
     }
@@ -90,14 +75,10 @@ export default function AchievementsPage() {
   async function deleteAchievement(id: string) {
     setError("");
     try {
-      const res = await fetch(`${API}/api/achievements/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) { setError("Delete failed."); return; }
+      await api.delete(`/api/achievements/${id}`);
       setAchievements(achievements.filter((a) => a.id !== id));
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Delete failed.");
     }
   }
 
@@ -106,17 +87,11 @@ export default function AchievementsPage() {
     setAwarding(true);
     setAwardError("");
     try {
-      const res = await fetch(`${API}/api/achievements/award`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ customer_id: awardCustomerId, achievement_id: awardAchievementId }),
-      });
-      if (res.status === 401) { setAwardError("Unauthorized."); return; }
-      if (!res.ok) { setAwardError("Failed to award achievement."); return; }
+      await api.post("/api/achievements/award", { customer_id: awardCustomerId, achievement_id: awardAchievementId });
       setAwardCustomerId("");
       setAwardAchievementId("");
-    } catch {
-      setAwardError("Network error.");
+    } catch (e) {
+      setAwardError(e instanceof Error ? e.message : "Failed to award achievement.");
     } finally {
       setAwarding(false);
     }
@@ -127,14 +102,10 @@ export default function AchievementsPage() {
     setEarnedLoading(true);
     setEarnedError("");
     try {
-      const res = await fetch(`${API}/api/achievements/earned?customer_id=${earnedCustomerId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { setEarnedError("Unauthorized."); return; }
-      if (!res.ok) { setEarnedError("Failed to load earned achievements."); return; }
-      setEarned(await res.json());
-    } catch {
-      setEarnedError("Network error.");
+      const data = await api.get<EarnedAchievement[]>(`/api/achievements/earned?customer_id=${earnedCustomerId}`);
+      setEarned(data);
+    } catch (e) {
+      setEarnedError(e instanceof Error ? e.message : "Failed to load earned achievements.");
     } finally {
       setEarnedLoading(false);
     }

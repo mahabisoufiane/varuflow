@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
 
 interface PhotoTag {
   tag: string;
@@ -40,8 +35,6 @@ interface TagHistoryItem {
 }
 
 export default function PhotoTagsPage() {
-  const params = useParams();
-
   const [photoUrl, setPhotoUrl] = useState("");
   const [productId, setProductId] = useState("");
   const [tagResult, setTagResult] = useState<TagResult | null>(null);
@@ -55,11 +48,7 @@ export default function PhotoTagsPage() {
     setHistoryLoading(true);
     try {
       const query = filter ? `?product_id=${encodeURIComponent(filter)}` : "";
-      const res = await fetch(`${API}/api/ai/photo-tags${query}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setHistory(await res.json());
+      setHistory(await api.get<TagHistoryItem[]>(`/api/ai/photo-tags${query}`));
     } catch {
       // non-critical
     } finally {
@@ -77,19 +66,11 @@ export default function PhotoTagsPage() {
     setError("");
     setTagResult(null);
     try {
-      const res = await fetch(`${API}/api/ai/photo-tags/analyze`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          photo_url: photoUrl,
-          product_id: productId || undefined,
-        }),
+      const result = await api.post<TagResult>("/api/ai/photo-tags/analyze", {
+        photo_url: photoUrl,
+        product_id: productId || undefined,
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setTagResult(await res.json());
+      setTagResult(result);
       await fetchHistory();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Analysis failed");
@@ -100,11 +81,7 @@ export default function PhotoTagsPage() {
 
   async function deleteTagEntry(id: string) {
     try {
-      const res = await fetch(`${API}/api/ai/photo-tags/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await api.delete(`/api/ai/photo-tags/${id}`);
       await fetchHistory(productIdFilter || undefined);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Delete failed");

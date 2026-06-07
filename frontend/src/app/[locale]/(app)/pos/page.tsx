@@ -50,6 +50,17 @@ function PosScreen() {
 
   return (
     <div className="flex h-[calc(100vh-64px)] flex-col gap-3 bg-gray-50 p-3 dark:bg-gray-900">
+      {/* Standalone POS app banner */}
+      <div className="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm dark:border-blue-800 dark:bg-blue-950">
+        <span className="text-blue-700 dark:text-blue-300">
+          <strong>New:</strong> The standalone POS app is available at{" "}
+          <a href="http://localhost:3002" target="_blank" rel="noopener noreferrer" className="underline font-medium">
+            localhost:3002
+          </a>
+          {" "}— optimized for tablets with offline support.
+        </span>
+      </div>
+
       <header className="flex items-center justify-between">
         <h1 className="text-xl font-bold dark:text-gray-100">POS</h1>
         <PosSessionControls />

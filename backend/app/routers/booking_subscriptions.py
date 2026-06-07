@@ -28,8 +28,9 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.booking_subscription import BookingSubscription
 from app.models.bookings import Appointment
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/booking-subscriptions", tags=["booking-subscriptions"])
+router = APIRouter(prefix="/api/booking-subscriptions", tags=["booking-subscriptions"], dependencies=[Depends(require_module("pos"))])
 log = logging.getLogger(__name__)
 
 

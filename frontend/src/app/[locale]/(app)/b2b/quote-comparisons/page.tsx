@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,14 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-
-function getToken() {
-  return typeof window !== "undefined"
-    ? localStorage.getItem("auth_token") ?? ""
-    : "";
-}
+import { api } from "@/lib/api-client";
 
 interface QuoteComparison {
   id: string;
@@ -35,8 +27,6 @@ function truncate(str: string, len = 10) {
 }
 
 export default function QuoteComparisonsPage() {
-  const { locale } = useParams<{ locale: string }>();
-
   const [customerFilter, setCustomerFilter] = useState("");
   const [items, setItems] = useState<QuoteComparison[]>([]);
   const [listLoading, setListLoading] = useState(false);
@@ -67,11 +57,8 @@ export default function QuoteComparisonsPage() {
     try {
       const params = new URLSearchParams();
       if (customerFilter.trim()) params.set("customer_id", customerFilter.trim());
-      const res = await fetch(`${API}/api/quote-comparisons?${params}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setItems(await res.json());
+      const data = await api.get<QuoteComparison[]>(`/api/quote-comparisons?${params}`);
+      setItems(data);
     } catch (e: unknown) {
       setListError(e instanceof Error ? e.message : "Failed to load comparisons");
     } finally {
@@ -86,11 +73,7 @@ export default function QuoteComparisonsPage() {
     setDetailError("");
     setEditError("");
     try {
-      const res = await fetch(`${API}/api/quote-comparisons/${id}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data: QuoteComparison = await res.json();
+      const data = await api.get<QuoteComparison>(`/api/quote-comparisons/${id}`);
       setDetail(data);
       setEditQuoteIds(data.quote_ids.join(", "));
       setEditNotes(data.notes ?? "");
@@ -116,15 +99,7 @@ export default function QuoteComparisonsPage() {
       };
       if (newCustomerId.trim()) body.customer_id = newCustomerId.trim();
       if (newNotes.trim()) body.notes = newNotes.trim();
-      const res = await fetch(`${API}/api/quote-comparisons`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post("/api/quote-comparisons", body);
       setNewTitle("");
       setNewCustomerId("");
       setNewQuoteIds("");
@@ -147,18 +122,10 @@ export default function QuoteComparisonsPage() {
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean);
-      const res = await fetch(`${API}/api/quote-comparisons/${selectedId}`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          quote_ids: quoteIds,
-          notes: editNotes || undefined,
-        }),
+      await api.patch(`/api/quote-comparisons/${selectedId}`, {
+        quote_ids: quoteIds,
+        notes: editNotes || undefined,
       });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
       await loadDetail(selectedId);
     } catch (e: unknown) {
       setEditError(e instanceof Error ? e.message : "Failed to update comparison");
@@ -170,11 +137,7 @@ export default function QuoteComparisonsPage() {
   async function handleDelete(id: string) {
     setDetailError("");
     try {
-      const res = await fetch(`${API}/api/quote-comparisons/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.delete(`/api/quote-comparisons/${id}`);
       setSelectedId(null);
       setDetail(null);
       setItems((prev) => prev.filter((item) => item.id !== id));

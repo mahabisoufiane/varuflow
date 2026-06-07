@@ -66,7 +66,7 @@ function ph(): typeof import("posthog-js").default | null {
   if (typeof window === "undefined") return null;
   if (process.env.NODE_ENV !== "production") return null;
   // posthog-js attaches to window.posthog after init
-  const w = window as Record<string, unknown>;
+  const w = window as unknown as Record<string, unknown>;
   const phog = w.posthog;
   if (!phog || typeof (phog as { capture?: unknown }).capture !== "function") return null;
   return phog as typeof import("posthog-js").default;
@@ -84,7 +84,7 @@ export function identify(userId: string, traits?: Record<string, unknown>): void
 }
 
 /** Fire a PostHog event.  No-op when posthog is not loaded or not in production. */
-export function track(event: string, properties?: Record<string, unknown>): void {
+export function track(event: string, properties?: object): void {
   try {
     ph()?.capture(event, properties);
   } catch {
@@ -102,7 +102,7 @@ export function reset(): void {
 }
 
 /** Set super-properties that will be included with every event from this browser. */
-export function setSuperProperties(properties: Record<string, unknown>): void {
+export function setSuperProperties(properties: object): void {
   try {
     ph()?.register(properties);
   } catch {

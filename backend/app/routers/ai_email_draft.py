@@ -14,12 +14,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.ai_email_draft import AiEmailDraft
 from app.models.unified_message import UnifiedMessage
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/ai/email-drafts", tags=["ai-email-drafts"])
+router = APIRouter(prefix="/api/ai/email-drafts", tags=["ai-email-drafts"], dependencies=[Depends(require_module("ai"))])
 
 
 def _org_id(ctx: tuple) -> uuid.UUID:

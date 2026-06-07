@@ -139,7 +139,7 @@ export default function SecuritySettingsPage() {
 
       {/* Enforcement banner ─────────────────────────────────────────── */}
       {mfa_required && !mfa_enabled && (
-        <div className="vf-section p-4 flex items-start gap-3" style={{ borderRadius: 14, border: "1px solid rgb(239 68 68 / 0.4)" }}>
+        <div className="vf-section p-4 flex items-start gap-3 rounded-[14px] border-red-500/40">
           <ShieldAlert className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <p className="text-sm font-medium vf-text-1">{t("required_title")}</p>
@@ -154,7 +154,7 @@ export default function SecuritySettingsPage() {
       )}
 
       {/* Status panel ───────────────────────────────────────────────── */}
-      <div className="vf-section p-5 space-y-3" style={{ borderRadius: 14 }}>
+      <div className="vf-section p-5 space-y-3" >
         <div className="flex items-center gap-2">
           {mfa_enabled
             ? <ShieldCheck className="h-5 w-5 text-emerald-500" />
@@ -175,7 +175,7 @@ export default function SecuritySettingsPage() {
 
       {/* Setup flow ─────────────────────────────────────────────────── */}
       {!mfa_enabled && (
-        <div className="vf-section p-5 space-y-4" style={{ borderRadius: 14 }}>
+        <div className="vf-section p-5 space-y-4" >
           <h2 className="text-sm font-semibold vf-text-1">{t("setup_title")}</h2>
           {!provisioningUri ? (
             <>
@@ -214,7 +214,7 @@ export default function SecuritySettingsPage() {
 
       {/* Disable flow ───────────────────────────────────────────────── */}
       {mfa_enabled && (
-        <div className="vf-section p-5 space-y-4" style={{ borderRadius: 14 }}>
+        <div className="vf-section p-5 space-y-4" >
           <h2 className="text-sm font-semibold vf-text-1">{t("disable_title")}</h2>
           {mfa_required
             ? <p className="text-xs text-red-500">{t("disable_blocked")}</p>
@@ -245,7 +245,7 @@ export default function SecuritySettingsPage() {
         <button
           onClick={() => router.push(`/${locale}/settings/security/ip-allowlist`)}
           className="vf-section p-5 w-full text-left flex items-center gap-3 hover:bg-white/5 transition"
-          style={{ borderRadius: 14 }}
+          
         >
           <Shield className="h-5 w-5 vf-text-1" />
           <div className="flex-1">

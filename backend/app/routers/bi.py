@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.bi import DashboardConfig, CustomReport, ScheduledReport
 from app.models.organization import Organization, OrgPlan
 from app.models.invoicing import Invoice, InvoiceLineItem, InvoiceStatus, Customer, Payment
@@ -19,7 +20,7 @@ from app.models.inventory import Product, StockLevel
 from app.models.expenses import Expense
 
 log = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/bi", tags=["bi"])
+router = APIRouter(prefix="/api/bi", tags=["bi"], dependencies=[Depends(require_module("analytics"))])
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -178,18 +179,22 @@ def _build_report_sql(source: str, config: dict, org_id: str) -> tuple[str, dict
         group_by_fields.append(g)
 
     select_parts = list(group_by_fields)
+    valid_aliases = set(group_by_fields)
     for agg in config.get("aggregates") or []:
         fn = agg.get("fn", "").lower()
         field = agg.get("field", "")
         alias = agg.get("alias", f"{fn}_{field}")
         if fn not in _ALLOWED_AGG_FNS:
             raise HTTPException(400, detail=f"Unknown aggregate fn '{fn}'")
+        if not alias.isidentifier():
+            raise HTTPException(400, detail=f"Invalid alias '{alias}'")
         if fn == "count" and field == "*":
             select_parts.append(f"COUNT(*) AS {alias}")
         else:
             if field not in src["numeric_fields"]:
                 raise HTTPException(400, detail=f"Aggregate field '{field}' not numeric")
             select_parts.append(f"{fn.upper()}({field}) AS {alias}")
+        valid_aliases.add(alias)
 
     if not select_parts:
         raise HTTPException(400, detail="Report must have at least one group_by or aggregate")
@@ -198,6 +203,8 @@ def _build_report_sql(source: str, config: dict, org_id: str) -> tuple[str, dict
     sort_by = config.get("sort_by")
     sort_dir = "DESC" if str(config.get("sort_dir", "desc")).upper() == "DESC" else "ASC"
     if sort_by:
+        if sort_by not in valid_aliases:
+            raise HTTPException(400, detail=f"Unknown sort_by field '{sort_by}'")
         sorts.append(f"{sort_by} {sort_dir}")
 
     sql = f"""
@@ -207,7 +214,7 @@ def _build_report_sql(source: str, config: dict, org_id: str) -> tuple[str, dict
         {'GROUP BY ' + ', '.join(group_by_fields) if group_by_fields else ''}
         {'ORDER BY ' + ', '.join(sorts) if sorts else ''}
         LIMIT {_MAX_REPORT_ROWS}
-    """
+    """  # nosec B608 — all identifiers validated against allowlists above
     return sql.strip(), params
 
 

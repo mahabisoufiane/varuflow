@@ -41,7 +41,8 @@ from app.models.payment_options import (
 )
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/payment-options", tags=["payment-options"])
+from app.middleware.plan_check import require_module
+router = APIRouter(prefix="/api/payment-options", tags=["payment-options"], dependencies=[Depends(require_module("invoicing"))])
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────

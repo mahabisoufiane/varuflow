@@ -23,11 +23,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
-from app.middleware.plan_check import require_plan
+from app.middleware.plan_check import require_plan, require_module
 from app.models.accounting import AccountType, ChartOfAccount, JournalEntry, JournalLine
 from app.models.organization import OrgPlan
 
-router = APIRouter(prefix="/api/accounting/reports", tags=["financial_reports"])
+router = APIRouter(prefix="/api/accounting/reports", tags=["financial_reports"], dependencies=[Depends(require_module("finance"))])
 log = logging.getLogger(__name__)
 
 

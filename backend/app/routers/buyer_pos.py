@@ -26,9 +26,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.buyer_purchase_order import BuyerPoLineItem, BuyerPurchaseOrder
 
-router = APIRouter(prefix="/api/buyer-pos", tags=["buyer-pos"])
+router = APIRouter(prefix="/api/buyer-pos", tags=["buyer-pos"], dependencies=[Depends(require_module("pos"))])
 logger = logging.getLogger(__name__)
 
 

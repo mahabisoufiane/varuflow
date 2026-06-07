@@ -44,12 +44,12 @@ function AuthLeft() {
       style={{ background:"linear-gradient(135deg,#0F172A 0%,#1E293B 100%)" }}>
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full opacity-20 animate-orb-float"
-          style={{ background:"radial-gradient(circle,#6366F1 0%,transparent 70%)" }} />
+          style={{ background:"radial-gradient(circle,#4A6CF7 0%,transparent 70%)" }} />
         <div className="absolute bottom-0 left-0 h-80 w-80 rounded-full opacity-15 animate-orb-float"
-          style={{ background:"radial-gradient(circle,#4F46E5 0%,transparent 70%)", animationDelay:"4s" }} />
+          style={{ background:"radial-gradient(circle,#3B5CE6 0%,transparent 70%)", animationDelay:"4s" }} />
       </div>
       <div className="relative flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#6366F1] to-[#4F46E5]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#4A6CF7] to-[#3B5CE6]">
           <Zap className="h-[18px] w-[18px] text-white" />
         </div>
         <span className="text-xl font-bold tracking-tight">Varuflow</span>
@@ -62,7 +62,7 @@ function AuthLeft() {
         <ul className="space-y-3">
           {["Free to get started — no credit card required","Inventory, invoicing & POS in one place","Set up in under 10 minutes"].map((item) => (
             <li key={item} className="flex items-center gap-3 text-sm text-white/70">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6366F1]/20 border border-[#6366F1]/30 text-[#818CF8] text-xs font-bold">✓</span>
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#4A6CF7]/20 border border-[#4A6CF7]/30 text-[#7C9AFF] text-xs font-bold">✓</span>
               {item}
             </li>
           ))}
@@ -125,8 +125,8 @@ function SuccessState({ email, onResend }: { email: string; onResend: () => void
       style={{ background:"var(--vf-bg-primary)" }}>
       <div className="w-full max-w-sm space-y-6 rounded-2xl p-8 text-center"
         style={{ background:"var(--vf-glass-bg)", backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)", border:"1px solid var(--vf-glass-border)" }}>
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#6366F1]/15 border border-[#6366F1]/20">
-          <Mail className="h-8 w-8 text-[#6366F1]" />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#4A6CF7]/15 border border-[#4A6CF7]/20">
+          <Mail className="h-8 w-8 text-[#4A6CF7]" />
         </div>
         <div className="space-y-2">
           <h2 className="text-2xl font-bold" style={{ color:"var(--vf-text-primary)" }}>{t("auth.checkInboxTitle")}</h2>
@@ -142,7 +142,7 @@ function SuccessState({ email, onResend }: { email: string; onResend: () => void
           </a>
         )}
         <button type="button" onClick={onResend}
-          className="text-sm font-medium text-[#6366F1] hover:text-[#4F46E5] transition-colors">
+          className="text-sm font-medium text-[#4A6CF7] hover:text-[#3B5CE6] transition-colors">
           {t("auth.resendEmail")}
         </button>
         <div style={{ borderTop:"1px solid var(--vf-border)", paddingTop:"16px" }}>
@@ -368,7 +368,7 @@ export default function SignupPage() {
 
           <p className="text-center text-sm" style={{ color:"var(--vf-text-muted)" }}>
             {t("auth.hasAccount")}{" "}
-            <Link href="/auth/login" className="font-semibold text-[#6366F1] hover:text-[#4F46E5] transition-colors">
+            <Link href="/auth/login" className="font-semibold text-[#4A6CF7] hover:text-[#3B5CE6] transition-colors">
               {t("auth.login")}
             </Link>
           </p>

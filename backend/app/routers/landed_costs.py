@@ -16,9 +16,10 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.inventory import Product
 from app.models.landed_costs import LandedCostCharge, LandedCostLine
+from app.middleware.plan_check import require_module
 
 log = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/landed-costs", tags=["landed_costs"])
+router = APIRouter(prefix="/api/landed-costs", tags=["landed_costs"], dependencies=[Depends(require_module("inventory"))])
 
 
 def _row(obj: Any) -> dict:
@@ -69,7 +70,26 @@ async def list_charges(
         if is_applied is not None:
             q = q.where(LandedCostCharge.is_applied == is_applied)
         charges = (await db.execute(q.order_by(LandedCostCharge.created_at.desc()))).scalars().all()
-        return [_row(c) for c in charges]
+
+        if not charges:
+            return []
+
+        charge_ids = [c.id for c in charges]
+        all_lines = (await db.execute(
+            select(LandedCostLine).where(LandedCostLine.charge_id.in_(charge_ids))
+        )).scalars().all()
+
+        lines_by_charge: dict = {}
+        for line in all_lines:
+            lines_by_charge.setdefault(line.charge_id, []).append(_row(line))
+
+        result = []
+        for c in charges:
+            row = _row(c)
+            row["lines"] = lines_by_charge.get(c.id, [])
+            row["po_reference"] = str(c.purchase_order_id)[:8] if c.purchase_order_id else None
+            result.append(row)
+        return result
     except HTTPException:
         raise
     except Exception as e:

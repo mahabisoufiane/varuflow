@@ -2,29 +2,26 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { Package, Upload, CheckCircle2, History } from "lucide-react";
 
 interface Agreement { id: string; franchisee_name: string; franchisee_org_id?: string; status: string }
 interface PushLog { id: string; franchisee_org_id: string; pushed_count: number; created_count: number; updated_count: number; status: string; created_at: string }
 
 export default function FranchiseCatalogPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [agreements, setAgreements] = useState<Agreement[]>([]);
   const [pushes, setPushes] = useState<PushLog[]>([]);
   const [selectedFranchisee, setSelectedFranchisee] = useState("");
   const [pushing, setPushing] = useState(false);
   const [tab, setTab] = useState<"push" | "history">("push");
 
-  const fetch_ = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   async function load() {
     const [aRes, pRes] = await Promise.all([
-      fetch_("/api/franchise/agreements?status=active&limit=50"),
-      fetch_("/api/franchise/catalog/pushes?limit=30"),
+      api.get<{agreements: Agreement[]}>("/api/franchise/agreements?status=active&limit=50").catch(() => null),
+      api.get<{pushes: PushLog[]}>("/api/franchise/catalog/pushes?limit=30").catch(() => null),
     ]);
-    if (aRes.ok) setAgreements((await aRes.json()).agreements.filter((a: Agreement) => a.franchisee_org_id));
-    if (pRes.ok) setPushes((await pRes.json()).pushes);
+    if (aRes) setAgreements(aRes.agreements.filter((a: Agreement) => a.franchisee_org_id));
+    if (pRes) setPushes(pRes.pushes ?? []);
   }
 
   useEffect(() => { load(); }, []);
@@ -35,21 +32,16 @@ export default function FranchiseCatalogPage() {
     if (!agreement?.franchisee_org_id) { toast.error("Franchisee org not linked yet"); return; }
 
     setPushing(true);
-    const res = await fetch_("/api/franchise/catalog/push", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ franchisee_org_id: agreement.franchisee_org_id }),
-    });
-    if (res.ok) {
-      const data: PushLog = await res.json();
+    try {
+      const data = await api.post<PushLog>("/api/franchise/catalog/push", { franchisee_org_id: agreement.franchisee_org_id });
       toast.success(`Pushed ${data.pushed_count} products — ${data.created_count} created, ${data.updated_count} updated`);
       await load();
       setTab("history");
-    } else {
-      const err = await res.json();
-      toast.error(err.detail || "Push failed");
+    } catch (err: any) {
+      toast.error(err?.message || "Push failed");
+    } finally {
+      setPushing(false);
     }
-    setPushing(false);
   }
 
   return (

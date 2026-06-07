@@ -124,6 +124,12 @@ from app.routers import (
 from app.routers import trial
 # Upsell trigger engine
 from app.routers import upsells
+from app.routers import branding
+# Dev-only tooling (plan switcher etc.) — import always, 404-guarded inside
+from app.routers import dev_tools
+# POS device authentication (PIN-based, standalone POS app)
+from app.routers import pos_auth
+from app.routers import scheduler as scheduler_router
 from app.services.scheduler import create_scheduler
 
 # slowapi's `get_remote_address` reads `request.client.host`, which on
@@ -364,6 +370,8 @@ app.include_router(invoicing.router)
 app.include_router(waitlist.router)
 app.include_router(analytics.router)
 app.include_router(team.router)
+app.include_router(branding.router)
+app.include_router(dev_tools.router)
 app.include_router(recurring.router)
 app.include_router(recurring.public_router)
 app.include_router(recurring_expenses.router)
@@ -371,6 +379,8 @@ app.include_router(mileage_logs.router)
 app.include_router(expense_budgets.router)
 app.include_router(expense_reports.router)
 app.include_router(pos.router)
+app.include_router(pos_auth.router)
+app.include_router(scheduler_router.router)
 app.include_router(billing.router)
 app.include_router(integrations.router)
 app.include_router(portal.router)

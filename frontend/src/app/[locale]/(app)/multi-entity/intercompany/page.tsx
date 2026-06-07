@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { ArrowLeftRight, Plus, CheckCircle2 } from "lucide-react";
 
@@ -8,7 +9,6 @@ interface Transfer { id: string; from_org_id: string; to_org_id: string; transfe
 interface Entity { id: string; name: string }
 
 export default function IntercompanyPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [entities, setEntities] = useState<Entity[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -24,50 +24,41 @@ export default function IntercompanyPage() {
     reference: "",
   });
 
-  const fetch_ = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   async function load() {
-    const [tRes, eRes] = await Promise.all([
-      fetch_("/api/multi-entity/transfers?limit=50"),
-      fetch_("/api/multi-entity/entities"),
+    const [tResult, eResult] = await Promise.all([
+      api.get<{ transfers: Transfer[] }>("/api/multi-entity/transfers?limit=50").catch(() => null),
+      api.get<{ entities: Entity[] }>("/api/multi-entity/entities").catch(() => null),
     ]);
-    if (tRes.ok) setTransfers((await tRes.json()).transfers);
-    if (eRes.ok) setEntities((await eRes.json()).entities);
+    if (tResult) setTransfers(tResult.transfers);
+    if (eResult) setEntities(eResult.entities);
   }
 
   useEffect(() => { load(); }, []);
 
   async function create() {
     if (!form.to_org_id || !form.transfer_price) { toast.error("Target entity and amount required"); return; }
-    const res = await fetch_("/api/multi-entity/transfers", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      await api.post("/api/multi-entity/transfers", {
         ...form,
         transfer_price: parseFloat(form.transfer_price),
         quantity: form.quantity ? parseFloat(form.quantity) : undefined,
-      }),
-    });
-    if (res.ok) {
+      });
       toast.success("Transfer created");
       setShowForm(false);
       await load();
-    } else {
-      const err = await res.json();
-      toast.error(err.detail || "Failed");
+    } catch (err: any) {
+      toast.error(err.message || "Failed");
     }
   }
 
   async function postTransfer(id: string) {
     setPosting(id);
-    const res = await fetch_(`/api/multi-entity/transfers/${id}/post`, { method: "PATCH" });
-    if (res.ok) {
+    try {
+      await api.patch(`/api/multi-entity/transfers/${id}/post`, {});
       toast.success("Transfer posted — elimination entry created");
       await load();
-    } else {
-      const err = await res.json();
-      toast.error(err.detail || "Post failed");
+    } catch (err: any) {
+      toast.error(err.message || "Post failed");
     }
     setPosting(null);
   }

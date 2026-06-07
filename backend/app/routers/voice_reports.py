@@ -16,10 +16,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.voice_report_query import VoiceReportQuery
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/voice", tags=["voice-reports"])
+router = APIRouter(prefix="/api/voice", tags=["voice-reports"], dependencies=[Depends(require_module("analytics"))])
 
 
 def _org_id(ctx: tuple) -> uuid.UUID:

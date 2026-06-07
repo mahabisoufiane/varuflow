@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { apiClient } from "@/lib/api-client";
+import { api } from "@/lib/api-client";
 
 interface Ticket {
   id: string;
@@ -50,13 +50,13 @@ export default function PortalAdminTicketsPage() {
 
   const load = () => {
     const qs = filter ? `?status=${filter}` : "";
-    apiClient.get<Ticket[]>(`/api/portal-admin/tickets${qs}`)
+    api.get<Ticket[]>(`/api/portal-admin/tickets${qs}`)
       .then(setTickets)
       .catch(() => {});
   };
 
   const loadDetail = (id: string) => {
-    apiClient.get<Ticket>(`/api/portal-admin/tickets/${id}`)
+    api.get<Ticket>(`/api/portal-admin/tickets/${id}`)
       .then(setSelected)
       .catch(() => {});
   };
@@ -64,7 +64,7 @@ export default function PortalAdminTicketsPage() {
   useEffect(() => { load(); }, [filter]);
 
   const update = async (id: string, patch: Record<string, unknown>) => {
-    await apiClient.patch(`/api/portal-admin/tickets/${id}`, patch);
+    await api.patch(`/api/portal-admin/tickets/${id}`, patch);
     load();
     if (selected?.id === id) loadDetail(id);
   };
@@ -73,7 +73,7 @@ export default function PortalAdminTicketsPage() {
     if (!replyBody.trim() || !selected) return;
     setLoading(true);
     try {
-      await apiClient.post(`/api/portal-admin/tickets/${selected.id}/reply`, { body: replyBody, is_internal: isInternal });
+      await api.post(`/api/portal-admin/tickets/${selected.id}/reply`, { body: replyBody, is_internal: isInternal });
       setReplyBody("");
       setIsInternal(false);
       loadDetail(selected.id);

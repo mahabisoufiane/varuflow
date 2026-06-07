@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api-client";
 
 interface DashboardData {
   pending_purchase_requests: number;
@@ -12,9 +13,9 @@ export default function ManagerDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports/manager-dashboard`, { credentials: "include" })
-      .then(r => r.ok ? r.json() : null)
-      .then(setData);
+    api.get<DashboardData>("/api/reports/manager-dashboard")
+      .then(setData)
+      .catch(() => {});
   }, []);
 
   if (!data) return <div className="p-6">Loading...</div>;

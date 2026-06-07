@@ -26,9 +26,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.customer_contract import ContractStatus, CustomerContract
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["contract-signing"])
+router = APIRouter(tags=["contract-signing"], dependencies=[Depends(require_module("invoicing"))])
 
 
 class SignBody(BaseModel):

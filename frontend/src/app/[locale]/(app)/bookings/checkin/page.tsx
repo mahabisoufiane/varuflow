@@ -41,7 +41,7 @@ export default function CheckInPage() {
 
   async function handleCheckIn(id: string) {
     try {
-      await api.post(`/api/bookings/${id}/checkin`);
+      await api.post(`/api/bookings/${id}/checkin`, {});
       toast.success(t("checkedIn"));
       fetchBookings();
     } catch {
@@ -51,7 +51,7 @@ export default function CheckInPage() {
 
   async function handleNoShow(id: string) {
     try {
-      await api.post(`/api/bookings/${id}/noshow`);
+      await api.post(`/api/bookings/${id}/noshow`, {});
       toast.success(t("markedNoShow"));
       fetchBookings();
     } catch {

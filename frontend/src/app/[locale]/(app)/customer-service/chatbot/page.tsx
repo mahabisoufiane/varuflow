@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
 
 interface ChatbotConfig {
   is_enabled: boolean;
@@ -41,8 +36,6 @@ interface BotConversation {
 }
 
 export default function ChatbotPage() {
-  const params = useParams();
-
   const [config, setConfig] = useState<ChatbotConfig | null>(null);
   const [configLoading, setConfigLoading] = useState(false);
   const [configError, setConfigError] = useState("");
@@ -54,18 +47,12 @@ export default function ChatbotPage() {
   const [convoError, setConvoError] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const headers = {
-    Authorization: `Bearer ${getToken()}`,
-    "Content-Type": "application/json",
-  };
-
   async function loadConfig() {
     setConfigLoading(true);
     setConfigError("");
     try {
-      const res = await fetch(`${API}/api/chatbot/config`, { headers });
-      if (!res.ok) throw new Error("Failed to load config");
-      setConfig(await res.json());
+      const data = await api.get<ChatbotConfig>("/api/chatbot/config");
+      setConfig(data);
     } catch (e: unknown) {
       setConfigError(e instanceof Error ? e.message : "Failed to load config");
     } finally {
@@ -77,9 +64,7 @@ export default function ChatbotPage() {
     setConvoLoading(true);
     setConvoError("");
     try {
-      const res = await fetch(`${API}/api/chatbot/conversations`, { headers });
-      if (!res.ok) throw new Error("Failed to load conversations");
-      const data = await res.json();
+      const data = await api.get<BotConversation[] | { items: BotConversation[] }>("/api/chatbot/conversations");
       setConversations(Array.isArray(data) ? data : data.items ?? []);
     } catch (e: unknown) {
       setConvoError(e instanceof Error ? e.message : "Failed to load conversations");
@@ -100,12 +85,7 @@ export default function ChatbotPage() {
     setConfigError("");
     setConfigSuccess(false);
     try {
-      const res = await fetch(`${API}/api/chatbot/config`, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify(config),
-      });
-      if (!res.ok) throw new Error("Failed to save config");
+      await api.put("/api/chatbot/config", config);
       setConfigSuccess(true);
     } catch (e: unknown) {
       setConfigError(e instanceof Error ? e.message : "Failed to save config");

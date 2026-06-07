@@ -26,9 +26,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.whistleblower import WhistleblowerReport
 
-router = APIRouter(prefix="/api/whistleblower", tags=["whistleblower"])
+router = APIRouter(prefix="/api/whistleblower", tags=["whistleblower"], dependencies=[Depends(require_module("compliance"))])
 log = logging.getLogger(__name__)
 
 

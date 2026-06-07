@@ -26,8 +26,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.customer_chat import CustomerChatMessage, CustomerChatThread
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/chat", tags=["customer-chat"])
+router = APIRouter(prefix="/api/chat", tags=["customer-chat"], dependencies=[Depends(require_module("crm"))])
 log = logging.getLogger(__name__)
 
 _VALID_STATUSES = {"open", "resolved", "closed"}

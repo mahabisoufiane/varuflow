@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { CheckSquare, Plus, RefreshCw, X, Check, ChevronRight, Settings, User } from "lucide-react";
 
 interface Staff { id: string; name: string; role?: string }
@@ -37,9 +38,6 @@ function ProgressBar({ pct }: { pct: number }) {
 }
 
 export default function OnboardingPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string, init?: RequestInit) => fetch(`${apiBase}${url}`, { credentials: "include", ...init });
-
   const [staff, setStaff] = useState<Staff[]>([]);
   const [summary, setSummary] = useState<Summary[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -53,13 +51,13 @@ export default function OnboardingPage() {
 
   async function load() {
     const [emps, summ, templ] = await Promise.all([
-      f("/api/hr/employees").then(r => r.ok ? r.json() : []),
-      f("/api/hr/onboarding/summary").then(r => r.ok ? r.json() : []),
-      f("/api/hr/onboarding/template").then(r => r.ok ? r.json() : []),
+      api.get<any[]>("/api/hr/employees").catch(() => []),
+      api.get<Summary[]>("/api/hr/onboarding/summary").catch(() => []),
+      api.get<any[]>("/api/hr/onboarding/template").catch(() => []),
     ]);
-    setStaff(emps);
-    setSummary(summ);
-    setTemplate(templ);
+    setStaff(emps as Staff[]);
+    setSummary(summ as Summary[]);
+    setTemplate(templ as any[]);
     setLoading(false);
   }
 
@@ -67,63 +65,54 @@ export default function OnboardingPage() {
 
   async function selectEmployee(staffId: string) {
     setSelectedStaff(staffId);
-    const data = await f(`/api/hr/onboarding/${staffId}`).then(r => r.ok ? r.json() : []);
-    setTasks(data);
+    const data = await api.get<Task[]>(`/api/hr/onboarding/${staffId}`).catch(() => []);
+    setTasks(data as Task[]);
   }
 
   async function initFromTemplate() {
     if (!selectedStaff) return;
-    const res = await f(`/api/hr/onboarding/${selectedStaff}/from-template`, { method: "POST" });
-    if (!res.ok) { toast.error("Failed"); return; }
-    const { created } = await res.json();
-    toast.success(`${created} tasks created from template`);
-    const data = await f(`/api/hr/onboarding/${selectedStaff}`).then(r => r.ok ? r.json() : []);
-    setTasks(data);
-    load();
+    try {
+      const { created } = await api.post<{ created: number }>(`/api/hr/onboarding/${selectedStaff}/from-template`, {});
+      toast.success(`${created} tasks created from template`);
+      const data = await api.get<Task[]>(`/api/hr/onboarding/${selectedStaff}`).catch(() => []);
+      setTasks(data as Task[]);
+      load();
+    } catch { toast.error("Failed"); }
   }
 
   async function toggleTask(task: Task) {
-    const res = await f(`/api/hr/onboarding/${task.staff_id}/${task.id}`, {
-      method: "PATCH", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ is_done: !task.is_done }),
-    });
-    if (!res.ok) { toast.error("Failed"); return; }
-    const updated = await res.json();
-    setTasks(prev => prev.map(t => t.id === task.id ? updated : t));
-    load(); // refresh summary
+    try {
+      const updated = await api.patch<Task>(`/api/hr/onboarding/${task.staff_id}/${task.id}`, { is_done: !task.is_done });
+      setTasks(prev => prev.map(t => t.id === task.id ? updated : t));
+      load();
+    } catch { toast.error("Failed"); }
   }
 
   async function addTask() {
     if (!selectedStaff || !newTaskTitle.trim()) return;
-    const res = await f(`/api/hr/onboarding/${selectedStaff}`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: newTaskTitle, category: newTaskCat }),
-    });
-    if (!res.ok) { toast.error("Failed"); return; }
-    const created = await res.json();
-    setTasks(prev => [...prev, created]);
-    setNewTaskTitle("");
-    setShowAddTask(false);
-    load();
+    try {
+      const created = await api.post<Task>(`/api/hr/onboarding/${selectedStaff}`, { title: newTaskTitle, category: newTaskCat });
+      setTasks(prev => [...prev, created]);
+      setNewTaskTitle("");
+      setShowAddTask(false);
+      load();
+    } catch { toast.error("Failed"); }
   }
 
   async function deleteTask(task: Task) {
-    await f(`/api/hr/onboarding/${task.staff_id}/${task.id}`, { method: "DELETE" });
+    await api.delete(`/api/hr/onboarding/${task.staff_id}/${task.id}`).catch(() => {});
     setTasks(prev => prev.filter(t => t.id !== task.id));
     load();
   }
 
   async function addTemplateItem() {
     if (!newTaskTitle.trim()) return;
-    const res = await f("/api/hr/onboarding/template", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: newTaskTitle, category: newTaskCat }),
-    });
-    if (!res.ok) { toast.error("Failed"); return; }
-    const created = await res.json();
-    setTemplate(prev => [...prev, created]);
-    setNewTaskTitle("");
-    toast.success("Template item added");
+    try {
+      const created = await api.post<any>("/api/hr/onboarding/template", { title: newTaskTitle, category: newTaskCat });
+      setTemplate(prev => [...prev, created]);
+      setNewTaskTitle("");
+      toast.success("Template item added");
+    } catch { toast.error("Failed"); }
   }
 
   const byCategory = tasks.reduce((acc, t) => {
@@ -290,8 +279,8 @@ export default function OnboardingPage() {
                 <span className={`text-xs px-2 py-0.5 rounded-full ${CAT_COLORS[item.category] || CAT_COLORS.general}`}>{CAT_LABELS[item.category] || item.category}</span>
                 {item.id && (
                   <button onClick={async () => {
-                    await f(`/api/hr/onboarding/template/${item.id}`, { method: "DELETE" });
-                    setTemplate(prev => prev.filter(t => t.id !== item.id));
+                    await api.delete(`/api/hr/onboarding/template/${item.id}`).catch(() => {});
+                    setTemplate(prev => prev.filter((t: any) => t.id !== item.id));
                   }} className="p-1 rounded hover:bg-red-50 text-gray-300 hover:text-red-400 flex-shrink-0">
                     <X className="h-3.5 w-3.5" />
                   </button>

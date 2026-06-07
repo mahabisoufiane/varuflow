@@ -33,10 +33,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.bank_feed import BankAccount, BankTransaction
 from app.models.organization import OrgRole
 
-router = APIRouter(tags=["bank_feed"])
+router = APIRouter(tags=["bank_feed"], dependencies=[Depends(require_module("finance"))])
 log = logging.getLogger(__name__)
 
 

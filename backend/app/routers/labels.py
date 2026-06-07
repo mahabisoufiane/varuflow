@@ -36,8 +36,9 @@ from app.services.label_generator import (
     validate_format,
     validate_size,
 )
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/labels", tags=["labels"])
+router = APIRouter(prefix="/api/labels", tags=["labels"], dependencies=[Depends(require_module("inventory"))])
 
 
 # ── Schemas ───────────────────────────────────────────────────────

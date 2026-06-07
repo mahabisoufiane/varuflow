@@ -22,8 +22,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.wallet_payment_session import WalletPaymentSession
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/wallet-payments", tags=["wallet-payments"])
+router = APIRouter(prefix="/api/wallet-payments", tags=["wallet-payments"], dependencies=[Depends(require_module("pos"))])
 logger = logging.getLogger(__name__)
 
 

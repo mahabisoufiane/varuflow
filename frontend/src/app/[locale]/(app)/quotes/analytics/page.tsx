@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api-client";
 import { TrendingUp, DollarSign, Clock, BarChart2 } from "lucide-react";
-
-const API = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 interface Analytics {
   total_quotes: number;
@@ -41,8 +40,7 @@ export default function QuoteAnalyticsPage() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch(`${API}/api/quotes/analytics`, { credentials: "include" })
-      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+    api.get<Analytics>(`/api/quotes/analytics`)
       .then(setData)
       .catch(() => setError(true));
   }, []);

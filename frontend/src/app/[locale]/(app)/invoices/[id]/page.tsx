@@ -138,7 +138,7 @@ export default function InvoiceDetailPage() {
   async function handleDelete() {
     if (!confirm("Delete this draft invoice?")) return;
     try {
-      await api.delete(`/api/invoicing/invoices/${invoice.id}`);
+      await api.delete(`/api/invoicing/invoices/${invoice!.id}`);
       router.push("/invoices");
     } catch (e: any) { setError(e.message); }
   }

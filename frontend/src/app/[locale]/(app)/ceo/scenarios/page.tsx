@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Plus, Play, Trash2, GitBranch, TrendingUp, TrendingDown } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 interface Adjustment {
   id: string; label: string; category: string;
@@ -37,7 +38,6 @@ function DeltaBadge({ value }: { value: number }) {
 }
 
 export default function ScenariosPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [runResult, setRunResult] = useState<RunResult | null>(null);
@@ -50,12 +50,11 @@ export default function ScenariosPage() {
     label: "", category: "expense", monthly_change: -50000, start_month_offset: 0,
   });
 
-  const f = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   async function load() {
-    const res = await f("/api/ceo/scenarios");
-    if (res.ok) setScenarios((await res.json()).scenarios);
+    try {
+      const data = await api.get<{ scenarios: Scenario[] }>("/api/ceo/scenarios");
+      setScenarios(data.scenarios);
+    } catch {}
   }
   useEffect(() => { load(); }, []);
 
@@ -68,30 +67,33 @@ export default function ScenariosPage() {
   async function create() {
     if (!form.name.trim()) { toast.error("Scenario name required"); return; }
     if (form.adjustments.length === 0) { toast.error("Add at least one adjustment"); return; }
-    const res = await f("/api/ceo/scenarios", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form }),
-    });
-    if (res.ok) {
+    try {
+      await api.post("/api/ceo/scenarios", { ...form });
       toast.success("Scenario saved");
       setShowForm(false);
       setForm({ name: "", description: "", horizon_months: 3, adjustments: [] });
       await load();
-    } else toast.error("Failed");
+    } catch {
+      toast.error("Failed");
+    }
   }
 
   async function runScenario(id: string) {
     setRunning(true);
     try {
-      const res = await f(`/api/ceo/scenarios/${id}/run`, { method: "POST" });
-      if (res.ok) setRunResult(await res.json());
-      else toast.error("Run failed");
-    } finally { setRunning(false); }
+      const data = await api.post<RunResult>(`/api/ceo/scenarios/${id}/run`, {});
+      setRunResult(data);
+    } catch {
+      toast.error("Run failed");
+    } finally {
+      setRunning(false);
+    }
   }
 
   async function del(id: string) {
-    await f(`/api/ceo/scenarios/${id}`, { method: "DELETE" });
+    try {
+      await api.delete(`/api/ceo/scenarios/${id}`);
+    } catch {}
     setScenarios(s => s.filter(x => x.id !== id));
     if (runResult) setRunResult(null);
     toast.success("Deleted");
@@ -205,7 +207,7 @@ export default function ScenariosPage() {
         {/* Run results */}
         {runResult && (
           <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
-            <p className="text-sm font-semibold text-gray-700">"{runResult.name}" vs Base</p>
+            <p className="text-sm font-semibold text-gray-700">&quot;{runResult.name}&quot; vs Base</p>
 
             {/* Delta summary */}
             <div className="grid grid-cols-3 gap-3">

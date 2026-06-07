@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useState } from "react";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,14 +14,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
-
-function getToken() {
-  return typeof window !== "undefined"
-    ? localStorage.getItem("auth_token") ?? ""
-    : "";
-}
-
 interface Address {
   id: string;
   label: string;
@@ -34,8 +26,6 @@ interface Address {
 }
 
 export default function AddressesPage() {
-  const { locale } = useParams<{ locale: string }>();
-
   const [customerId, setCustomerId] = useState("");
   const [customerIdInput, setCustomerIdInput] = useState("");
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -55,16 +45,12 @@ export default function AddressesPage() {
 
   async function loadAddresses() {
     if (!customerIdInput.trim()) return;
-    setCustomerId(customerIdInput.trim());
+    const cid = customerIdInput.trim();
+    setCustomerId(cid);
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(
-        `${API}/api/addresses?customer_id=${encodeURIComponent(customerIdInput.trim())}`,
-        { headers: { Authorization: `Bearer ${getToken()}` } }
-      );
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data = await res.json();
+      const data = await api.get<Address[]>(`/api/addresses?customer_id=${encodeURIComponent(cid)}`);
       setAddresses(data);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load addresses");
@@ -76,11 +62,7 @@ export default function AddressesPage() {
   async function handleSetDefault(id: string) {
     setError("");
     try {
-      const res = await fetch(`${API}/api/addresses/${id}/set-default`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post(`/api/addresses/${id}/set-default`, {});
       await loadAddresses();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to set default");
@@ -90,11 +72,7 @@ export default function AddressesPage() {
   async function handleDelete(id: string) {
     setError("");
     try {
-      const res = await fetch(`${API}/api/addresses/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.delete(`/api/addresses/${id}`);
       setAddresses((prev) => prev.filter((a) => a.id !== id));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to delete address");
@@ -110,24 +88,16 @@ export default function AddressesPage() {
     }
     setFormLoading(true);
     try {
-      const res = await fetch(`${API}/api/addresses`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          customer_id: customerId,
-          label: newLabel || "home",
-          line1: newLine1,
-          line2: newLine2 || undefined,
-          city: newCity,
-          postal_code: newPostalCode,
-          country: newCountry,
-          is_default: newIsDefault,
-        }),
+      await api.post("/api/addresses", {
+        customer_id: customerId,
+        label: newLabel || "home",
+        line1: newLine1,
+        line2: newLine2 || undefined,
+        city: newCity,
+        postal_code: newPostalCode,
+        country: newCountry,
+        is_default: newIsDefault,
       });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
       setNewLabel("home");
       setNewLine1("");
       setNewLine2("");

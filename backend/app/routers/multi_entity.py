@@ -30,10 +30,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.multi_entity import EliminationEntry, IntercompanyTransfer
-from app.models.organization import Organization
+from app.models.organization import Organization, OrganizationMember, OrgRole
 
-router = APIRouter(prefix="/api/multi-entity", tags=["multi_entity"])
+router = APIRouter(prefix="/api/multi-entity", tags=["multi_entity"], dependencies=[Depends(require_module("multi_entity"))])
 log = logging.getLogger(__name__)
 
 
@@ -575,4 +576,119 @@ async def remove_permission(
         raise
     except Exception as e:
         log.error("remove_permission failed: %s", str(e), extra={"org_id": str(org_id)})
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+# ── Country workspace branches ────────────────────────────────────────────────
+
+class BranchIn(BaseModel):
+    name: str
+    country_code: str          # ISO-3166-1 alpha-2 (NO, DK, FI …)
+    base_currency: str = "SEK"
+
+
+class BranchOut(BaseModel):
+    id: str
+    name: str
+    country_code: str | None
+    entity_type: str
+    parent_org_id: str | None
+    base_currency: str
+    plan: str
+
+
+@router.get("/branches", response_model=list[BranchOut])
+async def list_branches(
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the caller's org plus all country branches they can access."""
+    _, member = ctx
+    try:
+        # Collect all orgs where the user is a member
+        memberships = await db.execute(
+            select(OrganizationMember.org_id).where(
+                OrganizationMember.user_id == member.user_id
+            )
+        )
+        accessible_org_ids = [r[0] for r in memberships.all()]
+
+        if not accessible_org_ids:
+            return []
+
+        rows = await db.execute(
+            select(Organization).where(Organization.id.in_(accessible_org_ids))
+        )
+        orgs = rows.scalars().all()
+        return [
+            BranchOut(
+                id=str(o.id),
+                name=o.name,
+                country_code=getattr(o, "country_code", None),
+                entity_type=getattr(o, "entity_type", "standalone"),
+                parent_org_id=str(o.parent_org_id) if getattr(o, "parent_org_id", None) else None,
+                base_currency=o.base_currency,
+                plan=o.plan.value if hasattr(o.plan, "value") else str(o.plan),
+            )
+            for o in orgs
+        ]
+    except Exception as e:
+        log.error("list_branches failed: %s", str(e), extra={"org_id": str(member.org_id)})
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.post("/branches", response_model=BranchOut, status_code=201)
+async def create_branch(
+    body: BranchIn,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a country branch org. Owner-only. Inherits the parent plan."""
+    _, member = ctx
+    if member.role != OrgRole.OWNER:
+        raise HTTPException(status_code=403, detail="Only owners can create country branches")
+
+    try:
+        parent_org = await db.get(Organization, member.org_id)
+        if not parent_org:
+            raise HTTPException(status_code=404, detail="Parent organization not found")
+
+        # Promote parent to "parent" entity_type if still standalone
+        if getattr(parent_org, "entity_type", "standalone") == "standalone":
+            parent_org.entity_type = "parent"
+
+        branch = Organization(
+            name=body.name,
+            plan=parent_org.plan,
+            base_currency=body.base_currency,
+            entity_type="branch",
+            parent_org_id=parent_org.id,
+            country_code=body.country_code.upper()[:2],
+        )
+        db.add(branch)
+        await db.flush()
+
+        # Auto-grant the owner membership in the new branch
+        owner_member = OrganizationMember(
+            org_id=branch.id,
+            user_id=member.user_id,
+            role=OrgRole.OWNER,
+        )
+        db.add(owner_member)
+        await db.commit()
+        await db.refresh(branch)
+
+        return BranchOut(
+            id=str(branch.id),
+            name=branch.name,
+            country_code=branch.country_code,
+            entity_type=branch.entity_type,
+            parent_org_id=str(branch.parent_org_id),
+            base_currency=branch.base_currency,
+            plan=branch.plan.value if hasattr(branch.plan, "value") else str(branch.plan),
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("create_branch failed: %s", str(e), extra={"org_id": str(member.org_id)})
         raise HTTPException(status_code=500, detail="Internal server error")

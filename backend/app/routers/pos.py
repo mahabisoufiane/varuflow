@@ -25,10 +25,11 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.inventory import Product, StockLevel, StockMovement, StockMovementType, Warehouse
 from app.models.pos import PosPaymentMethod, PosSession, PosSessionStatus, PosSale, PosSaleItem
 
-router = APIRouter(prefix="/api/pos", tags=["pos"])
+router = APIRouter(prefix="/api/pos", tags=["pos"], dependencies=[Depends(require_module("pos"))])
 
 NAVY = colors.HexColor("#1a2332")
 

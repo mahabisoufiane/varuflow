@@ -2,6 +2,8 @@ from app.database import Base  # noqa: F401
 
 # Import all models so Alembic can detect them
 from app.models.organization import Organization, OrganizationMember  # noqa: F401
+from app.models.modules import Module, MemberModule  # noqa: F401
+from app.models.branding import OrgBranding  # noqa: F401
 from app.models.inventory import (  # noqa: F401
     Product,
     ProductBatch,

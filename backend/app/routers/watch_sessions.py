@@ -17,10 +17,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.watch_session import WatchSession
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/watch-sessions", tags=["watch-sessions"])
+router = APIRouter(prefix="/api/watch-sessions", tags=["watch-sessions"], dependencies=[Depends(require_module("analytics"))])
 
 SESSION_TTL_DAYS = 30
 

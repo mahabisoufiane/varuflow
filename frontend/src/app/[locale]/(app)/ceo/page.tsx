@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "@/i18n/navigation";
 import { TrendingUp, Target, FileBarChart2, GitBranch, DollarSign, AlertTriangle, ArrowUpRight, ArrowDownRight, Crosshair } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 interface PnlData {
   revenue: { invoiced: number; collected: number };
@@ -44,19 +45,16 @@ function StatCard({ label, value, sub, icon: Icon, color = "blue", danger = fals
 }
 
 export default function CeoDashboardPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [pnl, setPnl] = useState<PnlData | null>(null);
   const [cash, setCash] = useState<CashData | null>(null);
   const [pipeline, setPipeline] = useState<PipelineData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const f = (url: string) => fetch(`${apiBase}${url}`, { credentials: "include" });
-
   useEffect(() => {
     Promise.all([
-      f("/api/ceo/pnl?period=ytd").then(r => r.ok ? r.json() : null).then(d => { if (d) setPnl(d); }),
-      f("/api/ceo/cash-forecast?horizon_days=30").then(r => r.ok ? r.json() : null).then(d => { if (d) setCash(d); }),
-      f("/api/crm/forecast?months=3").then(r => r.ok ? r.json() : null).then(d => { if (d) setPipeline(d); }),
+      api.get<PnlData>("/api/ceo/pnl?period=ytd").then(d => setPnl(d)).catch(() => {}),
+      api.get<CashData>("/api/ceo/cash-forecast?horizon_days=30").then(d => setCash(d)).catch(() => {}),
+      api.get<PipelineData>("/api/crm/forecast?months=3").then(d => setPipeline(d)).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
 

@@ -34,9 +34,11 @@ from app.models.organization import OrgRole
 from app.models.purchase_order_note import PurchaseOrderNote
 from app.services import purchase_order_note as svc_89
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
 router = APIRouter(
     prefix="/api/purchase-order-notes", tags=["purchase-order-notes"],
+    dependencies=[Depends(require_module("inventory"))],
 )
 
 log = logging.getLogger(__name__)

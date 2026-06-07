@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { Mic, Square, Trash2, FileText, Play } from "lucide-react";
 
 interface VoiceNote { id: string; entity_type: string; entity_id: string; file_url: string; duration_seconds?: number; transcription?: string; created_at: string }
 
 export default function VoiceNotesPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [notes, setNotes] = useState<VoiceNote[]>([]);
   const [recording, setRecording] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -18,12 +18,11 @@ export default function VoiceNotesPage() {
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const fetch_ = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   async function load() {
-    const res = await fetch_("/api/mobile/voice-notes?limit=50");
-    if (res.ok) setNotes((await res.json()).notes);
+    try {
+      const data = await api.get<{ notes?: VoiceNote[] }>("/api/mobile/voice-notes?limit=50");
+      setNotes(data.notes ?? []);
+    } catch {}
   }
 
   useEffect(() => { load(); }, []);
@@ -81,46 +80,35 @@ export default function VoiceNotesPage() {
         } catch {}
       }
 
-      const res = await fetch_("/api/mobile/voice-notes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          entity_type: form.entity_type,
-          entity_id: form.entity_id,
-          file_url: fileUrl,
-          duration_seconds: duration,
-        }),
+      await api.post("/api/mobile/voice-notes", {
+        entity_type: form.entity_type,
+        entity_id: form.entity_id,
+        file_url: fileUrl,
+        duration_seconds: duration,
       });
 
-      if (res.ok) {
-        toast.success("Voice note saved");
-        await load();
-      } else {
-        const err = await res.json();
-        toast.error(err.detail || "Failed to save");
-      }
-    } catch {
-      toast.error("Upload failed");
+      toast.success("Voice note saved");
+      await load();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save");
     }
     setUploading(false);
   }
 
   async function transcribe(id: string) {
     setTranscribing(id);
-    const res = await fetch_(`/api/mobile/voice-notes/${id}/transcribe`, { method: "POST" });
-    if (res.ok) {
-      const data = await res.json();
+    try {
+      const data = await api.post<{ transcription?: string }>(`/api/mobile/voice-notes/${id}/transcribe`, {});
       setNotes(n => n.map(x => x.id === id ? { ...x, transcription: data.transcription } : x));
       toast.success("Transcription complete");
-    } else {
-      const err = await res.json();
-      toast.error(err.detail || "Transcription failed");
+    } catch (err: any) {
+      toast.error(err.message || "Transcription failed");
     }
     setTranscribing(null);
   }
 
   async function deleteNote(id: string) {
-    await fetch_(`/api/mobile/voice-notes/${id}`, { method: "DELETE" });
+    await api.delete(`/api/mobile/voice-notes/${id}`).catch(() => {});
     setNotes(n => n.filter(x => x.id !== id));
     toast.success("Deleted");
   }

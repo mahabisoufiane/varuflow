@@ -165,8 +165,7 @@ export default function LockScreenAlertsPage() {
 
       {/* Critical banner */}
       {!loading && criticalCount > 0 && (
-        <div className="flex items-start gap-3 rounded-xl p-4"
-          style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)" }}>
+        <div className="flex items-start gap-3 rounded-xl p-4 bg-red-500/[0.06] border border-red-500/20">
           <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
           <p className="text-xs text-red-300">
             <span className="font-bold">{criticalCount} critical alert{criticalCount === 1 ? "" : "s"}</span> require your attention.
@@ -183,7 +182,7 @@ export default function LockScreenAlertsPage() {
             { label: "Active", value: activeCount, color: activeCount > 0 ? "text-amber-400" : "text-emerald-400", bg: activeCount > 0 ? "bg-amber-500/10" : "bg-emerald-500/10", icon: <AlertTriangle className="h-4 w-4" /> },
             { label: "Critical", value: criticalCount, color: criticalCount > 0 ? "text-red-400" : "text-emerald-400", bg: criticalCount > 0 ? "bg-red-500/10" : "bg-emerald-500/10", icon: <Lock className="h-4 w-4" /> },
           ].map(({ label, value, color, bg, icon }) => (
-            <div key={label} className="vf-section p-4" style={{ borderRadius: 14 }}>
+            <div key={label} className="vf-section p-4" >
               <div className={cn("inline-flex h-9 w-9 items-center justify-center rounded-xl mb-3", bg, color)}>
                 {icon}
               </div>
@@ -195,7 +194,7 @@ export default function LockScreenAlertsPage() {
       )}
 
       {/* Filter tabs */}
-      <div className="flex gap-1 rounded-xl p-1" style={{ background: "var(--vf-bg-elevated)" }}>
+      <div className="flex gap-1 rounded-xl p-1" >
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -222,7 +221,7 @@ export default function LockScreenAlertsPage() {
       <div className="space-y-2">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="vf-section p-4" style={{ borderRadius: 14 }}>
+            <div key={i} className="vf-section p-4" >
               <div className="flex gap-3">
                 <div className="h-9 w-9 skeleton rounded-xl shrink-0" />
                 <div className="flex-1 space-y-2">
@@ -235,7 +234,7 @@ export default function LockScreenAlertsPage() {
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl"
-              style={{ background: "var(--vf-bg-elevated)" }}>
+              >
               {tab === "dismissed" ? (
                 <CheckCircle2 className="h-6 w-6 text-emerald-400" />
               ) : (

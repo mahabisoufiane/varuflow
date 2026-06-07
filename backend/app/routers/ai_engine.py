@@ -26,7 +26,7 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
-from app.middleware.plan_check import require_plan
+from app.middleware.plan_check import require_module, require_plan
 from app.models.inventory import (
     Product,
     PurchaseOrder,
@@ -44,7 +44,7 @@ from sqlalchemy.exc import IntegrityError
 router = APIRouter(
     prefix="/api/ai",
     tags=["ai"],
-    dependencies=[Depends(require_plan(OrgPlan.PRO))],
+    dependencies=[Depends(require_plan(OrgPlan.PRO)), Depends(require_module("ai"))],
 )
 
 CardType = Literal["ALERT", "SUGGESTION", "WORKFLOW", "REPORT"]

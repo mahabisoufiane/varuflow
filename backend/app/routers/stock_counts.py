@@ -25,8 +25,9 @@ from app.models.inventory import Product, StockLevel, Warehouse
 from app.models.stock_count import StockCount, StockCountItem, StockCountStatus
 from app.services.audit import log_action
 from app.services.stock_count import apply_stock_count
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/stock-counts", tags=["stock-counts"])
+router = APIRouter(prefix="/api/stock-counts", tags=["stock-counts"], dependencies=[Depends(require_module("inventory"))])
 
 
 def _org(ctx: tuple) -> uuid.UUID:

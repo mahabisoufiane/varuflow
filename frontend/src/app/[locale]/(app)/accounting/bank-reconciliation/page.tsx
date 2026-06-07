@@ -13,6 +13,7 @@ interface BankAccount { id: string; name: string; iban: string | null; currency:
 interface Tx {
   id: string; transaction_date: string; amount: string; description: string;
   reference: string | null; status: string; matched_type: string | null; matched_id: string | null;
+  matched_label?: string | null;
 }
 interface RecSummary {
   total_transactions: number; unmatched_count: number; matched_count: number;

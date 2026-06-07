@@ -29,8 +29,9 @@ from app.models.invoicing import Customer
 from app.models.referral import Referral, ReferralCode, ReferralStatus
 from app.services import referral as svc
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/referrals", tags=["referrals"])
+router = APIRouter(prefix="/api/referrals", tags=["referrals"], dependencies=[Depends(require_module("invoicing"))])
 
 log = logging.getLogger(__name__)
 

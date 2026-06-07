@@ -25,8 +25,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.zapier import ZapierHook, ZapierEventLog
+from app.middleware.plan_check import require_module
 
-router = APIRouter(prefix="/api/zapier", tags=["integrations_zapier"])
+router = APIRouter(prefix="/api/zapier", tags=["integrations_zapier"], dependencies=[Depends(require_module("settings"))])
 log = logging.getLogger(__name__)
 
 VALID_HOOK_TYPES = {"zapier", "make", "generic"}

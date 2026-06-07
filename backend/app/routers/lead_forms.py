@@ -13,11 +13,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.lead_forms import LeadForm, LeadFormSubmission
 
 log = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_module("crm"))])
 
 _VALID_SLUG = re.compile(r"^[a-z0-9-]{2,80}$")
 

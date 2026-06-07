@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useLocale } from "next-intl";
+import { api } from "@/lib/api-client";
 import {
   ShoppingBag, Users, Bell, BookOpen, Building2, Plug,
   CheckCircle2, Circle, ExternalLink, Zap,
@@ -35,7 +36,6 @@ const CATEGORIES = ["E-commerce", "CRM", "Notifications", "Accounting", "Banking
 
 export default function IntegrationsPage() {
   const locale = useLocale();
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [statuses, setStatuses] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -43,10 +43,12 @@ export default function IntegrationsPage() {
       const endpoints = CONNECTORS.filter(c => c.statusEndpoint);
       const results = await Promise.allSettled(
         endpoints.map(async (c) => {
-          const res = await fetch(`${apiBase}${c.statusEndpoint!}`, { credentials: "include" });
-          if (!res.ok) return { id: c.id, connected: false };
-          const data = await res.json();
-          return { id: c.id, connected: data.connected ?? data.is_active ?? false };
+          try {
+            const data = await api.get<{ connected?: boolean; is_active?: boolean }>(c.statusEndpoint!);
+            return { id: c.id, connected: data.connected ?? data.is_active ?? false };
+          } catch {
+            return { id: c.id, connected: false };
+          }
         })
       );
       const map: Record<string, boolean> = {};
@@ -58,7 +60,7 @@ export default function IntegrationsPage() {
       setStatuses(map);
     }
     fetchStatuses();
-  }, [apiBase]);
+  }, []);
 
   return (
     <div className="space-y-8">

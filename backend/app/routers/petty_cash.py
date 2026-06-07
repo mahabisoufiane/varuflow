@@ -11,9 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.petty_cash import PettyCashTransaction
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["petty-cash"])
+router = APIRouter(tags=["petty-cash"], dependencies=[Depends(require_module("finance"))])
 
 
 class PettyCashIn(BaseModel):
@@ -21,7 +22,6 @@ class PettyCashIn(BaseModel):
     txn_type: str  # deposit | withdrawal
     amount: float
     description: str | None = None
-    category_id: str | None = None
     receipt_url: str | None = None
     currency: str = "SEK"
 
@@ -81,12 +81,11 @@ async def create_petty_cash(body: PettyCashIn, member=Depends(get_current_member
             raise HTTPException(status_code=422, detail="txn_type must be deposit or withdrawal")
         rec = PettyCashTransaction(
             org_id=org_id,
-            created_by_user_id=member.get("user_id"),
+            created_by=member.get("user_id"),
             txn_date=body.txn_date,
             txn_type=body.txn_type,
             amount=Decimal(str(body.amount)),
             description=body.description,
-            category_id=body.category_id,
             receipt_url=body.receipt_url,
             currency=body.currency,
         )
@@ -127,9 +126,8 @@ def _txn_dict(r: PettyCashTransaction) -> dict:
         "txn_type": r.txn_type,
         "amount": float(r.amount),
         "description": r.description,
-        "category_id": str(r.category_id) if r.category_id else None,
         "receipt_url": r.receipt_url,
         "currency": r.currency,
-        "created_by_user_id": str(r.created_by_user_id),
+        "created_by": str(r.created_by) if r.created_by else None,
         "created_at": r.created_at.isoformat() if r.created_at else None,
     }

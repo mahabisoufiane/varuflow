@@ -49,9 +49,7 @@ export default function ZReportPage() {
 
   async function handleDownload(sessionId: string) {
     try {
-      const blob = await api.get<Blob>(`/api/pos/sessions/${sessionId}/zreport`, {
-        responseType: "blob",
-      });
+      const blob = await api.get<Blob>(`/api/pos/sessions/${sessionId}/zreport`);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

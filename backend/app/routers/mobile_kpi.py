@@ -16,10 +16,11 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.mobile_kpi_config import MobileKpiConfig
 from app.models.push_notification_token import PushNotificationToken
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/mobile", tags=["mobile-kpi"])
+router = APIRouter(prefix="/api/mobile", tags=["mobile-kpi"], dependencies=[Depends(require_module("analytics"))])
 
 
 def _org_id(ctx: tuple) -> uuid.UUID:

@@ -82,7 +82,7 @@ export default function MarketingHeaderNav() {
         <Link
           href="/auth/signup"
           className="rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
-          style={{ background: "linear-gradient(135deg,#6366f1,#7c3aed)", color: "#fff" }}
+          style={{ background: "linear-gradient(135deg,#4A6CF7,#7c3aed)", color: "#fff" }}
         >
           Get started
         </Link>

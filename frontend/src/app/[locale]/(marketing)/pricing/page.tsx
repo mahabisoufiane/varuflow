@@ -199,13 +199,13 @@ function PlanCard({
       className={cn(
         "relative flex flex-col rounded-2xl p-8 transition-all duration-200",
         highlight
-          ? "scale-[1.02] shadow-[0_0_40px_rgba(99,102,241,0.25)]"
+          ? "scale-[1.02] shadow-[0_0_40px_rgba(74,108,247,0.25)]"
           : "hover:scale-[1.01]"
       )}
       style={{
         background: highlight ? "var(--vf-bg-elevated)" : "var(--vf-bg-surface)",
         border: highlight
-          ? "1px solid rgba(99,102,241,0.5)"
+          ? "1px solid rgba(74,108,247,0.5)"
           : badgeStyle === "amber"
           ? "1px solid rgba(245,158,11,0.3)"
           : "1px solid var(--vf-border)",
@@ -219,7 +219,7 @@ function PlanCard({
             style={{
               background: badgeStyle === "amber"
                 ? "linear-gradient(135deg, #F59E0B, #D97706)"
-                : "linear-gradient(135deg, #6366F1, #4F46E5)",
+                : "linear-gradient(135deg, #4A6CF7, #3B5CE6)",
             }}
           >
             {badge}
@@ -230,7 +230,7 @@ function PlanCard({
       {/* Plan name */}
       <div className="mb-6">
         <p className="text-xs font-semibold uppercase tracking-widest mb-1"
-          style={{ color: highlight ? "#818CF8" : badgeStyle === "amber" ? "#F59E0B" : "var(--vf-text-muted)" }}>
+          style={{ color: highlight ? "#7C9AFF" : badgeStyle === "amber" ? "#F59E0B" : "var(--vf-text-muted)" }}>
           {t(`${plan}.name` as "starter.name" | "professional.name" | "enterprise.name")}
         </p>
         <p className="text-sm" style={{ color: "var(--vf-text-secondary)" }}>
@@ -277,7 +277,7 @@ function PlanCard({
         className={cn(
           "mb-8 flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.01] active:scale-[0.98]",
           ctaStyle === "primary" &&
-            "bg-gradient-to-br from-[#6366F1] to-[#4F46E5] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_0_16px_rgba(99,102,241,0.4)]",
+            "bg-gradient-to-br from-[#4A6CF7] to-[#3B5CE6] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_0_16px_rgba(74,108,247,0.4)]",
           ctaStyle === "secondary" &&
             "border text-sm font-semibold",
           ctaStyle === "amber" &&
@@ -383,7 +383,7 @@ export default function PricingPage() {
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium mb-2"
-            style={{ borderColor: "rgba(99,102,241,0.3)", background: "rgba(99,102,241,0.08)", color: "#818CF8" }}>
+            style={{ borderColor: "rgba(74,108,247,0.3)", background: "rgba(74,108,247,0.08)", color: "#7C9AFF" }}>
             <Zap className="h-3 w-3" />
             Cancel anytime · No hidden fees
           </div>
@@ -403,7 +403,7 @@ export default function PricingPage() {
               className={cn(
                 "rounded-lg px-5 py-2 text-sm font-semibold transition-all duration-200",
                 !yearly
-                  ? "bg-gradient-to-br from-[#6366F1] to-[#4F46E5] text-white shadow-sm"
+                  ? "bg-gradient-to-br from-[#4A6CF7] to-[#3B5CE6] text-white shadow-sm"
                   : "text-slate-500 hover:text-slate-300"
               )}
             >
@@ -415,7 +415,7 @@ export default function PricingPage() {
               className={cn(
                 "flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold transition-all duration-200",
                 yearly
-                  ? "bg-gradient-to-br from-[#6366F1] to-[#4F46E5] text-white shadow-sm"
+                  ? "bg-gradient-to-br from-[#4A6CF7] to-[#3B5CE6] text-white shadow-sm"
                   : "text-slate-500 hover:text-slate-300"
               )}
             >
@@ -479,7 +479,7 @@ export default function PricingPage() {
           {/* Background orbs */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full opacity-10 blur-3xl"
-              style={{ background: "radial-gradient(circle, #6366F1 0%, transparent 70%)" }} />
+              style={{ background: "radial-gradient(circle, #4A6CF7 0%, transparent 70%)" }} />
             <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full opacity-10 blur-3xl"
               style={{ background: "radial-gradient(circle, #F59E0B 0%, transparent 70%)" }} />
           </div>
@@ -539,8 +539,8 @@ export default function PricingPage() {
         <div
           className="rounded-2xl p-12 text-center space-y-5"
           style={{
-            background: "linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(79,70,229,0.06) 100%)",
-            border: "1px solid rgba(99,102,241,0.2)",
+            background: "linear-gradient(135deg, rgba(74,108,247,0.12) 0%, rgba(79,70,229,0.06) 100%)",
+            border: "1px solid rgba(74,108,247,0.2)",
           }}
         >
           <h2 className="text-2xl font-bold" style={{ color: "var(--vf-text-primary)" }}>
@@ -552,7 +552,7 @@ export default function PricingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/auth/signup?plan=professional"
-              className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#4F46E5] px-7 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(99,102,241,0.4)]"
+              className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-br from-[#4A6CF7] to-[#3B5CE6] px-7 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(74,108,247,0.4)]"
             >
               Get started →
             </Link>

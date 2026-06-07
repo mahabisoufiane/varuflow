@@ -44,9 +44,11 @@ from app.models.purchase_order_tag import (
 )
 from app.services import purchase_order_tag as svc_90
 from app.services.audit import log_action
+from app.middleware.plan_check import require_module
 
 router = APIRouter(
     prefix="/api/purchase-order-tags", tags=["purchase-order-tags"],
+    dependencies=[Depends(require_module("inventory"))],
 )
 
 log = logging.getLogger(__name__)

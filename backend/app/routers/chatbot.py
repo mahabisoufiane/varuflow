@@ -16,10 +16,11 @@ from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.chatbot import ChatbotConfig, ChatbotConversation
 from app.models.knowledge_base import KbArticle
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/chatbot", tags=["chatbot"])
+router = APIRouter(prefix="/api/chatbot", tags=["chatbot"], dependencies=[Depends(require_module("ai"))])
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────

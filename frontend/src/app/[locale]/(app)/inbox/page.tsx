@@ -1,15 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
 
 const CHANNELS = ["all", "email", "whatsapp", "sms", "in_app", "contact_form"] as const;
 type Channel = (typeof CHANNELS)[number];
@@ -78,11 +74,8 @@ export default function InboxPage() {
     try {
       const qp = new URLSearchParams({ limit: "50" });
       if (channelFilter !== "all") qp.set("channel", channelFilter);
-      const res = await fetch(`${API}/api/inbox/threads?${qp}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setThreads(await res.json());
+      const data = await api.get<Thread[]>(`/api/inbox/threads?${qp}`);
+      setThreads(data);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load threads");
     } finally {
@@ -92,13 +85,8 @@ export default function InboxPage() {
 
   async function fetchUnreadCount() {
     try {
-      const res = await fetch(`${API}/api/inbox/unread-count`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUnreadCount(data.count ?? data);
-      }
+      const data = await api.get<{ count?: number } | number>("/api/inbox/unread-count");
+      setUnreadCount((data as any).count ?? data);
     } catch {
       // non-fatal
     }
@@ -107,11 +95,8 @@ export default function InboxPage() {
   async function loadMessages(thread: Thread) {
     setSelectedThread(thread);
     try {
-      const res = await fetch(`${API}/api/inbox/threads/${thread.id}/messages`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setMessages(await res.json());
+      const data = await api.get<Message[]>(`/api/inbox/threads/${thread.id}/messages`);
+      setMessages(data);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load messages");
     }
@@ -128,15 +113,10 @@ export default function InboxPage() {
     if (!selectedThread) return;
     setReplyLoading(true);
     try {
-      const res = await fetch(`${API}/api/inbox/threads/${selectedThread.id}/messages`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ body: replyBody, direction: "outbound" }),
+      await api.post(`/api/inbox/threads/${selectedThread.id}/messages`, {
+        body: replyBody,
+        direction: "outbound",
       });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
       setReplyBody("");
       loadMessages(selectedThread);
     } catch (e: unknown) {
@@ -148,10 +128,7 @@ export default function InboxPage() {
 
   async function markRead(msgId: string) {
     try {
-      await fetch(`${API}/api/inbox/messages/${msgId}/read`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      await api.post(`/api/inbox/messages/${msgId}/read`, {});
       if (selectedThread) loadMessages(selectedThread);
       fetchUnreadCount();
     } catch {
@@ -162,10 +139,7 @@ export default function InboxPage() {
   async function archiveThread() {
     if (!selectedThread) return;
     try {
-      await fetch(`${API}/api/inbox/threads/${selectedThread.id}/archive`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      await api.post(`/api/inbox/threads/${selectedThread.id}/archive`, {});
       setSelectedThread(null);
       setMessages([]);
       fetchThreads();

@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api-client";
 import { RefreshCw, Repeat2, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -33,11 +32,6 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
 type StatusFilter = "all" | "active" | "paused" | "cancelled";
 
 export default function BookingSubscriptionsPage() {
-  const router = useRouter();
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale ?? "en";
-  const supabase = createClient();
-
   const [subscriptions, setSubscriptions] = useState<BookingSubscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<StatusFilter>("all");
@@ -54,22 +48,11 @@ export default function BookingSubscriptionsPage() {
     ends_on: "",
   });
 
-  async function getToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }
-  function apiUrl(p: string) { return `${process.env.NEXT_PUBLIC_API_URL}${p}`; }
-
   async function load() {
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push(`/${locale}/auth/login`); return; }
-      const res = await fetch(apiUrl("/api/booking-subscriptions"), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (res.ok) setSubscriptions(await res.json());
+      const data = await api.get<BookingSubscription[]>("/api/booking-subscriptions");
+      setSubscriptions(data);
     } catch {
       toast.error("Failed to load recurring bookings");
     } finally {
@@ -86,27 +69,16 @@ export default function BookingSubscriptionsPage() {
     }
     setActionLoading("create");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl("/api/booking-subscriptions"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          customer_id: createForm.customer_id,
-          service_id: createForm.service_id,
-          staff_id: createForm.staff_id || null,
-          day_of_week: parseInt(createForm.day_of_week),
-          start_time: createForm.start_time,
-          duration_minutes: parseInt(createForm.duration_minutes),
-          starts_on: createForm.starts_on,
-          ends_on: createForm.ends_on || null,
-        }),
+      await api.post("/api/booking-subscriptions", {
+        customer_id: createForm.customer_id,
+        service_id: createForm.service_id,
+        staff_id: createForm.staff_id || null,
+        day_of_week: parseInt(createForm.day_of_week),
+        start_time: createForm.start_time,
+        duration_minutes: parseInt(createForm.duration_minutes),
+        starts_on: createForm.starts_on,
+        ends_on: createForm.ends_on || null,
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to create subscription");
-        return;
-      }
       toast.success("Recurring booking created");
       setShowCreateForm(false);
       setCreateForm({ customer_id: "", service_id: "", staff_id: "", day_of_week: "0", start_time: "09:00", duration_minutes: "60", starts_on: "", ends_on: "" });
@@ -121,18 +93,7 @@ export default function BookingSubscriptionsPage() {
   async function generateNext(id: string) {
     setActionLoading(id + "_gen");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/booking-subscriptions/${id}/generate-next`), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to generate next booking");
-        return;
-      }
-      const data = await res.json().catch(() => ({}));
+      const data = await api.post<{ date?: string }>(`/api/booking-subscriptions/${id}/generate-next`, {});
       toast.success(`Appointment created for ${data.date ?? "next slot"}`);
       await load();
     } catch {
@@ -145,17 +106,7 @@ export default function BookingSubscriptionsPage() {
   async function updateStatus(id: string, action: "pause" | "resume" | "cancel") {
     setActionLoading(id + "_" + action);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/booking-subscriptions/${id}/${action}`), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? `Failed to ${action}`);
-        return;
-      }
+      await api.post(`/api/booking-subscriptions/${id}/${action}`, {});
       toast.success(`Subscription ${action}d`);
       await load();
     } catch {

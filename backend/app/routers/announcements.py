@@ -21,9 +21,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.models.announcements import Announcement, AnnouncementRead
+from app.middleware.plan_check import require_module
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["announcements"])
+router = APIRouter(tags=["announcements"], dependencies=[Depends(require_module("crm"))])
 
 ALLOWED_EMOJIS = {"👍", "❤️", "🎉", "👀", "✅", "🙏"}
 

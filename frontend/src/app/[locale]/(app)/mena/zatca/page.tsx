@@ -79,17 +79,7 @@ export default function ZatcaDashboardPage() {
 
   async function downloadXml(invoiceId: string) {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
-      const response = await fetch(`${apiUrl}/api/mena/zatca/${invoiceId}/xml`, {
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Failed");
-      const text = await response.text();
-      const blob = new Blob([text], { type: "application/xml" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = `zatca-${invoiceId}.xml`; a.click();
-      URL.revokeObjectURL(url);
+      await api.downloadBlob(`/api/mena/zatca/${invoiceId}/xml`, `zatca-${invoiceId}.xml`);
     } catch {
       toast.error("Failed to download XML");
     }

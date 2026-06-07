@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { TrendingDown, AlertTriangle, Check, RefreshCw, UserX, UserCheck } from "lucide-react";
 
 interface ChurnedCustomer {
@@ -34,8 +35,6 @@ const RISK_COLORS = { high: "text-red-600 bg-red-50 border-red-200", medium: "te
 const RISK_BAR = { high: "bg-red-500", medium: "bg-amber-400", low: "bg-green-400" };
 
 export default function ChurnPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string, init?: RequestInit) => fetch(`${apiBase}${url}`, { credentials: "include", ...init });
 
   const [overview, setOverview] = useState<ChurnOverview | null>(null);
   const [riskScores, setRiskScores] = useState<RiskCustomer[]>([]);
@@ -51,33 +50,41 @@ export default function ChurnPage() {
 
   async function load(m: number) {
     setLoading(true);
-    const [ov, rs] = await Promise.all([
-      f(`/api/growth/churn/overview?months=${m}`).then(r => r.ok ? r.json() : null),
-      f("/api/growth/churn/risk-scores").then(r => r.ok ? r.json() : []),
-    ]);
-    if (ov) setOverview(ov);
-    setRiskScores(rs);
-    setLoading(false);
+    try {
+      const [ov, rs] = await Promise.all([
+        api.get<ChurnOverview>(`/api/growth/churn/overview?months=${m}`),
+        api.get<RiskCustomer[]>("/api/growth/churn/risk-scores"),
+      ]);
+      setOverview(ov);
+      setRiskScores(rs);
+    } catch {
+      // overview stays null — error state handled below
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { load(months); }, [months]);
 
   async function markChurned(customerId: string) {
-    const res = await f("/api/growth/churn/mark-churned", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customer_id: customerId, churn_reason: markReason || null }),
-    });
-    if (!res.ok) { toast.error("Failed"); return; }
-    toast.success("Customer marked as churned");
-    setMarkId(null);
-    load(months);
+    try {
+      await api.post("/api/growth/churn/mark-churned", { customer_id: customerId, churn_reason: markReason || null });
+      toast.success("Customer marked as churned");
+      setMarkId(null);
+      load(months);
+    } catch {
+      toast.error("Failed");
+    }
   }
 
   async function reactivate(customerId: string) {
-    const res = await f(`/api/growth/churn/unmark-churned?customer_id=${customerId}`, { method: "POST" });
-    if (!res.ok) { toast.error("Failed"); return; }
-    toast.success("Customer reactivated");
-    load(months);
+    try {
+      await api.post(`/api/growth/churn/unmark-churned?customer_id=${customerId}`, {});
+      toast.success("Customer reactivated");
+      load(months);
+    } catch {
+      toast.error("Failed");
+    }
   }
 
   if (loading) return <div className="animate-pulse space-y-4">{[1,2,3].map(i => <div key={i} className="h-24 rounded-xl bg-gray-100" />)}</div>;
