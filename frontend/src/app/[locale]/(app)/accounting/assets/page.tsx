@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -86,6 +87,14 @@ const CATEGORY_COLOR: Record<string, string> = {
   VEHICLE:   "bg-emerald-500/20 text-emerald-300",
   IP:        "bg-purple-500/20 text-purple-300",
   OTHER:     "bg-gray-500/20 text-gray-300",
+};
+
+const CATEGORY_MODULE: Record<string, keyof typeof styles> = {
+  BUILDING:  "categoryBuilding",
+  EQUIPMENT: "categoryEquipment",
+  VEHICLE:   "categoryVehicle",
+  IP:        "categoryIP",
+  OTHER:     "categoryOther",
 };
 
 function totalNBV(assets: Asset[]) {
@@ -540,7 +549,7 @@ export default function AssetsPage() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <p className="font-semibold vf-text-1 text-sm">{asset.name}</p>
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${CATEGORY_COLOR[asset.category] ?? "bg-gray-500/20 text-gray-300"}`}>
+                          <span className={styles[CATEGORY_MODULE[asset.category] ?? "categoryOther"]}>
                             {asset.category}
                           </span>
                           {asset.is_disposed && (

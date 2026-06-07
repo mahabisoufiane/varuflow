@@ -1,0 +1,131 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+// ── Status badges ─────────────────────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusPending {
+  @extend .statusBadge;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.statusAssigned {
+  @extend .statusBadge;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.statusInProgress {
+  @extend .statusBadge;
+  background: #fef9c3;
+  color: #a16207;
+}
+
+.statusCompleted {
+  @extend .statusBadge;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusInvoiced {
+  @extend .statusBadge;
+  background: #f3e8ff;
+  color: #7e22ce;
+}
+
+// ── Card list (left pane) ─────────────────────────────────────────────────────
+
+.cardList {
+  width: 20rem;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+}
+
+.card {
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  background: #fff;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06);
+  padding: 1rem;
+  cursor: pointer;
+  transition: box-shadow 150ms ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.1);
+  }
+}
+
+.cardSelected {
+  box-shadow: 0 0 0 2px #818cf8; // indigo-400
+}
+
+// ── Detail panel (right pane) ─────────────────────────────────────────────────
+
+.detailPanel {
+  flex: 1;
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  background: #fff;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06);
+  overflow-y: auto;
+}
+
+// ── Sub-tab bar inside detail panel ──────────────────────────────────────────
+
+.subTabBar {
+  display: flex;
+  border-bottom: 1px solid var(--vf-border);
+}
+
+.subTab {
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 100ms ease, border-color 100ms ease;
+  color: #6b7280;
+  text-transform: capitalize;
+
+  &:hover {
+    color: #374151;
+  }
+}
+
+.subTabActive {
+  border-bottom-color: #4f46e5; // indigo-600
+  color: #4338ca;               // indigo-700
+}
+
+// ── Status filter pills ───────────────────────────────────────────────────────
+
+.filterPill {
+  padding: 0.25rem 0.75rem;
+  border-radius: $vf-radius-full;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #4b5563;
+  transition: border-color 100ms ease;
+
+  &:hover {
+    border-color: #9ca3af;
+  }
+}
+
+.filterPillActive {
+  background: #4f46e5;
+  color: #fff;
+  border-color: #4f46e5;
+}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
 import { Plus, Wrench, AlertCircle, ChevronRight, Clock, CheckCircle } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface JobCardPart { id: string; description: string; quantity: number; unit_price: number; product_id: string | null; }
 interface JobCardLabour { id: string; staff_name: string | null; hours: number; hourly_rate: number; notes: string | null; }
@@ -45,6 +46,14 @@ const STATUS_BADGE: Record<string, string> = {
   in_progress: "bg-yellow-100 text-yellow-700",
   completed: "bg-green-100 text-green-700",
   invoiced: "bg-purple-100 text-purple-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:     "statusPending",
+  assigned:    "statusAssigned",
+  in_progress: "statusInProgress",
+  completed:   "statusCompleted",
+  invoiced:    "statusInvoiced",
 };
 
 export default function JobCardsPage() {
@@ -256,7 +265,7 @@ export default function JobCardsPage() {
           <button
             key={s || "all"}
             onClick={() => setStatusFilter(s)}
-            className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${statusFilter === s ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"}`}
+            className={`${styles.filterPill} ${statusFilter === s ? styles.filterPillActive : ""}`}
           >
             {s ? STATUS_LABELS[s] ?? s : "All"}
           </button>
@@ -266,13 +275,13 @@ export default function JobCardsPage() {
       {/* Two-pane layout */}
       <div className="flex gap-4 flex-1 min-h-0">
         {/* List */}
-        <div className="w-80 shrink-0 space-y-2 overflow-y-auto">
+        <div className={styles.cardList}>
           {cards.length === 0 && <div className="text-center text-gray-400 py-12">No job cards found.</div>}
           {cards.map(card => (
             <div
               key={card.id}
               onClick={() => { setSelected(card); setSubTab("parts"); }}
-              className={`rounded-xl border bg-white shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow ${selected?.id === card.id ? "ring-2 ring-indigo-400" : ""}`}
+              className={`${styles.card} ${selected?.id === card.id ? styles.cardSelected : ""}`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
@@ -282,7 +291,7 @@ export default function JobCardsPage() {
                   {card.scheduled_date && <p className="text-xs text-gray-400 flex items-center gap-1 mt-1"><Clock className="w-3 h-3" />{card.scheduled_date}</p>}
                 </div>
                 <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_BADGE[card.status] ?? "bg-gray-100 text-gray-600"}`}>{STATUS_LABELS[card.status] ?? card.status}</span>
+                  <span className={styles[STATUS_MODULE[card.status] ?? "statusPending"]}>{STATUS_LABELS[card.status] ?? card.status}</span>
                   {card.invoice_id && <span className="text-xs text-purple-600">Invoiced</span>}
                 </div>
               </div>
@@ -295,7 +304,7 @@ export default function JobCardsPage() {
 
         {/* Detail panel */}
         {selected && (
-          <div className="flex-1 rounded-xl border bg-white shadow-sm overflow-y-auto">
+          <div className={styles.detailPanel}>
             <div className="p-5 border-b flex items-start justify-between">
               <div>
                 <p className="text-xs text-gray-400 font-mono">{selected.job_number}</p>
@@ -305,7 +314,7 @@ export default function JobCardsPage() {
                 {selected.notes && <p className="text-xs text-gray-500 mt-1">💬 {selected.notes}</p>}
               </div>
               <div className="flex flex-col items-end gap-2 ml-4 shrink-0">
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_BADGE[selected.status] ?? "bg-gray-100"}`}>{STATUS_LABELS[selected.status] ?? selected.status}</span>
+                <span className={styles[STATUS_MODULE[selected.status] ?? "statusPending"]}>{STATUS_LABELS[selected.status] ?? selected.status}</span>
                 {/* Status actions */}
                 {selected.status === "pending" && (
                   <button onClick={() => updateStatus(selected, "assigned")} className="text-xs py-1 px-3 rounded bg-blue-600 text-white hover:bg-blue-700">Mark Assigned</button>
@@ -323,9 +332,9 @@ export default function JobCardsPage() {
             </div>
 
             {/* Sub-tabs */}
-            <div className="border-b flex">
+            <div className={styles.subTabBar}>
               {(["parts", "labour", "photos", "actions"] as const).map(t => (
-                <button key={t} onClick={() => setSubTab(t)} className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors capitalize ${subTab === t ? "border-indigo-600 text-indigo-700" : "border-transparent text-gray-500 hover:text-gray-700"}`}>{t}</button>
+                <button key={t} onClick={() => setSubTab(t)} className={`${styles.subTab} ${subTab === t ? styles.subTabActive : ""}`}>{t}</button>
               ))}
             </div>
 
