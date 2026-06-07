@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 import {
   Webhook, Plus, Trash2, Eye, RotateCcw, CheckCircle2, XCircle, Clock,
 } from "lucide-react";
@@ -167,8 +168,7 @@ export default function WebhooksPage() {
             </div>
             <div className="flex gap-2 justify-end">
               <button type="button" onClick={() => setShowDrawer(false)}
-                className="rounded-lg px-4 py-2 text-xs font-medium vf-text-m"
-                style={{ border: "1px solid var(--vf-border)" }}>
+                className="rounded-lg px-4 py-2 text-xs font-medium vf-text-m vf-btn-secondary">
                 {t("cancel")}
               </button>
               <button type="submit" className="vf-btn text-xs">{t("create")}</button>
@@ -189,15 +189,15 @@ export default function WebhooksPage() {
         ) : webhooks.length === 0 ? (
           <div className="py-14 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl"
-              style={{ background: "var(--vf-bg-elevated)" }}>
+              >
               <Webhook className="h-6 w-6 vf-text-m" />
             </div>
             <p className="text-sm font-medium vf-text-2">{t("noWebhooks")}</p>
           </div>
         ) : (
           <table className="w-full text-sm">
-            <thead>
-              <tr style={{ borderBottom: "1px solid var(--vf-border)", background: "var(--vf-bg-elevated)" }}>
+            <thead className={styles.tableHead}>
+              <tr>
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide vf-text-m">{t("customer")}</th>
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide vf-text-m hidden md:table-cell">{t("url")}</th>
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide vf-text-m hidden sm:table-cell">{t("events")}</th>
@@ -207,7 +207,7 @@ export default function WebhooksPage() {
             </thead>
             <tbody>
               {webhooks.map(wh => (
-                <tr key={wh.id} className="vf-row" style={{ borderBottom: "1px solid var(--vf-divider)" }}>
+                <tr key={wh.id} className={"vf-row " + styles.tableRow}>
                   <td className="px-5 py-3.5">
                     <p className="text-[13px] font-semibold vf-text-1">{wh.customer_name}</p>
                     <p className="text-xs vf-text-m font-mono">{wh.customer_id}</p>
@@ -267,8 +267,7 @@ export default function WebhooksPage() {
             <div className="vf-section-header">
               <h2 className="text-[13px] font-semibold vf-text-1">{t("deliveryHistory")}</h2>
               <button onClick={() => setHistoryFor(null)}
-                className="text-xs vf-text-m hover:vf-text-1 transition-colors px-3 py-1 rounded-lg"
-                style={{ border: "1px solid var(--vf-border)" }}>
+                className="text-xs vf-text-m hover:vf-text-1 transition-colors px-3 py-1 rounded-lg vf-btn-secondary">
                 {t("close")}
               </button>
             </div>
@@ -278,7 +277,7 @@ export default function WebhooksPage() {
               ) : (
                 <table className="w-full text-sm">
                   <thead>
-                    <tr style={{ background: "var(--vf-bg-elevated)" }}>
+                    <tr >
                       <th className="px-5 py-2 text-left text-[11px] font-semibold uppercase tracking-wide vf-text-m">{t("event")}</th>
                       <th className="px-5 py-2 text-left text-[11px] font-semibold uppercase tracking-wide vf-text-m">{t("time")}</th>
                       <th className="px-5 py-2 text-left text-[11px] font-semibold uppercase tracking-wide vf-text-m">{t("status")}</th>
@@ -287,7 +286,7 @@ export default function WebhooksPage() {
                   </thead>
                   <tbody>
                     {history.map(log => (
-                      <tr key={log.id} style={{ borderTop: "1px solid var(--vf-divider)" }}>
+                      <tr key={log.id} className={styles.dividerTop}>
                         <td className="px-5 py-2.5 font-mono text-xs vf-text-1">{log.event}</td>
                         <td className="px-5 py-2.5 text-xs vf-text-m">{new Date(log.delivered_at).toLocaleString()}</td>
                         <td className="px-5 py-2.5">

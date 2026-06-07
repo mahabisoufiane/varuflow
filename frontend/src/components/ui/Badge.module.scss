@@ -1,0 +1,70 @@
+@use '../../styles/mixins' as *;
+@use '../../styles/radii' as *;
+@use '../../styles/colors' as *;
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.625rem;
+  @include text('xs');
+  font-weight: 600;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.success {
+  background: var(--vf-success-bg);
+  color: var(--vf-success);
+  border-color: rgba(5, 150, 105, 0.2);
+}
+
+.warning {
+  background: var(--vf-warning-bg);
+  color: var(--vf-warning);
+  border-color: rgba(217, 119, 6, 0.2);
+}
+
+.danger {
+  background: var(--vf-danger-bg);
+  color: var(--vf-danger);
+  border-color: rgba(220, 38, 38, 0.2);
+}
+
+.info {
+  background: var(--vf-info-bg);
+  color: var(--vf-info);
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+.neutral {
+  background: var(--vf-bg-inset);
+  color: var(--vf-text-muted);
+  border-color: var(--vf-border);
+}
+
+.brand {
+  background: var(--vf-brand-primary-subtle);
+  color: var(--vf-brand-primary);
+  border-color: rgba(74, 108, 247, 0.2);
+}
+
+// Size variants
+.sm {
+  padding: 0 0.5rem;
+  font-size: 0.625rem;
+}
+
+.lg {
+  padding: 0.25rem 0.75rem;
+  @include text('sm');
+}
+
+// Dot indicator
+.dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: currentColor;
+}

@@ -1,0 +1,29 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+.inputSm {
+  height: 36px;
+}
+
+.dividerRow {
+  border-bottom: 1px solid var(--vf-divider);
+}
+
+.modalOverlay {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.modalCard {
+  border-radius: $vf-radius-2xl;
+}
+
+.tokenDisplay {
+  border-radius: $vf-radius-xl;
+  padding: 1rem;
+  font-family: monospace;
+  font-size: 0.75rem;
+  word-break: break-all;
+  background: var(--vf-bg-elevated);
+  border: 1px solid var(--vf-border);
+}

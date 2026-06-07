@@ -1,0 +1,132 @@
+@use '../../styles/mixins' as *;
+@use '../../styles/shadows' as *;
+@use '../../styles/radii' as *;
+
+.base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  @include transition(all, 150ms);
+  @include focus-ring;
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  &:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+// Variants
+.primary {
+  background: var(--vf-brand-primary);
+  color: var(--vf-brand-text-on-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+
+  &:hover:not(:disabled) {
+    background: var(--vf-brand-primary-hover);
+    box-shadow: 0 4px 12px rgba(74, 108, 247, 0.25);
+    transform: translateY(-1px);
+  }
+}
+
+.secondary {
+  background: var(--vf-bg-surface);
+  color: var(--vf-text-primary);
+  border: 1px solid var(--vf-border-strong);
+
+  &:hover:not(:disabled) {
+    background: var(--vf-bg-elevated);
+    border-color: var(--vf-brand-primary);
+  }
+}
+
+.ghost {
+  background: transparent;
+  color: var(--vf-text-secondary);
+
+  &:hover:not(:disabled) {
+    background: var(--vf-hover);
+    color: var(--vf-text-primary);
+  }
+}
+
+.danger {
+  background: var(--vf-danger);
+  color: #ffffff;
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    transform: translateY(-1px);
+  }
+}
+
+// Sizes
+.sm {
+  height: 2rem;
+  padding: 0 0.75rem;
+  border-radius: $vf-radius-md;
+  @include text('sm');
+}
+
+.md {
+  height: 2.5rem;
+  padding: 0 1rem;
+  border-radius: $vf-radius-lg;
+  @include text('base');
+}
+
+.lg {
+  height: 3rem;
+  padding: 0 1.5rem;
+  border-radius: $vf-radius-lg;
+  @include text('md');
+}
+
+.icon {
+  height: 2.5rem;
+  width: 2.5rem;
+  padding: 0;
+  border-radius: $vf-radius-lg;
+}
+
+.iconSm {
+  height: 2rem;
+  width: 2rem;
+  padding: 0;
+  border-radius: $vf-radius-md;
+}
+
+// Full width modifier
+.fullWidth {
+  width: 100%;
+}
+
+// Loading state
+.loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+
+  &::after {
+    content: "";
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

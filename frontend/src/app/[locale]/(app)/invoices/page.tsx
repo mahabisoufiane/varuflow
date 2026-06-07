@@ -5,6 +5,8 @@ import { Link } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { cx } from "@/lib/cx";
+import styles from "./page.module.scss";
 import {
   AlertTriangle, ArrowRight, CheckCircle2, Clock,
   FileText, Plus, Send, TrendingUp,
@@ -141,7 +143,7 @@ export default function InvoicesPage() {
             icon: <Clock className="h-4 w-4" />, col: "text-slate-400 bg-slate-500/10",
           },
         ].map(({ label, value, sub, icon, col }) => (
-          <div key={label} className="vf-section p-4" style={{ borderRadius: 14 }}>
+          <div key={label} className={cx("vf-section", styles.kpiCard)}>
             <div className={cn("inline-flex h-9 w-9 items-center justify-center rounded-xl mb-3", col)}>{icon}</div>
             <p className="text-[10px] font-semibold vf-text-m uppercase tracking-wide mb-1">{label}</p>
             <p className="text-xl font-bold tabular-nums vf-text-1">{value}</p>
@@ -151,35 +153,23 @@ export default function InvoicesPage() {
       </div>
 
       {/* ── Filter tabs ──────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-0.5" style={{ borderBottom: "1px solid var(--vf-border)" }}>
+      <div className={styles.filterBar}>
         {FILTERS.map(({ key, label, count }) => (
           <button
             key={key}
             onClick={() => setFilter(key)}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-2.5 text-[13px] font-medium transition-all border-b-2 -mb-px",
-              filter === key
-                ? "border-indigo-500 text-indigo-500"
-                : "border-transparent vf-text-m hover:vf-text-2"
-            )}
+            className={cx(styles.filterTab, filter === key && styles.filterTabActive)}
           >
             {label}
-            <span className={cn(
-              "rounded-full px-1.5 py-0.5 text-[10px] font-bold transition-colors",
-              filter === key
-                ? "bg-indigo-500/15 text-indigo-500"
-                : "bg-[var(--vf-bg-elevated)] vf-text-m"
-            )}>{count}</span>
+            <span className={cx(styles.filterCount, filter === key && styles.filterCountActive)}>{count}</span>
           </button>
         ))}
       </div>
 
       {/* ── Invoice list ─────────────────────────────────────────────────── */}
       {visible.length === 0 ? (
-        <div className="rounded-xl px-6 py-20 text-center"
-          style={{ border: "1px dashed var(--vf-border-strong)", background: "var(--vf-bg-surface)" }}>
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl"
-            style={{ background: "var(--vf-bg-elevated)" }}>
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>
             <FileText className="h-7 w-7 vf-text-m" />
           </div>
           <p className="text-sm font-semibold vf-text-2">
@@ -205,17 +195,11 @@ export default function InvoicesPage() {
             return (
               <div
                 key={inv.id}
-                className="group flex items-center gap-4 rounded-xl px-5 py-4 transition-all"
-                style={{
-                  background: isOverdue
-                    ? "rgba(239,68,68,0.05)"
-                    : "var(--vf-bg-surface)",
-                  border: isOverdue
-                    ? "1px solid rgba(239,68,68,0.18)"
-                    : "1px solid var(--vf-border)",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--vf-bg-elevated)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = isOverdue ? "rgba(239,68,68,0.05)" : "var(--vf-bg-surface)")}
+                className={cx(
+                  styles.invoiceRow,
+                  isOverdue && styles.invoiceRowOverdue,
+                  "group"
+                )}
               >
                 {/* Accent bar */}
                 <div className={cn(

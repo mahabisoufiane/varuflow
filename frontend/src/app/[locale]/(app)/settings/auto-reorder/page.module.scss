@@ -1,0 +1,9 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+.sectionCard {
+  border-radius: $vf-radius-xl;
+  padding: 1.25rem;
+  background: var(--vf-bg-surface);
+  border: 1px solid var(--vf-border);
+}

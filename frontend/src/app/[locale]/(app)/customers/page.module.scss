@@ -1,0 +1,74 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+.emptyState {
+  border-radius: $vf-radius-xl;
+  padding: 1.5rem 5rem;
+  text-align: center;
+  border: 1px dashed var(--vf-border-strong);
+  background: var(--vf-bg-surface);
+}
+
+.emptyIcon {
+  margin: 0 auto 0.75rem;
+  @include flex-center;
+  height: 3rem;
+  width: 3rem;
+  border-radius: $vf-radius-2xl;
+  background: var(--vf-bg-elevated);
+}
+
+.card {
+  border-radius: $vf-radius-xl;
+  @include transition(all, 150ms);
+
+  &:hover {
+    background: var(--vf-bg-elevated);
+  }
+}
+
+.badge {
+  flex-shrink: 0;
+  border-radius: $vf-radius-full;
+  padding: 2px 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--vf-text-muted);
+  background: var(--vf-bg-elevated);
+  border: 1px solid var(--vf-border-strong);
+}
+
+.invoiceBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: $vf-radius-lg;
+  padding: 0 0.625rem;
+  height: 1.75rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--vf-brand-primary);
+  background: var(--vf-brand-primary-subtle);
+  border: 1px solid rgba(74, 108, 247, 0.18);
+  @include transition;
+
+  &:hover {
+    background: rgba(74, 108, 247, 0.15);
+  }
+}
+
+.errorBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  border-radius: $vf-radius-xl;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--vf-danger);
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.15);
+}
+
+.divider {
+  border-top: 1px solid var(--vf-divider);
+}

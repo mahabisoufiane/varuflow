@@ -5,6 +5,8 @@ import { Link } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { cx } from "@/lib/cx";
+import styles from "./page.module.scss";
 import {
   AlertTriangle, ArrowRight, CheckCircle2, Package,
   Plus, TrendingDown, Warehouse, Activity, ShoppingCart, Search, Printer, Truck,
@@ -40,7 +42,7 @@ function StockBar({ qty, min }: { qty: number; min: number }) {
   const color = pct <= 33 ? "bg-red-400" : pct <= 66 ? "bg-amber-400" : "bg-emerald-400";
   return (
     <div className="flex items-center gap-2">
-      <div className="h-1.5 w-16 rounded-full overflow-hidden" style={{ background: "var(--vf-bg-elevated)" }}>
+      <div className={cx("h-1.5 w-16 rounded-full overflow-hidden", styles.progressBg)}>
         <div className={cn("h-full rounded-full transition-all", color)} style={{ width: `${pct}%` }} />
       </div>
       <span className="tabular-nums text-[13px] font-semibold vf-text-1">{qty}</span>
@@ -101,7 +103,7 @@ export default function InventoryPage() {
           { label: "Low stock",  value: lowStock.length, icon: <TrendingDown className="h-4 w-4" />, col: lowStock.length > 0 ? "text-red-400 bg-red-500/10" : "text-emerald-400 bg-emerald-500/10" },
           { label: "Healthy",    value: healthyCount,    icon: <CheckCircle2 className="h-4 w-4" />, col: "text-emerald-400 bg-emerald-500/10" },
         ].map(({ label, value, icon, col }) => (
-          <div key={label} className="vf-section p-4" style={{ borderRadius: 14 }}>
+          <div key={label} className={cx("vf-section", styles.kpiCard)}>
             <div className={cn("inline-flex h-9 w-9 items-center justify-center rounded-xl mb-3", col)}>{icon}</div>
             <p className="text-[10px] font-semibold vf-text-m uppercase tracking-wide mb-1">{label}</p>
             <p className="text-xl font-bold tabular-nums vf-text-1">{loading ? "—" : value}</p>
@@ -113,12 +115,8 @@ export default function InventoryPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {NAV_TILES.map(({ href, icon: Icon, label, sub }) => (
           <Link key={href} href={href}
-            className="group vf-section p-4 flex items-center gap-3 hover:shadow-card transition-all"
-            style={{ borderRadius: 14 }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--vf-bg-elevated)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "var(--vf-bg-surface)")}>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-              style={{ background: "var(--vf-bg-elevated)" }}>
+            className={cx("group vf-section p-4 flex items-center gap-3 hover:shadow-card hover:bg-[var(--vf-bg-elevated)] transition-all", styles.kpiCard)}>
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--vf-bg-elevated)]">
               <Icon className="h-4 w-4 vf-text-m group-hover:text-indigo-500 transition-colors" />
             </div>
             <div className="flex-1 min-w-0">
@@ -132,8 +130,7 @@ export default function InventoryPage() {
 
       {/* ── Low stock alerts ────────────────────────────────────────────── */}
       {!loading && lowStock.length > 0 && (
-        <div className="rounded-xl p-5"
-          style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.18)" }}>
+        <div className={cx("rounded-xl p-5", styles.alertBanner)}>
           <div className="flex items-center gap-2 mb-4">
             <AlertTriangle className="h-4 w-4 text-red-400" />
             <h2 className="text-[13px] font-semibold text-red-400">Low stock alerts</h2>
@@ -159,8 +156,7 @@ export default function InventoryPage() {
             ))}
           </div>
           <Link href="/inventory/purchase-orders/new"
-            className="mt-3 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-colors"
-            style={{ border: "1px solid rgba(239,68,68,0.2)" }}>
+            className={cx("mt-3 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-colors", styles.alertDot)}>
             <ShoppingCart className="h-3.5 w-3.5" />Create purchase order
           </Link>
         </div>
@@ -176,8 +172,7 @@ export default function InventoryPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search product or SKU…"
-              className="vf-input text-xs pl-8 w-52"
-              style={{ height: 34 }}
+              className="vf-input text-xs pl-8 w-52 h-[34px]"
             />
           </div>
         </div>
@@ -185,7 +180,7 @@ export default function InventoryPage() {
         {loading ? (
           <div>
             {[1,2,3,4].map(i => (
-              <div key={i} className="flex gap-4 px-5 py-4" style={{ borderBottom: "1px solid var(--vf-divider)" }}>
+              <div key={i} className={cx("flex gap-4 px-5 py-4", styles.skeletonRow)}>
                 <div className="h-4 w-40 skeleton rounded" />
                 <div className="h-4 w-20 skeleton rounded" />
                 <div className="ml-auto h-4 w-24 skeleton rounded" />
@@ -194,8 +189,7 @@ export default function InventoryPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl"
-              style={{ background: "var(--vf-bg-elevated)" }}>
+            <div className={cx("mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl", styles.emptyIcon)}>
               <Package className="h-6 w-6 vf-text-m" />
             </div>
             <p className="text-sm font-medium vf-text-2">{search ? "No results found" : "No stock data yet"}</p>
@@ -206,7 +200,7 @@ export default function InventoryPage() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr style={{ borderBottom: "1px solid var(--vf-border)", background: "var(--vf-bg-elevated)" }}>
+              <tr className={styles.tableHeader}>
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide vf-text-m">Product</th>
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide vf-text-m">SKU</th>
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide vf-text-m hidden md:table-cell">Warehouse</th>
@@ -216,7 +210,7 @@ export default function InventoryPage() {
             </thead>
             <tbody>
               {filtered.map(s => (
-                <tr key={s.id} className="vf-row" style={{ borderBottom: "1px solid var(--vf-divider)" }}>
+                <tr key={s.id} className={cx("vf-row", styles.tableRow)}>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Link href={`/inventory/products/${s.product_id}`}

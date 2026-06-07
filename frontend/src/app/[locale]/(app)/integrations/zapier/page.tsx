@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 import {
   Zap, Plus, Trash2, Play, CheckCircle2, XCircle, Clock, AlertTriangle, Copy,
 } from "lucide-react";
@@ -159,8 +160,7 @@ export default function ZapierPage() {
             </div>
             <div className="sm:col-span-2 flex gap-2 justify-end">
               <button type="button" onClick={() => setShowForm(false)}
-                className="rounded-lg px-4 py-2 text-xs font-medium vf-text-m"
-                style={{ border: "1px solid var(--vf-border)" }}>
+                className="rounded-lg px-4 py-2 text-xs font-medium vf-text-m vf-btn-secondary">
                 {t("cancel")}
               </button>
               <button type="submit" className="vf-btn text-xs">{t("create")}</button>
@@ -181,18 +181,18 @@ export default function ZapierPage() {
         ) : hooks.length === 0 ? (
           <div className="py-14 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl"
-              style={{ background: "var(--vf-bg-elevated)" }}>
+              >
               <Zap className="h-6 w-6 vf-text-m" />
             </div>
             <p className="text-sm font-medium vf-text-2">{t("noHooks")}</p>
             <p className="text-xs vf-text-m mt-1">{t("addHookToGet Started")}</p>
           </div>
         ) : (
-          <div className="divide-y" style={{ borderColor: "var(--vf-divider)" }}>
+          <div className={styles.divideY}>
             {hooks.map(hook => (
               <div key={hook.id} className="flex items-center gap-4 px-5 py-4 vf-row">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                  style={{ background: "var(--vf-bg-elevated)" }}>
+                  >
                   <Zap className="h-4 w-4 vf-text-m" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -238,8 +238,8 @@ export default function ZapierPage() {
           </div>
         ) : (
           <table className="w-full text-sm">
-            <thead>
-              <tr style={{ borderBottom: "1px solid var(--vf-border)", background: "var(--vf-bg-elevated)" }}>
+            <thead className={styles.tableHead}>
+              <tr>
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide vf-text-m">{t("event")}</th>
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide vf-text-m hidden sm:table-cell">{t("time")}</th>
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide vf-text-m">{t("status")}</th>
@@ -248,7 +248,7 @@ export default function ZapierPage() {
             </thead>
             <tbody>
               {logs.slice(0, 50).map(log => (
-                <tr key={log.id} className="vf-row" style={{ borderBottom: "1px solid var(--vf-divider)" }}>
+                <tr key={log.id} className={"vf-row " + styles.tableRow}>
                   <td className="px-5 py-3 font-mono text-xs vf-text-1">{log.event_type}</td>
                   <td className="px-5 py-3 text-xs vf-text-m hidden sm:table-cell">
                     {new Date(log.triggered_at).toLocaleString()}
