@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 import {
   CreditCard, Wifi, CheckCircle2, XCircle, RefreshCw,
   Smartphone, Receipt, RotateCcw, Info,
@@ -20,6 +21,14 @@ const STATUS_COLORS: Record<string, string> = {
   canceled: "text-gray-400 bg-gray-50",
   initiated: "text-blue-600 bg-blue-50",
   processing: "text-amber-600 bg-amber-50",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  succeeded:  "statusSucceeded",
+  failed:     "statusFailed",
+  canceled:   "statusCanceled",
+  initiated:  "statusInitiated",
+  processing: "statusProcessing",
 };
 
 const CURRENCIES = ["SEK", "EUR", "NOK", "DKK", "USD"];
@@ -123,7 +132,7 @@ export default function TerminalPage() {
 
   function StatusBadge({ status }: { status: string }) {
     return (
-      <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_COLORS[status] || "text-gray-500 bg-gray-50"}`}>
+      <span className={styles[STATUS_MODULE[status] ?? "statusInitiated"]}>
         {status}
       </span>
     );

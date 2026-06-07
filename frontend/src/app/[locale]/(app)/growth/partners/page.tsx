@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 import { Users, Plus, Handshake, Check, X, ChevronDown, ChevronUp, DollarSign } from "lucide-react";
 
 interface PartnerProgram { id: string; name: string; commission_type: string; commission_rate: number; currency: string; is_active: boolean }
@@ -17,10 +18,23 @@ const STATUS_COLORS: Record<string, string> = {
   terminated: "bg-red-100 text-red-700",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:    "statusPending",
+  active:     "statusActive",
+  suspended:  "statusSuspended",
+  terminated: "statusTerminated",
+};
+
 const DEAL_STAGE_COLORS: Record<string, string> = {
   registered: "bg-blue-100 text-blue-700",
   approved: "bg-green-100 text-green-700",
   paid: "bg-purple-100 text-purple-700",
+};
+
+const DEAL_STAGE_MODULE: Record<string, keyof typeof styles> = {
+  registered: "stageRegistered",
+  approved:   "stageApproved",
+  paid:       "stagePaid",
 };
 
 export default function PartnersPage() {
@@ -214,7 +228,7 @@ export default function PartnersPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-gray-900">{partner.company_name}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[partner.status] || "bg-gray-100 text-gray-600"}`}>
+                      <span className={styles[STATUS_MODULE[partner.status] ?? "statusPending"]}>
                         {partner.status}
                       </span>
                       <span className="text-xs text-gray-400 font-mono">#{partner.referral_code}</span>
@@ -252,7 +266,7 @@ export default function PartnersPage() {
                         <div key={deal.id} className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-3 py-2">
                           <div>
                             <span className="text-sm font-medium text-gray-800">{deal.deal_name || "Unnamed deal"}</span>
-                            <span className={`ml-2 text-xs px-1.5 py-0.5 rounded font-medium ${DEAL_STAGE_COLORS[deal.stage] || ""}`}>{deal.stage}</span>
+                            <span className={styles[DEAL_STAGE_MODULE[deal.stage] ?? "stageRegistered"]}>{deal.stage}</span>
                           </div>
                           <div className="flex items-center gap-3">
                             <span className="text-sm text-gray-600">{fmt(deal.deal_value)}</span>
