@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import { Receipt, Calculator, Send, CheckCircle2 } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Agreement { id: string; franchisee_name: string; royalty_basis: string; billing_cycle: string; status: string }
 interface Royalty { id: string; agreement_id: string; period: string; revenue_basis?: string; royalty_amount: string; currency: string; status: string; due_date?: string; paid_at?: string }
@@ -13,6 +14,13 @@ const STATUS_COLORS: Record<string, string> = {
   sent: "bg-blue-100 text-blue-700",
   paid: "bg-green-100 text-green-700",
   overdue: "bg-red-100 text-red-600",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft:   "statusDraft",
+  sent:    "statusSent",
+  paid:    "statusPaid",
+  overdue: "statusOverdue",
 };
 
 export default function RoyaltiesPage() {
@@ -128,7 +136,7 @@ export default function RoyaltiesPage() {
                   {r.paid_at ? ` · Paid ${new Date(r.paid_at).toLocaleDateString()}` : ""}
                 </p>
               </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[r.status] || "bg-gray-100 text-gray-600"}`}>
+              <span className={styles[STATUS_MODULE[r.status] ?? "statusDraft"]}>
                 {r.status}
               </span>
               <div className="flex gap-2 flex-shrink-0">

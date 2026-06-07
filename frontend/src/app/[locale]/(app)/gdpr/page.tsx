@@ -4,6 +4,7 @@ import { api } from "@/lib/api-client";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 import {
   Shield, Plus, RefreshCw, Check, X, Download,
   AlertTriangle, Clock, ChevronDown, ChevronUp, Mail
@@ -43,6 +44,15 @@ const STATUS_STYLE: Record<string, string> = {
   in_progress: "bg-blue-100 text-blue-700",
   completed:   "bg-green-100 text-green-700",
   rejected:    "bg-red-100 text-red-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  given:       "statusGiven",
+  withdrawn:   "statusWithdrawn",
+  pending:     "statusPending",
+  in_progress: "statusInProgress",
+  completed:   "statusCompleted",
+  rejected:    "statusRejected",
 };
 
 export default function GdprConsentPage() {
@@ -266,7 +276,7 @@ export default function GdprConsentPage() {
                           <td className="px-4 py-2 font-mono text-xs">{c.customer_id.slice(0, 8)}…</td>
                           <td className="px-4 py-2">{CONSENT_TYPES.find(t => t.value === c.consent_type)?.label ?? c.consent_type}</td>
                           <td className="px-4 py-2">
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLE[c.status] ?? ""}`}>{c.status}</span>
+                            <span className={styles[STATUS_MODULE[c.status] ?? "statusPending"]}>{c.status}</span>
                           </td>
                           <td className="px-4 py-2 text-muted-foreground">{c.collected_via}</td>
                           <td className="px-4 py-2 text-muted-foreground">{new Date(c.consented_at).toLocaleDateString("sv-SE")}</td>
@@ -321,7 +331,7 @@ export default function GdprConsentPage() {
                         className="flex items-center gap-3 p-4 cursor-pointer hover:bg-muted/30"
                         onClick={() => setExpanded(expanded === d.id ? null : d.id)}
                       >
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_STYLE[d.status] ?? ""}`}>{d.status}</span>
+                        <span className={styles[STATUS_MODULE[d.status] ?? "statusPending"]}>{d.status}</span>
                         <span className="text-xs border rounded px-1.5 py-0.5 text-muted-foreground">{DSAR_TYPES.find(t => t.value === d.request_type)?.label ?? d.request_type}</span>
                         <p className="flex-1 text-sm font-medium">{d.requester_name}</p>
                         <span className="text-xs text-muted-foreground">{d.requester_email}</span>

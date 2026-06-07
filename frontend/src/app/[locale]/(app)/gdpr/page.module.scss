@@ -1,0 +1,84 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+// ── Consent / DSAR status badges ──────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusGiven {
+  @extend .statusBadge;
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.statusWithdrawn {
+  @extend .statusBadge;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.statusPending {
+  @extend .statusBadge;
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.statusInProgress {
+  @extend .statusBadge;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.statusCompleted {
+  @extend .statusBadge;
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.statusRejected {
+  @extend .statusBadge;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+// ── Tab bar ───────────────────────────────────────────────────────────────────
+
+.tabBar {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--vf-border);
+  margin-bottom: 1rem;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 100ms ease;
+  color: var(--vf-text-muted);
+
+  &:hover {
+    color: var(--vf-text-primary);
+  }
+}
+
+.tabActive {
+  border-bottom-color: var(--vf-brand-primary, #1a2332);
+  color: var(--vf-brand-primary, #1a2332);
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+
+.tableCard {
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  overflow: hidden;
+  background: var(--vf-bg-surface);
+}
