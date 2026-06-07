@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ArrowLeftRight, Check, X } from "lucide-react";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface SwapRequest {
   id: string; requester_shift_id: string; requester_staff_id: string;
@@ -16,6 +17,12 @@ const STATUS_COLORS: Record<string, string> = {
   pending: "bg-amber-100 text-amber-700",
   approved: "bg-green-100 text-green-700",
   rejected: "bg-red-100 text-red-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:  "statusPending",
+  approved: "statusApproved",
+  rejected: "statusRejected",
 };
 
 export default function SwapsPage() {
@@ -78,7 +85,7 @@ export default function SwapsPage() {
                 <span className="font-medium text-gray-900">{staffMap[swap.requester_staff_id] || "Requester"}</span>
                 <span className="text-gray-400">→</span>
                 <span className="font-medium text-gray-900">{staffMap[swap.target_staff_id] || "Target"}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[swap.status]}`}>{swap.status}</span>
+                <span className={styles[STATUS_MODULE[swap.status] ?? "statusPending"]}>{swap.status}</span>
               </div>
               <div className="flex gap-3 text-xs text-gray-500 mt-0.5">
                 {swap.created_at && <span>Requested: {new Date(swap.created_at).toLocaleDateString("sv-SE")}</span>}

@@ -6,6 +6,7 @@ import { AlertTriangle, ArrowRight, CheckCircle, RefreshCw, TrendingUp, XCircle 
 import { toast } from "sonner";
 import { useRouter } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
+import styles from "./page.module.scss";
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 interface CashBucket {
@@ -54,6 +55,12 @@ interface BankMatchResponse {
 }
 
 type Tab = "cashflow" | "anomalies" | "bankmatch";
+
+const SEV_MODULE: Record<string, keyof typeof styles> = {
+  HIGH:   "sevHigh",
+  MEDIUM: "sevMedium",
+  LOW:    "sevLow",
+};
 
 /* ── Page ───────────────────────────────────────────────────────────────────── */
 export default function AutomationPage() {
@@ -111,12 +118,6 @@ export default function AutomationPage() {
     { id: "anomalies", label: "Anomalies"           },
     { id: "bankmatch", label: "Bank Match"           },
   ];
-
-  const sevColor: Record<string, string> = {
-    HIGH: "bg-red-100 text-red-700",
-    MEDIUM: "bg-amber-100 text-amber-700",
-    LOW: "bg-gray-100 text-gray-600",
-  };
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
@@ -199,7 +200,7 @@ export default function AutomationPage() {
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-500" />
                 <span className="font-medium">{a.title}</span>
-                <span className={`ml-auto text-xs px-2 py-0.5 rounded-full font-medium ${sevColor[a.severity]}`}>
+                <span className={styles[SEV_MODULE[a.severity] ?? "sevLow"]}>
                   {a.severity}
                 </span>
               </div>

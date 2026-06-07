@@ -1,0 +1,29 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Automation severity badges ─────────────────────────────────────────────────
+
+.sevBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.sevHigh {
+  @extend .sevBadge;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.sevMedium {
+  @extend .sevBadge;
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.sevLow {
+  @extend .sevBadge;
+  background: #f3f4f6;
+  color: #6b7280;
+}
