@@ -7,6 +7,7 @@ import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
+import styles from "./page.module.scss";
 
 interface Employee {
   id: string;
@@ -145,18 +146,18 @@ export default function HrPage() {
       ) : filtered.length === 0 ? (
         <p className="vf-text-m text-muted-foreground">No employees found.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className={styles.employeeGrid}>
           {filtered.map((emp) => {
             const st = emp.profile?.status ?? "active";
             return (
               <button
                 key={emp.id}
                 onClick={() => router.push(`/${locale}/hr/${emp.id}`)}
-                className="text-left border rounded-lg p-4 hover:bg-accent transition-colors"
+                className={styles.employeeCard}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center font-semibold text-primary text-sm">
+                    <div className={styles.avatar}>
                       {emp.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -164,7 +165,7 @@ export default function HrPage() {
                       {emp.email && <p className="text-xs text-muted-foreground">{emp.email}</p>}
                     </div>
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLE[st] ?? "bg-gray-100 text-gray-600"}`}>
+                  <span className={`${styles.statusBadge} ${st === "active" ? styles.statusActive : st === "on_leave" ? styles.statusLeave : styles.statusTerminated}`}>
                     {st === "on_leave" ? "On leave" : st.charAt(0).toUpperCase() + st.slice(1)}
                   </span>
                 </div>
@@ -188,8 +189,8 @@ export default function HrPage() {
 
       {/* Add Employee Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-background rounded-xl shadow-xl p-6 w-full max-w-sm">
+        <div className={styles.modal}>
+          <div className={styles.modalPanel}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold vf-text-1">Add Employee</h2>
               <button onClick={() => setShowAddModal(false)} className="vf-btn-ghost p-1">

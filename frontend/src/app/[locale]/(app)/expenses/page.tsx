@@ -29,6 +29,7 @@ import {
 
 import { api } from "@/lib/api-client";
 import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
+import styles from "./page.module.scss";
 
 interface Category {
   id: string;
@@ -77,10 +78,10 @@ interface ExpenseListResponse {
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
-function statusBadge(status: Expense["status"]) {
-  if (status === "APPROVED") return "bg-green-100 text-green-800";
-  if (status === "REJECTED") return "bg-red-100 text-red-800";
-  return "bg-yellow-100 text-yellow-800";
+function statusBadgeClass(status: Expense["status"], s: typeof styles) {
+  if (status === "APPROVED") return s.badgeApproved;
+  if (status === "REJECTED") return s.badgeRejected;
+  return s.badgeDraft;
 }
 
 export default function ExpensesPage() {
@@ -258,7 +259,7 @@ export default function ExpensesPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className={styles.pageHeader}>
         <div className="flex items-center gap-2">
           <FileText className="h-6 w-6" />
           <h1 className="text-2xl font-semibold">{t("title")}</h1>
@@ -273,12 +274,12 @@ export default function ExpensesPage() {
       </div>
 
       {totals.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className={styles.kpiGrid}>
           {totals.slice(0, 4).map((t0) => (
-            <div key={t0.category_id ?? "none"} className="rounded-lg border p-3">
+            <div key={t0.category_id ?? "none"} className={styles.kpiCard}>
               <div className="flex items-center gap-2">
                 <span
-                  className="inline-block h-3 w-3 rounded-full"
+                  className={styles.categoryDot}
                   style={{ background: t0.category_color }}
                 />
                 <div className="text-xs text-muted-foreground truncate">
@@ -296,9 +297,9 @@ export default function ExpensesPage() {
         </div>
       )}
 
-      <div className="rounded-lg border p-4 space-y-3">
+      <div className={styles.formCard}>
         <h2 className="text-lg font-semibold">{t("log_new")}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div className={styles.formGrid}>
           <input
             className="border rounded px-2 py-1 text-sm"
             type="date"
@@ -361,7 +362,7 @@ export default function ExpensesPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border overflow-x-auto">
+      <div className={styles.tableCard}>
         <table className="w-full text-sm">
           <thead className="bg-muted">
             <tr>
@@ -404,7 +405,7 @@ export default function ExpensesPage() {
                     {e.amount} {e.currency}
                   </td>
                   <td className="p-2">
-                    <span className={`px-2 py-0.5 rounded text-xs ${statusBadge(e.status)}`}>
+                    <span className={statusBadgeClass(e.status, styles)}>
                       {t(`status_${e.status.toLowerCase()}`)}
                     </span>
                     {e.review_note && (

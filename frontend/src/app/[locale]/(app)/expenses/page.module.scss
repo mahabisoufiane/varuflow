@@ -1,0 +1,100 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.kpiCard {
+  border-radius: $vf-radius-lg;
+  border: 1px solid var(--vf-border);
+  padding: 0.75rem;
+  background: var(--vf-bg-surface);
+}
+
+.categoryDot {
+  display: inline-block;
+  height: 0.75rem;
+  width: 0.75rem;
+  border-radius: $vf-radius-full;
+  flex-shrink: 0;
+}
+
+.formCard {
+  border-radius: $vf-radius-lg;
+  border: 1px solid var(--vf-border);
+  padding: 1rem;
+  background: var(--vf-bg-surface);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.tableCard {
+  border-radius: $vf-radius-lg;
+  border: 1px solid var(--vf-border);
+  overflow-x: auto;
+  background: var(--vf-bg-surface);
+}
+
+.badgeApproved {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $vf-radius-full;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+}
+
+.badgeRejected {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $vf-radius-full;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(220, 38, 38, 0.10);
+  color: #991b1b;
+}
+
+.badgeDraft {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $vf-radius-full;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(234, 179, 8, 0.12);
+  color: #92400e;
+}
+
+.actionBtn {
+  padding: 0.25rem;
+  border-radius: $vf-radius-sm;
+  transition: background 120ms ease;
+
+  &:hover {
+    background: var(--vf-bg-elevated);
+  }
+}
