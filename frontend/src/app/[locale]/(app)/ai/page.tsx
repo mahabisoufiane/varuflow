@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 import { useCallback, useEffect, useState } from "react";
 import {
   AlertTriangle, BarChart3, Bot, Check, ChevronDown, ChevronUp,
@@ -219,7 +220,7 @@ export default function AiAdvisorPage() {
           ))}
         </div>
       ) : visibleCards.length === 0 ? (
-        <div className="rounded-xl border bg-white p-12 text-center">
+        <div className={styles.emptyState}>
           <Bot className="mx-auto h-10 w-10 text-gray-300 mb-3" />
           <p className="font-semibold text-gray-900">
             {allCards.length === 0 ? "All clear — no issues detected" : "No insights in this module"}
@@ -241,17 +242,17 @@ export default function AiAdvisorPage() {
             return (
               <div
                 key={card.id}
-                className={`rounded-xl border ${style.border} ${style.bg} overflow-hidden`}
+                className={`${styles.card} ${style.border} ${style.bg}`}
               >
                 {/* Card header — always visible */}
-                <div className="flex items-start gap-3 p-4">
+                <div className={styles.cardHeader}>
                   <Icon className="h-4 w-4 mt-0.5 shrink-0 text-gray-600" />
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${PRIORITY_BADGE[card.priority]}`}>
+                      <span className={`${styles.priorityBadge} ${PRIORITY_BADGE[card.priority]}`}>
                         {card.priority}
                       </span>
-                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${style.badge}`}>
+                      <span className={`${styles.moduleBadge} ${style.badge}`}>
                         {MODULE_LABELS[card.module]?.label ?? `Module ${card.module}`}
                       </span>
                     </div>
@@ -262,21 +263,21 @@ export default function AiAdvisorPage() {
                   <div className="flex shrink-0 items-center gap-1.5">
                     <button
                       onClick={() => toggleExpand(card.id)}
-                      className="rounded p-1 text-gray-400 hover:bg-white/60 hover:text-gray-700"
+                      className={styles.iconBtn}
                     >
                       {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </button>
                     <button
                       onClick={() => handleApprove(card)}
                       disabled={isExecuting}
-                      className="inline-flex items-center gap-1 rounded-lg bg-[#1a2332] px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-[#2a3342] disabled:opacity-60 transition-colors"
+                      className={styles.approveBtn}
                     >
                       <Check className="h-3 w-3" />
                       {isExecuting ? "Running…" : card.auto_execute_action ? "Execute" : "Approve"}
                     </button>
                     <button
                       onClick={() => setDismissed((s) => new Set(s).add(card.id))}
-                      className="rounded p-1.5 text-gray-400 hover:bg-white/60 hover:text-red-500"
+                      className={styles.dismissBtn}
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>

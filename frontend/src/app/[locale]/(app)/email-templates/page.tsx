@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 import { toast } from "sonner";
 import { Mail, Plus, Trash2, Copy, Send, ChevronRight, Tag, Eye, History, ToggleLeft, ToggleRight } from "lucide-react";
 
@@ -269,17 +270,17 @@ export default function EmailTemplatesPage() {
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <button onClick={toggleActive} title={selected.is_active ? "Deactivate" : "Activate"}
-                className="p-1.5 rounded hover:bg-gray-100 text-gray-500" disabled={selected.is_system}>
+                className={styles.actionBtn} disabled={selected.is_system}>
                 {selected.is_active ? <ToggleRight size={16} className="text-green-600" /> : <ToggleLeft size={16} />}
               </button>
-              <button onClick={revise} title="Create new version" className="p-1.5 rounded hover:bg-gray-100 text-gray-500">
+              <button onClick={revise} title="Create new version" className={styles.actionBtn}>
                 <History size={15} />
               </button>
-              <button onClick={() => setSendModal(true)} title="Send" className="p-1.5 rounded hover:bg-gray-100 text-blue-600">
+              <button onClick={() => setSendModal(true)} title="Send" className={`${styles.actionBtn} text-blue-600`}>
                 <Send size={15} />
               </button>
               {!selected.is_system && (
-                <button onClick={del} title="Delete" className="p-1.5 rounded hover:bg-gray-100 text-red-500">
+                <button onClick={del} title="Delete" className={`${styles.actionBtn} text-red-500`}>
                   <Trash2 size={15} />
                 </button>
               )}
@@ -287,10 +288,10 @@ export default function EmailTemplatesPage() {
           </div>
 
           {/* Sub-tabs */}
-          <div className="flex border-b text-xs px-4">
+          <div className={`${styles.tabBar} text-xs px-4`}>
             {(["preview", "edit", "send"] as const).map(t => (
               <button key={t} onClick={() => { setDetailTab(t); if (t === "edit") setEditing(true); }}
-                className={`py-2 px-3 font-medium capitalize ${detailTab === t ? "border-b-2 border-[#1a2332] text-[#1a2332]" : "text-gray-500"}`}>
+                className={`${styles.tab} ${detailTab === t ? styles.tabActive : ""} capitalize`}>
                 {t === "preview" ? <><Eye size={12} className="inline mr-1" />Preview</> :
                  t === "edit" ? "Edit" : <><Send size={12} className="inline mr-1" />Send</>}
               </button>
@@ -416,19 +417,19 @@ export default function EmailTemplatesPage() {
 
       {/* ── Create modal ──────────────────────────────────────────────── */}
       {showCreate && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-xl p-6 space-y-3">
+        <div className={styles.modal}>
+          <div className={`${styles.modalPanel} space-y-3`}>
             <h3 className="font-semibold">New Email Template</h3>
             <div>
-              <label className="block text-xs font-medium mb-1">Name</label>
+              <label className={styles.formLabel}>Name</label>
               <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="input w-full" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Subject</label>
+              <label className={styles.formLabel}>Subject</label>
               <input value={form.subject} onChange={e => setForm(p => ({ ...p, subject: e.target.value }))} className="input w-full" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Category</label>
+              <label className={styles.formLabel}>Category</label>
               <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} className="input w-full">
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>

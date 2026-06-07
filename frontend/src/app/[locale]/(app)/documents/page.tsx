@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 
 import { api } from "@/lib/api-client";
-
+import styles from "./page.module.scss";
 
 interface DocumentRow {
   id: string;
@@ -209,13 +209,13 @@ export default function DocumentsPage() {
         <h2 className="mb-3 text-lg font-medium">{t("new_document")}</h2>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <input
-            className="rounded-md border px-3 py-2 text-sm"
+            className={styles.formInput}
             placeholder={t("name_placeholder")}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
           />
           <select
-            className="rounded-md border px-3 py-2 text-sm"
+            className={styles.formInput}
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
           >
@@ -224,19 +224,19 @@ export default function DocumentsPage() {
             ))}
           </select>
           <input
-            className="rounded-md border px-3 py-2 text-sm"
+            className={styles.formInput}
             placeholder={t("tags_placeholder")}
             value={newTags}
             onChange={(e) => setNewTags(e.target.value)}
           />
           <input
             type="date"
-            className="rounded-md border px-3 py-2 text-sm"
+            className={styles.formInput}
             value={newExpiry}
             onChange={(e) => setNewExpiry(e.target.value)}
           />
           <select
-            className="rounded-md border px-3 py-2 text-sm"
+            className={styles.formInput}
             value={newLinkedType}
             onChange={(e) => setNewLinkedType(e.target.value)}
           >

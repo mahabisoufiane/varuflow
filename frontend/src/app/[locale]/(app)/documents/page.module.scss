@@ -1,0 +1,62 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+.formInput {
+  border-radius: $vf-radius-md;
+  border: 1px solid var(--vf-border);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  width: 100%;
+  transition: border-color 120ms ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--vf-brand-primary, #1a2332);
+  }
+}
+
+.docItem {
+  border-radius: $vf-radius-md;
+  border: 1px solid var(--vf-border);
+  padding: 0.75rem;
+  background: var(--vf-bg-surface);
+  transition: background 100ms ease;
+
+  &:hover {
+    background: var(--vf-bg-elevated);
+  }
+}
+
+.docItemExpiring {
+  border-color: #fbbf24;
+  background: #fffbeb;
+}
+
+.emptyState {
+  border-radius: $vf-radius-md;
+  border: 1px dashed var(--vf-border);
+  padding: 2rem;
+  text-align: center;
+}
+
+.actionBtn {
+  border-radius: $vf-radius-sm;
+  border: 1px solid var(--vf-border);
+  padding: 0.375rem;
+  font-size: 0.875rem;
+  transition: background 100ms ease;
+
+  &:hover {
+    background: var(--vf-bg-elevated);
+  }
+}
+
+.tagBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $vf-radius-sm;
+  border: 1px solid var(--vf-border);
+  padding: 2px 6px;
+  font-size: 0.6875rem;
+  color: var(--vf-text-secondary);
+}
