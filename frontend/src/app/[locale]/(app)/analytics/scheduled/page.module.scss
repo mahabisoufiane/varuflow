@@ -1,0 +1,15 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Scheduled report status badges ───────────────────────────────────────────
+
+.statusBadge {
+  display: inline-flex;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statusActive   { @extend .statusBadge; background: #dcfce7; color: #15803d; }
+.statusInactive { @extend .statusBadge; background: #f3f4f6; color: #6b7280; }

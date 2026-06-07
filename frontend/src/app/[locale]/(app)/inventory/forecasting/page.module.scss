@@ -1,0 +1,18 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Inventory risk level badges ───────────────────────────────────────────────
+
+.riskBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.riskCritical { @extend .riskBadge; background: #fee2e2; color: #991b1b; }
+.riskHigh     { @extend .riskBadge; background: #ffedd5; color: #c2410c; }
+.riskMedium   { @extend .riskBadge; background: #fef9c3; color: #a16207; }
+.riskLow      { @extend .riskBadge; background: #dcfce7; color: #15803d; }

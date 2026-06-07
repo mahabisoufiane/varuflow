@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import { TrendingDown, AlertTriangle, Check, RefreshCw, UserX, UserCheck } from "lucide-react";
+import styles from "./page.module.scss";
+
+const RISK_MODULE: Record<string, keyof typeof styles> = { high: "riskHigh", medium: "riskMedium", low: "riskLow" };
 
 interface ChurnedCustomer {
   id: string; name: string; email: string; churned_at: string | null;
@@ -276,7 +279,7 @@ export default function ChurnPage() {
         <div className="space-y-2">
           {riskScores.length === 0 && <p className="text-center py-8 text-gray-400">No risk score data available.</p>}
           {riskScores.slice(0, 50).map(c => (
-            <div key={c.id} className={`rounded-xl border p-4 flex items-center gap-4 ${RISK_COLORS[c.risk_level]}`}>
+            <div key={c.id} className={`rounded-xl border p-4 flex items-center gap-4 ${styles[RISK_MODULE[c.risk_level] ?? "riskLow"]}`}>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-medium text-gray-900">{c.name}</span>

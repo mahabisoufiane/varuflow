@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { TrendingUp, TrendingDown, Minus, ChevronDown } from "lucide-react";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 const SECTORS = ["wholesale", "retail", "manufacturing", "food_beverage", "construction", "services"] as const;
 
@@ -39,7 +40,7 @@ function DeltaBadge({ org, industry, higherIsBetter, unit }: { org: number | nul
   const icon = Math.abs(delta) < 0.1 ? <Minus className="h-3 w-3" /> :
     delta > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />;
   return (
-    <span className={`inline-flex items-center gap-0.5 text-xs font-medium px-1.5 py-0.5 rounded-full ${better ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
+    <span className={styles[better ? "deltaPositive" : "deltaNegative"]}>
       {icon} {delta > 0 ? "+" : ""}{delta.toFixed(1)}{unit}
     </span>
   );

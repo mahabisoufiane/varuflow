@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Clock, AlertTriangle } from "lucide-react";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface OvertimeEntry { staff_id: string; staff_name: string; total_hours: number; is_overtime: boolean }
 
@@ -71,7 +72,7 @@ export default function OvertimePage() {
               <span className={`text-sm font-semibold w-16 text-right ${entry.is_overtime ? "text-red-700" : "text-gray-700"}`}>
                 {entry.total_hours}h
               </span>
-              {entry.is_overtime && <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">Overtime</span>}
+              {entry.is_overtime && <span className={styles.overtimeBadge}>Overtime</span>}
             </div>
           </div>
         ))}

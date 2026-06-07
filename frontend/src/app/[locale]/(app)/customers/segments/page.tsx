@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Users, Plus, RefreshCw, Download } from "lucide-react";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface Segment {
   id: string;
@@ -120,9 +121,9 @@ export default function SegmentsListPage() {
                     )}
                   </td>
                   <td className="px-4 py-2">
-                    <Badge className={s.type === "AUTO" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}>
+                    <span className={styles[s.type === "AUTO" ? "typeAuto" : "typeManual"]}>
                       {s.type}
-                    </Badge>
+                    </span>
                   </td>
                   <td className="px-4 py-2 text-right tabular-nums">
                     {s.customer_count}

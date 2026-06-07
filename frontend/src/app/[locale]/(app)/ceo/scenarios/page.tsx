@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Plus, Play, Trash2, GitBranch, TrendingUp, TrendingDown } from "lucide-react";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface Adjustment {
   id: string; label: string; category: string;
@@ -29,9 +30,7 @@ function DeltaBadge({ value }: { value: number }) {
   const pos = value >= 0;
   const Icon = pos ? TrendingUp : TrendingDown;
   return (
-    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
-      pos ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"
-    }`}>
+    <span className={styles[pos ? "deltaPositive" : "deltaNegative"]}>
       <Icon className="h-3 w-3" />{pos ? "+" : ""}{value.toLocaleString("sv-SE", { maximumFractionDigits: 0 })}
     </span>
   );
