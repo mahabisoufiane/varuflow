@@ -16,6 +16,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Wallet, Loader2, Plus, RefreshCw, CheckCircle, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -54,6 +55,12 @@ const STATUS_COLORS: Record<string, string> = {
   DRAFT: "text-amber-400 bg-amber-400/10",
   APPROVED: "text-emerald-400 bg-emerald-400/10",
   PAID: "text-indigo-400 bg-indigo-400/10",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  DRAFT:    "statusDraft",
+  APPROVED: "statusApproved",
+  PAID:     "statusPaid",
 };
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -216,7 +223,7 @@ export default function PayrollPage() {
                     </p>
                     <p className="text-xs vf-text-m mt-0.5">{run.entries.length} employees</p>
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[run.status] ?? ""}`}>
+                  <span className={styles[STATUS_MODULE[run.status] ?? "statusDraft"]}>
                     {run.status}
                   </span>
                 </div>

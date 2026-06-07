@@ -1,0 +1,29 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Regulatory event status badges ────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusUpcoming {
+  @extend .statusBadge;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.statusCompleted {
+  @extend .statusBadge;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusOverdue {
+  @extend .statusBadge;
+  background: #fee2e2;
+  color: #b91c1c;
+}

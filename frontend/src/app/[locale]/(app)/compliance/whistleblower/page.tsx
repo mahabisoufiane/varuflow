@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Eye, RefreshCw, ChevronDown, ChevronRight, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface Report {
   id: string;
@@ -23,6 +24,13 @@ const STATUS_COLORS: Record<string, string> = {
   under_review: "bg-amber-100 text-amber-700",
   resolved:     "bg-green-100 text-green-700",
   dismissed:    "bg-gray-100 text-gray-600",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  new:          "statusNew",
+  under_review: "statusUnderReview",
+  resolved:     "statusResolved",
+  dismissed:    "statusDismissed",
 };
 
 type TabKey = "all" | "new" | "under_review" | "resolved";
@@ -182,7 +190,7 @@ export default function WhistleblowerPage() {
                       Submitted {new Date(report.submitted_at).toLocaleDateString()}
                     </p>
                   </div>
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0 capitalize ${STATUS_COLORS[report.status] ?? "bg-gray-100 text-gray-600"}`}>
+                  <span className={styles[STATUS_MODULE[report.status] ?? "statusNew"]}>
                     {report.status.replace(/_/g, " ")}
                   </span>
                 </div>
