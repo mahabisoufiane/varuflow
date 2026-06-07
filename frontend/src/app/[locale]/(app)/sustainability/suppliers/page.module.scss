@@ -1,0 +1,16 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Supplier risk level badges ─────────────────────────────────────────────────
+
+.riskBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.riskLow      { @extend .riskBadge; background: #dcfce7; color: #166534; }
+.riskMedium   { @extend .riskBadge; background: #fef3c7; color: #b45309; }
+.riskHigh     { @extend .riskBadge; background: #ffedd5; color: #c2410c; }
+.riskCritical { @extend .riskBadge; background: #fee2e2; color: #b91c1c; }

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, RefreshCw, ClipboardList, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface DecisionStats {
   total: number;
@@ -35,11 +36,27 @@ const AREA_COLORS: Record<string, string> = {
   other:      "bg-gray-100 text-gray-600",
 };
 
+const AREA_MODULE: Record<string, keyof typeof styles> = {
+  product:    "areaProduct",
+  finance:    "areaFinance",
+  hr:         "areaHr",
+  operations: "areaOperations",
+  strategy:   "areaStrategy",
+  other:      "areaOther",
+};
+
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending:     { label: "Pending",     color: "bg-gray-100 text-gray-600"  },
   in_progress: { label: "In Progress", color: "bg-blue-100 text-blue-700"  },
   completed:   { label: "Completed",   color: "bg-green-100 text-green-700" },
   reversed:    { label: "Reversed",    color: "bg-red-100 text-red-700"    },
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:     "statusPending",
+  in_progress: "statusInProgress",
+  completed:   "statusCompleted",
+  reversed:    "statusReversed",
 };
 
 const AREAS = ["product", "finance", "hr", "operations", "strategy", "other"] as const;
@@ -358,7 +375,7 @@ export default function DecisionsPage() {
                         ? <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         : <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />}
                       <span className="text-sm font-medium text-gray-900">{dec.title}</span>
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${areaCls}`}>
+                      <span className={styles[AREA_MODULE[dec.area] ?? "areaOther"]}>
                         {dec.area}
                       </span>
                     </div>
@@ -368,8 +385,8 @@ export default function DecisionsPage() {
                     </p>
                   </button>
 
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0 ${statusCfg.color}`}>
-                    {statusCfg.label}
+                  <span className={styles[STATUS_MODULE[dec.status] ?? "statusPending"]}>
+                    {STATUS_CONFIG[dec.status]?.label ?? dec.status}
                   </span>
                 </div>
 
