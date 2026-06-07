@@ -13,28 +13,29 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { api } from "@/lib/api-client";
+import pageStyles from "./page.module.scss";
 
 const STATUS_TABS = ["all", "open", "in_review", "resolved", "escalated"] as const;
 type DisputeStatus = (typeof STATUS_TABS)[number];
 
 function disputeStatusClass(status: string) {
-  const map: Record<string, string> = {
-    open: "bg-red-100 text-red-800",
-    in_review: "bg-yellow-100 text-yellow-800",
-    resolved: "bg-green-100 text-green-800",
-    escalated: "bg-orange-100 text-orange-800",
-    closed: "bg-gray-100 text-gray-800",
+  const map: Record<string, keyof typeof pageStyles> = {
+    open:      "statusOpen",
+    in_review: "statusInReview",
+    resolved:  "statusResolved",
+    escalated: "statusEscalated",
+    closed:    "statusClosed",
   };
-  return map[status] ?? "bg-gray-100 text-gray-800";
+  return pageStyles[map[status] ?? "statusClosed"];
 }
 
 function senderBadgeClass(senderType: string) {
-  const map: Record<string, string> = {
-    customer: "bg-purple-100 text-purple-800",
-    staff: "bg-blue-100 text-blue-800",
-    admin: "bg-red-100 text-red-800",
+  const map: Record<string, keyof typeof pageStyles> = {
+    customer: "senderCustomer",
+    staff:    "senderStaff",
+    admin:    "senderAdmin",
   };
-  return map[senderType] ?? "bg-gray-100 text-gray-800";
+  return pageStyles[map[senderType] ?? "senderStaff"];
 }
 
 interface Dispute {
@@ -214,7 +215,7 @@ export default function DisputesPage() {
                         </TableCell>
                         <TableCell>
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${disputeStatusClass(d.status)}`}
+                            className={disputeStatusClass(d.status)}
                           >
                             {d.status}
                           </span>
@@ -295,7 +296,7 @@ export default function DisputesPage() {
                 <CardTitle className="text-base flex items-center justify-between">
                   Dispute Detail
                   <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${disputeStatusClass(selectedDispute.status)}`}
+                    className={disputeStatusClass(selectedDispute.status)}
                   >
                     {selectedDispute.status}
                   </span>
@@ -325,7 +326,7 @@ export default function DisputesPage() {
                     <div key={m.id} className="border rounded-md p-3 space-y-1">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${senderBadgeClass(m.sender_type)}`}
+                          className={senderBadgeClass(m.sender_type)}
                         >
                           {m.sender_type}
                         </span>

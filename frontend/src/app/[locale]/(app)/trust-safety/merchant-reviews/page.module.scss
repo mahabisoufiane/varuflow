@@ -1,0 +1,29 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Merchant review tag badges ────────────────────────────────────────────────
+
+.tagBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.tagNoShow {
+  @extend .tagBadge;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.tagLatePayment {
+  @extend .tagBadge;
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.tagGreatClient {
+  @extend .tagBadge;
+  background: #dcfce7;
+  color: #166534;
+}

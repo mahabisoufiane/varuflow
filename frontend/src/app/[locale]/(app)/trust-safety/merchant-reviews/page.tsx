@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { api } from "@/lib/api-client";
+import pageStyles from "./page.module.scss";
 
 const TAG_COLORS: Record<string, string> = {
   no_show: "bg-red-100 text-red-800",
@@ -20,8 +21,14 @@ const TAG_COLORS: Record<string, string> = {
   great_client: "bg-green-100 text-green-800",
 };
 
+const TAG_MODULE: Record<string, keyof typeof pageStyles> = {
+  no_show:     "tagNoShow",
+  late_payer:  "tagLatePayment",
+  great_client:"tagGreatClient",
+};
+
 function tagClass(tag: string) {
-  return TAG_COLORS[tag] ?? "bg-gray-100 text-gray-800";
+  return pageStyles[TAG_MODULE[tag] ?? "tagNoShow"];
 }
 
 interface MerchantReview {
@@ -168,7 +175,7 @@ export default function MerchantReviewsPage() {
                         {r.tags.slice(0, 3).map((tag) => (
                           <span
                             key={tag}
-                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${tagClass(tag)}`}
+                            className={tagClass(tag)}
                           >
                             {tag}
                           </span>

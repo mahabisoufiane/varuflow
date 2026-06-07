@@ -13,18 +13,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { api } from "@/lib/api-client";
+import pageStyles from "./page.module.scss";
 
 const STATUS_TABS = ["all", "pending", "clear", "flagged", "expired"] as const;
 type Status = (typeof STATUS_TABS)[number];
 
 function statusClass(status: string) {
-  const map: Record<string, string> = {
-    pending: "bg-yellow-100 text-yellow-800",
-    clear: "bg-green-100 text-green-800",
-    flagged: "bg-red-100 text-red-800",
-    expired: "bg-gray-100 text-gray-800",
+  const map: Record<string, keyof typeof pageStyles> = {
+    pending: "statusPending",
+    clear:   "statusClear",
+    flagged: "statusFlagged",
+    expired: "statusExpired",
   };
-  return map[status] ?? "bg-gray-100 text-gray-800";
+  return pageStyles[map[status] ?? "statusExpired"];
 }
 
 interface BackgroundCheck {
@@ -174,7 +175,7 @@ export default function BackgroundChecksPage() {
                     <TableCell>{c.provider}</TableCell>
                     <TableCell>
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusClass(c.status)}`}
+                        className={statusClass(c.status)}
                       >
                         {c.status}
                       </span>
