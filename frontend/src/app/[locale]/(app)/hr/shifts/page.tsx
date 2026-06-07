@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -409,7 +410,7 @@ export default function ShiftsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b mb-5 print:hidden">
+      <div className={`${styles.tabBar} print:hidden`}>
         {[
           { key: "roster" as Tab, label: "Roster" },
           { key: "swaps" as Tab, label: "Swaps", badge: pendingSwaps || undefined },
@@ -417,7 +418,7 @@ export default function ShiftsPage() {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px flex items-center gap-1.5 transition-colors ${tab === t.key ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+            className={`${styles.tab} ${tab === t.key ? styles.tabActive : ""} flex items-center gap-1.5`}
           >
             {t.label}
             {t.badge ? <span className="bg-amber-500 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">{t.badge}</span> : null}
@@ -450,11 +451,11 @@ export default function ShiftsPage() {
             <div className="flex-1" />
 
             {roster?.published ? (
-              <span className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full">
+              <span className={styles.rosterPublished}>
                 <Check className="w-3 h-3" /> Published
               </span>
             ) : (
-              <span className="text-xs text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full">Draft (staff cannot see)</span>
+              <span className={styles.rosterDraft}>Draft (staff cannot see)</span>
             )}
 
             <button onClick={copyLastWeek} disabled={copying} className="vf-btn-ghost flex items-center gap-1.5 text-sm">
@@ -523,7 +524,7 @@ export default function ShiftsPage() {
                                     draggable
                                     onDragStart={() => onDragStart(shift)}
                                     onClick={() => openEdit(shift)}
-                                    className="rounded px-2 py-1 text-white text-xs cursor-grab active:cursor-grabbing mb-1 select-none shadow-sm hover:brightness-110 transition-all"
+                                    className={styles.shiftPill}
                                     style={{ backgroundColor: shift.color ?? color }}
                                   >
                                     <div className="font-medium">{formatTime(shift.start_at)}–{formatTime(shift.end_at)}</div>
@@ -575,7 +576,7 @@ export default function ShiftsPage() {
               <div className="flex items-center justify-center h-48"><Loader2 className="w-6 h-6 animate-spin text-vf-accent" /></div>
             ) : (
               <div>
-                <div className="grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden text-xs">
+                <div className={styles.monthGrid}>
                   {DAY_LABELS.map((d) => (
                     <div key={d} className="bg-muted/50 py-1.5 text-center font-medium text-muted-foreground">{d}</div>
                   ))}
@@ -585,7 +586,7 @@ export default function ShiftsPage() {
                     return (
                       <div
                         key={date}
-                        className={`bg-background p-1 min-h-[70px] cursor-pointer hover:bg-muted/30 transition-colors ${!isCurrentMonth ? "opacity-40" : ""}`}
+                        className={`${styles.monthCell} ${!isCurrentMonth ? styles.monthCellInactive : ""} text-xs`}
                         onClick={() => { setWeekStart(isoMonday(new Date(date + "T00:00:00Z"))); setView("week"); }}
                       >
                         <div className={`text-xs font-medium mb-1 w-5 h-5 flex items-center justify-center rounded-full ${isToday ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
@@ -635,10 +636,10 @@ export default function ShiftsPage() {
           ) : (
             <div className="space-y-2">
               {swaps.map((swap) => (
-                <div key={swap.id} className="border rounded-lg p-3 flex items-start justify-between gap-3">
+                <div key={swap.id} className={styles.swapCard}>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${swap.status === "pending" ? "bg-amber-100 text-amber-700" : swap.status === "approved" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
+                      <span className={`${swap.status === "pending" ? styles.swapPending : swap.status === "approved" ? styles.swapApproved : styles.swapRejected}`}>
                         {swap.status}
                       </span>
                       <span className="text-xs text-muted-foreground">{new Date(swap.created_at).toLocaleDateString()}</span>

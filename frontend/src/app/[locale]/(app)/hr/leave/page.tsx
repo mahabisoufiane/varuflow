@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -89,6 +90,22 @@ const STATUS_COLORS: Record<string, string> = {
   approved: "bg-emerald-100 text-emerald-800",
   rejected: "bg-rose-100 text-rose-700",
   cancelled: "bg-gray-100 text-gray-600",
+};
+
+const TYPE_MODULE: Record<string, keyof typeof styles> = {
+  annual: "typeAnnual",
+  sick: "typeSick",
+  parental: "typeParental",
+  unpaid: "typeUnpaid",
+  public_holiday: "typePublicHoliday",
+  other: "typeOther",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending: "statusPending",
+  approved: "statusApproved",
+  rejected: "statusRejected",
+  cancelled: "statusCancelled",
 };
 
 const LEAVE_TYPES = ["annual", "sick", "parental", "unpaid", "public_holiday", "other"] as const;
@@ -364,15 +381,15 @@ export default function LeavePage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b mb-6">
+      <div className={styles.tabBar}>
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px flex items-center gap-1.5 transition-colors ${tab === t.key ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+            className={`${styles.tab} ${tab === t.key ? styles.tabActive : ""}`}
           >
             {t.label}
-            {t.badge ? <span className="bg-amber-500 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">{t.badge}</span> : null}
+            {t.badge ? <span className={styles.pendingBadge}>{t.badge}</span> : null}
           </button>
         ))}
       </div>
@@ -401,10 +418,10 @@ export default function LeavePage() {
               {balanceLoading && <Loader2 className="w-4 h-4 animate-spin text-vf-accent" />}
             </div>
             {balances.length > 0 && (
-              <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+              <div className={styles.balanceGrid}>
                 {balances.map((b) => (
-                  <div key={b.leave_type} className="bg-background border rounded-lg p-3 text-center">
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium capitalize ${TYPE_COLORS[b.leave_type] ?? "bg-gray-100"}`}>{b.leave_type}</span>
+                  <div key={b.leave_type} className={styles.balanceCard}>
+                    <span className={styles[TYPE_MODULE[b.leave_type] ?? "typeOther"]}>{b.leave_type}</span>
                     <p className="text-2xl font-bold mt-1">{b.days_remaining}</p>
                     <p className="text-xs text-muted-foreground">remaining</p>
                     <p className="text-xs text-muted-foreground">{b.days_used} used · {b.days_pending} pending</p>
@@ -456,9 +473,9 @@ export default function LeavePage() {
           )}
 
           {/* Status filter */}
-          <div className="flex gap-1 mb-4 border-b pb-2">
+          <div className={styles.filterBar}>
             {["pending", "approved", "rejected", "cancelled", "all"].map((s) => (
-              <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-1 text-xs rounded-full capitalize transition-colors ${statusFilter === s ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+              <button key={s} onClick={() => setStatusFilter(s)} className={`${styles.filterPill} ${statusFilter === s ? styles.filterPillActive : ""} capitalize`}>
                 {s}
               </button>
             ))}
@@ -485,13 +502,13 @@ export default function LeavePage() {
                     <tr key={r.id} className="hover:bg-muted/30">
                       <td className="py-2 pr-4 font-medium">{r.staff_name ?? r.staff_id.slice(0, 8)}</td>
                       <td className="py-2 pr-4">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${TYPE_COLORS[r.leave_type] ?? "bg-gray-100"}`}>{r.leave_type.replace("_", " ")}</span>
+                        <span className={`${styles[TYPE_MODULE[r.leave_type] ?? "typeOther"]} capitalize`}>{r.leave_type.replace("_", " ")}</span>
                       </td>
                       <td className="py-2 pr-4 text-muted-foreground">
                         {r.start_date} → {r.end_date}{r.half_day ? " (½)" : ""}
                       </td>
                       <td className="py-2 pr-4">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_COLORS[r.status] ?? "bg-gray-100"}`}>{r.status}</span>
+                        <span className={`${styles[STATUS_MODULE[r.status] ?? "statusPending"]} capitalize`}>{r.status}</span>
                         {r.rejection_reason && <p className="text-xs text-muted-foreground mt-0.5">{r.rejection_reason}</p>}
                       </td>
                       <td className="py-2">
