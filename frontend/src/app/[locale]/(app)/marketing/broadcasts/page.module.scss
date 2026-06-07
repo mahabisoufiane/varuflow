@@ -1,0 +1,28 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Broadcast status badges ────────────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusDraft     { @extend .statusBadge; background: #f3f4f6; color: #4b5563; }
+.statusScheduled { @extend .statusBadge; background: #fef9c3; color: #a16207; }
+.statusSent      { @extend .statusBadge; background: #dcfce7; color: #166534; }
+.statusFailed    { @extend .statusBadge; background: #fee2e2; color: #b91c1c; }
+
+// ── Channel badges ─────────────────────────────────────────────────────────────
+
+.channelBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.channelSms      { @extend .channelBadge; background: #dbeafe; color: #1d4ed8; }
+.channelWhatsapp { @extend .channelBadge; background: #dcfce7; color: #166534; }

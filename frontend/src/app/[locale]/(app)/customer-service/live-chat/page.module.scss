@@ -1,0 +1,28 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Live chat session status badges ───────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusOpen       { @extend .statusBadge; background: #dcfce7; color: #166534; }
+.statusInProgress { @extend .statusBadge; background: #dbeafe; color: #1e40af; }
+.statusResolved   { @extend .statusBadge; background: #f3f4f6; color: #4b5563; }
+
+// ── Sender type badges ─────────────────────────────────────────────────────────
+
+.senderBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.senderVisitor { @extend .senderBadge; background: #f3e8ff; color: #6b21a8; }
+.senderStaff   { @extend .senderBadge; background: #dbeafe; color: #1e40af; }
+.senderBot     { @extend .senderBadge; background: #f3f4f6; color: #4b5563; }
