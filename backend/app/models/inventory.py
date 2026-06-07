@@ -64,6 +64,7 @@ class Product(Base):
         Numeric(5, 2), default=Decimal("25.00"), nullable=False
     )
     barcode: Mapped[str | None] = mapped_column(String(50), index=True)  # EAN-13/EAN-8/Code128
+    image_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
     description: Mapped[str | None] = mapped_column(Text)
     reorder_level: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     # v38 (Item 16) — per-product auto-reorder overrides. The scheduler

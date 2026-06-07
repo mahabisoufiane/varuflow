@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@zxing/browser": "^0.1.5",
     "idb": "^8.0.0",
     "lucide-react": "^0.453.0",
     "react": "^19.0.0",

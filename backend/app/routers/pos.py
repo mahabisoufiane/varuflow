@@ -50,6 +50,7 @@ class ProductLookup(BaseModel):
     tax_rate: Decimal
     unit: str
     stock: int
+    image_url: str | None = None
     model_config = {"from_attributes": True}
 
 
@@ -184,6 +185,7 @@ async def lookup_product(
         tax_rate=product.tax_rate,
         unit=product.unit,
         stock=int(stock_result or 0),
+        image_url=product.image_url,
     )
 
 
@@ -225,7 +227,7 @@ async def list_pos_products(
         ProductLookup(
             id=p.id, name=p.name, sku=p.sku, barcode=p.barcode,
             sell_price=p.sell_price, tax_rate=p.tax_rate, unit=p.unit,
-            stock=int(stock or 0),
+            stock=int(stock or 0), image_url=p.image_url,
         )
         for p, stock in rows
     ]

@@ -35,6 +35,7 @@ export interface PosProduct {
   unit: string;
   stock: number;
   category?: string | null;
+  image_url?: string | null;
 }
 
 export interface CartItem {

@@ -26,7 +26,7 @@ _TOKEN_EXPIRY_HOURS = 720  # 30 days — POS devices stay logged in
 
 
 class PinRequest(BaseModel):
-    pin: str = Field(..., min_length=4, max_length=6)
+    pin: str = Field(..., min_length=6, max_length=6)
     org_id: uuid.UUID | None = None
 
 

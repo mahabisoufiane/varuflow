@@ -11,7 +11,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 COPY --from=builder /build/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && pip install --no-cache-dir "bcrypt==4.0.1"
 
 COPY app/ app/
 COPY migrations/ migrations/

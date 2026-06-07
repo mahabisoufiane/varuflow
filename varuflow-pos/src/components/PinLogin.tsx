@@ -8,7 +8,7 @@ export default function PinLogin({ onSuccess }: { onSuccess: () => void }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (pin.length < 4) { toast.error("PIN must be at least 4 digits"); return; }
+    if (pin.length < 6) { toast.error("PIN must be 6 digits"); return; }
     setLoading(true);
     try {
       await loginWithPin(pin);
@@ -71,7 +71,7 @@ export default function PinLogin({ onSuccess }: { onSuccess: () => void }) {
 
           <button
             type="submit"
-            disabled={pin.length < 4 || loading}
+            disabled={pin.length < 6 || loading}
             className="h-12 w-full rounded-xl bg-emerald-600 text-base font-semibold text-white disabled:opacity-50 transition hover:bg-emerald-700"
           >
             {loading ? "…" : "Unlock"}

@@ -54,7 +54,7 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/varuflow
       # Comma-separated, no brackets — backend splits on ","
-      CORS_ORIGINS: "http://localhost:3000,http://localhost:3002"
+      CORS_ORIGINS: "http://localhost:3000,http://localhost:3002,http://localhost:3003"
       SUPABASE_URL: http://supabase:9999
       SUPABASE_SERVICE_KEY: ""
       # Must match GOTRUE_JWT_SECRET above so tokens issued by the local
