@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Building2, Plus } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Entity { id: string; name: string; legal_name?: string; entity_type: string; reporting_currency?: string; parent_org_id?: string }
 
@@ -41,6 +42,14 @@ export default function SubsidiariesPage() {
     subsidiary: "bg-purple-100 text-purple-700",
     franchisor: "bg-amber-100 text-amber-700",
     franchisee: "bg-green-100 text-green-700",
+  };
+
+  const ENTITY_TYPE_MODULE: Record<string, keyof typeof styles> = {
+    standalone:  "typeStandalone",
+    parent:      "typeParent",
+    subsidiary:  "typeSubsidiary",
+    franchisor:  "typeFranchisor",
+    franchisee:  "typeFranchisee",
   };
 
   // Separate caller org from subsidiaries
@@ -83,7 +92,7 @@ export default function SubsidiariesPage() {
               <p className="font-semibold text-gray-900">{parent.name}</p>
               {parent.legal_name && <p className="text-xs text-gray-500">{parent.legal_name}</p>}
             </div>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${entityTypeColor[parent.entity_type] || "bg-gray-100 text-gray-600"}`}>
+            <span className={styles[ENTITY_TYPE_MODULE[parent.entity_type] ?? "typeStandalone"]}>
               {parent.entity_type} (this org)
             </span>
           </div>
@@ -99,7 +108,7 @@ export default function SubsidiariesPage() {
                     {child.legal_name && <p className="text-xs text-gray-500">{child.legal_name}</p>}
                     {child.reporting_currency && <p className="text-xs text-gray-400">{child.reporting_currency}</p>}
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${entityTypeColor[child.entity_type] || "bg-gray-100 text-gray-600"}`}>
+                  <span className={styles[ENTITY_TYPE_MODULE[child.entity_type] ?? "typeStandalone"]}>
                     {child.entity_type}
                   </span>
                 </div>

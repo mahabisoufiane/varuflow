@@ -1,0 +1,18 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+// ── Quote status badges ──────────────────────────────────────────────────────
+
+.statusBadge {
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-sm;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statusDraft    { @extend .statusBadge; background: #f3f4f6; color: #1f2937; }
+.statusSent     { @extend .statusBadge; background: #dbeafe; color: #1e40af; }
+.statusAccepted { @extend .statusBadge; background: #dcfce7; color: #166534; }
+.statusRejected { @extend .statusBadge; background: #fee2e2; color: #991b1b; }
+.statusExpired  { @extend .statusBadge; background: #fef9c3; color: #a16207; }
+.statusInvoiced { @extend .statusBadge; background: #f3e8ff; color: #7e22ce; }

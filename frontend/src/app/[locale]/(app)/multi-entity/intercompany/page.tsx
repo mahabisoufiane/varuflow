@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { ArrowLeftRight, Plus, CheckCircle2 } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Transfer { id: string; from_org_id: string; to_org_id: string; transfer_type: string; quantity?: string; transfer_price: string; currency: string; transfer_date: string; status: string; description?: string; reference?: string }
 interface Entity { id: string; name: string }
@@ -69,6 +70,12 @@ export default function IntercompanyPage() {
     draft: "bg-gray-100 text-gray-600",
     posted: "bg-green-100 text-green-700",
     eliminated: "bg-purple-100 text-purple-700",
+  };
+
+  const STATUS_MODULE: Record<string, keyof typeof styles> = {
+    draft:      "statusDraft",
+    posted:     "statusPosted",
+    eliminated: "statusEliminated",
   };
 
   return (
@@ -144,7 +151,7 @@ export default function IntercompanyPage() {
                 </p>
                 {t.description && <p className="text-xs text-gray-400 italic">{t.description}</p>}
               </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor[t.status] || "bg-gray-100 text-gray-600"}`}>
+              <span className={styles[STATUS_MODULE[t.status] ?? "statusDraft"]}>
                 {t.status}
               </span>
               {t.status === "draft" && (

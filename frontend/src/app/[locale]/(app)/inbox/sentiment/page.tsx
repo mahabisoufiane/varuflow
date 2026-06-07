@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import styles from "./page.module.scss";
 import {
   Table,
   TableBody,
@@ -15,13 +16,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-function sentimentClass(s: string) {
-  const map: Record<string, string> = {
-    positive: "bg-green-100 text-green-800",
-    neutral: "bg-gray-100 text-gray-800",
-    negative: "bg-red-100 text-red-800",
+function sentimentClass(s: string): keyof typeof styles {
+  const map: Record<string, keyof typeof styles> = {
+    positive: "sentimentPositive",
+    neutral:  "sentimentNeutral",
+    negative: "sentimentNegative",
   };
-  return map[s] ?? "bg-gray-100 text-gray-800";
+  return map[s] ?? "sentimentNeutral";
 }
 
 interface SentimentResult {
@@ -117,7 +118,7 @@ export default function SentimentPage() {
               <CardContent className="pt-4">
                 <div className="flex flex-wrap items-center gap-3">
                   <span
-                    className={`inline-flex items-center px-3 py-1 rounded text-sm font-medium ${sentimentClass(result.sentiment)}`}
+                    className={styles[sentimentClass(result.sentiment)]}
                   >
                     {result.sentiment}
                   </span>
@@ -171,7 +172,7 @@ export default function SentimentPage() {
                       <TableCell className="font-mono text-xs">{f.customer_id}</TableCell>
                       <TableCell>
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${sentimentClass(f.sentiment)}`}
+                          className={styles[sentimentClass(f.sentiment)]}
                         >
                           {f.sentiment}
                         </span>

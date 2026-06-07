@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api-client";
 import { RefreshCw, CreditCard, Info } from "lucide-react";
+import styles from "./page.module.scss";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -20,6 +21,11 @@ interface WalletPass {
 const PLATFORM_BADGE: Record<string, string> = {
   apple: "bg-gray-100 text-gray-700",
   google: "bg-blue-100 text-blue-700",
+};
+
+const PLATFORM_MODULE: Record<string, keyof typeof styles> = {
+  apple:  "platformApple",
+  google: "platformGoogle",
 };
 
 type PlatformFilter = "all" | "apple" | "google";
@@ -198,7 +204,7 @@ export default function WalletPassesPage() {
                   <tr key={p.id} className="hover:bg-gray-50">
                     <td className="px-5 py-3 font-mono text-xs text-gray-700">{p.customer_id.slice(0, 8)}…</td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${PLATFORM_BADGE[p.platform] ?? "bg-gray-100 text-gray-700"}`}>
+                      <span className={styles[PLATFORM_MODULE[p.platform] ?? "platformApple"]}>
                         {p.platform === "apple" ? "Apple" : "Google"}
                       </span>
                     </td>

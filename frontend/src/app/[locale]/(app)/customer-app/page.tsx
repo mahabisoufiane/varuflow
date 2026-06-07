@@ -5,6 +5,7 @@ import { api } from "@/lib/api-client";
 import { RefreshCw, Smartphone, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface AppConfig {
   app_name: string;
@@ -36,6 +37,12 @@ const PLATFORM_BADGE: Record<string, string> = {
   ios: "bg-gray-100 text-gray-700",
   android: "bg-green-100 text-green-700",
   web: "bg-blue-100 text-blue-700",
+};
+
+const PLATFORM_MODULE: Record<string, keyof typeof styles> = {
+  ios:     "platformIos",
+  android: "platformAndroid",
+  web:     "platformWeb",
 };
 
 export default function CustomerAppConfigPage() {
@@ -224,7 +231,7 @@ export default function CustomerAppConfigPage() {
           <div className="flex gap-2 flex-wrap">
             {Object.entries(stats.by_platform).map(([platform, count]) => (
               <span key={platform}
-                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${PLATFORM_BADGE[platform] ?? "bg-gray-100 text-gray-700"}`}>
+                className={styles[PLATFORM_MODULE[platform] ?? "platformWeb"]}>
                 {platform}: {count}
               </span>
             ))}
@@ -294,7 +301,7 @@ export default function CustomerAppConfigPage() {
                   <p className="text-xs font-mono text-gray-700 truncate">{t.customer_id.slice(0, 8)}…</p>
                   <p className="text-xs text-muted-foreground">v{t.app_version}</p>
                 </div>
-                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${PLATFORM_BADGE[t.platform] ?? "bg-gray-100 text-gray-700"}`}>
+                <span className={styles[PLATFORM_MODULE[t.platform] ?? "platformWeb"]}>
                   {t.platform}
                 </span>
                 <p className="text-xs text-muted-foreground hidden sm:block">

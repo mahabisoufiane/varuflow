@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, RefreshCw, BookOpen, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface SopVersion {
   version: number;
@@ -29,6 +30,12 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft:     { label: "Draft",     color: "bg-gray-100 text-gray-600"   },
   published: { label: "Published", color: "bg-green-100 text-green-700" },
   archived:  { label: "Archived",  color: "bg-gray-100 text-gray-500"   },
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft:     "statusDraft",
+  published: "statusPublished",
+  archived:  "statusArchived",
 };
 
 const ALL_STATUSES = ["all", "draft", "published", "archived"] as const;
@@ -366,7 +373,7 @@ export default function SopPage() {
                     </p>
                   </button>
 
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.color}`}>
+                  <span className={styles[STATUS_MODULE[sop.status] ?? "statusDraft"]}>
                     {cfg.label}
                   </span>
 

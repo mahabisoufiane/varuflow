@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api-client";
 import { Copy, Download, Check } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface LineItem { id: string; description: string; quantity: number; unit_price: number; tax_rate: number; line_total: number; }
 interface QuoteDetail { id: string; title: string; quote_number: string | null; revision: number; status: string; cover_text: string | null; scope: string | null; terms: string | null; subtotal: number; vat_amount: number; total: number; currency: string; valid_until: string | null; customer_id: string; invoice_id: string | null; parent_quote_id: string | null; decline_reason: string | null; public_token: string | null; line_items: LineItem[]; }
@@ -39,8 +40,16 @@ export default function QuoteDetailPage() {
   if (!quote) return <div className="p-6">Loading...</div>;
 
   const badge = (s: string) => {
-    const c: Record<string, string> = { draft: "bg-gray-100", sent: "bg-blue-100 text-blue-800", viewed: "bg-yellow-100 text-yellow-700", accepted: "bg-green-100 text-green-800", rejected: "bg-red-100 text-red-800", expired: "bg-gray-200 text-gray-500", invoiced: "bg-purple-100 text-purple-800" };
-    return <span className={`px-2 py-0.5 rounded text-xs font-medium ${c[s] || "bg-gray-100"}`}>{s}</span>;
+    const STATUS_MODULE: Record<string, keyof typeof styles> = {
+      draft:    "statusDraft",
+      sent:     "statusSent",
+      viewed:   "statusViewed",
+      accepted: "statusAccepted",
+      rejected: "statusRejected",
+      expired:  "statusExpired",
+      invoiced: "statusInvoiced",
+    };
+    return <span className={styles[STATUS_MODULE[s] ?? "statusDraft"]}>{s}</span>;
   };
 
   return (

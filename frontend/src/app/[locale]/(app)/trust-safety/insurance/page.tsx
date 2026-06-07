@@ -13,15 +13,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
-function purchaseStatusClass(status: string) {
-  const map: Record<string, string> = {
-    active: "bg-green-100 text-green-800",
-    claimed: "bg-orange-100 text-orange-800",
-    expired: "bg-gray-100 text-gray-800",
-    refunded: "bg-red-100 text-red-800",
+function purchaseStatusClass(status: string): keyof typeof styles {
+  const map: Record<string, keyof typeof styles> = {
+    active:   "statusActive",
+    claimed:  "statusClaimed",
+    expired:  "statusExpired",
+    refunded: "statusRefunded",
   };
-  return map[status] ?? "bg-gray-100 text-gray-800";
+  return map[status] ?? "statusExpired";
 }
 
 interface InsuranceAddon {
@@ -278,7 +279,7 @@ export default function InsurancePage() {
                       <TableCell>{(p.amount_paid / 100).toFixed(2)}</TableCell>
                       <TableCell>
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${purchaseStatusClass(p.status)}`}
+                          className={styles[purchaseStatusClass(p.status)]}
                         >
                           {p.status}
                         </span>

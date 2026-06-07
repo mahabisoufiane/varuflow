@@ -1,0 +1,14 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Voice note sender badges ─────────────────────────────────────────────────
+
+.senderBadge {
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.senderCustomer { @extend .senderBadge; background: #dbeafe; color: #1d4ed8; }
+.senderStaff    { @extend .senderBadge; background: #f3e8ff; color: #7e22ce; }

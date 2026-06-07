@@ -5,14 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import styles from "./page.module.scss";
 
-function toneBadgeClass(tone: string) {
-  const map: Record<string, string> = {
-    professional: "bg-blue-100 text-blue-800",
-    friendly: "bg-green-100 text-green-800",
-    brief: "bg-gray-100 text-gray-800",
+function toneBadgeClass(tone: string): keyof typeof styles {
+  const map: Record<string, keyof typeof styles> = {
+    professional: "toneProfessional",
+    friendly:     "toneFriendly",
+    brief:        "toneBrief",
   };
-  return map[tone] ?? "bg-gray-100 text-gray-800";
+  return map[tone] ?? "toneBrief";
 }
 
 interface SmartReplySuggestion {
@@ -102,7 +103,7 @@ export default function SmartRepliesPage() {
               <CardContent className="pt-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${toneBadgeClass(s.tone)}`}
+                    className={styles[toneBadgeClass(s.tone)]}
                   >
                     {s.tone}
                   </span>

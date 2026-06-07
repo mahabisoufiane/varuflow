@@ -1,0 +1,15 @@
+@use '../../../../../../styles/mixins' as *;
+@use '../../../../../../styles/radii' as *;
+
+// ── Employee status badges ───────────────────────────────────────────────────
+
+.statusBadge {
+  border-radius: $vf-radius-full;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.statusActive     { @extend .statusBadge; background: #d1fae5; color: #047857; }
+.statusOnLeave    { @extend .statusBadge; background: #fef3c7; color: #b45309; }
+.statusTerminated { @extend .statusBadge; background: #ffe4e6; color: #e11d48; }
