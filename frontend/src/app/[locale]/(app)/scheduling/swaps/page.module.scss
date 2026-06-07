@@ -1,0 +1,29 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Shift swap status badges ───────────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusPending {
+  @extend .statusBadge;
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.statusApproved {
+  @extend .statusBadge;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusRejected {
+  @extend .statusBadge;
+  background: #fee2e2;
+  color: #b91c1c;
+}

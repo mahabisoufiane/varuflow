@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { CheckCircle, Clock, AlertCircle, ArrowUpCircle, BarChart3, Filter } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface PaymentRow {
   id: string;
@@ -48,6 +49,12 @@ const MATCH_BADGE = {
   matched: "bg-green-100 text-green-700",
   partial: "bg-yellow-100 text-yellow-700",
   unmatched: "bg-red-100 text-red-700",
+};
+
+const MATCH_MODULE: Record<string, keyof typeof styles> = {
+  matched:   "matchMatched",
+  partial:   "matchPartial",
+  unmatched: "matchUnmatched",
 };
 
 export default function ReconciliationPage() {
@@ -191,7 +198,7 @@ export default function ReconciliationPage() {
                   <tr key={p.id} className="border-b hover:bg-gray-50">
                     <td className="px-3 py-2 font-medium">{p.invoice_number}</td>
                     <td className="px-3 py-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${MATCH_BADGE[p.match_status]}`}>
+                      <span className={styles[MATCH_MODULE[p.match_status] ?? "matchUnmatched"]}>
                         {p.match_status.charAt(0).toUpperCase() + p.match_status.slice(1)}
                       </span>
                     </td>

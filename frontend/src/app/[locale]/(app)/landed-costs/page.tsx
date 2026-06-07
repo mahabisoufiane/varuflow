@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, RefreshCw, CheckCircle, ChevronDown, ChevronUp, Truck, ShieldCheck, Package, Wrench } from "lucide-react";
+import styles from "./page.module.scss";
 
 type DistMethod = "by_value" | "by_weight" | "by_quantity" | "manual";
 
@@ -54,6 +55,14 @@ const TYPE_COLORS: Record<string, string> = {
   insurance:          "bg-green-100 text-green-700",
   handling:           "bg-purple-100 text-purple-700",
   quality_inspection: "bg-rose-100 text-rose-700",
+};
+
+const TYPE_MODULE: Record<string, keyof typeof styles> = {
+  freight:            "typeFreight",
+  customs:            "typeCustoms",
+  insurance:          "typeInsurance",
+  handling:           "typeHandling",
+  quality_inspection: "typeQualityInspection",
 };
 
 export default function LandedCostsPage() {
@@ -193,7 +202,7 @@ export default function LandedCostsPage() {
                 className="flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/40 transition-colors"
                 onClick={() => setExpanded(expanded === charge.id ? null : charge.id)}
               >
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${TYPE_COLORS[charge.charge_type] ?? "bg-gray-100 text-gray-700"}`}>
+                <span className={styles[TYPE_MODULE[charge.charge_type] ?? "typeOther"]}>
                   {CHARGE_TYPES.find(t => t.value === charge.charge_type)?.label ?? charge.charge_type}
                 </span>
 
