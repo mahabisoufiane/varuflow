@@ -1,0 +1,15 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Intercompany transaction status badges ───────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusDraft      { @extend .statusBadge; background: #f3f4f6; color: #4b5563; }
+.statusPosted     { @extend .statusBadge; background: #dcfce7; color: #15803d; }
+.statusEliminated { @extend .statusBadge; background: #f3e8ff; color: #7e22ce; }

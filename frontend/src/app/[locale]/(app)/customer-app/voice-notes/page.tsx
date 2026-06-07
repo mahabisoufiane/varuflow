@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 import {
   PlusCircle, Mic, RefreshCw, ChevronDown, ChevronUp, Trash2,
 } from "lucide-react";
@@ -297,11 +298,7 @@ export default function VoiceNotesPage() {
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        note.sender_type === "customer"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-purple-100 text-purple-700"
-                      }`}>
+                      <span className={styles[note.sender_type === "customer" ? "senderCustomer" : "senderStaff"]}>
                         {note.sender_type}
                       </span>
                       <p className="text-sm font-medium text-gray-900">

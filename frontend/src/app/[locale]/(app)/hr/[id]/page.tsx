@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 type Tab = "profile" | "contracts" | "emergency" | "documents";
 
@@ -58,6 +59,12 @@ const STATUS_STYLE: Record<string, string> = {
   active: "bg-emerald-100 text-emerald-700",
   on_leave: "bg-amber-100 text-amber-700",
   terminated: "bg-rose-100 text-rose-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  active:     "statusActive",
+  on_leave:   "statusOnLeave",
+  terminated: "statusTerminated",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -212,7 +219,7 @@ export default function EmployeePage() {
 
       {/* Status banner */}
       <div className="flex items-center gap-3 mb-5">
-        <span className={`px-2.5 py-1 rounded-full text-sm font-medium ${STATUS_STYLE[currentStatus] ?? "bg-gray-100 text-gray-600"}`}>
+        <span className={styles[STATUS_MODULE[currentStatus] ?? "statusActive"]}>
           {STATUS_LABEL[currentStatus] ?? currentStatus}
         </span>
         {currentStatus !== "active" && (

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface QuoteSummary { id: string; quote_number: string | null; revision: number; title: string; status: string; total: number; currency: string; customer_id: string; valid_until: string | null; created_at: string | null; }
 
@@ -17,8 +18,15 @@ export default function QuotesPage() {
   useEffect(() => { load(); }, [filter]);
 
   const badge = (s: string) => {
-    const c: Record<string, string> = { draft: "bg-gray-100 text-gray-800", sent: "bg-blue-100 text-blue-800", accepted: "bg-green-100 text-green-800", rejected: "bg-red-100 text-red-800", expired: "bg-yellow-100 text-yellow-800", invoiced: "bg-purple-100 text-purple-800" };
-    return <span className={`px-2 py-0.5 rounded text-xs font-medium ${c[s] || "bg-gray-100"}`}>{s}</span>;
+    const STATUS_MODULE: Record<string, keyof typeof styles> = {
+      draft:    "statusDraft",
+      sent:     "statusSent",
+      accepted: "statusAccepted",
+      rejected: "statusRejected",
+      expired:  "statusExpired",
+      invoiced: "statusInvoiced",
+    };
+    return <span className={styles[STATUS_MODULE[s] ?? "statusDraft"]}>{s}</span>;
   };
 
   return (

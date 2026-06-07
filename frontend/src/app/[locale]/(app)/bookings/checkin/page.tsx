@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, QrCode, Search } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface TodayBooking {
   id: string;
@@ -70,6 +71,13 @@ export default function CheckInPage() {
     completed: "bg-gray-100 text-gray-800",
   };
 
+  const STATUS_MODULE: Record<string, keyof typeof styles> = {
+    confirmed:  "statusConfirmed",
+    checked_in: "statusCheckedIn",
+    no_show:    "statusNoShow",
+    completed:  "statusCompleted",
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -118,9 +126,7 @@ export default function CheckInPage() {
                   })}
                 </p>
                 <span
-                  className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-                    statusColors[booking.status] || ""
-                  }`}
+                  className={styles[STATUS_MODULE[booking.status] ?? "statusConfirmed"]}
                 >
                   {booking.status.replace("_", " ")}
                 </span>

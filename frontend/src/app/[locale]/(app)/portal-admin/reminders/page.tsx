@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface Reminder { id: string; invoice_id: string; customer_id: string; reminder_type: string; scheduled_for: string; sent_at: string | null; email_subject: string; }
 
@@ -25,8 +26,12 @@ export default function PortalAdminRemindersPage() {
   };
 
   const typeBadge = (t: string) => {
-    const colors: Record<string, string> = { gentle: "bg-green-100 text-green-800", followup: "bg-yellow-100 text-yellow-800", final: "bg-red-100 text-red-800" };
-    return <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[t] || "bg-gray-100"}`}>{t}</span>;
+    const TYPE_MODULE: Record<string, keyof typeof styles> = {
+      gentle:   "typeGentle",
+      followup: "typeFollowup",
+      final:    "typeFinal",
+    };
+    return <span className={styles[TYPE_MODULE[t] ?? "typeGentle"]}>{t}</span>;
   };
 
   return (

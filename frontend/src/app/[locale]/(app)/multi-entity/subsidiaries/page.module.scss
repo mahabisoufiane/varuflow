@@ -1,0 +1,18 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Entity type badges ───────────────────────────────────────────────────────
+
+.typeBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.typeStandalone  { @extend .typeBadge; background: #f3f4f6; color: #4b5563; }
+.typeParent      { @extend .typeBadge; background: #dbeafe; color: #1d4ed8; }
+.typeSubsidiary  { @extend .typeBadge; background: #f3e8ff; color: #7e22ce; }
+.typeFranchisor  { @extend .typeBadge; background: #fef3c7; color: #b45309; }
+.typeFranchisee  { @extend .typeBadge; background: #dcfce7; color: #15803d; }

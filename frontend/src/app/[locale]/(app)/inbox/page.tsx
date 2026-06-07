@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import styles from "./page.module.scss";
 
 const CHANNELS = ["all", "email", "whatsapp", "sms", "in_app", "contact_form"] as const;
 type Channel = (typeof CHANNELS)[number];
@@ -22,17 +23,17 @@ function channelLabel(c: Channel) {
   return map[c];
 }
 
-function sentimentClass(s: string) {
-  const map: Record<string, string> = {
-    positive: "bg-green-100 text-green-800",
-    neutral: "bg-gray-100 text-gray-800",
-    negative: "bg-red-100 text-red-800",
+function sentimentClass(s: string): keyof typeof styles {
+  const map: Record<string, keyof typeof styles> = {
+    positive: "sentimentPositive",
+    neutral:  "sentimentNeutral",
+    negative: "sentimentNegative",
   };
-  return map[s] ?? "bg-gray-100 text-gray-800";
+  return map[s] ?? "sentimentNeutral";
 }
 
-function directionClass(d: string) {
-  return d === "inbound" ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800";
+function directionClass(d: string): keyof typeof styles {
+  return d === "inbound" ? "directionInbound" : "directionOutbound";
 }
 
 interface Thread {
@@ -205,7 +206,7 @@ export default function InboxPage() {
                     <Badge variant="outline" className="text-xs">{t.channel}</Badge>
                     {t.sentiment && (
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${sentimentClass(t.sentiment)}`}
+                        className={styles[sentimentClass(t.sentiment)]}
                       >
                         {t.sentiment}
                       </span>
@@ -255,7 +256,7 @@ export default function InboxPage() {
                   <div key={m.id} className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${directionClass(m.direction)}`}
+                        className={styles[directionClass(m.direction)]}
                       >
                         {m.direction}
                       </span>

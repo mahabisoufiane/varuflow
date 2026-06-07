@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 import { Bell, RefreshCw, Trash2, CheckCircle2, Clock, XCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -24,6 +25,15 @@ const ALERT_TYPE_CONFIG: Record<string, { label: string; color: string; Icon: Re
   rescheduled:  { label: "Rescheduled",   color: "bg-amber-100 text-amber-700", Icon: RefreshCw    },
   completed:    { label: "Completed",     color: "bg-blue-100 text-blue-700",   Icon: CheckCircle2 },
   custom:       { label: "Custom",        color: "bg-purple-100 text-purple-700",Icon: Bell        },
+};
+
+const ALERT_TYPE_MODULE: Record<string, keyof typeof styles> = {
+  running_late: "alertRunningLate",
+  ready:        "alertReady",
+  cancelled:    "alertCancelled",
+  rescheduled:  "alertRescheduled",
+  completed:    "alertCompleted",
+  custom:       "alertCustom",
 };
 
 const MESSAGE_TEMPLATES: Record<string, string> = {
@@ -251,7 +261,7 @@ export default function StatusAlertsPage() {
                 <div key={alert.id} className="flex items-center gap-4 px-5 py-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.color}`}>
+                      <span className={styles[ALERT_TYPE_MODULE[alert.alert_type] ?? "alertCustom"]}>
                         <Icon className="h-3 w-3" />
                         {cfg.label}
                       </span>

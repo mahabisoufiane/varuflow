@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 import { MessageSquare, Plus, Phone, Send, CheckCheck, Clock, XCircle, AlertTriangle, Ban, ChevronRight, Filter } from "lucide-react";
 
 interface SmsMsg {
@@ -226,7 +227,7 @@ export default function SmsOutboxPage() {
                 {messages.map(m => (
                   <tr key={m.id} className="border-b hover:bg-gray-50">
                     <td className="px-3 py-2">
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${m.channel === "whatsapp" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
+                      <span className={styles[m.channel === "whatsapp" ? "channelWhatsapp" : "channelSms"]}>
                         {m.channel === "whatsapp" ? "WA" : "SMS"}
                       </span>
                     </td>
@@ -267,7 +268,7 @@ export default function SmsOutboxPage() {
                 <span className="font-semibold text-sm">
                   {selected.direction === "out" ? selected.to_number : (selected.from_number || selected.to_number)}
                 </span>
-                <span className={`ml-2 px-1.5 py-0.5 rounded text-[10px] ${selected.channel === "whatsapp" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
+                <span className={`ml-2 ${styles[selected.channel === "whatsapp" ? "channelWhatsapp" : "channelSms"]}`}>
                   {selected.channel}
                 </span>
               </div>
@@ -348,7 +349,7 @@ export default function SmsOutboxPage() {
                     <tr key={o.id} className="border-b hover:bg-gray-50">
                       <td className="px-4 py-2 font-mono">{o.phone_number}</td>
                       <td className="px-4 py-2">
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] ${o.channel === "whatsapp" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
+                        <span className={styles[o.channel === "whatsapp" ? "channelWhatsapp" : "channelSms"]}>
                           {o.channel}
                         </span>
                       </td>

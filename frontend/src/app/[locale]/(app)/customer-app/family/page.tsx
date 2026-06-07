@@ -5,6 +5,7 @@ import { api } from "@/lib/api-client";
 import { RefreshCw, Users, Trash2, ChevronDown, ChevronRight, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface FamilyMember {
   id: string;
@@ -30,6 +31,14 @@ const RELATIONSHIP_BADGE: Record<string, string> = {
   parent: "bg-blue-100 text-blue-700",
   sibling: "bg-purple-100 text-purple-700",
   other: "bg-gray-100 text-gray-700",
+};
+
+const RELATIONSHIP_MODULE: Record<string, keyof typeof styles> = {
+  partner: "relationshipPartner",
+  child:   "relationshipChild",
+  parent:  "relationshipParent",
+  sibling: "relationshipSibling",
+  other:   "relationshipOther",
 };
 
 export default function FamilyAccountsPage() {
@@ -250,7 +259,7 @@ export default function FamilyAccountsPage() {
                                 )}
                               </div>
                             </div>
-                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${RELATIONSHIP_BADGE[m.relationship] ?? "bg-gray-100 text-gray-700"}`}>
+                            <span className={styles[RELATIONSHIP_MODULE[m.relationship] ?? "relationshipOther"]}>
                               {m.relationship}
                             </span>
                             <Button variant="ghost" size="sm" disabled={actionLoading === m.id + "_remove"}

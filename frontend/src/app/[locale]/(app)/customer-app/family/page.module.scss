@@ -1,0 +1,21 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Family relationship badges ──────────────────────────────────────────────
+
+.relBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.relationshipPartner  { @extend .relBadge; background: #fce7f3; color: #be185d; }
+.relationshipChild    { @extend .relBadge; background: #fef9c3; color: #a16207; }
+.relationshipParent   { @extend .relBadge; background: #dbeafe; color: #1d4ed8; }
+.relationshipSibling  { @extend .relBadge; background: #f3e8ff; color: #7e22ce; }
+.relationshipOther    { @extend .relBadge; background: #f3f4f6; color: #374151; }
