@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -340,27 +341,23 @@ export default function CashFlowPage() {
 
         {/* Horizon + scenario selectors */}
         <div className="flex gap-2 flex-wrap">
-          <div className="flex gap-1">
+          <div className={styles.periodSelector}>
             {([30, 60, 90] as const).map((h) => (
               <button
                 key={h}
                 onClick={() => setHorizon(h)}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                  horizon === h ? "bg-[#1a2332] text-white" : "text-gray-600 hover:bg-gray-100 border"
-                }`}
+                className={`${styles.periodBtn} ${horizon === h ? styles.periodBtnActive : ""}`}
               >
                 {h}d
               </button>
             ))}
           </div>
-          <div className="flex gap-1">
+          <div className={styles.periodSelector}>
             {(["best", "worst"] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setScenario(s)}
-                className={`px-3 py-1.5 rounded text-sm font-medium capitalize transition-colors ${
-                  scenario === s ? "bg-[#1a2332] text-white" : "text-gray-600 hover:bg-gray-100 border"
-                }`}
+                className={`${styles.periodBtn} ${scenario === s ? styles.periodBtnActive : ""} capitalize`}
               >
                 {s === "best" ? "Best case" : "Worst case"}
               </button>
@@ -394,7 +391,7 @@ export default function CashFlowPage() {
       {data && (
         <>
           {/* Summary KPIs */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className={styles.kpiGrid}>
             <SummaryCard label="Expected inflows" best={bestTotalInflows} worst={worstTotalInflows} />
             <SummaryCard label="Expected outflows" best={bestTotalOutflows} worst={worstTotalOutflows} />
             <SummaryCard
@@ -406,7 +403,7 @@ export default function CashFlowPage() {
           </div>
 
           {/* Balance trend (both scenarios) */}
-          <div className="bg-white border rounded-xl p-5">
+          <div className={styles.chartCard}>
             <p className="text-sm font-semibold text-gray-700 mb-4">
               Cumulative cash position — {horizon}-day horizon
             </p>

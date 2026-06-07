@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
 import { Plus, AlertCircle, FileText, BarChart2, CheckCircle, XCircle, Clock } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface PurchaseRequestItem {
   id: string;
@@ -60,11 +61,24 @@ const STATUS_BADGE: Record<string, string> = {
   rejected: "bg-red-100 text-red-800",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending: "statusPending",
+  approved: "statusApproved",
+  rejected: "statusRejected",
+};
+
 const URGENCY_BADGE: Record<string, string> = {
   low: "bg-gray-100 text-gray-600",
   normal: "bg-blue-50 text-blue-600",
   high: "bg-orange-100 text-orange-700",
   urgent: "bg-red-100 text-red-700",
+};
+
+const URGENCY_MODULE: Record<string, keyof typeof styles> = {
+  low: "urgencyLow",
+  normal: "urgencyMedium",
+  high: "urgencyHigh",
+  urgent: "urgencyCritical",
 };
 
 export default function PurchaseRequestsPage() {
@@ -426,15 +440,15 @@ export default function PurchaseRequestsPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-gray-900 truncate">{req.title}</span>
                       {!req.is_template && (
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_BADGE[req.status] ?? "bg-gray-100 text-gray-700"}`}>
+                        <span className={styles[STATUS_MODULE[req.status] ?? "statusPending"]}>
                           {req.status}
                         </span>
                       )}
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${URGENCY_BADGE[req.urgency] ?? "bg-gray-100 text-gray-600"}`}>
+                      <span className={styles[URGENCY_MODULE[req.urgency] ?? "urgencyLow"]}>
                         {req.urgency}
                       </span>
                       {req.budget_exceeded && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">Budget exceeded</span>
+                        <span className={styles.urgencyCritical}>Budget exceeded</span>
                       )}
                       {req.budget_category && (
                         <span className="text-xs text-gray-400">{req.budget_category}</span>

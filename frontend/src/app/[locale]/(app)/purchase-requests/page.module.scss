@@ -1,0 +1,89 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+.requestCard {
+  border-radius: $vf-radius-lg;
+  border: 1px solid var(--vf-border);
+  padding: 1rem;
+  background: var(--vf-bg-surface);
+  transition: box-shadow 120ms ease;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.statusPending {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $vf-radius-full;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(234, 179, 8, 0.12);
+  color: #92400e;
+}
+
+.statusApproved {
+  @extend .statusPending;
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+}
+
+.statusRejected {
+  @extend .statusPending;
+  background: rgba(239, 68, 68, 0.10);
+  color: #991b1b;
+}
+
+.urgencyLow {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: $vf-radius-sm;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.urgencyMedium {
+  @extend .urgencyLow;
+  background: rgba(59, 130, 246, 0.10);
+  color: #1d4ed8;
+}
+
+.urgencyHigh {
+  @extend .urgencyLow;
+  background: rgba(249, 115, 22, 0.12);
+  color: #c2410c;
+}
+
+.urgencyCritical {
+  @extend .urgencyLow;
+  background: rgba(239, 68, 68, 0.12);
+  color: #991b1b;
+}
+
+.formCard {
+  border-radius: $vf-radius-lg;
+  border: 1px solid var(--vf-border);
+  padding: 1rem;
+  background: var(--vf-bg-surface);
+  margin-bottom: 1rem;
+}
+
+.formInput {
+  display: block;
+  width: 100%;
+  border-radius: $vf-radius-sm;
+  border: 1px solid var(--vf-border);
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  transition: border-color 120ms ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--vf-brand-primary, #1a2332);
+  }
+}

@@ -1,0 +1,79 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+.statusDraft {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $vf-radius-full;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.statusSubmitted {
+  @extend .statusDraft;
+  background: rgba(59, 130, 246, 0.12);
+  color: #1d4ed8;
+}
+
+.statusApproved {
+  @extend .statusDraft;
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+}
+
+.statusRejected {
+  @extend .statusDraft;
+  background: rgba(244, 63, 94, 0.10);
+  color: #9f1239;
+}
+
+.timesheetRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--vf-border);
+  cursor: pointer;
+  transition: background 100ms ease;
+
+  &:hover {
+    background: var(--vf-bg-elevated);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.timesheetTable {
+  border-radius: $vf-radius-lg;
+  border: 1px solid var(--vf-border);
+  background: var(--vf-bg-surface);
+  overflow: hidden;
+}
+
+.weekHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 1rem;
+  background: var(--vf-bg-elevated);
+  border-bottom: 1px solid var(--vf-border);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.hoursCell {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--vf-text-primary);
+}
+
+.overtimeCell {
+  @extend .hoursCell;
+  color: #f59e0b;
+}
