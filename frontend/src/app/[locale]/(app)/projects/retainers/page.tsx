@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Repeat2, Plus, Loader2, FileText, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface Retainer {
   id: string;
@@ -157,7 +158,7 @@ export default function RetainersPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold">{r.name}</h3>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${r.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}>
+                    <span className={styles[r.is_active ? "statusActive" : "statusInactive"]}>
                       {r.is_active ? "Active" : "Inactive"}
                     </span>
                   </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
+import pageStyles from "./page.module.scss";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -44,22 +45,19 @@ type SummaryResponse = {
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
+const LOCALE_MODULE: Record<string, keyof typeof pageStyles> = {
+  en: "localeEn", sv: "localeSv", ar: "localeAr",
+  fr: "localeFr", no: "localeNo", da: "localeDa",
+};
+
+const EXIT_MODULE: Record<string, keyof typeof pageStyles> = {
+  completed: "exitCompleted", converted: "exitConverted",
+  manual: "exitManual", churned: "exitChurned",
+};
+
 function LocaleBadge({ locale }: { locale: string }) {
-  const colorMap: Record<string, string> = {
-    en: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    sv: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-    ar: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-    fr: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-    no: "bg-red-500/20 text-red-400 border-red-500/30",
-    da: "bg-orange-500/20 text-orange-400 border-orange-500/30",
-  };
-  const style =
-    colorMap[locale.toLowerCase()] ??
-    "bg-slate-500/20 text-slate-400 border-slate-500/30";
   return (
-    <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border uppercase ${style}`}
-    >
+    <span className={pageStyles[LOCALE_MODULE[locale.toLowerCase()] ?? "localeDefault"]}>
       {locale}
     </span>
   );
@@ -67,18 +65,8 @@ function LocaleBadge({ locale }: { locale: string }) {
 
 function ExitReasonBadge({ reason }: { reason: string | null }) {
   if (!reason) return <span className="text-slate-600 text-xs">—</span>;
-  const styles: Record<string, string> = {
-    completed: "bg-green-500/20 text-green-400 border-green-500/30",
-    converted: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    manual: "bg-slate-500/20 text-slate-400 border-slate-500/30",
-    churned: "bg-red-500/20 text-red-400 border-red-500/30",
-  };
-  const style =
-    styles[reason] ?? "bg-slate-500/20 text-slate-400 border-slate-500/30";
   return (
-    <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border capitalize ${style}`}
-    >
+    <span className={pageStyles[EXIT_MODULE[reason] ?? "exitDefault"]}>
       {reason}
     </span>
   );
