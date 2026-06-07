@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import apiClient from "@/lib/api-client";
 import { createClient } from "@/lib/supabase/client";
+import styles from "./page.module.scss";
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://varuflow.vercel.app";
 
@@ -52,21 +53,16 @@ interface MeResponse {
   summary: ReferralSummary;
 }
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending: "statusPending", signed_up: "statusSignedUp", converted: "statusConverted",
+  paid_out: "statusPaidOut", expired: "statusExpired",
+};
+
 // ── Status badge ─────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string }) {
-  const colours: Record<string, string> = {
-    pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-    signed_up: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-    converted: "bg-green-500/10 text-green-400 border-green-500/20",
-    paid_out: "bg-teal-500/10 text-teal-400 border-teal-500/20",
-    expired: "bg-slate-500/10 text-slate-400 border-slate-500/20",
-  };
-  const cls = colours[status] ?? "bg-slate-500/10 text-slate-400 border-slate-500/20";
   return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold ${cls}`}
-    >
+    <span className={styles[STATUS_MODULE[status] ?? "statusDefault"]}>
       {status.replace("_", " ")}
     </span>
   );
