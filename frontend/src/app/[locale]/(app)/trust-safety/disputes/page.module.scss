@@ -1,0 +1,68 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Dispute status badges ─────────────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+}
+
+.statusOpen {
+  @extend .statusBadge;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.statusInReview {
+  @extend .statusBadge;
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.statusResolved {
+  @extend .statusBadge;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusEscalated {
+  @extend .statusBadge;
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.statusClosed {
+  @extend .statusBadge;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+// ── Sender type badges ────────────────────────────────────────────────────────
+
+.senderBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+}
+
+.senderCustomer {
+  @extend .senderBadge;
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
+.senderStaff {
+  @extend .senderBadge;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.senderAdmin {
+  @extend .senderBadge;
+  background: #fee2e2;
+  color: #991b1b;
+}
