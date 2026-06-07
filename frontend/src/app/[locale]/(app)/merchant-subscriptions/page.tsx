@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { RefreshCw, Plus, Pause, Play, XCircle, TrendingUp, Users, DollarSign, ArrowDownCircle, ChevronRight, Trash2 } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Plan {
   id: string;
@@ -44,6 +45,14 @@ const STATUS_COLOR: Record<string, string> = {
   paused:    "bg-yellow-100 text-yellow-700",
   past_due:  "bg-red-100 text-red-700",
   cancelled: "bg-gray-100 text-gray-500",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  active:    "statusActive",
+  trialing:  "statusTrialing",
+  paused:    "statusPaused",
+  past_due:  "statusPastDue",
+  cancelled: "statusCancelled",
 };
 
 const INTERVAL_LABEL: Record<string, string> = {
@@ -279,7 +288,7 @@ export default function MerchantSubscriptionsPage() {
                         <td className="px-3 py-2 font-mono text-gray-500">{s.customer_id.slice(0, 8)}…</td>
                         <td className="px-3 py-2 font-medium">{plan?.name ?? "Unknown"}</td>
                         <td className="px-3 py-2">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${STATUS_COLOR[s.status] ?? "bg-gray-100 text-gray-600"}`}>
+                          <span className={styles[STATUS_MODULE[s.status] ?? "statusActive"]}>
                             {s.status.replace("_", " ")}
                           </span>
                         </td>

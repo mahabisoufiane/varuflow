@@ -1,0 +1,17 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+// ── Subscription status badges ─────────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusActive    { @extend .statusBadge; background: #dcfce7; color: #166534; }
+.statusTrialing  { @extend .statusBadge; background: #dbeafe; color: #1d4ed8; }
+.statusPaused    { @extend .statusBadge; background: #fef9c3; color: #a16207; }
+.statusPastDue   { @extend .statusBadge; background: #fee2e2; color: #b91c1c; }
+.statusCancelled { @extend .statusBadge; background: #f3f4f6; color: #6b7280; }
