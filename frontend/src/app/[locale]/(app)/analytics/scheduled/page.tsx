@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Plus, Trash2, Mail, Check, X, Clock } from "lucide-react";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface ScheduledReport {
   id: string; name: string; report_type: string; cron_expr: string; timezone: string;
@@ -191,7 +192,7 @@ export default function ScheduledReportsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${s.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                  <span className={styles[s.is_active ? "statusActive" : "statusInactive"]}>
                     {s.is_active ? "Active" : "Paused"}
                   </span>
                   <button onClick={() => toggle(s.id, s.is_active)} className="btn-sm-outline" title={s.is_active ? "Pause" : "Resume"}>

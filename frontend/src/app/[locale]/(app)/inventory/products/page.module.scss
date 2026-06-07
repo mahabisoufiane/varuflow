@@ -1,0 +1,30 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Product vat and expiry badges ─────────────────────────────────────────────
+
+.vatBadge {
+  border-radius: $vf-radius-sm;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.vat25 { @extend .vatBadge; background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+.vat12 { @extend .vatBadge; background: #faf5ff; color: #9333ea; border-color: #e9d5ff; }
+.vat0  { @extend .vatBadge; background: #f3f4f6; color: #6b7280; border-color: #e5e7eb; }
+
+.expiryBadge {
+  border-radius: $vf-radius-sm;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.expirySoon    { @extend .expiryBadge; background: #fff1f2; color: #e11d48; border-color: #fecdd3; }
+.expiryWarning { @extend .expiryBadge; background: #fff7ed; color: #ea580c; border-color: #fed7aa; }
+.expiryOk      { @extend .expiryBadge; background: #f9fafb; color: #6b7280; border-color: #e5e7eb; }

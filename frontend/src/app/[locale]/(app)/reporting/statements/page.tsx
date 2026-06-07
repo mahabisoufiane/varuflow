@@ -13,6 +13,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
+
+const FORMAT_MODULE: Record<string, keyof typeof styles> = { pdf: "formatPdf", csv: "formatCsv", json: "formatJson" };
+const STATUS_MODULE: Record<string, keyof typeof styles> = { pending: "statusPending", generating: "statusGenerating", ready: "statusReady", failed: "statusFailed" };
 
 type StatementStatus = "pending" | "generating" | "ready" | "failed";
 type StatementFormat = "pdf" | "csv" | "json";
@@ -196,14 +200,14 @@ export default function StatementsPage() {
                     <TableCell className="font-mono text-xs">{row.customer_id}</TableCell>
                     <TableCell>
                       <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${formatBadge[row.format]}`}
+                        className={styles[FORMAT_MODULE[row.format] ?? "formatPdf"]}
                       >
                         {row.format.toUpperCase()}
                       </span>
                     </TableCell>
                     <TableCell>
                       <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusBadge[row.status]}`}
+                        className={styles[STATUS_MODULE[row.status] ?? "statusPending"]}
                       >
                         {row.status}
                       </span>

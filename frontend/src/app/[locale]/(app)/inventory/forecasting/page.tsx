@@ -11,6 +11,7 @@ import {
   RefreshCw,
   Package,
 } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface ForecastItem {
   product_id: string;
@@ -25,16 +26,16 @@ interface ForecastItem {
 
 const RANGE_OPTIONS = [30, 60, 90] as const;
 
-function riskColor(level: ForecastItem["risk_level"]) {
+function riskColor(level: ForecastItem["risk_level"]): keyof typeof styles {
   switch (level) {
     case "critical":
-      return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+      return "riskCritical";
     case "high":
-      return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400";
+      return "riskHigh";
     case "medium":
-      return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
-    case "low":
-      return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400";
+      return "riskMedium";
+    default:
+      return "riskLow";
   }
 }
 
@@ -122,9 +123,7 @@ export default function ForecastingPage() {
                   <p className="vf-text-m text-xs">{item.sku}</p>
                 </div>
                 <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${riskColor(
-                    item.risk_level
-                  )}`}
+                  className={styles[riskColor(item.risk_level)]}
                 >
                   {riskIcon(item.risk_level)}
                   {item.risk_level}

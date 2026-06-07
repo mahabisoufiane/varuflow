@@ -5,6 +5,7 @@ import { api } from "@/lib/api-client";
 import { RefreshCw, Trash2, PlusCircle, CheckCircle2, Clock, SkipForward, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface TimelineEvent {
   id: string;
@@ -303,7 +304,7 @@ export default function TimelinesPage() {
                                 <span className={`text-sm font-medium ${evt.status === "skipped" ? "line-through text-gray-400" : "text-gray-900"}`}>
                                   {evt.label}
                                 </span>
-                                <span className="rounded-full bg-purple-100 text-purple-700 px-2 py-0.5 text-xs">{evt.stage}</span>
+                                <span className={styles.stageBadge}>{evt.stage}</span>
                                 <span className="text-xs text-muted-foreground">{cfg.label}</span>
                               </div>
                               {evt.description && (

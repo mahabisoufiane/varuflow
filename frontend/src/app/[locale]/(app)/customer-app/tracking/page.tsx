@@ -5,6 +5,7 @@ import { api } from "@/lib/api-client";
 import { RefreshCw, MapPin, Navigation, Copy, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface TrackingSession {
   id: string;
@@ -216,9 +217,7 @@ export default function TrackingPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      s.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
-                    }`}>
+                    <span className={styles[s.status === "active" ? "statusActive" : "statusInactive"]}>
                       {s.status === "active" && <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />}
                       {s.status}
                     </span>

@@ -1,0 +1,17 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Inventory movement direction badges ──────────────────────────────────────
+
+.movBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.movIn         { @extend .movBadge; background: #dcfce7; color: #15803d; }
+.movOut        { @extend .movBadge; background: #fee2e2; color: #dc2626; }
+.movAdjustment { @extend .movBadge; background: #f3f4f6; color: #374151; }

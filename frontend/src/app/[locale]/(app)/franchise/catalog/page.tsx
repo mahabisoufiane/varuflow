@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import { Package, Upload, CheckCircle2, History } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Agreement { id: string; franchisee_name: string; franchisee_org_id?: string; status: string }
 interface PushLog { id: string; franchisee_org_id: string; pushed_count: number; created_count: number; updated_count: number; status: string; created_at: string }
@@ -122,7 +123,7 @@ export default function FranchiseCatalogPage() {
                     {p.pushed_count} products · {p.created_count} created · {p.updated_count} updated · {new Date(p.created_at).toLocaleString()}
                   </p>
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.status === "completed" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
+                <span className={styles[p.status === "completed" ? "statusCompleted" : "statusPending"]}>
                   {p.status}
                 </span>
                 {p.status === "completed" && <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />}

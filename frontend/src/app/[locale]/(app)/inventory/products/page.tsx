@@ -8,6 +8,9 @@ import { toast } from "sonner";
 import {
   Package, Pencil, Plus, Search, Upload, TrendingUp, X,
 } from "lucide-react";
+import styles from "./page.module.scss";
+
+const VAT_MODULE: Record<string, keyof typeof styles> = { "25": "vat25", "12": "vat12", "0": "vat0" };
 
 interface Product {
   id: string;
@@ -38,11 +41,8 @@ function margin(buy: string, sell: string) {
 
 function VatBadge({ rate }: { rate: string }) {
   const n = Number(rate);
-  const cls = n === 25 ? "bg-blue-50 text-blue-600 border-blue-200"
-    : n === 12 ? "bg-purple-50 text-purple-600 border-purple-200"
-    : "bg-gray-100 text-gray-500 border-gray-200";
   return (
-    <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold ${cls}`}>{n}%</span>
+    <span className={styles[VAT_MODULE[String(n)] ?? "vat0"]}>{n}%</span>
   );
 }
 
@@ -56,24 +56,22 @@ function daysUntil(iso: string): number {
 function ExpiryBadge({ batch, tExpiry }: { batch: Batch; tExpiry: string }) {
   if (!batch.expiry_date) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+      <span className={styles.expiryOk}>
         {batch.batch_number}
       </span>
     );
   }
   const left = daysUntil(batch.expiry_date);
-  // < 7 days = red, < 30 days = orange, else neutral. Matches the
-  // AI card priority mapping so the UI and the /ai/cards feed agree.
-  const tone =
+  const toneClass: keyof typeof styles =
     left < 7
-      ? "bg-red-50 text-red-600 border-red-200"
+      ? "expirySoon"
       : left < 30
-      ? "bg-orange-50 text-orange-600 border-orange-200"
-      : "bg-gray-50 text-gray-500 border-gray-200";
+      ? "expiryWarning"
+      : "expiryOk";
   return (
     <span
       title={`${tExpiry}: ${batch.expiry_date} (${batch.quantity} st)`}
-      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${tone}`}
+      className={styles[toneClass]}
     >
       {batch.batch_number} · {left}d
     </span>

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 import { toast } from "sonner";
 
 interface Plan {
@@ -52,7 +53,7 @@ export default function PaymentOptionsPage() {
                 <p className="font-medium text-sm">{plan.num_instalments} instalments — {plan.total_amount.toLocaleString()} {plan.currency}</p>
                 <p className="text-xs text-gray-400">Invoice {plan.invoice_id.slice(0, 8)}… · Created {new Date(plan.created_at).toLocaleDateString()}</p>
               </div>
-              <span className={`text-xs px-2 py-0.5 rounded ${plan.status === "active" ? "bg-blue-100 text-blue-800" : "bg-gray-100"}`}>{plan.status}</span>
+              <span className={styles[plan.status === "active" ? "planActive" : "planInactive"]}>{plan.status}</span>
             </div>
             <table className="w-full text-xs border-t pt-2">
               <thead>
@@ -71,7 +72,7 @@ export default function PaymentOptionsPage() {
                     <td className="py-1">{inst.amount.toLocaleString()} {plan.currency}</td>
                     <td className="py-1">{inst.due_date}</td>
                     <td className="py-1">
-                      <span className={`px-1.5 py-0.5 rounded text-xs ${inst.status === "paid" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-700"}`}>{inst.status}</span>
+                      <span className={styles[inst.status === "paid" ? "installPaid" : "installPending"]}>{inst.status}</span>
                     </td>
                     <td className="py-1">
                       {inst.status !== "paid" && (

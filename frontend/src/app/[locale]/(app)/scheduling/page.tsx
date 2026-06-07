@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Calendar, AlertTriangle } from "lucide-react";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface ShiftEntry { id: string; start_at: string; end_at: string; notes: string | null }
 interface StaffRoster { staff_id: string; staff_name: string; shifts: ShiftEntry[] }
@@ -86,7 +87,7 @@ export default function RosterPage() {
             <div key={staff.staff_id} className={`grid grid-cols-8 border-b border-gray-50 last:border-b-0 ${si % 2 === 0 ? "bg-white" : "bg-gray-50/30"}`}>
               <div className="p-3 border-r border-gray-100 flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-800 truncate">{staff.staff_name}</span>
-                {ot?.is_overtime && <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">{ot.total_hours}h</span>}
+                {ot?.is_overtime && <span className={styles.overtimeBadge}>{ot.total_hours}h</span>}
               </div>
               {weekDays.map((day, i) => {
                 const ds = isoDate(day);
