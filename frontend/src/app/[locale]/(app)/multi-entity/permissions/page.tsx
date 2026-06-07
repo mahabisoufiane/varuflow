@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, Trash2, Users2, RefreshCw, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface CrossEntityRole {
   id: string;
@@ -26,6 +27,13 @@ const ROLE_COLORS: Record<string, string> = {
   admin:  "bg-orange-100 text-orange-700",
   member: "bg-blue-100 text-blue-700",
   viewer: "bg-gray-100 text-gray-600",
+};
+
+const ROLE_MODULE: Record<string, keyof typeof styles> = {
+  owner:  "roleOwner",
+  admin:  "roleAdmin",
+  member: "roleMember",
+  viewer: "roleViewer",
 };
 
 export default function MultiEntityPermissionsPage() {
@@ -218,7 +226,7 @@ export default function MultiEntityPermissionsPage() {
                   <span className="col-span-2 font-mono text-xs text-gray-600 truncate">{r.user_id}</span>
                   <span className="text-sm text-gray-700 truncate">{entity?.name ?? r.org_id.slice(0, 8) + "…"}</span>
                   <div className="flex items-center justify-between">
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[r.role] ?? "bg-gray-100 text-gray-600"}`}>
+                    <span className={styles[ROLE_MODULE[r.role] ?? "roleViewer"]}>
                       {r.role}
                     </span>
                     <button type="button" onClick={() => removeRole(r.id)}

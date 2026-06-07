@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import { CheckSquare, Plus, RefreshCw, X, Check, ChevronRight, Settings, User } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Staff { id: string; name: string; role?: string }
 interface Task {
@@ -18,6 +19,16 @@ const CAT_COLORS: Record<string, string> = {
   hr_admin: "bg-green-100 text-green-700", equipment: "bg-amber-100 text-amber-700",
   intro: "bg-purple-100 text-purple-700", compliance: "bg-red-100 text-red-700",
   general: "bg-gray-100 text-gray-600",
+};
+
+const CAT_MODULE: Record<string, keyof typeof styles> = {
+  it_setup:   "catItSetup",
+  access:     "catAccess",
+  hr_admin:   "catHrAdmin",
+  equipment:  "catEquipment",
+  intro:      "catIntro",
+  compliance: "catCompliance",
+  general:    "catGeneral",
 };
 
 const CAT_LABELS: Record<string, string> = {
@@ -214,7 +225,7 @@ export default function OnboardingPage() {
                 <div key={cat} className="rounded-xl border border-gray-200 bg-white overflow-hidden">
                   <div className="bg-gray-50 px-4 py-2 border-b border-gray-100 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CAT_COLORS[cat] || CAT_COLORS.general}`}>{CAT_LABELS[cat] || cat}</span>
+                      <span className={styles[CAT_MODULE[cat] ?? "catGeneral"]}>{CAT_LABELS[cat] || cat}</span>
                       <span className="text-xs text-gray-400">{catTasks.filter(t => t.is_done).length}/{catTasks.length}</span>
                     </div>
                   </div>
@@ -276,7 +287,7 @@ export default function OnboardingPage() {
                     <p className="text-xs text-gray-400">Target: day {item.due_days_after_start}</p>
                   )}
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${CAT_COLORS[item.category] || CAT_COLORS.general}`}>{CAT_LABELS[item.category] || item.category}</span>
+                <span className={styles[CAT_MODULE[item.category] ?? "catGeneral"]}>{CAT_LABELS[item.category] || item.category}</span>
                 {item.id && (
                   <button onClick={async () => {
                     await api.delete(`/api/hr/onboarding/template/${item.id}`).catch(() => {});

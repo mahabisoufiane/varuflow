@@ -4,6 +4,7 @@ import { api } from "@/lib/api-client";
 import { useEffect, useState } from "react";
 import { CreditCard, ExternalLink, RefreshCw, X } from "lucide-react";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 import { useRouter } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
 
@@ -32,6 +33,13 @@ const STATUS_COLORS: Record<string, string> = {
   paid:      "bg-green-100 text-green-700",
   failed:    "bg-red-100 text-red-700",
   expired:   "bg-gray-100 text-gray-500",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  initiated: "statusInitiated",
+  paid:      "statusPaid",
+  failed:    "statusFailed",
+  expired:   "statusExpired",
 };
 
 const FLAG: Record<string, string> = { SA: "🇸🇦", KW: "🇰🇼", BH: "🇧🇭", EG: "🇪🇬" };
@@ -159,7 +167,7 @@ export default function GccPaymentsPage() {
                     <td className="px-3 py-2">{parseFloat(s.amount).toLocaleString()}</td>
                     <td className="px-3 py-2 text-xs">{s.currency}</td>
                     <td className="px-3 py-2">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[s.status] ?? "bg-gray-100"}`}>
+                      <span className={styles[STATUS_MODULE[s.status] ?? "statusInitiated"]}>
                         {s.status}
                       </span>
                     </td>
