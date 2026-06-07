@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import styles from "./page.module.scss";
 
 type WalletProvider = "apple_pay" | "google_pay";
 type WalletStatus = "pending" | "completed" | "failed";
@@ -33,6 +34,12 @@ const statusClass: Record<WalletStatus, string> = {
   pending: "bg-yellow-100 text-yellow-800",
   completed: "bg-green-100 text-green-800",
   failed: "bg-red-100 text-red-800",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:   "statusPending",
+  completed: "statusCompleted",
+  failed:    "statusFailed",
 };
 
 function truncate(str: string, len = 12) {
@@ -184,7 +191,7 @@ export default function WalletPaymentsPage() {
                       <TableCell>{item.currency}</TableCell>
                       <TableCell>
                         <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusClass[item.status]}`}
+                          className={styles[STATUS_MODULE[item.status] ?? "statusPending"]}
                         >
                           {item.status}
                         </span>

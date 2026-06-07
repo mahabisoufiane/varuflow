@@ -1,0 +1,17 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── ZATCA invoice status badges ──────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+}
+
+.statusPending      { @extend .statusBadge; background: #fef3c7; color: #b45309; }
+.statusSubmitted    { @extend .statusBadge; background: #dbeafe; color: #1d4ed8; }
+.statusCleared      { @extend .statusBadge; background: #dcfce7; color: #15803d; }
+.statusRejected     { @extend .statusBadge; background: #fee2e2; color: #dc2626; }
+.statusNotSubmitted { @extend .statusBadge; background: #f3f4f6; color: #4b5563; }

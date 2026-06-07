@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 type POStatus = "draft" | "submitted" | "confirmed" | "rejected" | "fulfilled";
 
@@ -32,6 +33,14 @@ const statusClass: Record<POStatus, string> = {
   confirmed: "bg-blue-100 text-blue-800",
   fulfilled: "bg-green-100 text-green-800",
   rejected: "bg-red-100 text-red-800",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft:     "statusDraft",
+  submitted: "statusSubmitted",
+  confirmed: "statusConfirmed",
+  fulfilled: "statusFulfilled",
+  rejected:  "statusRejected",
 };
 
 const ALL_STATUSES: POStatus[] = ["draft", "submitted", "confirmed", "rejected", "fulfilled"];
@@ -194,7 +203,7 @@ export default function BuyerPOsPage() {
                       <TableCell>{po.buyer_org_name}</TableCell>
                       <TableCell>
                         <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusClass[po.status]}`}
+                          className={styles[STATUS_MODULE[po.status] ?? "statusDraft"]}
                         >
                           {po.status}
                         </span>

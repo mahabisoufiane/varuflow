@@ -5,6 +5,7 @@ import { api } from "@/lib/api-client";
 import { RefreshCw, Repeat2, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface BookingSubscription {
   id: string;
@@ -27,6 +28,12 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   active: { label: "Active", color: "bg-green-100 text-green-700" },
   paused: { label: "Paused", color: "bg-amber-100 text-amber-700" },
   cancelled: { label: "Cancelled", color: "bg-gray-100 text-gray-500" },
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  active:    "statusActive",
+  paused:    "statusPaused",
+  cancelled: "statusCancelled",
 };
 
 type StatusFilter = "all" | "active" | "paused" | "cancelled";
@@ -239,7 +246,7 @@ export default function BookingSubscriptionsPage() {
                       {s.next_booking_date && ` · Next: ${new Date(s.next_booking_date).toLocaleDateString()}`}
                     </p>
                   </div>
-                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.color}`}>
+                  <span className={styles[STATUS_MODULE[s.status] ?? "statusActive"]}>
                     {cfg.label}
                   </span>
                   <div className="flex items-center gap-1.5 flex-shrink-0">

@@ -1,0 +1,17 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Wallet payment status badges ─────────────────────────────────────────────
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statusPending   { @extend .statusBadge; background: #fef9c3; color: #a16207; }
+.statusCompleted { @extend .statusBadge; background: #dcfce7; color: #166534; }
+.statusFailed    { @extend .statusBadge; background: #fee2e2; color: #991b1b; }

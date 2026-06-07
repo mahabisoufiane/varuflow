@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import styles from "./page.module.scss";
 
 type ExportTarget = "csv" | "splitwise" | "personal_capital" | "ynab";
 
@@ -28,6 +29,13 @@ const targetBadgeClass: Record<ExportTarget, string> = {
   splitwise: "bg-green-100 text-green-800",
   personal_capital: "bg-blue-100 text-blue-800",
   ynab: "bg-purple-100 text-purple-800",
+};
+
+const TARGET_MODULE: Record<string, keyof typeof styles> = {
+  csv:              "targetCsv",
+  splitwise:        "targetSplitwise",
+  personal_capital: "targetPersonalCapital",
+  ynab:             "targetYnab",
 };
 
 function truncate(str: string, len = 8) {
@@ -149,7 +157,7 @@ export default function ReceiptExportsPage() {
                       </TableCell>
                       <TableCell>
                         <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${targetBadgeClass[ex.export_target]}`}
+                          className={styles[TARGET_MODULE[ex.export_target] ?? "targetCsv"]}
                         >
                           {ex.export_target}
                         </span>

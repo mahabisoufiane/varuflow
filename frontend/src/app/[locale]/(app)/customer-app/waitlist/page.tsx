@@ -5,6 +5,7 @@ import { api } from "@/lib/api-client";
 import { RefreshCw, Clock, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface WaitlistEntry {
   id: string;
@@ -26,6 +27,14 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   booked: { label: "Booked", color: "bg-green-100 text-green-700" },
   expired: { label: "Expired", color: "bg-gray-100 text-gray-500" },
   cancelled: { label: "Cancelled", color: "bg-gray-100 text-gray-500" },
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  waiting:   "statusWaiting",
+  offered:   "statusOffered",
+  booked:    "statusBooked",
+  expired:   "statusExpired",
+  cancelled: "statusCancelled",
 };
 
 type StatusFilter = "all" | "waiting" | "offered" | "booked" | "expired" | "cancelled";
@@ -253,7 +262,7 @@ export default function WaitlistPage() {
                       </p>
                     )}
                   </div>
-                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.color}`}>
+                  <span className={styles[STATUS_MODULE[e.status] ?? "statusWaiting"]}>
                     {cfg.label}
                   </span>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
