@@ -8,6 +8,7 @@ import {
   Camera, FileSignature, Bell, BarChart2, ChevronLeft, ExternalLink,
   Clock, XCircle, RefreshCw,
 } from "lucide-react";
+import styles from "./page.module.scss";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -81,6 +82,12 @@ const routeStatusColor: Record<string, string> = {
   draft: "bg-gray-100 text-gray-600",
   active: "bg-blue-100 text-blue-700",
   completed: "bg-green-100 text-green-700",
+};
+
+const ROUTE_STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft:     "statusDraft",
+  active:    "statusActive",
+  completed: "statusCompleted",
 };
 
 const EXCEPTION_TYPES = ["no_answer", "wrong_address", "refused", "damaged", "other"] as const;
@@ -473,7 +480,7 @@ export default function RoutesPage() {
               className="text-left rounded-xl border border-gray-200 bg-white p-4 hover:border-blue-400 hover:shadow-md transition-all">
               <div className="flex items-start justify-between mb-2">
                 <Navigation className="h-5 w-5 text-blue-500" />
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${routeStatusColor[r.status] || "bg-gray-100 text-gray-600"}`}>
+                <span className={styles[ROUTE_STATUS_MODULE[r.status] ?? "statusDraft"]}>
                   {r.status}
                 </span>
               </div>
@@ -524,7 +531,7 @@ export default function RoutesPage() {
             {selected.driver_name && <p className="text-sm text-gray-500">{selected.driver_name}</p>}
             <p className="text-sm text-gray-400">{selected.route_date}</p>
           </div>
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${routeStatusColor[selected.status] || "bg-gray-100 text-gray-600"}`}>
+          <span className={styles[ROUTE_STATUS_MODULE[selected.status] ?? "statusDraft"]}>
             {selected.status}
           </span>
         </div>
