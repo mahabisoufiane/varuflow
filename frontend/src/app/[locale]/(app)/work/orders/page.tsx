@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Wrench, Plus, X, MapPin } from "lucide-react";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface Staff { id: string; name: string }
 interface Customer { id: string; name: string }
@@ -18,6 +19,13 @@ interface WorkOrder {
 const STATUS_COLORS: Record<string, string> = {
   open: "bg-blue-100 text-blue-700", in_progress: "bg-amber-100 text-amber-700",
   completed: "bg-green-100 text-green-700", cancelled: "bg-gray-100 text-gray-600",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  open:        "statusOpen",
+  in_progress: "statusInProgress",
+  completed:   "statusCompleted",
+  cancelled:   "statusCancelled",
 };
 
 export default function WorkOrdersPage() {
@@ -118,7 +126,7 @@ export default function WorkOrdersPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium text-gray-900">{wo.title}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[wo.status]}`}>{wo.status.replace("_", " ")}</span>
+                <span className={styles[STATUS_MODULE[wo.status] ?? "statusOpen"]}>{wo.status.replace("_", " ")}</span>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${wo.priority === "urgent" ? "bg-red-100 text-red-700" : wo.priority === "high" ? "bg-orange-100 text-orange-700" : "bg-gray-100 text-gray-600"}`}>{wo.priority}</span>
               </div>
               <div className="flex gap-3 text-xs text-gray-500 mt-0.5 flex-wrap">

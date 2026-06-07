@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Ticket, Plus, X } from "lucide-react";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface Staff { id: string; name: string }
 interface Customer { id: string; name: string }
@@ -20,9 +21,22 @@ const STATUS_COLORS: Record<string, string> = {
   waiting: "bg-purple-100 text-purple-700", resolved: "bg-green-100 text-green-700",
   closed: "bg-gray-100 text-gray-600",
 };
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  open:        "statusOpen",
+  in_progress: "statusInProgress",
+  waiting:     "statusWaiting",
+  resolved:    "statusResolved",
+  closed:      "statusClosed",
+};
 const PRIORITY_COLORS: Record<string, string> = {
   low: "bg-gray-200 text-gray-600", medium: "bg-amber-100 text-amber-700",
   high: "bg-red-100 text-red-700", urgent: "bg-red-200 text-red-800",
+};
+const PRIORITY_MODULE: Record<string, keyof typeof styles> = {
+  low:    "priorityLow",
+  medium: "priorityMedium",
+  high:   "priorityHigh",
+  urgent: "priorityUrgent",
 };
 
 export default function TicketsPage() {
@@ -129,8 +143,8 @@ export default function TicketsPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium text-gray-900">{t.title}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[t.status]}`}>{t.status.replace("_", " ")}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${PRIORITY_COLORS[t.priority]}`}>{t.priority}</span>
+                <span className={styles[STATUS_MODULE[t.status] ?? "statusOpen"]}>{t.status.replace("_", " ")}</span>
+                <span className={styles[PRIORITY_MODULE[t.priority] ?? "priorityMedium"]}>{t.priority}</span>
                 {t.category && <span className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600">{t.category}</span>}
               </div>
               <div className="flex gap-3 text-xs text-gray-500 mt-0.5">

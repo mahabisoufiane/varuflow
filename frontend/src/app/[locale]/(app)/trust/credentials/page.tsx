@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { api } from "@/lib/api-client";
+import pageStyles from "./page.module.scss";
 
 type CredentialType = "certification" | "training" | "award" | "experience";
 
@@ -32,6 +33,13 @@ const TYPE_BADGE: Record<CredentialType, string> = {
   training: "bg-green-100 text-green-800",
   award: "bg-yellow-100 text-yellow-800",
   experience: "bg-gray-100 text-gray-700",
+};
+
+const TYPE_MODULE: Record<CredentialType, keyof typeof pageStyles> = {
+  certification: "typeCertification",
+  training:      "typeTraining",
+  award:         "typeAward",
+  experience:    "typeExperience",
 };
 
 export default function CredentialsPage() {
@@ -235,7 +243,7 @@ export default function CredentialsPage() {
                     </TableCell>
                     <TableCell>
                       <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${TYPE_BADGE[c.credential_type] ?? ""}`}
+                        className={pageStyles[TYPE_MODULE[c.credential_type] ?? "typeExperience"]}
                       >
                         {c.credential_type}
                       </span>

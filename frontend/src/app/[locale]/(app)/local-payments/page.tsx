@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { CreditCard, CheckCircle, XCircle, Settings, Zap, Globe, ChevronRight } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface ProviderConfig {
   provider: string;
@@ -40,6 +41,15 @@ const STATUS_COLOR: Record<string, string> = {
   failed: "bg-red-100 text-red-700",
   cancelled: "bg-gray-100 text-gray-600",
   refunded: "bg-purple-100 text-purple-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:    "statusPending",
+  authorized: "statusAuthorized",
+  captured:   "statusCaptured",
+  failed:     "statusFailed",
+  cancelled:  "statusCancelled",
+  refunded:   "statusRefunded",
 };
 
 export default function LocalPaymentsPage() {
@@ -218,7 +228,7 @@ export default function LocalPaymentsPage() {
                     </td>
                     <td className="px-4 py-2 text-gray-500">{s.customer_email ?? "—"}</td>
                     <td className="px-4 py-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${STATUS_COLOR[s.status] ?? "bg-gray-100 text-gray-600"}`}>
+                      <span className={styles[STATUS_MODULE[s.status] ?? "statusPending"]}>
                         {s.status.charAt(0).toUpperCase() + s.status.slice(1)}
                       </span>
                     </td>

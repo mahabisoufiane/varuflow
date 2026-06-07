@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
 import { Pin, Plus, Eye, CheckSquare, Trash2, AlertCircle, Megaphone } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Announcement {
   id: string;
@@ -32,6 +33,14 @@ const CATEGORY_COLORS: Record<string, string> = {
   operational: "bg-gray-100 text-gray-700",
   celebration: "bg-pink-100 text-pink-700",
   general: "bg-indigo-100 text-indigo-700",
+};
+
+const CATEGORY_MODULE: Record<string, keyof typeof styles> = {
+  "HR update":   "categoryHrUpdate",
+  policy:        "categoryPolicy",
+  operational:   "categoryOperational",
+  celebration:   "categoryCelebration",
+  general:       "categoryGeneral",
 };
 
 export default function AnnouncementsPage() {
@@ -247,7 +256,7 @@ export default function AnnouncementsPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold text-gray-900">{ann.title}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CATEGORY_COLORS[ann.category] ?? "bg-gray-100 text-gray-600"}`}>
+                  <span className={styles[CATEGORY_MODULE[ann.category] ?? "categoryGeneral"]}>
                     {ann.category}
                   </span>
                   {ann.target_role && (

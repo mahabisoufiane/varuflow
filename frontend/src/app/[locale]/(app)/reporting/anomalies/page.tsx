@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { api } from "@/lib/api-client";
+import pageStyles from "./page.module.scss";
 
 type Severity = "info" | "warning" | "critical";
 
@@ -35,6 +36,12 @@ const severityClass: Record<Severity, string> = {
   info: "bg-blue-100 text-blue-800",
   warning: "bg-yellow-100 text-yellow-800",
   critical: "bg-red-100 text-red-800",
+};
+
+const SEV_MODULE: Record<Severity, keyof typeof pageStyles> = {
+  info:     "severityInfo",
+  warning:  "severityWarning",
+  critical: "severityCritical",
 };
 
 export default function AnomaliesPage() {
@@ -179,7 +186,7 @@ export default function AnomaliesPage() {
                     <TableCell className="text-xs font-mono">{item.type}</TableCell>
                     <TableCell>
                       <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${severityClass[item.severity]}`}
+                        className={pageStyles[SEV_MODULE[item.severity]]}
                       >
                         {item.severity}
                       </span>
