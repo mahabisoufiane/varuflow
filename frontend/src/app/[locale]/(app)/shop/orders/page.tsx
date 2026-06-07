@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ShoppingBag, Loader2, Package, CheckCircle, XCircle, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface OrderItem {
   id: string;
@@ -37,6 +38,15 @@ const STATUS_COLORS: Record<string, string> = {
   DELIVERED: "bg-green-100 text-green-800",
   CANCELLED: "bg-gray-100 text-gray-600",
   REFUNDED: "bg-red-100 text-red-800",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  PENDING:   "statusPending",
+  CONFIRMED: "statusConfirmed",
+  SHIPPED:   "statusShipped",
+  DELIVERED: "statusDelivered",
+  CANCELLED: "statusCancelled",
+  REFUNDED:  "statusRefunded",
 };
 
 const STATUSES = ["ALL", "PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"];
@@ -196,7 +206,7 @@ export default function OnlineOrdersPage() {
                   </td>
                   <td className="px-4 py-3 font-medium">{parseFloat(o.total).toFixed(2)}</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[o.status] ?? "bg-gray-100"}`}>
+                    <span className={styles[STATUS_MODULE[o.status] ?? "statusPending"]}>
                       {o.status}
                     </span>
                   </td>
@@ -251,7 +261,7 @@ export default function OnlineOrdersPage() {
               <h2 className="font-semibold text-lg">{selected.order_number}</h2>
               <p className="text-sm text-gray-500">{selected.customer_name} · {selected.customer_email}</p>
             </div>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[selected.status] ?? "bg-gray-100"}`}>
+            <span className={styles[STATUS_MODULE[selected.status] ?? "statusPending"]}>
               {selected.status}
             </span>
           </div>

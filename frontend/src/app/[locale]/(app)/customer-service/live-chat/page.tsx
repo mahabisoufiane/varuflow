@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 type SessionStatus = "all" | "open" | "in_progress" | "resolved";
 
@@ -30,10 +31,22 @@ const STATUS_BADGE: Record<string, string> = {
   resolved: "bg-gray-100 text-gray-600",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  open:        "statusOpen",
+  in_progress: "statusInProgress",
+  resolved:    "statusResolved",
+};
+
 const SENDER_BADGE: Record<string, string> = {
   visitor: "bg-purple-100 text-purple-800",
   staff: "bg-blue-100 text-blue-800",
   bot: "bg-gray-100 text-gray-600",
+};
+
+const SENDER_MODULE: Record<string, keyof typeof styles> = {
+  visitor: "senderVisitor",
+  staff:   "senderStaff",
+  bot:     "senderBot",
 };
 
 function domain(url: string | null) {
@@ -166,9 +179,7 @@ export default function LiveChatPage() {
                   <span className="font-medium text-sm">
                     {s.visitor_name ?? "Anonymous"}
                   </span>
-                  <span
-                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[s.status] ?? ""}`}
-                  >
+                  <span className={styles[STATUS_MODULE[s.status] ?? "statusResolved"]}>
                     {s.status}
                   </span>
                 </div>
@@ -209,9 +220,7 @@ export default function LiveChatPage() {
                 {messages.map((m) => (
                   <div key={m.id} className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${SENDER_BADGE[m.sender_type] ?? ""}`}
-                      >
+                      <span className={styles[SENDER_MODULE[m.sender_type] ?? "senderBot"]}>
                         {m.sender_type}
                       </span>
                       <span className="text-xs text-muted-foreground">{m.sender_name}</span>

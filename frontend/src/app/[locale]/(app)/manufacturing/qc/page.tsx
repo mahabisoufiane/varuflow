@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ClipboardCheck, Plus, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface ChecklistItem {
   question: string;
@@ -33,6 +34,12 @@ const STATUS_BADGE: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
   passed: "bg-green-100 text-green-800",
   failed: "bg-red-100 text-red-800",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending: "statusPending",
+  passed:  "statusPassed",
+  failed:  "statusFailed",
 };
 
 export default function QcPage() {
@@ -284,7 +291,7 @@ export default function QcPage() {
                   </td>
                   <td className="py-2 pr-4">{insp.inspector_name ?? "—"}</td>
                   <td className="py-2 pr-4">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_BADGE[insp.status] ?? "bg-gray-100"}`}>{insp.status}</span>
+                    <span className={styles[STATUS_MODULE[insp.status] ?? "statusPending"]}>{insp.status}</span>
                   </td>
                   <td className="py-2 pr-4 text-xs text-muted-foreground">{insp.inspected_at ? new Date(insp.inspected_at).toLocaleDateString() : "—"}</td>
                   <td className="py-2">

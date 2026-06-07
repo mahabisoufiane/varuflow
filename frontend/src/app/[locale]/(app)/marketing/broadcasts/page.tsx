@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface Broadcast {
   id: string;
@@ -27,9 +28,21 @@ const STATUS_COLOR: Record<string, string> = {
   failed: "bg-red-100 text-red-600",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft:     "statusDraft",
+  scheduled: "statusScheduled",
+  sent:      "statusSent",
+  failed:    "statusFailed",
+};
+
 const CHANNEL_COLOR: Record<string, string> = {
   sms: "bg-blue-100 text-blue-700",
   whatsapp: "bg-green-100 text-green-700",
+};
+
+const CHANNEL_MODULE: Record<string, keyof typeof styles> = {
+  sms:      "channelSms",
+  whatsapp: "channelWhatsapp",
 };
 
 const SMS_LIMIT = 160;
@@ -226,10 +239,10 @@ export default function BroadcastsPage() {
                   {(b.recipient_count != null || b.delivered_count != null) && ` · ${b.delivered_count ?? 0}/${b.recipient_count ?? 0} delivered`}
                 </p>
               </div>
-              <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${CHANNEL_COLOR[b.channel] ?? "bg-gray-100 text-gray-600"}`}>
+              <span className={styles[CHANNEL_MODULE[b.channel] ?? "channelSms"]}>
                 {b.channel}
               </span>
-              <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLOR[b.status] ?? STATUS_COLOR.draft}`}>
+              <span className={styles[STATUS_MODULE[b.status] ?? "statusDraft"]}>
                 {b.status}
               </span>
               <div className="flex items-center gap-2">
