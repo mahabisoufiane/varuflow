@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 type Tab = "returns" | "warranties" | "surveys";
 
@@ -17,6 +18,16 @@ const STATUS_COLORS: Record<string, string> = {
   exchanged: "bg-purple-100 text-purple-800",
   active: "bg-green-100 text-green-800",
   expired: "bg-red-100 text-red-800",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:   "statusPending",
+  approved:  "statusApproved",
+  refunded:  "statusRefunded",
+  rejected:  "statusRejected",
+  exchanged: "statusExchanged",
+  active:    "statusActive",
+  expired:   "statusExpired",
 };
 
 export default function AfterSalesPage() {
@@ -92,7 +103,7 @@ export default function AfterSalesPage() {
                   )}
                   <p className="text-xs text-gray-400">{new Date(r.created_at).toLocaleDateString()} · Customer {r.customer_id.slice(0, 8)}…</p>
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded font-medium ${STATUS_COLORS[r.status] || "bg-gray-100"}`}>{r.status}</span>
+                <span className={styles[STATUS_MODULE[r.status] ?? "statusPending"]}>{r.status}</span>
               </div>
               {r.status === "pending" && (
                 resolveId === r.id ? (
@@ -139,7 +150,7 @@ export default function AfterSalesPage() {
                   <td className="px-4 py-2 text-xs">{w.serial_number || "—"}</td>
                   <td className="px-4 py-2">{w.warranty_months}</td>
                   <td className="px-4 py-2 text-xs">{w.expires_at}</td>
-                  <td className="px-4 py-2"><span className={`px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[w.status] || "bg-gray-100"}`}>{w.status}</span></td>
+                  <td className="px-4 py-2"><span className={styles[STATUS_MODULE[w.status] ?? "statusPending"]}>{w.status}</span></td>
                 </tr>
               ))}
             </tbody>
