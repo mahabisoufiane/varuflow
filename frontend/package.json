@@ -52,6 +52,7 @@
     "react-is": "^19.2.5",
     "react-zxing": "^2.1.0",
     "recharts": "^3.8.1",
+    "sass": "^1.100.0",
     "shiki": "^1.22.2",
     "sonner": "2.0.7",
     "tailwind-merge": "^2.6.1",
