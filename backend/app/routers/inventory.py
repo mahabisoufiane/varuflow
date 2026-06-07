@@ -12,6 +12,7 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.organization import Organization
 from app.models.inventory import (
     Product,
@@ -53,7 +54,7 @@ from app.services.plan_limits import (
     check_limit,
 )
 
-router = APIRouter(prefix="/api/inventory", tags=["inventory"])
+router = APIRouter(prefix="/api/inventory", tags=["inventory"], dependencies=[Depends(require_module("inventory"))])
 
 
 def _org(ctx: tuple) -> uuid.UUID:

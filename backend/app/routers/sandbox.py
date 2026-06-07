@@ -26,6 +26,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.invoicing import (
     Customer,
     Invoice,
@@ -35,7 +36,7 @@ from app.models.invoicing import (
 from app.models.inventory import Product, Supplier
 from app.models.organization import Organization, OrganizationMember, OrgPlan, OrgRole
 
-router = APIRouter(prefix="/api/sandbox", tags=["sandbox"])
+router = APIRouter(prefix="/api/sandbox", tags=["sandbox"], dependencies=[Depends(require_module("settings"))])
 log = logging.getLogger(__name__)
 
 

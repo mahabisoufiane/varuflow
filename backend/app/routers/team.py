@@ -18,12 +18,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.middleware.auth import get_current_member, require_mfa_if_enforced
+from app.middleware.plan_check import require_module
 from app.models.modules import MemberModule
 from app.models.organization import OrgPlan, OrgRole, Organization, OrganizationMember
 from app.services.audit import log_action
 from app.services.plan_limits import PLAN_MODULES, RESOURCE_USERS, LimitExceededError, check_limit
 
-router = APIRouter(prefix="/api/team", tags=["team"])
+router = APIRouter(prefix="/api/team", tags=["team"], dependencies=[Depends(require_module("settings"))])
 
 # ── Plan limits ────────────────────────────────────────────────────────────────
 # Kept for backwards-compat reference; actual enforcement via plan_limits service.

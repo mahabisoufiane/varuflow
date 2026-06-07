@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.auth import AuthUser
 from app.models.organization import OrgPlan, OrgRole, OrganizationMember, Organization
 from app.services.mfa_enforcement import (
@@ -23,7 +24,7 @@ from app.services.mfa_enforcement import (
     is_mfa_required_for_owner,
 )
 
-router = APIRouter(prefix="/api/settings/security", tags=["settings-security"])
+router = APIRouter(prefix="/api/settings/security", tags=["settings-security"], dependencies=[Depends(require_module("settings"))])
 
 
 class SecurityStatus(BaseModel):

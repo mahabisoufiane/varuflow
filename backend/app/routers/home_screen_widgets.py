@@ -14,11 +14,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.home_screen_widget import HomeScreenWidget, WidgetDataSnapshot
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/home-screen-widgets", tags=["home-screen-widgets"])
+router = APIRouter(prefix="/api/home-screen-widgets", tags=["home-screen-widgets"], dependencies=[Depends(require_module("dashboard"))])
 
 
 def _org_id(ctx: tuple) -> uuid.UUID:
