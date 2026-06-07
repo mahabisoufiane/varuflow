@@ -5,6 +5,7 @@ import { ArrowLeft, Pencil, Loader2, Target, Star, CheckCircle2, ArrowRight, Use
 import { toast } from "sonner";
 import Link from "next/link";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface ScoreEvent {
   id: string; event_type: string; points: number; note: string | null; created_at: string;
@@ -30,6 +31,14 @@ const STATUS_BADGE: Record<string, string> = {
   qualified:  "bg-purple-100 text-purple-700",
   converted:  "bg-green-100 text-green-700",
   dead:       "bg-gray-100 text-gray-500",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  new:       "statusNew",
+  contacted: "statusContacted",
+  qualified: "statusQualified",
+  converted: "statusConverted",
+  dead:      "statusDead",
 };
 
 export default function LeadDetailPage() {
@@ -137,7 +146,7 @@ export default function LeadDetailPage() {
               <h1 className="text-2xl font-bold">{lead.name}</h1>
             )}
             <div className="flex items-center gap-2 mt-1">
-              <span className={`px-2 py-0.5 rounded text-xs font-medium capitalize ${STATUS_BADGE[lead.status] ?? "bg-gray-100 text-gray-600"}`}>
+              <span className={styles[STATUS_MODULE[lead.status] ?? "statusNew"]}>
                 {lead.status}
               </span>
               <span className={`text-sm font-semibold ${scoreColor}`}><Star size={11} className="inline mr-0.5" />{lead.score} pts</span>

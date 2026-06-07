@@ -1,0 +1,29 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Bank feed transaction status chips (dark glass) ───────────────────────────
+
+.chip {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.chipUnmatched {
+  @extend .chip;
+  background: rgba(251, 191, 36, 0.10);
+  color: #fbbf24;
+}
+
+.chipMatched {
+  @extend .chip;
+  background: rgba(52, 211, 153, 0.10);
+  color: #34d399;
+}
+
+.chipExcluded {
+  @extend .chip;
+  background: rgba(161, 161, 170, 0.10);
+  color: #a1a1aa;
+}

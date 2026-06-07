@@ -1,0 +1,59 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+// ── Contract status badges ────────────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusDraft {
+  @extend .statusBadge;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.statusSent {
+  @extend .statusBadge;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.statusPartiallySigned {
+  @extend .statusBadge;
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.statusFullySigned {
+  @extend .statusBadge;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusDeclined {
+  @extend .statusBadge;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.statusExpired {
+  @extend .statusBadge;
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.statusCancelled {
+  @extend .statusBadge;
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+// ── Signer status (text-only) ─────────────────────────────────────────────────
+
+.sigPending  { color: #d97706; font-size: 0.75rem; font-weight: 500; }
+.sigSigned   { color: #16a34a; font-size: 0.75rem; font-weight: 500; }
+.sigDeclined { color: #dc2626; font-size: 0.75rem; font-weight: 500; }
