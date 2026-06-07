@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, Building2, RefreshCw, ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface Claim {
   id: string;
@@ -41,6 +42,12 @@ const STATUS_COLORS: Record<string, string> = {
   active:    "bg-green-100 text-green-700",
   expired:   "bg-red-100 text-red-700",
   cancelled: "bg-gray-100 text-gray-600",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  active:    "statusActive",
+  expired:   "statusExpired",
+  cancelled: "statusCancelled",
 };
 
 function isDueSoon(date: string | null): boolean {
@@ -333,7 +340,7 @@ export default function InsurancePage() {
                       {policy.type.replace(/_/g, " ")}
                     </span>
                   )}
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0 capitalize ${STATUS_COLORS[policy.status] ?? "bg-gray-100 text-gray-600"}`}>
+                  <span className={styles[STATUS_MODULE[policy.status] ?? "statusActive"]}>
                     {policy.status}
                   </span>
                   {policy.coverage_amount != null && (
@@ -403,7 +410,7 @@ export default function InsurancePage() {
                             {claim.amount_claimed != null && (
                               <span className="text-sm font-medium text-gray-700">{claim.amount_claimed.toLocaleString()}</span>
                             )}
-                            <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize ${STATUS_COLORS[claim.status] ?? "bg-gray-100 text-gray-600"}`}>
+                            <span className={styles[STATUS_MODULE[claim.status] ?? "statusActive"]}>
                               {claim.status}
                             </span>
                           </div>

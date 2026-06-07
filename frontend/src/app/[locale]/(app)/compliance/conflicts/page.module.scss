@@ -1,0 +1,68 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Declaration status badges ─────────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusPending {
+  @extend .statusBadge;
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.statusApproved {
+  @extend .statusBadge;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusRejected {
+  @extend .statusBadge;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+// ── Declaration type badges ───────────────────────────────────────────────────
+
+.typeBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.typeFinancialInterest {
+  @extend .typeBadge;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.typeFamilyRelationship {
+  @extend .typeBadge;
+  background: #f3e8ff;
+  color: #7e22ce;
+}
+
+.typeOutsideEmployment {
+  @extend .typeBadge;
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.typeGiftHospitality {
+  @extend .typeBadge;
+  background: #fce7f3;
+  color: #be185d;
+}
+
+.typeOther {
+  @extend .typeBadge;
+  background: #f3f4f6;
+  color: #6b7280;
+}
