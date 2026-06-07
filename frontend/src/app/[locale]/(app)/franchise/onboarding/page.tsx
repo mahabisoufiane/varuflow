@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import { Users, Plus, CheckCircle2, XCircle } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Agreement {
   id: string; franchisee_name: string; franchisee_email: string; franchisee_country?: string;
@@ -15,6 +16,12 @@ const STATUS_COLORS: Record<string, string> = {
   pending: "bg-amber-100 text-amber-700",
   active: "bg-green-100 text-green-700",
   terminated: "bg-red-100 text-red-600",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:    "statusPending",
+  active:     "statusActive",
+  terminated: "statusTerminated",
 };
 
 export default function FranchiseeOnboardingPage() {
@@ -151,7 +158,7 @@ export default function FranchiseeOnboardingPage() {
                     <p className="text-xs text-gray-500">{a.franchisee_email} · {a.franchisee_country}</p>
                   </div>
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_COLORS[a.status] || "bg-gray-100 text-gray-600"}`}>
+                <span className={styles[STATUS_MODULE[a.status] ?? "statusPending"]}>
                   {a.status}
                 </span>
               </div>

@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface VideoConsultation {
   id: string;
@@ -39,9 +40,21 @@ const STATUS_BADGE: Record<string, string> = {
   cancelled:  "bg-red-100 text-red-600",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  scheduled: "statusScheduled",
+  active:    "statusActive",
+  ended:     "statusEnded",
+  cancelled: "statusCancelled",
+};
+
 const PROVIDER_BADGE: Record<string, string> = {
   daily:  "bg-violet-100 text-violet-700",
   twilio: "bg-orange-100 text-orange-700",
+};
+
+const PROVIDER_MODULE: Record<string, keyof typeof styles> = {
+  daily:  "providerDaily",
+  twilio: "providerTwilio",
 };
 
 function formatDuration(secs: number | null): string {
@@ -262,7 +275,7 @@ export default function VideoConsultationsPage() {
                   <p className="text-sm font-medium text-gray-900">
                     {truncate(c.customer_id, 18)}
                   </p>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[c.status] ?? "bg-gray-100 text-gray-500"}`}>
+                  <span className={styles[STATUS_MODULE[c.status] ?? "statusEnded"]}>
                     {c.status === "active" ? (
                       <span className="flex items-center gap-1">
                         <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -270,7 +283,7 @@ export default function VideoConsultationsPage() {
                       </span>
                     ) : c.status}
                   </span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PROVIDER_BADGE[c.provider] ?? "bg-gray-100 text-gray-500"}`}>
+                  <span className={styles[PROVIDER_MODULE[c.provider] ?? "providerDaily"]}>
                     {c.provider === "daily" ? "Daily.co" : "Twilio"}
                   </span>
                 </div>
