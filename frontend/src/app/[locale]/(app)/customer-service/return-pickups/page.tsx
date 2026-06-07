@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 type PickupStatus = "all" | "pending" | "scheduled" | "collected" | "failed";
 
@@ -36,6 +37,13 @@ const STATUS_BADGE: Record<string, string> = {
   scheduled: "bg-blue-100 text-blue-800",
   collected: "bg-green-100 text-green-800",
   failed: "bg-red-100 text-red-800",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:   "statusPending",
+  scheduled: "statusScheduled",
+  collected: "statusCollected",
+  failed:    "statusFailed",
 };
 
 const STATUS_TABS: PickupStatus[] = ["all", "pending", "scheduled", "collected", "failed"];
@@ -319,9 +327,7 @@ export default function ReturnPickupsPage() {
                         {item.preferred_time_slot}
                       </TableCell>
                       <TableCell>
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[item.status] ?? ""}`}
-                        >
+                        <span className={styles[STATUS_MODULE[item.status] ?? "statusPending"]}>
                           {item.status}
                         </span>
                       </TableCell>
