@@ -38,12 +38,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.inventory import Supplier
 from app.services import supplier_portal_service as svc
 from app.services.audit import log_action
 from app.services.email import send_supplier_portal_email
 
-router = APIRouter(prefix="/api/supplier-portal", tags=["supplier-portal"])
+router = APIRouter(prefix="/api/supplier-portal", tags=["supplier-portal"], dependencies=[Depends(require_module("inventory"))])
 
 _bearer = HTTPBearer(auto_error=True)
 

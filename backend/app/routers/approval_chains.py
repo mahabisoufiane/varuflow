@@ -37,11 +37,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.governance import ApprovalDelegate, ApprovalRequest, ApprovalRule
 from app.models.organization import OrgRole
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["approval-chains"])
+router = APIRouter(tags=["approval-chains"], dependencies=[Depends(require_module("settings"))])
 
 _VALID_RESOURCE_TYPES = {"invoice", "expense", "purchase_order", "quote"}
 _VALID_ROLES           = {"OWNER", "ADMIN"}

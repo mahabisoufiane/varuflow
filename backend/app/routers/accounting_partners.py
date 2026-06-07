@@ -29,13 +29,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.accounting_partners import AccountingFirmPartner, AccountingPartnerReferral
 from app.services.audit import log_action
 from app.services.partner_commissions import generate_partner_code
 
 log = logging.getLogger(__name__)
 
-router = APIRouter(tags=["accounting-partners"])
+router = APIRouter(tags=["accounting-partners"], dependencies=[Depends(require_module("finance"))])
 
 
 # ---------------------------------------------------------------------------

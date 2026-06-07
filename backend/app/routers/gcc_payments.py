@@ -26,10 +26,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.gcc_payments import GccPaymentSession
 from app.models.invoicing import Invoice, InvoiceStatus
 
-router = APIRouter(prefix="/api/mena/payments", tags=["mena_payments"])
+router = APIRouter(prefix="/api/mena/payments", tags=["mena_payments"], dependencies=[Depends(require_module("invoicing"))])
 log = logging.getLogger(__name__)
 
 PROVIDERS = {

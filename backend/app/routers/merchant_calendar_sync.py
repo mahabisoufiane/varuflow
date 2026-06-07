@@ -22,9 +22,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.merchant_calendar_sync import MerchantCalendarSync
 
-router = APIRouter(prefix="/api/merchant-calendar-sync", tags=["integrations_calendar"])
+router = APIRouter(prefix="/api/merchant-calendar-sync", tags=["integrations_calendar"], dependencies=[Depends(require_module("settings"))])
 log = logging.getLogger(__name__)
 
 VALID_PROVIDERS = {"google", "outlook", "apple"}

@@ -25,10 +25,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.invoicing import Payment, PaymentMethod
 from app.models.local_payments import LocalPaymentConfig, LocalPaymentSession
 
-router = APIRouter(prefix="/api/local-payments", tags=["local_payments"])
+router = APIRouter(prefix="/api/local-payments", tags=["local_payments"], dependencies=[Depends(require_module("invoicing"))])
 logger = logging.getLogger(__name__)
 
 SUPPORTED_PROVIDERS = {

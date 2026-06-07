@@ -37,12 +37,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.inventory import Product
 from app.models.product_tag import ProductTag, ProductTagAssignment
 from app.services import product_tag as svc_81
 from app.services.audit import log_action
 
-router = APIRouter(prefix="/api/product-tags", tags=["product-tags"])
+router = APIRouter(prefix="/api/product-tags", tags=["product-tags"], dependencies=[Depends(require_module("inventory"))])
 
 log = logging.getLogger(__name__)
 
