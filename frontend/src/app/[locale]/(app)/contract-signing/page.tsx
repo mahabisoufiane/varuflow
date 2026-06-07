@@ -9,6 +9,7 @@ import {
   RefreshCw, Plus, Check, Clock, AlertTriangle, Shield,
   Download, UserCheck, UserX
 } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Signatory {
   id: string; name: string; email: string; role?: string;
@@ -39,10 +40,26 @@ const STATUS_STYLE: Record<string, string> = {
   cancelled:        "bg-gray-100 text-gray-500",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft:            "statusDraft",
+  sent:             "statusSent",
+  partially_signed: "statusPartiallySigned",
+  fully_signed:     "statusFullySigned",
+  declined:         "statusDeclined",
+  expired:          "statusExpired",
+  cancelled:        "statusCancelled",
+};
+
 const SIG_STATUS_STYLE: Record<string, string> = {
   pending: "text-amber-600",
   signed:  "text-green-600",
   declined: "text-red-600",
+};
+
+const SIG_MODULE: Record<string, keyof typeof styles> = {
+  pending:  "sigPending",
+  signed:   "sigSigned",
+  declined: "sigDeclined",
 };
 
 export default function ContractSigningPage() {
@@ -225,7 +242,7 @@ export default function ContractSigningPage() {
               >
                 <FileSignature className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 <p className="flex-1 text-sm font-medium truncate">{req.title}</p>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_STYLE[req.status] ?? ""}`}>
+                <span className={styles[STATUS_MODULE[req.status] ?? "statusDraft"]}>
                   {req.status.replace(/_/g, " ")}
                 </span>
                 <span className="text-xs text-muted-foreground">
@@ -253,7 +270,7 @@ export default function ContractSigningPage() {
                           <span className="font-medium">{sig.name}</span>
                           <span className="text-muted-foreground">{sig.email}</span>
                           {sig.role && <span className="text-xs border rounded px-1">{sig.role}</span>}
-                          <span className={`text-xs ml-auto ${SIG_STATUS_STYLE[sig.status] ?? ""}`}>
+                          <span className={styles[SIG_MODULE[sig.status] ?? "sigPending"]}>
                             {sig.status}
                             {sig.signed_at && ` · ${new Date(sig.signed_at).toLocaleDateString("sv-SE")}`}
                           </span>

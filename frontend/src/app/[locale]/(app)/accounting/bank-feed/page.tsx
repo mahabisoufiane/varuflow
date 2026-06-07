@@ -17,6 +17,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Building2, Loader2, Plus, RefreshCw, Upload, CheckCircle2, X, Link } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -60,6 +61,12 @@ const STATUS_CHIP: Record<string, string> = {
   UNMATCHED: "text-amber-400 bg-amber-400/10",
   MATCHED: "text-emerald-400 bg-emerald-400/10",
   EXCLUDED: "text-zinc-400 bg-zinc-400/10",
+};
+
+const STATUS_CHIP_MODULE: Record<string, keyof typeof styles> = {
+  UNMATCHED: "chipUnmatched",
+  MATCHED:   "chipMatched",
+  EXCLUDED:  "chipExcluded",
 };
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -345,7 +352,7 @@ export default function BankFeedPage() {
                             {Number(tx.amount) >= 0 ? "+" : ""}{fmt(tx.amount)}
                           </td>
                           <td className="py-2 px-3">
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_CHIP[tx.status] ?? ""}`}>
+                            <span className={styles[STATUS_CHIP_MODULE[tx.status] ?? "chipUnmatched"]}>
                               {tx.status}
                             </span>
                             {tx.matched_type && (

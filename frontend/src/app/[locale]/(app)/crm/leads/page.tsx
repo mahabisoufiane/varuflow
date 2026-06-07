@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface Lead {
   id: string; name: string; company: string | null; email: string | null;
@@ -22,6 +23,14 @@ const STATUS_BADGE: Record<string, string> = {
   qualified:  "bg-purple-100 text-purple-700",
   converted:  "bg-green-100 text-green-700",
   dead:       "bg-gray-100 text-gray-500",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  new:       "statusNew",
+  contacted: "statusContacted",
+  qualified: "statusQualified",
+  converted: "statusConverted",
+  dead:      "statusDead",
 };
 
 export default function LeadsPage() {
@@ -234,7 +243,7 @@ export default function LeadsPage() {
                 <td className="px-4 py-3 text-gray-500">{lead.email ?? "—"}</td>
                 <td className="px-4 py-3 text-gray-500 capitalize">{lead.source?.replace("_", " ") ?? "—"}</td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium capitalize ${STATUS_BADGE[lead.status] ?? "bg-gray-100 text-gray-600"}`}>
+                  <span className={styles[STATUS_MODULE[lead.status] ?? "statusNew"]}>
                     {lead.status}
                   </span>
                 </td>

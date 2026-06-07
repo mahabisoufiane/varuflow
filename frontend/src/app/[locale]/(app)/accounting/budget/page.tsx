@@ -15,6 +15,7 @@ import { useCallback, useEffect, useState } from "react";
 import { PiggyBank, Loader2, Plus, RefreshCw, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -61,6 +62,11 @@ const BAS_ACCOUNTS = [
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: "text-amber-400 bg-amber-400/10",
   APPROVED: "text-emerald-400 bg-emerald-400/10",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  DRAFT:    "statusDraft",
+  APPROVED: "statusApproved",
 };
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -235,7 +241,7 @@ export default function BudgetPage() {
                 <p className="font-semibold vf-text-1 text-sm">{b.name}</p>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-xs vf-text-m">FY{b.fiscal_year}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[b.status] ?? ""}`}>
+                  <span className={styles[STATUS_MODULE[b.status] ?? "statusDraft"]}>
                     {b.status}
                   </span>
                 </div>
