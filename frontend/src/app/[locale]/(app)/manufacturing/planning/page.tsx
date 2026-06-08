@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 interface Bom {
   id: string;
@@ -44,6 +45,7 @@ export default function PlanningPage() {
   const [result, setResult] = useState<FeasibilityResult | null>(null);
   const [checking, setChecking] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -52,7 +54,13 @@ export default function PlanningPage() {
     ]).then(([bomList, whList]) => {
       setBoms(bomList);
       setWarehouses(whList);
-    }).catch(() => toast.error("Failed to load data"));
+    }).catch((err) => {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "manufacturing", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error("Failed to load data");
+    });
   }, []);
 
   async function check() {
@@ -86,6 +94,8 @@ export default function PlanningPage() {
       setCreating(false);
     }
   }
+
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Production Planning" />;
 
   return (
     <div className="p-6 max-w-3xl mx-auto">

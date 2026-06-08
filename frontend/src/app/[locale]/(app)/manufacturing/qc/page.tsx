@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ClipboardCheck, Plus, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 import styles from "./page.module.scss";
 
 interface ChecklistItem {
@@ -54,6 +55,7 @@ export default function QcPage() {
   const [inspectionForm, setInspectionForm] = useState({ checklist_id: "", work_order_id: "", batch_id: "", inspector_name: "" });
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [submitForm, setSubmitForm] = useState<{ status: string; results: Record<string, string> }>({ status: "passed", results: {} });
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   async function load() {
     try {
@@ -63,7 +65,11 @@ export default function QcPage() {
       ]);
       setChecklists(clList);
       setInspections(inspList);
-    } catch {
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "manufacturing", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
       toast.error("Failed to load QC data");
     } finally {
       setLoading(false);
@@ -137,6 +143,8 @@ export default function QcPage() {
   }
 
   const checklistMap = Object.fromEntries(checklists.map((c) => [c.id, c]));
+
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Quality Control" />;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">

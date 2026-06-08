@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { BookCopy, Plus, Loader2, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 interface BomLine {
   id: string;
@@ -33,6 +34,7 @@ export default function BomPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [selected, setSelected] = useState<Bom | null>(null);
   const [loading, setLoading] = useState(true);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [createForm, setCreateForm] = useState({ product_id: "", name: "", is_kit: false });
   const [lineForm, setLineForm] = useState({ component_product_id: "", quantity: "", unit: "st" });
@@ -47,7 +49,11 @@ export default function BomPage() {
       setBoms(bomList);
       if (productList.items) setProducts(productList.items);
       else if (Array.isArray(productList)) setProducts(productList);
-    } catch {
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "manufacturing", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
       toast.error("Failed to load BOMs");
     } finally {
       setLoading(false);
@@ -111,7 +117,9 @@ export default function BomPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <>
+      {planBlocked && <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Bill of Materials" />}
+      {!planBlocked && <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center gap-2 mb-6">
         <BookCopy className="w-6 h-6" />
         <h1 className="text-2xl font-semibold">Bill of Materials</h1>
@@ -230,6 +238,7 @@ export default function BomPage() {
           )}
         </div>
       </div>
-    </div>
+    </div>}
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ArrowLeftRight, Check, X } from "lucide-react";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 import styles from "./page.module.scss";
 
 interface SwapRequest {
@@ -30,14 +31,23 @@ export default function SwapsPage() {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("");
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   async function load() {
     const params = filterStatus ? `?status=${filterStatus}` : "";
-    const [s, st] = await Promise.all([
-      api.get<SwapRequest[]>(`/api/scheduling/swap-requests${params}`).catch(() => [] as SwapRequest[]),
-      api.get<Staff[]>("/api/hr/employees").catch(() => [] as Staff[]),
-    ]);
-    setSwaps(s); setStaff(st); setLoading(false);
+    try {
+      const [s, st] = await Promise.all([
+        api.get<SwapRequest[]>(`/api/scheduling/swap-requests${params}`),
+        api.get<Staff[]>("/api/hr/employees").catch(() => [] as Staff[]),
+      ]);
+      setSwaps(s); setStaff(st);
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "hr", currentPlan: (err as any).currentPlan ?? "FREE" });
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { load(); }, [filterStatus]);
@@ -55,6 +65,7 @@ export default function SwapsPage() {
   const staffMap = Object.fromEntries(staff.map(s => [s.id, s.name]));
 
   if (loading) return <div className="animate-pulse space-y-4">{[1,2,3].map(i => <div key={i} className="h-16 rounded-xl bg-gray-100" />)}</div>;
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Shift Swaps" />;
 
   return (
     <div className="space-y-6">

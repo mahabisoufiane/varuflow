@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 import styles from "./page.module.scss";
 
 interface Project {
@@ -55,6 +56,7 @@ export default function ProjectsPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
   const [form, setForm] = useState({
     name: "", description: "", customer_id: "", status: "active",
     project_type: "time_material", budget: "", default_hourly_rate: "",
@@ -68,7 +70,13 @@ export default function ProjectsPage() {
     ]).then(([projs, custs]) => {
       setProjects(projs);
       setCustomers(custs.items ?? custs ?? []);
-    }).catch(() => toast.error("Failed to load projects")).finally(() => setLoading(false));
+    }).catch((err) => {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "hr", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error("Failed to load projects");
+    }).finally(() => setLoading(false));
   }, []);
 
   async function create() {
@@ -92,6 +100,8 @@ export default function ProjectsPage() {
   }
 
   const byStatus = (s: string) => projects.filter((p) => p.status === s);
+
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Projects" />;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">

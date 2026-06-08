@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Clock, AlertTriangle } from "lucide-react";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 import styles from "./page.module.scss";
 
 interface OvertimeEntry { staff_id: string; staff_name: string; total_hours: number; is_overtime: boolean }
@@ -15,6 +16,7 @@ export default function OvertimePage() {
   const [data, setData] = useState<OvertimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [weekStart, setWeekStart] = useState<Date>(getMonday(new Date()));
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   const weekStr = isoDate(weekStart);
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -22,12 +24,18 @@ export default function OvertimePage() {
   useEffect(() => {
     api.get<OvertimeEntry[]>(`/api/scheduling/overtime?week_start=${weekStr}`)
       .then(d => { setData(d); setLoading(false); })
-      .catch(() => { setLoading(false); });
+      .catch((err) => {
+        if (isPlanGateError(err)) {
+          setPlanBlocked({ module: (err as any).module ?? "hr", currentPlan: (err as any).currentPlan ?? "FREE" });
+        }
+        setLoading(false);
+      });
   }, [weekStr]);
 
   const overtimeCount = data.filter(d => d.is_overtime).length;
 
   if (loading) return <div className="animate-pulse space-y-4"><div className="h-10 rounded-lg bg-gray-100 w-64" /><div className="h-48 rounded-xl bg-gray-100" /></div>;
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Overtime" />;
 
   return (
     <div className="space-y-6">
