@@ -6,24 +6,24 @@ export type Plan = "starter" | "professional" | "enterprise";
 
 export const PLAN_FEATURES = {
   starter: {
-    maxProducts: 100,
-    maxCustomers: 20,
-    maxInvoicesPerMonth: 50,
-    maxSeats: 3,
+    maxProducts: 500,
+    maxCustomers: 150,
+    maxInvoicesPerMonth: 200,
+    maxSeats: 5,
     mobileApp: false,
     advancedAnalytics: false,
     apiAccess: false,
     prioritySupport: false,
-    bulkImport: false,
+    bulkImport: true,
     customIntegrations: false,
-    fortnoxIntegration: false,
+    fortnoxIntegration: true,
   },
   professional: {
-    maxProducts: 2000,
+    maxProducts: 10000,
     maxCustomers: Infinity,
     maxInvoicesPerMonth: Infinity,
-    maxSeats: 10,
-    mobileApp: false,
+    maxSeats: 20,
+    mobileApp: true,
     advancedAnalytics: true,
     apiAccess: false,
     prioritySupport: true,
@@ -64,16 +64,16 @@ export function isProfessionalOrAbove(plan: Plan): boolean {
 // Prices in SEK — single source of truth, never hardcoded in JSX
 export const PLAN_PRICES = {
   starter: {
-    monthly: { sek: 299, eur: 29 },
-    yearly:  { sek: 239, eur: 23, annualSek: 2868, annualEur: 276 },
+    monthly: { sek: 499, eur: 49 },
+    yearly:  { sek: 399, eur: 39, annualSek: 4788, annualEur: 468 },
   },
   professional: {
-    monthly: { sek: 799, eur: 79 },
-    yearly:  { sek: 639, eur: 63, annualSek: 7668, annualEur: 756 },
+    monthly: { sek: 1490, eur: 149 },
+    yearly:  { sek: 1190, eur: 119, annualSek: 14280, annualEur: 1428 },
   },
   enterprise: {
-    monthly: { sek: 1999, eur: 199 },
-    yearly:  { sek: 1599, eur: 159, annualSek: 19188, annualEur: 1908 },
+    monthly: { sek: 3990, eur: 399 },
+    yearly:  { sek: 3190, eur: 319, annualSek: 38280, annualEur: 3828 },
   },
 } as const;
 

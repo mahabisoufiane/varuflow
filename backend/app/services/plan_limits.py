@@ -4,9 +4,12 @@ All functions take plain values (OrgPlan enum + integer counts) so they
 can be unit-tested without any database or AsyncSession fixture.
 
 Tier mapping:
-  OrgPlan.FREE       → STARTER limits
-  OrgPlan.PRO        → PRO limits
-  OrgPlan.ENTERPRISE → unlimited (-1 sentinel)
+  OrgPlan.FREE       → free-only (dashboard + settings)
+  OrgPlan.PRO        → paid tiers (Starter 499 SEK + Professional 1490 SEK)
+  OrgPlan.ENTERPRISE → unlimited (-1 sentinel), contact sales (3990 SEK)
+
+Both Starter and Professional map to OrgPlan.PRO in the DB; Stripe price ID
+determines the billing amount, but feature/module access is identical.
 
 Limit sentinel:
   -1  means unlimited; get_limit() returns None for unlimited.
@@ -57,24 +60,29 @@ FEATURE_AUDIT_LOG        = "audit_log"
 
 # ── Tier definitions ─────────────────────────────────────────────────────────
 # Each tier is a dict of resource_key → int limit (-1 = unlimited).
+
+# FREE plan — showcase/trial only. Limits are intentionally tight to drive
+# upgrade; matches the 14-day PRO trial window.
 _STARTER: dict[str, int] = {
     RESOURCE_USERS:              3,
     RESOURCE_WAREHOUSES:         1,
-    RESOURCE_PRODUCTS:          500,
-    RESOURCE_INVOICES_PER_MONTH: 50,
-    RESOURCE_CUSTOMERS:         200,
+    RESOURCE_PRODUCTS:          100,
+    RESOURCE_INVOICES_PER_MONTH: 20,
+    RESOURCE_CUSTOMERS:          30,
     RESOURCE_STORAGE_GB:          1,
     RESOURCE_AI_CALLS_PER_DAY:    0,
 }
 
+# PRO plan — covers both Starter (499 SEK) and Professional (1490 SEK) tiers.
+# Limits sized for a Nordic wholesale company with 1–30 staff.
 _PRO: dict[str, int] = {
     RESOURCE_USERS:              20,
     RESOURCE_WAREHOUSES:          5,
-    RESOURCE_PRODUCTS:         5_000,
-    RESOURCE_INVOICES_PER_MONTH: 500,
-    RESOURCE_CUSTOMERS:        2_000,
-    RESOURCE_STORAGE_GB:          10,
-    RESOURCE_AI_CALLS_PER_DAY:   100,
+    RESOURCE_PRODUCTS:        10_000,
+    RESOURCE_INVOICES_PER_MONTH: _UNLIMITED,
+    RESOURCE_CUSTOMERS:        _UNLIMITED,
+    RESOURCE_STORAGE_GB:          20,
+    RESOURCE_AI_CALLS_PER_DAY:   200,
 }
 
 _ENTERPRISE: dict[str, int] = {
@@ -88,21 +96,19 @@ _ENTERPRISE: dict[str, int] = {
 }
 
 # Feature flags enabled per tier (additive; higher tiers include all lower).
-_STARTER_FEATURES: frozenset[str] = frozenset({
-    FEATURE_LOYALTY,
-})
+_STARTER_FEATURES: frozenset[str] = frozenset()   # free plan has no premium features
 
-_PRO_FEATURES: frozenset[str] = _STARTER_FEATURES | frozenset({
+_PRO_FEATURES: frozenset[str] = frozenset({
     FEATURE_MULTI_WAREHOUSE,
     FEATURE_ESIGN,
     FEATURE_ADVANCED_REPORTS,
-    FEATURE_FORTNOX_SYNC,
+    FEATURE_FORTNOX_SYNC,      # key Nordic differentiator — available on all paid tiers
     FEATURE_ZAPIER,
     FEATURE_AI_CHAT,
-    FEATURE_FAMILY_GROUPS,
     FEATURE_PORTAL_CUSTOM,
     FEATURE_AUDIT_LOG,
     FEATURE_IP_ALLOWLIST,
+    FEATURE_LOYALTY,
 })
 
 _ENTERPRISE_FEATURES: frozenset[str] = _PRO_FEATURES | frozenset({

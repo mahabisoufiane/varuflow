@@ -42,9 +42,10 @@ class Settings(BaseSettings):
 
     # ── Third-party services ──────────────────────────────────────────────────
     RESEND_API_KEY:       str = ""
-    STRIPE_SECRET_KEY:    str = ""
-    STRIPE_WEBHOOK_SECRET:str = ""
-    STRIPE_PRO_PRICE_ID:  str = ""
+    STRIPE_SECRET_KEY:         str = ""
+    STRIPE_WEBHOOK_SECRET:     str = ""
+    STRIPE_STARTER_PRICE_ID:   str = ""   # Starter plan (499 SEK/mo) — falls back to PRO price if blank
+    STRIPE_PRO_PRICE_ID:       str = ""   # Professional plan (1490 SEK/mo)
     FORTNOX_CLIENT_ID:    str = ""
     FORTNOX_CLIENT_SECRET:str = ""
     # Must be set per deployment (dev / preprod / prod / per-country).

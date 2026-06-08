@@ -58,6 +58,10 @@ def _stripe():
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
 
+class CheckoutRequest(BaseModel):
+    plan: str = Field(default="professional", pattern=r"^(starter|professional)$")
+
+
 class CheckoutResponse(BaseModel):
     url: str
 
@@ -66,21 +70,44 @@ class PortalResponse(BaseModel):
     url: str
 
 
+# ── Price ID resolver ─────────────────────────────────────────────────────────
+
+def _price_id_for_plan(plan: str) -> str:
+    """Return the Stripe price ID for the requested plan tier.
+
+    Both 'starter' and 'professional' map to OrgPlan.PRO in the database —
+    the distinction is purely in the Stripe subscription amount. Enterprise
+    is handled via contact-sales and never reaches checkout.
+    """
+    if plan == "starter":
+        price_id = settings.STRIPE_STARTER_PRICE_ID or settings.STRIPE_PRO_PRICE_ID
+    else:
+        price_id = settings.STRIPE_PRO_PRICE_ID
+    if not price_id:
+        raise HTTPException(status_code=503, detail="Stripe price not configured for this plan")
+    return price_id
+
+
 # ── Checkout ──────────────────────────────────────────────────────────────────
 
 @router.post("/checkout", response_model=CheckoutResponse)
 async def create_checkout_session(
+    body: CheckoutRequest = CheckoutRequest(),
     ctx: tuple = Depends(get_current_member),
     db: AsyncSession = Depends(get_db),
 ):
-    """Create a Stripe Checkout session for the PRO plan upgrade.
+    """Create a Stripe Checkout session for a paid plan upgrade.
+
+    Accepts an optional ``plan`` body field ("starter" or "professional").
+    Both resolve to OrgPlan.PRO in the database; the difference is the
+    Stripe price charged.
 
     Owner-only: starting a subscription or changing the payment method must
     be the data-controller's decision. A non-owner could otherwise upgrade
     the org (billed to whoever completes checkout) or create a duplicate
     subscription in parallel with the existing one.
     """
-    if not settings.STRIPE_SECRET_KEY or not settings.STRIPE_PRO_PRICE_ID:
+    if not settings.STRIPE_SECRET_KEY:
         raise HTTPException(status_code=503, detail="Stripe not configured")
 
     stripe = _stripe()
@@ -91,14 +118,14 @@ async def create_checkout_session(
     org = await db.get(Organization, org_id)
     if not org:
         raise HTTPException(status_code=404, detail="Organization not found")
-    # Block a second checkout while a subscription is already live — two
-    # successful PRO sessions would create parallel Stripe subscriptions
-    # and double-charge the owner.
+    # Block a second checkout while a subscription is already live.
     if org.plan == OrgPlan.PRO and org.stripe_customer_id:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Organization is already on the PRO plan. Use the customer portal to manage the subscription.",
+            detail="Organization is already on a paid plan. Use the customer portal to manage the subscription.",
         )
+
+    price_id = _price_id_for_plan(body.plan)
 
     try:
         # Re-use the existing Stripe customer when the org has one (e.g. a
@@ -111,8 +138,8 @@ async def create_checkout_session(
         # first checkout (no stripe_customer_id on record).
         checkout_kwargs: dict = {
             "mode": "subscription",
-            "line_items": [{"price": settings.STRIPE_PRO_PRICE_ID, "quantity": 1}],
-            "metadata": {"org_id": str(org_id)},
+            "line_items": [{"price": price_id, "quantity": 1}],
+            "metadata": {"org_id": str(org_id), "plan": body.plan},
             "success_url": f"{settings.PORTAL_BASE_URL}/settings?upgraded=1",
             "cancel_url": f"{settings.PORTAL_BASE_URL}/settings",
         }
@@ -123,6 +150,8 @@ async def create_checkout_session(
             if email:
                 checkout_kwargs["customer_email"] = email
         session = stripe.checkout.Session.create(**checkout_kwargs)
+    except HTTPException:
+        raise
     except Exception as e:
         log.error("stripe checkout failed", extra={"org_id": str(org_id), "error": str(e)})
         raise HTTPException(status_code=502, detail="Failed to create checkout session")

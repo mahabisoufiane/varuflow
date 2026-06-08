@@ -233,7 +233,8 @@ export default function OnboardingPage() {
       if (plan === "starter" || plan === "professional") {
         const res = await fetch(apiUrl("/api/billing/checkout"), {
           method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ plan }),
         });
         if (res.ok) {
           const { url } = await res.json();
