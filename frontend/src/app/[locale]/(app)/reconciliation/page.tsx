@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { CheckCircle, Clock, AlertCircle, ArrowUpCircle, BarChart3, Filter } from "lucide-react";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 import styles from "./page.module.scss";
 
 interface PaymentRow {
@@ -66,6 +67,7 @@ export default function ReconciliationPage() {
   const [partial, setPartial] = useState<Invoice[]>([]);
   const [overpaid, setOverpaid] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   useEffect(() => { loadSummary(); loadOverview(); }, [period]);
   useEffect(() => {
@@ -86,7 +88,13 @@ export default function ReconciliationPage() {
     try {
       const data = await api.get("/api/reconciliation?limit=100");
       setPayments(Array.isArray(data) ? data : []);
-    } catch { toast.error("Failed to load payments"); }
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error("Failed to load payments");
+    }
     finally { setLoading(false); }
   }
 
@@ -110,6 +118,8 @@ export default function ReconciliationPage() {
       setOverpaid(Array.isArray(data) ? data : []);
     } catch { toast.error("Failed to load"); }
   }
+
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Payment Reconciliation" />;
 
   return (
     <div className="p-6 space-y-6">
