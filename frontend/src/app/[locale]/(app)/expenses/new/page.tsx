@@ -6,6 +6,7 @@ import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import { ArrowLeft, Upload, Receipt, Loader2 } from "lucide-react";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 interface Category {
   id: string;
@@ -19,6 +20,7 @@ export default function NewExpensePage() {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   const [form, setForm] = useState({
     amount: "",
@@ -66,21 +68,20 @@ export default function NewExpensePage() {
 
       toast.success("Expense submitted");
       router.push(`/${locale}/expenses`);
-    } catch {
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
       toast.error("Failed to submit expense");
     } finally {
       setSubmitting(false);
     }
   }
 
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Expenses" />;
+
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-6">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => router.back()}
-          className="h-8 w-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50"
-        >
-          <ArrowLeft className="h-4 w-4" />
         </button>
         <div>
           <h1 className="text-xl font-semibold text-gray-900">New Expense</h1>

@@ -22,6 +22,7 @@ import { BookOpen, ChevronDown, ChevronUp, Loader2, Plus, RefreshCw } from "luci
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import styles from "./page.module.scss";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -137,6 +138,8 @@ export default function AccountingPage() {
   const [backfillLoading, setBackfillLoading] = useState(false);
   const [backfillResult, setBackfillResult] = useState<BackfillResult | null>(null);
 
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
+
   // ── Data loaders ──────────────────────────────────────────────────────────
 
   const loadAccounts = useCallback(async () => {
@@ -144,8 +147,12 @@ export default function AccountingPage() {
     try {
       const data = await api.get<Account[]>("/api/accounting/accounts");
       setAccounts(data);
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to load accounts");
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error(err instanceof Error ? err.message : "Failed to load accounts");
     } finally {
       setAcctLoading(false);
     }
@@ -266,6 +273,8 @@ export default function AccountingPage() {
     { id: "trial",    label: "Trial Balance" },
     { id: "backfill", label: "Backfill" },
   ];
+
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Accounting" />;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">

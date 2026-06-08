@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Download, FileText, ReceiptText, Lock, CheckCircle2, Clock, AlertCircle, ChevronRight, ChevronDown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -143,6 +144,8 @@ export default function VatReturnPage() {
   const [fileRef, setFileRef] = useState("");
   const [fileSaving, setFileSaving] = useState(false);
 
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
+
   function getRange(): [string, string] {
     if (useCustom) return [customFrom, customTo];
     const q = QUARTERS.find((qq) => qq.label === selectedQ)!;
@@ -159,8 +162,12 @@ export default function VatReturnPage() {
         `/api/accounting/vat-return?from=${from}&to=${to}&country=${country}&format=json`
       );
       setResult(data);
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to calculate VAT return");
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error(err instanceof Error ? err.message : "Failed to calculate VAT return");
     } finally {
       setLoading(false);
     }
@@ -212,8 +219,9 @@ export default function VatReturnPage() {
   const info = COUNTRY_INFO[country];
   const alreadyLocked = periods.some((p) => p.from_date === from && p.to_date === to);
 
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="VAT Returns" />;
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <ReceiptText className="w-6 h-6 text-indigo-400" />

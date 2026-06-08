@@ -14,6 +14,7 @@ import {
   Trash2,
   FileText,
 } from "lucide-react";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 interface Category {
   id: string;
@@ -57,6 +58,8 @@ export default function ExpenseDetailPage() {
   const [rejectNote, setRejectNote] = useState("");
   const [showRejectDialog, setShowRejectDialog] = useState(false);
 
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
+
   const [form, setForm] = useState({
     amount: "",
     currency: "SEK",
@@ -81,7 +84,13 @@ export default function ExpenseDetailPage() {
           expense_date: exp.expense_date,
         });
       })
-      .catch(() => toast.error("Failed to load expense"))
+      .catch((err) => {
+        if (isPlanGateError(err)) {
+          setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+          return;
+        }
+        toast.error("Failed to load expense");
+      })
       .finally(() => setLoading(false));
   }, [expenseId]);
 
@@ -184,6 +193,8 @@ export default function ExpenseDetailPage() {
   const canApprove = expense.status === "DRAFT";
   const canResubmit = expense.status === "REJECTED";
   const isImage = expense.receipt_mime?.startsWith("image/");
+
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Expenses" />;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-6">

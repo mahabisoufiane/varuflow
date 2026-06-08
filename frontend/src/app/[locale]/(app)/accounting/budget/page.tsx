@@ -16,6 +16,7 @@ import { PiggyBank, Loader2, Plus, RefreshCw, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import styles from "./page.module.scss";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -87,6 +88,8 @@ export default function BudgetPage() {
   const [vsData, setVsData]         = useState<VsActualLine[] | null>(null);
   const [vsLoading, setVsLoading]   = useState(false);
 
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
+
   // Editable cells: {account_code: {month: value}}
   const [cells, setCells] = useState<Record<string, Record<number, string>>>({});
 
@@ -95,8 +98,12 @@ export default function BudgetPage() {
     try {
       const data = await api.get<Budget[]>("/api/accounting/budgets");
       setBudgets(data);
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to load budgets");
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error(err instanceof Error ? err.message : "Failed to load budgets");
     } finally { setLoading(false); }
   }, []);
 
@@ -178,8 +185,9 @@ export default function BudgetPage() {
     } finally { setVsLoading(false); }
   };
 
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Budget" />;
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <PiggyBank className="w-6 h-6 text-indigo-400" />

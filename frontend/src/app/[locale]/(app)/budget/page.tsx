@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import styles from "./page.module.scss";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 interface Budget {
   id: string;
@@ -53,6 +54,8 @@ export default function BudgetPage() {
   // Review note modal
   const [reviewModal, setReviewModal] = useState<{ id: string; notes: string } | null>(null);
 
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
+
   async function getToken() {
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token ?? null;
@@ -72,7 +75,11 @@ export default function BudgetPage() {
       if (myRes.status === 401) { router.push(`/${locale}/auth/login`); return; }
       if (myRes.ok) setBudgets(await myRes.json());
       if (subRes.ok) setSubmissions(await subRes.json());
-    } catch {
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
       toast.error("Failed to load budgets");
     } finally {
       setLoading(false);
@@ -187,8 +194,9 @@ export default function BudgetPage() {
 
   const pendingReviewCount = submissions.filter((b) => b.status === "SUBMITTED").length;
 
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Budget" />;
+
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

@@ -22,6 +22,7 @@ import {
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import styles from "./page.module.scss";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -307,6 +308,7 @@ export default function AssetsPage() {
   const [showRevalue, setShowRevalue]   = useState(false);
   const [showReport, setShowReport]     = useState(false);
   const [includeDisposed, setIncludeDisposed] = useState(false);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
   const [depPeriod, setDepPeriod]       = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -330,8 +332,12 @@ export default function AssetsPage() {
     try {
       const data = await api.get<Asset[]>(`/api/accounting/assets?include_disposed=${includeDisposed}`);
       setAssets(data);
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to load assets");
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error(err instanceof Error ? err.message : "Failed to load assets");
     } finally { setLoading(false); }
   }, [includeDisposed]);
 
@@ -406,6 +412,8 @@ export default function AssetsPage() {
   };
 
   const totalNbv = totalNBV(assets);
+
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Fixed Assets" />;
 
   return (
     <>

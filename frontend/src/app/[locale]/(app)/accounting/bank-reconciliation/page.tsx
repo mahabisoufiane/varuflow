@@ -7,6 +7,7 @@ import {
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import styles from "./page.module.scss";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -359,13 +360,21 @@ export default function BankReconciliationPage() {
   const [expDesc, setExpDesc] = useState("");
   const [expSaving, setExpSaving] = useState(false);
 
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
+
   useEffect(() => {
     api.get<BankAccount[]>("/api/accounting/bank-accounts")
       .then((r) => {
         setAccounts(r);
         if (r.length > 0) setSelectedId(r[0].id);
       })
-      .catch(() => toast.error("Failed to load bank accounts"));
+      .catch((err) => {
+        if (isPlanGateError(err)) {
+          setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+          return;
+        }
+        toast.error("Failed to load bank accounts");
+      });
   }, []);
 
   const loadData = useCallback(async (id: string) => {
@@ -446,8 +455,9 @@ export default function BankReconciliationPage() {
   const filteredTxs = txs.filter((t) => t.status === tab);
   const balanced = summary ? summary.unmatched_count === 0 : false;
 
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Bank Reconciliation" />;
+
   return (
-    <div className="p-6 space-y-6 max-w-5xl">
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">

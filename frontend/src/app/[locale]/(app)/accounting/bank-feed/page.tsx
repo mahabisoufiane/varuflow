@@ -18,6 +18,7 @@ import { Building2, Loader2, Plus, RefreshCw, Upload, CheckCircle2, X, Link } fr
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import styles from "./page.module.scss";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -87,13 +88,19 @@ export default function BankFeedPage() {
 
   const [createForm, setCreateForm] = useState({ name: "", iban: "", currency: "SEK" });
 
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const data = await api.get<BankAccount[]>("/api/accounting/bank-accounts");
       setAccounts(data);
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to load accounts");
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error(err instanceof Error ? err.message : "Failed to load accounts");
     } finally { setLoading(false); }
   }, []);
 
@@ -181,8 +188,9 @@ export default function BankFeedPage() {
     if (selected) loadTransactions(selected, 1, f);
   };
 
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Bank Feed" />;
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Building2 className="w-6 h-6 text-indigo-400" />
