@@ -197,6 +197,7 @@ export default function BudgetPage() {
   if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Budget" />;
 
   return (
+    <>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -379,6 +380,6 @@ export default function BudgetPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

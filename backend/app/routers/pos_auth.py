@@ -83,8 +83,103 @@ async def authenticate_pos_device(
         return PinResponse(token=token, org_name=org.name, role=member.role.value)
 
     # Production: verify PIN against member's stored hash
-    # For now, raise 501 until pos_pin column is added via migration
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Production POS PIN auth requires pos_pin column — run migration first",
+    # Search all members across all orgs that have a pos_pin_hash set.
+    # If org_id is supplied, scope the search to that org only.
+    from passlib.context import CryptContext
+    _ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+    query = (
+        select(OrganizationMember)
+        .where(OrganizationMember.pos_pin_hash.isnot(None))
     )
+    if body.org_id is not None:
+        query = query.where(OrganizationMember.org_id == body.org_id)
+
+    result = await db.execute(query)
+    members = result.scalars().all()
+
+    matched: OrganizationMember | None = None
+    for m in members:
+        if m.pos_pin_hash and _ctx.verify(body.pin, m.pos_pin_hash):
+            matched = m
+            break
+
+    if matched is None:
+        # Constant-time dummy verify to prevent timing-based member enumeration
+        _ctx.verify(body.pin, "$2b$12$KIXAqrFMBMl3TQP8A0.qiu0Q8HwDQXq1JvxU1/VkU5X7RxFkm.Abe")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid PIN")
+
+    org_result = await db.execute(
+        select(Organization).where(Organization.id == matched.org_id)
+    )
+    org = org_result.scalar_one()
+
+    payload = {
+        "sub": str(matched.user_id),
+        "org_id": str(matched.org_id),
+        "member_id": str(matched.id),
+        "role": matched.role.value,
+        "type": "pos_device",
+        "iat": datetime.now(timezone.utc),
+        "exp": datetime.now(timezone.utc) + timedelta(hours=_TOKEN_EXPIRY_HOURS),
+    }
+    token = jwt.encode(payload, settings.AUTH_JWT_SECRET, algorithm=_ALGORITHM)
+    return PinResponse(token=token, org_name=org.name, role=matched.role.value)
+
+
+# ── PIN management (org admin only) ──────────────────────────────────────────
+
+class SetPinRequest(BaseModel):
+    member_id: uuid.UUID
+    pin: str = Field(..., min_length=6, max_length=6, pattern=r"^\d{6}$")
+
+
+@router.post("/set-pin", status_code=204)
+async def set_member_pin(
+    body: SetPinRequest,
+    db: AsyncSession = Depends(get_db),
+    ctx: tuple = Depends(__import__("app.middleware.auth", fromlist=["get_current_member"]).get_current_member),
+):
+    """Set a 6-digit POS PIN for an org member. Caller must be OWNER or ADMIN."""
+    from passlib.context import CryptContext
+    _ctx = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
+
+    _user_dict, caller = ctx
+    if caller.role not in (OrgRole.OWNER, OrgRole.ADMIN):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only OWNER or ADMIN can set PINs")
+
+    target = await db.scalar(
+        select(OrganizationMember).where(
+            OrganizationMember.id == body.member_id,
+            OrganizationMember.org_id == caller.org_id,
+        )
+    )
+    if not target:
+        raise HTTPException(status_code=404, detail="Member not found")
+
+    target.pos_pin_hash = _ctx.hash(body.pin)
+    await db.commit()
+
+
+@router.delete("/set-pin/{member_id}", status_code=204)
+async def clear_member_pin(
+    member_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    ctx: tuple = Depends(__import__("app.middleware.auth", fromlist=["get_current_member"]).get_current_member),
+):
+    """Remove POS PIN access for a member. Caller must be OWNER or ADMIN."""
+    _user_dict, caller = ctx
+    if caller.role not in (OrgRole.OWNER, OrgRole.ADMIN):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only OWNER or ADMIN can clear PINs")
+
+    target = await db.scalar(
+        select(OrganizationMember).where(
+            OrganizationMember.id == member_id,
+            OrganizationMember.org_id == caller.org_id,
+        )
+    )
+    if not target:
+        raise HTTPException(status_code=404, detail="Member not found")
+
+    target.pos_pin_hash = None
+    await db.commit()

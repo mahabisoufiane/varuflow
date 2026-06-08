@@ -165,6 +165,7 @@ export default function PayrollPage() {
   if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Payroll" />;
 
   return (
+    <>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Wallet className="w-6 h-6 text-indigo-400" />
@@ -371,6 +372,6 @@ export default function PayrollPage() {
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }

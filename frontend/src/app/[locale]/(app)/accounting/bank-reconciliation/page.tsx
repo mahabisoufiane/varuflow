@@ -458,6 +458,7 @@ export default function BankReconciliationPage() {
   if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Bank Reconciliation" />;
 
   return (
+    <>
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
@@ -637,6 +638,6 @@ export default function BankReconciliationPage() {
           </p>
         </div>
       )}
-    </div>
+    </>
   );
 }

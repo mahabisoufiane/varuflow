@@ -188,6 +188,7 @@ export default function BudgetPage() {
   if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Budget" />;
 
   return (
+    <>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <PiggyBank className="w-6 h-6 text-indigo-400" />
@@ -394,6 +395,6 @@ export default function BudgetPage() {
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }

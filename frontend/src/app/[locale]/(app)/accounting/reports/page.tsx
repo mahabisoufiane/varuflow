@@ -128,6 +128,7 @@ export default function ReportsPage() {
   if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Financial Reports" />;
 
   return (
+    <>
       <div className="flex items-center gap-3">
         <BarChart3 className="w-6 h-6 text-indigo-400" />
         <div>
@@ -377,6 +378,6 @@ export default function ReportsPage() {
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }

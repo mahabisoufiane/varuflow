@@ -222,6 +222,7 @@ export default function VatReturnPage() {
   if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="VAT Returns" />;
 
   return (
+    <>
       {/* Header */}
       <div className="flex items-center gap-3">
         <ReceiptText className="w-6 h-6 text-indigo-400" />
@@ -450,6 +451,6 @@ export default function VatReturnPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

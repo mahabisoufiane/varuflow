@@ -206,6 +206,9 @@ class OrganizationMember(Base):
     module_access_mode: Mapped[str] = mapped_column(
         String(20), server_default="ALL", default="ALL", nullable=False
     )
+    # POS PIN: bcrypt hash of the 6-digit PIN the cashier uses to log in to
+    # the tablet POS. NULL means this member has no POS access via PIN.
+    pos_pin_hash: Mapped[str | None] = mapped_column(String(100), nullable=True)
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

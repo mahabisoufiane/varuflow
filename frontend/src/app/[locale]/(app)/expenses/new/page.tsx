@@ -82,6 +82,10 @@ export default function NewExpensePage() {
   if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Expenses" />;
 
   return (
+    <>
+      <div className="flex items-center gap-3">
+        <button type="button" onClick={() => router.back()} className="p-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+          <ArrowLeft className="h-4 w-4" />
         </button>
         <div>
           <h1 className="text-xl font-semibold text-gray-900">New Expense</h1>
@@ -206,6 +210,6 @@ export default function NewExpensePage() {
           </button>
         </div>
       </form>
-    </div>
+    </>
   );
 }
