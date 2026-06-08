@@ -31,12 +31,6 @@ interface Inspection {
   created_at: string;
 }
 
-const STATUS_BADGE: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-800",
-  passed: "bg-green-100 text-green-800",
-  failed: "bg-red-100 text-red-800",
-};
-
 const STATUS_MODULE: Record<string, keyof typeof styles> = {
   pending: "statusPending",
   passed:  "statusPassed",

@@ -92,6 +92,7 @@ const SIDEBAR_SECTIONS: SidebarSection[] = [
       { href: "/hr/org-chart",           icon: GitFork,       key: "hrOrgChart",   module: "hr"            },
       { href: "/manufacturing",          icon: Factory,       key: "mfgOrders",    module: "manufacturing" },
       { href: "/manufacturing/bom",      icon: BookCopy,      key: "mfgBom",       module: "manufacturing" },
+      { href: "/manufacturing/kits",     icon: Package2,      key: "mfgKits",      module: "manufacturing" },
       { href: "/manufacturing/planning", icon: CalendarCheck2,key: "mfgPlanning",  module: "manufacturing" },
       { href: "/manufacturing/qc",       icon: ClipboardCheck,key: "mfgQc",        module: "manufacturing" },
     ],

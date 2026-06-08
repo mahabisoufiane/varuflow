@@ -56,11 +56,11 @@ services:
       # Comma-separated, no brackets — backend splits on ","
       CORS_ORIGINS: "http://localhost:3000,http://localhost:3002,http://localhost:3003"
       RATE_LIMIT_DISABLED: "true"
-      SUPABASE_URL: http://supabase:9999
-      SUPABASE_SERVICE_KEY: ""
+      SUPABASE_URL: "${SUPABASE_URL:-http://supabase:9999}"
+      SUPABASE_SERVICE_KEY: "${SUPABASE_SERVICE_KEY:-}"
       # Must match GOTRUE_JWT_SECRET above so tokens issued by the local
       # GoTrue service can be verified by the backend.
-      SUPABASE_JWT_SECRET: "super-secret-jwt-token-with-at-least-32-characters-long"
+      SUPABASE_JWT_SECRET: "${SUPABASE_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}"
       ENV: development
       DEBUG: "true"
       # ALLOW_DEV_BYPASS=true lets the backend serve requests without a JWT.
@@ -68,9 +68,9 @@ services:
       # local GoTrue or a cloud Supabase project are accepted unverified.
       # Both flags are safe only because ENV=development — production startup
       # will refuse to boot with these values.
-      ALLOW_DEV_BYPASS: "true"
-      ENFORCE_JWT_SIGNATURE: "false"
-      ENFORCE_SECRET_VALIDATION: "false"
+      ALLOW_DEV_BYPASS: "${ALLOW_DEV_BYPASS:-true}"
+      ENFORCE_JWT_SIGNATURE: "${ENFORCE_JWT_SIGNATURE:-false}"
+      ENFORCE_SECRET_VALIDATION: "${ENFORCE_SECRET_VALIDATION:-false}"
       PORTAL_JWT_SECRET: "portal-secret-change-in-production-32chars"
       PORTAL_BASE_URL: "http://localhost:3000"
       # ── Standalone local auth ──────────────────────────────────────────────
@@ -104,8 +104,8 @@ services:
       HOSTNAME: "0.0.0.0"
       PORT: "3000"
       NEXT_PUBLIC_API_URL: http://localhost:8000
-      NEXT_PUBLIC_SUPABASE_URL: ""
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY: ""
+      NEXT_PUBLIC_SUPABASE_URL: "${NEXT_PUBLIC_SUPABASE_URL:-}"
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}"
     depends_on:
       - backend
 
