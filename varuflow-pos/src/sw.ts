@@ -2,13 +2,63 @@
 /// <reference lib="es2020" />
 /// <reference lib="WebWorker" />
 
-import { precacheAndRoute } from "workbox-precaching";
+import {
+  precacheAndRoute,
+  cleanupOutdatedCaches,
+  createHandlerBoundToURL,
+} from "workbox-precaching";
+import { registerRoute, NavigationRoute } from "workbox-routing";
+import { StaleWhileRevalidate, NetworkFirst } from "workbox-strategies";
+import { ExpirationPlugin } from "workbox-expiration";
 
 declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Array<{ url: string; revision: string | null }>;
 };
 
+// Activate immediately — don't wait for old SW clients to close.
+self.addEventListener("install", () => { (self as unknown as ServiceWorkerGlobalScope & { skipWaiting(): void }).skipWaiting(); });
+self.addEventListener("activate", (e) => {
+  (e as ExtendableEvent).waitUntil((self as unknown as { clients: { claim(): Promise<void> } }).clients.claim());
+});
+
+// ── Static asset precaching ───────────────────────────────────────────────────
 precacheAndRoute(self.__WB_MANIFEST);
+cleanupOutdatedCaches();
+
+// ── App shell: serve index.html from precache when navigating offline ─────────
+registerRoute(new NavigationRoute(createHandlerBoundToURL("/index.html")));
+
+// ── Product grid — StaleWhileRevalidate ───────────────────────────────────────
+// The POS product grid loads instantly from cache while Workbox fetches a
+// fresh copy in the background. Stale products for up to 1 hour are fine —
+// the cashier will see the update on the next interaction.
+const API_BASE =
+  (import.meta.env.VITE_API_URL as string | undefined) ??
+  "https://varuflow-production.up.railway.app";
+
+registerRoute(
+  ({ url }) => url.href === `${API_BASE}/api/pos/products` || url.href.startsWith(`${API_BASE}/api/pos/products?`),
+  new StaleWhileRevalidate({
+    cacheName: "pos-products-v1",
+    plugins: [
+      new ExpirationPlugin({ maxEntries: 5, maxAgeSeconds: 60 * 60 }),
+    ],
+  }),
+);
+
+// ── Other read-only POS API calls — NetworkFirst (5s timeout) ─────────────────
+// Sessions and sale history need fresh data. Falls back to cache after 5 s.
+registerRoute(
+  ({ url, request }) =>
+    url.href.startsWith(`${API_BASE}/api/pos/`) && request.method === "GET",
+  new NetworkFirst({
+    cacheName: "pos-api-v1",
+    networkTimeoutSeconds: 5,
+    plugins: [
+      new ExpirationPlugin({ maxEntries: 20, maxAgeSeconds: 5 * 60 }),
+    ],
+  }),
+);
 
 // ── Background Sync ──────────────────────────────────────────────────────────
 // Replays queued POS sales against /api/pos/offline-sync when the browser
@@ -18,9 +68,6 @@ const QUEUE_DB = "vf-pos-offline";
 const AUTH_DB = "vf-pos-auth";
 const QUEUE_STORE = "queue";
 const AUTH_STORE = "token";
-const API_BASE =
-  (import.meta.env.VITE_API_URL as string | undefined) ??
-  "https://varuflow-production.up.railway.app";
 
 interface QueueEntry {
   id?: number;
