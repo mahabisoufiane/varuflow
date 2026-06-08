@@ -60,6 +60,8 @@ export interface PosSale {
   subtotal: string;
   vat_amount: string;
   change_due: string | null;
+  account_invoice_id: string | null;
+  account_invoice_number: string | null;
 }
 
 /** Minimal customer info shown on the POS cart for B2B traceability. */
@@ -70,7 +72,7 @@ export interface PosCustomer {
   org_number: string | null;
 }
 
-export type PaymentMethod = "cash" | "card" | "swish";
+export type PaymentMethod = "cash" | "card" | "swish" | "account";
 export type DiscountType = "flat" | "pct";
 
 interface PosState {

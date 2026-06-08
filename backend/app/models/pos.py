@@ -19,6 +19,7 @@ class PosPaymentMethod(str, enum.Enum):
     CARD = "CARD"
     SWISH = "SWISH"
     OTHER = "OTHER"
+    ACCOUNT = "ACCOUNT"  # Fakturakonto — sale on invoice with 30-day terms
 
 
 class PosSessionStatus(str, enum.Enum):

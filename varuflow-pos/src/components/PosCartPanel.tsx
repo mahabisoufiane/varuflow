@@ -6,9 +6,10 @@ import { computeTotals, usePos, type PaymentMethod, type PosCustomer } from "../
 import { User, X, Minus, Plus, Tag } from "lucide-react";
 
 const METHODS: { key: PaymentMethod; icon: string; label: string }[] = [
-  { key: "cash",  icon: "💵", label: "Cash"  },
-  { key: "card",  icon: "💳", label: "Card"  },
-  { key: "swish", icon: "📱", label: "Swish" },
+  { key: "cash",    icon: "💵", label: "Cash"    },
+  { key: "card",    icon: "💳", label: "Card"    },
+  { key: "swish",   icon: "📱", label: "Swish"   },
+  { key: "account", icon: "📋", label: "Account" },
 ];
 
 function CustomerSearch() {
@@ -96,7 +97,7 @@ export default function PosCartPanel() {
   const t = usePosT();
   const {
     cart, paymentMethod, cashTendered, discountType, discountValue,
-    submitting, session,
+    submitting, session, selectedCustomer,
     updateQty, removeFromCart, updateLineDiscount, setPaymentMethod,
     setCashTendered, setDiscount, submitSale,
   } = usePos();
@@ -239,7 +240,7 @@ export default function PosCartPanel() {
         </div>
 
         {/* Payment method */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {METHODS.map((m) => (
             <button
               key={m.key}
@@ -256,6 +257,15 @@ export default function PosCartPanel() {
             </button>
           ))}
         </div>
+
+        {/* Account method info */}
+        {paymentMethod === "account" && (
+          <p className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+            {selectedCustomer
+              ? `Invoice will be created for ${selectedCustomer.company_name} — due in 30 days.`
+              : "Select a customer above to use account (Fakturakonto)."}
+          </p>
+        )}
 
         {/* Cash tendered */}
         {paymentMethod === "cash" && (
@@ -282,7 +292,7 @@ export default function PosCartPanel() {
         {/* Complete sale CTA */}
         <button
           type="button"
-          disabled={cart.length === 0 || submitting || !session}
+          disabled={cart.length === 0 || submitting || !session || (paymentMethod === "account" && !selectedCustomer)}
           onClick={async () => {
             try { await submitSale(); }
             catch (e) { toast.error((e as Error).message); }
@@ -295,6 +305,8 @@ export default function PosCartPanel() {
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
               Processing…
             </span>
+          ) : paymentMethod === "account" ? (
+            `Create Invoice · ${totals.total.toFixed(2)} SEK`
           ) : (
             `${t("complete_sale")} · ${totals.total.toFixed(2)} SEK`
           )}

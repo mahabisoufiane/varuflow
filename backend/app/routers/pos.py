@@ -143,6 +143,9 @@ class SaleOut(BaseModel):
     refunded_at: datetime | None
     created_at: datetime
     items: list[SaleItemOut]
+    # Fakturakonto: set when payment_method=ACCOUNT
+    account_invoice_id: uuid.UUID | None = None
+    account_invoice_number: str | None = None
     model_config = {"from_attributes": True}
 
 
@@ -472,8 +475,18 @@ async def create_sale(
 
     total = (subtotal + vat_total).quantize(Decimal("0.01"))
     change = None
+
+    # Fakturakonto: ACCOUNT payment requires a customer — sale completes
+    # immediately but creates an invoice with 30-day terms instead of
+    # collecting payment at the till.
+    if body.payment_method == PosPaymentMethod.ACCOUNT:
+        if not body.customer_id:
+            raise HTTPException(
+                status_code=422,
+                detail="Account sales (Fakturakonto) require a customer to be selected.",
+            )
+
     if body.payment_method == PosPaymentMethod.CASH:
-        # Cash sales MUST specify how much the customer handed over, and
         # that amount must cover the total. The previous check was
         # `if body.amount_tendered:` which silently accepted two broken
         # cases:
@@ -626,10 +639,72 @@ async def create_sale(
 
     await db.commit()
 
+    # ── Fakturakonto: create invoice after sale is committed ──────────────────
+    account_invoice_id: uuid.UUID | None = None
+    account_invoice_number: str | None = None
+
+    if body.payment_method == PosPaymentMethod.ACCOUNT and body.customer_id:
+        from datetime import date, timedelta
+        from app.models.invoicing import Invoice, InvoiceLineItem, InvoiceStatus
+
+        today = date.today()
+        due = today + timedelta(days=30)
+
+        # Mint invoice number using same logic as invoicing router.
+        year = today.year
+        year_prefix = f"INV-{year}-"
+        max_inv = await db.scalar(
+            select(func.max(Invoice.invoice_number))
+            .where(Invoice.org_id == org_id, Invoice.invoice_number.like(f"{year_prefix}%"))
+        )
+        next_inv_seq = 1
+        if max_inv:
+            try:
+                next_inv_seq = int(max_inv.rsplit("-", 1)[-1]) + 1
+            except (ValueError, IndexError):
+                next_inv_seq = 1
+        inv_number = f"{year_prefix}{next_inv_seq:04d}"
+
+        invoice = Invoice(
+            org_id=org_id,
+            customer_id=body.customer_id,
+            invoice_number=inv_number,
+            issue_date=today,
+            due_date=due,
+            status=InvoiceStatus.SENT,
+            subtotal=subtotal,
+            vat_amount=vat_total,
+            total_sek=total,
+            currency="SEK",
+            notes=f"Fakturakonto — POS sale {sale_number}",
+        )
+        db.add(invoice)
+        await db.flush()
+
+        for item in body.items:
+            line_total = (item.quantity * item.unit_price).quantize(Decimal("0.01"))
+            db.add(InvoiceLineItem(
+                invoice_id=invoice.id,
+                product_id=item.product_id,
+                description=item.description,
+                quantity=item.quantity,
+                unit_price=item.unit_price,
+                tax_rate=item.tax_rate,
+                line_total=line_total,
+            ))
+
+        await db.commit()
+        account_invoice_id = invoice.id
+        account_invoice_number = inv_number
+
     result = await db.execute(
         select(PosSale).options(selectinload(PosSale.items)).where(PosSale.id == sale.id)
     )
-    return result.scalar_one()
+    sale_row = result.scalar_one()
+    out = SaleOut.model_validate(sale_row)
+    out.account_invoice_id = account_invoice_id
+    out.account_invoice_number = account_invoice_number
+    return out
 
 
 # ── Receipt PDF ───────────────────────────────────────────────────────────────

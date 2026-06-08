@@ -67,6 +67,14 @@ export default function PosReceiptModal() {
           </p>
         )}
 
+        {lastSale.account_invoice_number && (
+          <div className="mb-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+            <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-0.5">Fakturakonto</p>
+            <p className="text-base font-bold text-amber-900">Invoice {lastSale.account_invoice_number}</p>
+            <p className="text-xs text-amber-700 mt-0.5">Due in 30 days — invoice created in the system.</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
