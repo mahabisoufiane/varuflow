@@ -17,13 +17,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
-from app.middleware.plan_check import require_module
 from app.models.organization import Organization, OrganizationMember, OrgRole
 
 router = APIRouter(
     prefix="/api/pos/auth",
     tags=["pos-auth"],
-    dependencies=[Depends(require_module("pos"))],
+    # No plan gate here — this IS the login endpoint; plan is enforced on
+    # /api/pos/sessions and /api/pos/sales after the device has a token.
 )
 
 _ALGORITHM = "HS256"
