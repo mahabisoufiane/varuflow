@@ -1,0 +1,47 @@
+{
+  "name": "Varuflow — Email Sequences (Hourly)",
+  "nodes": [
+    {
+      "id": "cc33dd44-ee55-ff66-0077-889900112233",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "hours", "hoursInterval": 1 }
+          ]
+        }
+      }
+    },
+    {
+      "id": "cc33dd44-ee55-ff66-0077-889900112234",
+      "name": "Process Email Sequences",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [460, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.VARUFLOW_BACKEND_URL }}/api/jobs/email-sequences",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Admin-Key", "value": "={{ $env.VARUFLOW_ADMIN_KEY }}" }
+          ]
+        },
+        "options": { "timeout": 120000 }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [{ "node": "Process Email Sequences", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "notes": "Sends next pending email in active CRM drip sequences."
+}

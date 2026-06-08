@@ -112,6 +112,10 @@ class SaleIn(BaseModel):
     payment_method: PosPaymentMethod = PosPaymentMethod.CASH
     amount_tendered: Decimal | None = Field(default=None, ge=0, le=Decimal("10000000"))
     customer_id: uuid.UUID | None = None
+    # Optional client-generated idempotency key. When set the backend
+    # deduplicates: a second POST with the same offline_id for the same
+    # org is treated as a no-op and returns the original sale.
+    offline_id: uuid.UUID | None = None
 
 
 class SaleItemOut(BaseModel):
@@ -381,6 +385,21 @@ async def create_sale(
 ):
     org_id = _org(ctx)
 
+    # Idempotency: if an offline_id was supplied and we already have a
+    # committed sale for it, return that sale without doing any work.
+    if body.offline_id is not None:
+        existing_sale = await db.scalar(
+            select(PosSale).where(
+                PosSale.org_id == org_id,
+                PosSale.offline_id == body.offline_id,
+            )
+        )
+        if existing_sale:
+            result = await db.execute(
+                select(PosSale).options(selectinload(PosSale.items)).where(PosSale.id == existing_sale.id)
+            )
+            return result.scalar_one()
+
     # Validate session. Lock the session row FOR UPDATE so a concurrent
     # PATCH /sessions/{id}/close cannot flip it to CLOSED between our
     # check and the sale commit. Without the lock, a sale can be inserted
@@ -518,6 +537,7 @@ async def create_sale(
         amount_tendered=body.amount_tendered,
         change_due=change,
         customer_id=body.customer_id,
+        offline_id=body.offline_id,
         items=sale_items,
     )
     db.add(sale)
@@ -697,7 +717,114 @@ def _generate_receipt(sale: PosSale, org_name: str) -> bytes:
     return buffer.getvalue()
 
 
-# ── Refund ────────────────────────────────────────────────────────────────────
+# ── Offline batch sync ────────────────────────────────────────────────────────
+
+class OfflineSaleIn(BaseModel):
+    """A single sale from the tablet's offline queue."""
+    offline_id: uuid.UUID  # client-generated idempotency key
+    session_id: uuid.UUID
+    items: list[SaleItemIn] = Field(..., min_length=1, max_length=500)
+    payment_method: PosPaymentMethod = PosPaymentMethod.CASH
+    amount_tendered: Decimal | None = Field(default=None, ge=0, le=Decimal("10000000"))
+    customer_id: uuid.UUID | None = None
+
+
+class OfflineSyncIn(BaseModel):
+    # Cap at 100 sales per batch — a till closed for 8 h at 1 sale/min
+    # still fits in one request without risk of a 60-second timeout.
+    sales: list[OfflineSaleIn] = Field(..., min_length=1, max_length=100)
+
+
+class SyncResultItem(BaseModel):
+    offline_id: uuid.UUID
+    status: str  # "created" | "duplicate" | "error"
+    sale_id: uuid.UUID | None = None
+    sale_number: str | None = None
+    error: str | None = None
+
+
+class OfflineSyncOut(BaseModel):
+    results: list[SyncResultItem]
+    created: int
+    duplicates: int
+    errors: int
+
+
+@router.post("/offline-sync", response_model=OfflineSyncOut)
+async def offline_sync(
+    body: OfflineSyncIn,
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    """Batch-replay POS sales queued while the tablet was offline.
+
+    Each sale is processed independently — a failed sale (closed session,
+    bad product) doesn't block the rest of the batch. The caller should
+    inspect `results` and keep only `error` entries in its retry queue.
+    """
+    try:
+        results: list[SyncResultItem] = []
+        created = duplicates = errors = 0
+
+        for entry in body.sales:
+            # Pre-check for duplicate before calling create_sale so we can
+            # distinguish "created now" from "already existed" without
+            # relying on an unreliable timestamp comparison.
+            existing = await db.scalar(
+                select(PosSale).where(
+                    PosSale.org_id == org_id,
+                    PosSale.offline_id == entry.offline_id,
+                )
+            )
+            if existing:
+                duplicates += 1
+                results.append(SyncResultItem(
+                    offline_id=entry.offline_id,
+                    status="duplicate",
+                    sale_id=existing.id,
+                    sale_number=existing.sale_number,
+                ))
+                continue
+
+            sale_in = SaleIn(
+                session_id=entry.session_id,
+                items=entry.items,
+                payment_method=entry.payment_method,
+                amount_tendered=entry.amount_tendered,
+                customer_id=entry.customer_id,
+                offline_id=entry.offline_id,
+            )
+            try:
+                sale = await create_sale(sale_in, ctx=ctx, db=db)
+                created += 1
+                results.append(SyncResultItem(
+                    offline_id=entry.offline_id,
+                    status="created",
+                    sale_id=sale.id,
+                    sale_number=sale.sale_number,
+                ))
+            except HTTPException as exc:
+                errors += 1
+                results.append(SyncResultItem(
+                    offline_id=entry.offline_id,
+                    status="error",
+                    error=str(exc.detail),
+                ))
+            except Exception:
+                errors += 1
+                results.append(SyncResultItem(
+                    offline_id=entry.offline_id,
+                    status="error",
+                    error="Internal error processing sale",
+                ))
+
+        return OfflineSyncOut(results=results, created=created, duplicates=duplicates, errors=errors)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        import logging as _log
+        _log.getLogger("pos").error("offline_sync failed: %s", str(exc))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/sales/{sale_id}/refund", response_model=SaleOut)
 async def refund_sale(

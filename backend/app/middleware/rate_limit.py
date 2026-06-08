@@ -122,6 +122,10 @@ _PATH_LIMITS: list[tuple[str, _Limit]] = [
     # 5 per minute per IP still accommodates a small event-booth sign-up
     # queue while throttling automated spam.
     ("/api/waitlist",             _Limit(max_requests=5,  window_seconds=60)),
+    # Referral generation — daily cap is enforced by business logic, but an
+    # IP-level limit stops scripted link farming. 10 per hour is well above
+    # any legitimate usage (real users generate once and share).
+    ("/api/referrals/generate",   _Limit(max_requests=10, window_seconds=3600)),
 ]
 
 # Paths that must NEVER be rate-limited. These are external callers that

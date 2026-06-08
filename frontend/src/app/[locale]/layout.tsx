@@ -94,7 +94,7 @@ export default async function LocaleLayout({
         </ThemeProvider>
         {process.env.NEXT_PUBLIC_SENTRY_DSN && (
           <Script
-            src="https://browser.sentry-cdn.com/8.0.0/bundle.min.js"
+            src="https://browser.sentry-cdn.com/8.33.0/bundle.min.js"
             strategy="afterInteractive"
           />
         )}

@@ -53,6 +53,7 @@ from app.services.plan_limits import (
     LimitExceededError,
     check_limit,
 )
+from app.models.audit import AuditLogEntry
 
 router = APIRouter(prefix="/api/inventory", tags=["inventory"], dependencies=[Depends(require_module("inventory"))])
 
@@ -218,6 +219,15 @@ async def delete_product(
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     product.is_active = False
+    _, member = ctx
+    db.add(AuditLogEntry(
+        org_id=member.org_id,
+        actor_user_id=member.user_id,
+        action="inventory.product_deleted",
+        target_type="product",
+        target_id=str(product_id),
+        extra={"name": product.name, "sku": product.sku},
+    ))
     await db.commit()
 
 
@@ -716,6 +726,23 @@ async def create_movement(
         note=body.note,
     )
     db.add(movement)
+    # Audit manual stock adjustments — automatic movements (POS sales, POs)
+    # already carry a reference number; only manual ADJUSTMENT writes warrant
+    # an explicit audit trail entry for compliance (BFL 5 kap. § lagervärde).
+    if body.type == StockMovementType.ADJUSTMENT:
+        _, member = ctx
+        db.add(AuditLogEntry(
+            org_id=org_id,
+            actor_user_id=member.user_id,
+            action="inventory.stock_adjustment",
+            target_type="product",
+            target_id=str(body.product_id),
+            extra={
+                "warehouse_id": str(body.warehouse_id),
+                "new_quantity": body.quantity,
+                "note": body.note,
+            },
+        ))
     await db.commit()
 
     # Reload with relationships

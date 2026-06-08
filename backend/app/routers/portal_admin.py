@@ -10,13 +10,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
+from app.middleware.plan_check import require_module
 from app.models.portal_communication import (
     PortalChatMessage, OrderTimelineEvent, InvoiceViewEvent,
     PortalTicket, PortalTicketReply, FriendlyReminder,
 )
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["portal-admin"])
+router = APIRouter(
+    tags=["portal-admin"],
+    dependencies=[Depends(require_module("invoicing"))],
+)
 
 
 # ── Chat ───────────────────────────────────────────────────────────────────────

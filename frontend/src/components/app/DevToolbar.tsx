@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Wrench, ChevronUp, ChevronDown } from "lucide-react";
@@ -12,6 +11,8 @@ const PLANS = [
   { key: "ENTERPRISE", label: "ENTERPRISE", color: "bg-amber-500"  },
 ] as const;
 
+type Status = "loading" | "ok" | "no-auth" | "api-down";
+
 /**
  * Dev-only floating toolbar for quickly switching org plan + seeing current state.
  * Only rendered when NODE_ENV=development. In production this component is a no-op.
@@ -20,19 +21,53 @@ export function DevToolbar() {
   const [plan, setPlan]       = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [open, setOpen]       = useState(true);
-  const [apiDown, setApiDown] = useState(false);
+  const [status, setStatus]   = useState<Status>("loading");
 
   useEffect(() => {
-    api.get<{ role: string; organization: { plan: string } }>("/api/auth/me")
-      .then((me) => { setPlan(me.organization.plan); setApiDown(false); })
-      .catch(() => { setApiDown(true); });
+    const base = process.env.NEXT_PUBLIC_API_URL ?? "";
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("vf-auth-token") ??
+          localStorage.getItem("vf-auth-token-local")
+        : null;
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    fetch(`${base}/api/health`, { signal: AbortSignal.timeout(4000) })
+      .then((r) => {
+        if (!r.ok) throw new Error("unhealthy");
+        return r.json();
+      })
+      .then(() => {
+        // Backend is reachable — now check auth
+        return fetch(`${base}/api/auth/me`, { headers, signal: AbortSignal.timeout(4000) });
+      })
+      .then((r) => {
+        if (!r.ok) { setStatus("no-auth"); return null; }
+        return r.json();
+      })
+      .then((me) => {
+        if (me) { setPlan(me.organization.plan); setStatus("ok"); }
+      })
+      .catch(() => { setStatus("api-down"); });
   }, []);
 
   async function switchPlan(newPlan: string) {
     if (loading || newPlan === plan) return;
     setLoading(true);
     try {
-      await api.post("/api/dev/set-plan", { plan: newPlan });
+      const base = process.env.NEXT_PUBLIC_API_URL ?? "";
+      const token =
+        localStorage.getItem("vf-auth-token") ??
+        localStorage.getItem("vf-auth-token-local");
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const res = await fetch(`${base}/api/dev/set-plan`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ plan: newPlan }),
+      });
+      if (!res.ok) throw new Error("Failed");
       setPlan(newPlan);
       toast.success(`Plan switched to ${newPlan} — reloading…`);
       setTimeout(() => window.location.reload(), 800);
@@ -40,6 +75,26 @@ export function DevToolbar() {
       toast.error((e as Error).message ?? "Failed to switch plan");
       setLoading(false);
     }
+  }
+
+  function renderStatus() {
+    if (status === "loading") {
+      return <span className="px-2 py-0.5 rounded text-[10px] font-bold text-zinc-400 mr-2">…</span>;
+    }
+    if (status === "api-down") {
+      return <span className="px-2 py-0.5 rounded text-[10px] font-bold text-red-400 bg-red-500/20 mr-2">API DOWN</span>;
+    }
+    if (status === "no-auth") {
+      return <span className="px-2 py-0.5 rounded text-[10px] font-bold text-yellow-400 bg-yellow-500/20 mr-2">NOT LOGGED IN</span>;
+    }
+    return (
+      <span className={cn(
+        "px-2 py-0.5 rounded text-[10px] font-bold text-white mr-2",
+        plan === "FREE" ? "bg-slate-600" : plan === "PRO" ? "bg-indigo-600" : "bg-amber-600"
+      )}>
+        {plan ?? "…"}
+      </span>
+    );
   }
 
   return (
@@ -66,18 +121,7 @@ export function DevToolbar() {
 
             {/* Plan label */}
             <span className="px-3 text-[11px] text-zinc-500">Plan:</span>
-            {apiDown ? (
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold text-red-400 bg-red-500/20 mr-2">
-                API DOWN
-              </span>
-            ) : (
-              <span className={cn(
-                "px-2 py-0.5 rounded text-[10px] font-bold text-white mr-2",
-                plan === "FREE" ? "bg-slate-600" : plan === "PRO" ? "bg-indigo-600" : "bg-amber-600"
-              )}>
-                {plan ?? "…"}
-              </span>
-            )}
+            {renderStatus()}
 
             <div className="w-px h-6 bg-zinc-700" />
 

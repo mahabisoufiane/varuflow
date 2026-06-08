@@ -14,7 +14,8 @@
  *        /api/expenses/analytics/by-category.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   Check,
@@ -86,6 +87,8 @@ function statusBadgeClass(status: Expense["status"], s: typeof styles) {
 
 export default function ExpensesPage() {
   const t = useTranslations("expenses");
+  const router = useRouter();
+  const locale = useLocale();
   const [categories, setCategories] = useState<Category[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [totals, setTotals] = useState<CategoryTotal[]>([]);
@@ -385,7 +388,11 @@ export default function ExpensesPage() {
             {expenses.map((e) => {
               const cat = e.category_id ? categoryById[e.category_id] : null;
               return (
-                <tr key={e.id} className="border-t">
+                <tr
+                  key={e.id}
+                  className="border-t hover:bg-gray-50 cursor-pointer"
+                  onClick={() => router.push(`/${locale}/expenses/${e.id}`)}
+                >
                   <td className="p-2 whitespace-nowrap">{e.expense_date}</td>
                   <td className="p-2">
                     {cat ? (
@@ -419,14 +426,14 @@ export default function ExpensesPage() {
                       {e.status === "DRAFT" && (
                         <>
                           <button
-                            onClick={() => approve(e.id)}
+                            onClick={(ev) => { ev.stopPropagation(); approve(e.id); }}
                             className="text-green-700 p-1"
                             title={t("approve")}
                           >
                             <Check className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => reject(e.id)}
+                            onClick={(ev) => { ev.stopPropagation(); reject(e.id); }}
                             className="text-red-700 p-1"
                             title={t("reject")}
                           >
@@ -436,7 +443,7 @@ export default function ExpensesPage() {
                       )}
                       {e.status === "REJECTED" && (
                         <button
-                          onClick={() => resubmit(e.id)}
+                          onClick={(ev) => { ev.stopPropagation(); resubmit(e.id); }}
                           className="text-blue-700 p-1"
                           title={t("resubmit")}
                         >
@@ -444,7 +451,7 @@ export default function ExpensesPage() {
                         </button>
                       )}
                       <button
-                        onClick={() => remove(e.id)}
+                        onClick={(ev) => { ev.stopPropagation(); remove(e.id); }}
                         className="text-red-600 p-1"
                         title={t("delete")}
                       >

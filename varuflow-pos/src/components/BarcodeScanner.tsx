@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BrowserMultiFormatReader, NotFoundException } from "@zxing/browser";
+import { BrowserMultiFormatReader } from "@zxing/browser";
 import { X, Camera } from "lucide-react";
 
 interface Props {
@@ -10,6 +10,7 @@ interface Props {
 export default function BarcodeScanner({ onDetected, onClose }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
+  const stopRef = useRef<(() => void) | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
   const [selectedCamera, setSelectedCamera] = useState<string | undefined>();
@@ -35,14 +36,16 @@ export default function BarcodeScanner({ onDetected, onClose }: Props) {
       .decodeFromVideoDevice(selectedCamera, videoRef.current, (result, err) => {
         if (result) {
           onDetected(result.getText());
-        } else if (err && !(err instanceof NotFoundException)) {
-          // NotFoundException just means nothing found in this frame — ignore
+        } else if (err) {
+          // Errors on individual frames (no barcode found) are expected — ignore
         }
       })
+      .then((controls) => { stopRef.current = () => controls.stop(); })
       .catch(() => setError("Could not access camera"));
 
     return () => {
-      reader.reset();
+      stopRef.current?.();
+      stopRef.current = null;
     };
   }, [selectedCamera, onDetected]);
 

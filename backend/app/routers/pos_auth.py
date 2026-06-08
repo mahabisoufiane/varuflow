@@ -17,9 +17,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
+from app.middleware.plan_check import require_module
 from app.models.organization import Organization, OrganizationMember, OrgRole
 
-router = APIRouter(prefix="/api/pos/auth", tags=["pos-auth"])
+router = APIRouter(
+    prefix="/api/pos/auth",
+    tags=["pos-auth"],
+    dependencies=[Depends(require_module("pos"))],
+)
 
 _ALGORITHM = "HS256"
 _TOKEN_EXPIRY_HOURS = 720  # 30 days — POS devices stay logged in

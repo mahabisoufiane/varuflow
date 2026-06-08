@@ -102,11 +102,15 @@ async def complete_onboarding(
     )
     if existing:
         org = await db.get(Organization, existing.org_id)
+        plan_key = org.plan.value if hasattr(org.plan, "value") else str(org.plan)
+        plan_mods = PLAN_MODULES.get(plan_key, frozenset())
         return MemberOut(
             user_id=current_user["user_id"],
             email=current_user["email"],
             role=existing.role,
             organization=OrganizationOut.model_validate(org),
+            allowed_modules=["*"] if "*" in plan_mods else sorted(plan_mods),
+            plan_modules=["*"] if "*" in plan_mods else sorted(plan_mods),
         )
 
     # Create org + owner membership
@@ -148,21 +152,29 @@ async def complete_onboarding(
         )
         if existing:
             org = await db.get(Organization, existing.org_id)
+            plan_key = org.plan.value if hasattr(org.plan, "value") else str(org.plan)
+            plan_mods = PLAN_MODULES.get(plan_key, frozenset())
             return MemberOut(
                 user_id=current_user["user_id"],
                 email=current_user["email"],
                 role=existing.role,
                 organization=OrganizationOut.model_validate(org),
+                allowed_modules=["*"] if "*" in plan_mods else sorted(plan_mods),
+                plan_modules=["*"] if "*" in plan_mods else sorted(plan_mods),
             )
         # Genuinely unknown integrity failure — surface it
         raise HTTPException(status_code=500, detail="Onboarding failed — please retry")
     await db.refresh(org)
 
+    plan_key = org.plan.value if hasattr(org.plan, "value") else str(org.plan)
+    plan_mods = PLAN_MODULES.get(plan_key, frozenset())
     return MemberOut(
         user_id=current_user["user_id"],
         email=current_user["email"],
         role=OrgRole.OWNER,
         organization=OrganizationOut.model_validate(org),
+        allowed_modules=["*"] if "*" in plan_mods else sorted(plan_mods),
+        plan_modules=["*"] if "*" in plan_mods else sorted(plan_mods),
     )
 
 
