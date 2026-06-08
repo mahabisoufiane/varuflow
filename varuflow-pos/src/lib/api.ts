@@ -1,5 +1,6 @@
 import { clearToken, getToken } from "./auth";
 import { enqueue } from "./offline-db";
+import { registerBackgroundSync } from "./sync";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "https://varuflow-production.up.railway.app";
 
@@ -10,7 +11,17 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
   // If offline and this is a mutation, queue it for later
   if (!navigator.onLine && method !== "GET") {
-    await enqueue({ method: method as "POST" | "PATCH" | "PUT" | "DELETE", url: path, body, timestamp: Date.now() });
+    // Inject a stable idempotency key for POS sales so the batch-sync
+    // endpoint can deduplicate replays after a dropped connection.
+    const entryBody = (method === "POST" && path === "/api/pos/sales" && body != null)
+      ? { ...(body as Record<string, unknown>), offline_id: (body as Record<string, unknown>).offline_id ?? crypto.randomUUID() }
+      : body;
+    const offlineId = (entryBody != null && typeof entryBody === "object" && "offline_id" in (entryBody as object))
+      ? String((entryBody as Record<string, unknown>).offline_id)
+      : undefined;
+    await enqueue({ method: method as "POST" | "PATCH" | "PUT" | "DELETE", url: path, body: entryBody, timestamp: Date.now(), offline_id: offlineId });
+    // Register a Background Sync tag so the SW can replay even with tab closed.
+    registerBackgroundSync().catch(() => {});
     // Return a placeholder — caller should handle this gracefully
     throw new Error("Offline — queued for sync");
   }

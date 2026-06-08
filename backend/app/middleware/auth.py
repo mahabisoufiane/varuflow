@@ -241,10 +241,12 @@ async def get_current_member(
             and current_user["user_id"] == DEV_USER_ID
         ):
             # First-run: seed the dev organization and owner member
+            from app.models.organization import OrgPlan
             org = Organization(
                 id=DEV_ORG_ID,
                 name="Varuflow Demo AB",
                 org_number="556123-4567",
+                plan=OrgPlan.PRO,
             )
             member = OrganizationMember(
                 org_id=DEV_ORG_ID,

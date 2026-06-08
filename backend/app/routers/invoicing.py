@@ -202,6 +202,16 @@ async def deactivate_customer(
     if not c:
         raise HTTPException(status_code=404, detail="Customer not found")
     c.is_active = False
+    _, member = ctx
+    from app.models.audit import AuditLogEntry as _AL
+    db.add(_AL(
+        org_id=org_id,
+        actor_user_id=member.user_id,
+        action="customer.deactivated",
+        target_type="customer",
+        target_id=str(customer_id),
+        extra={"company_name": c.company_name, "email": c.email},
+    ))
     await db.commit()
 
 

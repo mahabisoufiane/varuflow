@@ -55,6 +55,7 @@ services:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/varuflow
       # Comma-separated, no brackets — backend splits on ","
       CORS_ORIGINS: "http://localhost:3000,http://localhost:3002,http://localhost:3003"
+      RATE_LIMIT_DISABLED: "true"
       SUPABASE_URL: http://supabase:9999
       SUPABASE_SERVICE_KEY: ""
       # Must match GOTRUE_JWT_SECRET above so tokens issued by the local
@@ -74,6 +75,7 @@ services:
       PORTAL_BASE_URL: "http://localhost:3000"
       # ── Standalone local auth ──────────────────────────────────────────────
       AUTH_JWT_SECRET: "dev-local-auth-jwt-secret-change-in-production-64chars"
+      ADMIN_API_KEY: "dev-admin-key-change-in-production"
       SMTP_HOST: ""          # blank → emails printed to stdout in dev
       SMTP_PORT: "587"
       SMTP_USER: ""
@@ -124,13 +126,21 @@ services:
       - N8N_BASIC_AUTH_PASSWORD=your-n8n-password
       - EXECUTIONS_MODE=queue
       - QUEUE_BULL_REDIS_HOST=redis
+      # VARUFLOW_ADMIN_KEY must match ADMIN_API_KEY in backend.
+      # HTTP Request nodes use it as: {{ $env.VARUFLOW_ADMIN_KEY }}
+      - VARUFLOW_ADMIN_KEY=dev-admin-key-change-in-production
+      # Base URL for the backend — use Docker service name so n8n can
+      # reach the backend on the Docker network (not localhost).
+      - VARUFLOW_BACKEND_URL=http://backend:8000
     ports:
       - "5678:5678"
     depends_on:
       - postgres
       - redis
+      - backend
     volumes:
       - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/workflows:ro
 
   # ── Redis (for n8n queue mode) ─────────────────────────────────────────────
   redis:

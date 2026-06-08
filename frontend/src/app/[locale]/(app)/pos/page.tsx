@@ -1,8 +1,6 @@
 "use client";
 
-import { ExternalLink, Monitor, Wifi, WifiOff } from "lucide-react";
-
-const POS_URL = import.meta?.env?.VITE_POS_URL ?? "http://localhost:3002";
+import { ExternalLink, Monitor, Wifi } from "lucide-react";
 
 export default function PosRedirectPage() {
   return (

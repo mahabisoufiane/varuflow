@@ -241,13 +241,13 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
         }
       });
     }
-    api.get<{ connected: boolean }>("/api/integrations/fortnox/status")
+    api.get<{ connected: boolean }>("/api/integrations/fortnox/status", { silent: true })
       .then((s) => setFortnoxConnected(s.connected))
       .catch(() => {});
-    api.get<{ openai_configured: boolean }>("/api/integrations/config")
+    api.get<{ openai_configured: boolean }>("/api/integrations/config", { silent: true })
       .then((s) => setOpenaiConnected(s.openai_configured))
       .catch(() => {});
-    api.get<{ allowed_modules: string[]; plan_modules: string[] }>("/api/auth/me")
+    api.get<{ allowed_modules: string[]; plan_modules: string[] }>("/api/auth/me", { silent: true })
       .then((me) => {
         setAllowedModules(me.allowed_modules);
         setPlanModules(me.plan_modules);

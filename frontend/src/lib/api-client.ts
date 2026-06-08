@@ -101,13 +101,14 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
  * Throws a plain Error with a human-readable message on any non-2xx response.
  * Also fires a sonner toast so users always see what went wrong.
  */
-type RequestOptions = RequestInit & { _retried?: boolean };
+type RequestOptions = RequestInit & { _retried?: boolean; _silent?: boolean };
 
 async function request<T = any>(
   path: string,
   options: RequestOptions = {},
   timeoutMs = REQUEST_TIMEOUT_MS
 ): Promise<T> {
+  const silent = options._silent ?? false;
   const authHeaders = await getAuthHeaders();
   const branchOrgId = getActiveBranchOrgId();
   if (branchOrgId) authHeaders["X-Branch-Org-Id"] = branchOrgId;
@@ -164,7 +165,7 @@ async function request<T = any>(
       err instanceof Error && err.name === "AbortError"
         ? "The request took too long — please try again."
         : "Could not reach the server — check your connection.";
-    toast.error(message);
+    if (!silent && isMutation) toast.error(message);
     throw new Error(message);
   } finally {
     clearTimeout(timer);
@@ -199,15 +200,13 @@ async function request<T = any>(
         );
       }
       const msg = "Varuflow is temporarily in maintenance mode. Writes are paused — please try again shortly.";
-      toast.error(msg);
+      if (!silent && isMutation) toast.error(msg);
       throw new Error(msg);
     }
 
     const body = await res.json().catch(() => ({}));
     const message = humanizeError(body.detail, res.status);
-    // Only toast unexpected server errors — let pages handle business-logic 4xx
-    // by inspecting the thrown Error themselves if they need custom UI.
-    if (res.status >= 500) toast.error(message);
+    if (res.status >= 500 && !silent && isMutation) toast.error(message);
     const err = new Error(message) as Error & { status?: number; code?: string; module?: string; currentPlan?: string };
     err.status = res.status;
     if (typeof body.detail === "object" && body.detail !== null && "code" in body.detail) {
@@ -260,7 +259,8 @@ function humanizeError(detail: unknown, status: number): string {
 
 export const api = {
   /** GET request — resolves to parsed JSON of type T. */
-  get: <T = any>(path: string) => request<T>(path),
+  get: <T = any>(path: string, opts?: { silent?: boolean }) =>
+    request<T>(path, { _silent: opts?.silent }),
 
   /** POST request with a JSON body. */
   post: <T = any>(path: string, data: unknown) =>

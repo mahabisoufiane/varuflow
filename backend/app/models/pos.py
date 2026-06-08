@@ -57,6 +57,9 @@ class PosSale(Base):
         # DB-level safety net behind the FOR UPDATE lock in create_sale.
         # Enforced by migration v16.
         UniqueConstraint("org_id", "sale_number", name="uq_pos_sales_org_sale_number"),
+        # Idempotency key for offline-sync batch replay. Partial (nullable)
+        # so sessions predating the tablet POS redesign aren't affected.
+        UniqueConstraint("org_id", "offline_id", name="uq_pos_sales_offline_id"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -68,6 +71,10 @@ class PosSale(Base):
         UUID(as_uuid=True), ForeignKey("pos_sessions.id", ondelete="CASCADE"), nullable=False,
     )
     sale_number: Mapped[str] = mapped_column(String(50), nullable=False)
+    # Client-generated UUID set by the tablet when a sale is queued
+    # offline. The backend checks this before inserting to avoid duplicate
+    # sales when the sync queue replays after a dropped connection.
+    offline_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     subtotal: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=Decimal("0.00"))
     vat_amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=Decimal("0.00"))
     total: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
