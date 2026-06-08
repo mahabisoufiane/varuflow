@@ -11,6 +11,7 @@ import PosSessionControls from "./PosSessionControls";
 import PosQuickButtons from "./PosQuickButtons";
 import { usePosKeyboard } from "./usePosKeyboard";
 import { toast } from "sonner";
+import { LogOut, Wifi, WifiOff, ShoppingCart } from "lucide-react";
 
 function PosScreen() {
   const t = usePosT();
@@ -22,7 +23,6 @@ function PosScreen() {
 
   useEffect(() => {
     const stopSync = startSyncListener();
-    // Replay any queued mutations immediately on mount
     if (navigator.onLine) replayQueue().catch(() => {});
 
     const updateStatus = () => {
@@ -50,14 +50,26 @@ function PosScreen() {
     },
   });
 
+  const cartCount = cart.reduce((n, it) => n + it.qty, 0);
+
   return (
-    <div className="flex h-screen flex-col gap-3 bg-gray-50 dark:bg-gray-900 p-3">
-      <header className="flex items-center justify-between">
+    <div className="flex h-screen flex-col bg-slate-100">
+      {/* ── Top bar ──────────────────────────────────────────────── */}
+      <header className="flex h-14 shrink-0 items-center justify-between bg-slate-900 px-4 shadow-lg">
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold dark:text-gray-100">Varuflow POS</h1>
-          {!online && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 shadow shadow-emerald-500/30">
+            <span className="text-sm font-black text-white">V</span>
+          </div>
+          <span className="text-base font-bold text-white tracking-tight">Varuflow POS</span>
+          {!online ? (
+            <span className="flex items-center gap-1 rounded-full bg-amber-500/20 px-2.5 py-0.5 text-xs font-semibold text-amber-400">
+              <WifiOff className="h-3 w-3" />
               Offline{queued > 0 ? ` · ${queued} queued` : ""}
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-semibold text-emerald-400">
+              <Wifi className="h-3 w-3" />
+              Online
             </span>
           )}
         </div>
@@ -66,45 +78,77 @@ function PosScreen() {
           <button
             type="button"
             onClick={() => { clearToken(); window.location.reload(); }}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-500 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400"
             title="Sign out"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition"
           >
-            ⏻
+            <LogOut className="h-4 w-4" />
           </button>
         </div>
       </header>
 
-      <PosQuickButtons />
+      {/* ── Quick-access buttons ──────────────────────────────────── */}
+      <div className="shrink-0 bg-white border-b border-slate-200 px-4 py-2">
+        <PosQuickButtons />
+      </div>
 
-      <section className="grid flex-1 grid-cols-1 gap-3 overflow-hidden md:grid-cols-[60%_40%]">
-        <div className="min-h-0"><PosProductGrid searchRef={searchRef} /></div>
-        <div className="hidden min-h-0 md:block"><PosCartPanel /></div>
-      </section>
+      {/* ── Main area: product grid + cart ───────────────────────── */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Product grid */}
+        <main className="flex-1 min-w-0 overflow-hidden p-4">
+          <PosProductGrid searchRef={searchRef} />
+        </main>
 
-      {/* Mobile sticky cart toggle */}
+        {/* Cart — hidden on mobile, visible md+ */}
+        <aside className="hidden md:flex w-[360px] shrink-0 flex-col border-l border-slate-200 bg-white">
+          <PosCartPanel />
+        </aside>
+      </div>
+
+      {/* ── Mobile cart FAB ───────────────────────────────────────── */}
       <button
         type="button"
         onClick={() => setCartOpen((v) => !v)}
-        className="fixed bottom-3 left-3 right-3 z-30 flex h-14 items-center justify-between rounded-xl bg-emerald-600 px-4 text-white shadow-lg md:hidden"
+        className="fixed bottom-4 right-4 z-30 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 shadow-xl shadow-emerald-500/40 md:hidden"
+        aria-label="Open cart"
       >
-        <span className="font-semibold">{cart.reduce((n, it) => n + it.qty, 0)} items</span>
-        <span>{t("complete_sale")} →</span>
+        <ShoppingCart className="h-7 w-7 text-white" />
+        {cartCount > 0 && (
+          <span className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+            {cartCount}
+          </span>
+        )}
       </button>
 
+      {/* ── Mobile cart sheet ─────────────────────────────────────── */}
       {cartOpen && (
-        <div className="fixed inset-0 z-40 bg-black/40 md:hidden" onClick={() => setCartOpen(false)}>
-          <div className="absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white p-3" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-40 bg-black/60 md:hidden"
+          onClick={() => setCartOpen(false)}
+        >
+          <div
+            className="absolute bottom-0 left-0 right-0 max-h-[90vh] overflow-y-auto rounded-t-3xl bg-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto my-2 h-1 w-12 rounded-full bg-slate-200" />
             <PosCartPanel />
           </div>
         </div>
       )}
 
-      <footer aria-label={t("keyboard_shortcuts")} className="hidden text-xs text-gray-500 dark:text-gray-400 md:flex md:gap-4">
-        <span><kbd className="rounded border px-1">/</kbd> search</span>
-        <span><kbd className="rounded border px-1">F2</kbd> {t("complete_sale")}</span>
-        <span><kbd className="rounded border px-1">F3</kbd> session</span>
-        <span><kbd className="rounded border px-1">+ / −</kbd> qty</span>
-        <span><kbd className="rounded border px-1">Esc</kbd> clear</span>
+      {/* ── Keyboard shortcuts bar ────────────────────────────────── */}
+      <footer aria-label={t("keyboard_shortcuts")} className="hidden bg-slate-800 px-4 py-1.5 md:flex md:gap-5">
+        {[
+          ["/ ", "search"],
+          ["F2", t("complete_sale")],
+          ["F3", "session"],
+          ["+ / −", "qty"],
+          ["Esc", "clear"],
+        ].map(([key, label]) => (
+          <span key={key} className="flex items-center gap-1.5 text-xs text-slate-400">
+            <kbd className="rounded bg-slate-700 px-1.5 py-0.5 font-mono text-slate-200">{key}</kbd>
+            {label}
+          </span>
+        ))}
       </footer>
 
       {lastSale && <PosReceiptModal />}
