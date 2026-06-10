@@ -67,8 +67,9 @@ class PartnerApproveIn(BaseModel):
 
 async def _assert_admin(request: Request) -> None:
     """Raise 403 unless the request carries the correct admin API key."""
+    import secrets
     key = request.headers.get("x-admin-key", "")
-    if key and key == settings.ADMIN_API_KEY:
+    if key and settings.ADMIN_API_KEY and secrets.compare_digest(key, settings.ADMIN_API_KEY):
         return
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
 

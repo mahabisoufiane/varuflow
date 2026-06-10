@@ -13,11 +13,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_member, get_current_user
+from app.middleware.rate_limit import per_ip_rate_limit
 from app.models.modules import MemberModule
 from app.models.organization import OrgPlan, OrgRole, Organization, OrganizationMember
 from app.services.plan_limits import PLAN_MODULES
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+_onboarding_limit = per_ip_rate_limit("auth.onboarding", 5, 3600)
 
 
 # ---- Schemas ----
@@ -51,7 +54,8 @@ class MemberOut(BaseModel):
 
 # ---- Endpoints ----
 
-@router.post("/onboarding", response_model=MemberOut, status_code=status.HTTP_201_CREATED)
+@router.post("/onboarding", response_model=MemberOut, status_code=status.HTTP_201_CREATED,
+             dependencies=[Depends(_onboarding_limit)])
 async def complete_onboarding(
     body: OnboardingRequest,
     current_user: dict = Depends(get_current_user),

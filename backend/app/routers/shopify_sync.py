@@ -19,6 +19,9 @@ Endpoints:
 """
 from __future__ import annotations
 
+import base64
+import hashlib
+import hmac
 import logging
 import uuid
 from datetime import datetime, timezone
@@ -233,6 +236,7 @@ async def _import_woo_order(
 class ShopifyConnectIn(BaseModel):
     store_url: str   # e.g. my-store.myshopify.com
     access_token: str
+    api_secret: Optional[str] = None  # Shopify API secret key — used to verify webhook HMAC signatures
 
 class WooConnectIn(BaseModel):
     store_url: str   # full URL e.g. https://mystore.com
@@ -277,15 +281,19 @@ async def shopify_connect(
         if resp.status_code != 200:
             raise HTTPException(status_code=422, detail=f"Shopify credential check failed: {resp.status_code}")
 
+        shopify_config: dict = {"store_url": body.store_url, "access_token": body.access_token}
+        if body.api_secret:
+            shopify_config["api_secret"] = body.api_secret
+
         cfg = await _get_config(db, org_id, "shopify")
         if cfg:
-            cfg.config = {"store_url": body.store_url, "access_token": body.access_token}
+            cfg.config = shopify_config
             cfg.is_active = True
         else:
             cfg = IntegrationConfig(
                 org_id=org_id,
                 provider="shopify",
-                config={"store_url": body.store_url, "access_token": body.access_token},
+                config=shopify_config,
             )
             db.add(cfg)
         await db.commit()
@@ -480,6 +488,16 @@ async def shopify_sync_inventory(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+def _verify_shopify_hmac(body: bytes, hmac_header: str, secret: str) -> bool:
+    """Return True only when the Shopify-supplied HMAC matches the computed digest."""
+    if not secret or not hmac_header:
+        return False
+    digest = base64.b64encode(
+        hmac.new(secret.encode("utf-8"), body, hashlib.sha256).digest()
+    ).decode("utf-8")
+    return hmac.compare_digest(digest, hmac_header)
+
+
 @router.post("/api/integrations/shopify/webhook", status_code=200)
 async def shopify_webhook(
     request: Request,
@@ -487,9 +505,11 @@ async def shopify_webhook(
 ):
     """Receive Shopify ORDER_CREATED webhook (auth-free — Shopify signs with HMAC-SHA256)."""
     try:
-        payload = await request.json()
+        raw_body = await request.body()
+
         # Shopify sends X-Shopify-Shop-Domain header to identify which store
         shop_domain = request.headers.get("X-Shopify-Shop-Domain", "")
+        hmac_header = request.headers.get("X-Shopify-Hmac-Sha256", "")
 
         if not shop_domain:
             return {"received": False}
@@ -511,6 +531,28 @@ async def shopify_webhook(
             log.warning("shopify_webhook: no matching org for shop %s", shop_domain)
             return {"received": True}
 
+        # Verify HMAC signature using the stored API secret for this integration.
+        # The secret is stored under config["api_secret"] when the app is installed.
+        # Reject the request outright if we have a secret and the signature is wrong.
+        api_secret = cfg.config.get("api_secret", "") if cfg.config else ""
+        if api_secret:
+            if not _verify_shopify_hmac(raw_body, hmac_header, api_secret):
+                log.warning(
+                    "shopify_webhook: HMAC mismatch for shop %s — request rejected",
+                    shop_domain,
+                )
+                return {"received": False}
+        else:
+            # No secret stored — legacy connection. Log a warning so operators
+            # know to re-connect and store the API secret.
+            log.warning(
+                "shopify_webhook: no api_secret stored for shop %s — skipping HMAC verification. "
+                "Reconnect the Shopify integration to enable signature validation.",
+                shop_domain,
+            )
+
+        import json
+        payload = json.loads(raw_body)
         currency = payload.get("currency", "SEK")
         ok, inv_number = await _import_shopify_order(db, cfg.org_id, payload, currency)
         if ok:

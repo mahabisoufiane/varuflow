@@ -20,7 +20,7 @@ type Status = "loading" | "ok" | "no-auth" | "api-down";
 export function DevToolbar() {
   const [plan, setPlan]       = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [open, setOpen]       = useState(true);
+  const [open, setOpen]       = useState(false);
   const [status, setStatus]   = useState<Status>("loading");
 
   useEffect(() => {

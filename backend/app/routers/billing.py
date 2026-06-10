@@ -332,6 +332,63 @@ async def stripe_webhook(
                     from app.services.grace_period import recover_grace_period
                     await recover_grace_period(db, org.id)
 
+        elif event_type == "customer.subscription.trial_will_end":
+            # Fires 3 days before trial expires — send a reminder email.
+            sub_obj = event["data"]["object"]
+            customer_id = sub_obj.get("customer")
+            trial_end = sub_obj.get("trial_end")
+            if customer_id:
+                org = await db.scalar(
+                    select(Organization).where(Organization.stripe_customer_id == customer_id)
+                )
+                if org:
+                    from app.services.email import send_trial_ending_soon_email
+                    try:
+                        await send_trial_ending_soon_email(org_id=org.id, trial_end_ts=trial_end)
+                    except Exception as email_err:
+                        log.error("trial_will_end email failed", extra={"org_id": str(org.id), "error": str(email_err)})
+                    log.info("trial ending soon email sent", extra={"org_id": str(org.id), "event_id": event_id})
+
+        elif event_type == "customer.subscription.updated":
+            sub_obj = event["data"]["object"]
+            customer_id = sub_obj.get("customer")
+            new_status = sub_obj.get("status")
+            if customer_id:
+                org = await db.scalar(
+                    select(Organization).where(Organization.stripe_customer_id == customer_id)
+                )
+                if org:
+                    # Restore to PRO if subscription is active/trialing but org fell to FREE
+                    if new_status in ("active", "trialing") and org.plan != OrgPlan.PRO:
+                        org.plan = OrgPlan.PRO
+                        log.info("org restored to PRO via subscription.updated", extra={"org_id": str(org.id), "event_id": event_id})
+                    await log_action(
+                        db,
+                        action="billing.subscription_updated",
+                        org_id=org.id,
+                        target_type="organization",
+                        target_id=str(org.id),
+                        extra={"event_id": event_id, "stripe_customer": customer_id, "sub_status": new_status},
+                    )
+
+        elif event_type == "invoice.payment_succeeded":
+            invoice_obj = event["data"]["object"]
+            customer_id = invoice_obj.get("customer")
+            # subscription invoices only (billing_reason != "manual")
+            billing_reason = invoice_obj.get("billing_reason", "")
+            if customer_id and billing_reason in ("subscription_cycle", "subscription_create", "subscription_update"):
+                org = await db.scalar(
+                    select(Organization).where(Organization.stripe_customer_id == customer_id)
+                )
+                if org:
+                    # Clear any active grace period
+                    from app.services.grace_period import recover_grace_period
+                    await recover_grace_period(db, org.id)
+                    # Ensure org is on PRO if somehow missed
+                    if org.plan != OrgPlan.PRO:
+                        org.plan = OrgPlan.PRO
+                    log.info("invoice payment succeeded — grace period cleared", extra={"org_id": str(org.id), "event_id": event_id})
+
         elif event_type == "invoice.payment_failed":
             invoice_obj = event["data"]["object"]
             customer_id = invoice_obj.get("customer")

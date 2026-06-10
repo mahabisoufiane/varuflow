@@ -9,16 +9,24 @@ from alembic import op
 import sqlalchemy as sa
 
 revision = "b2c3d4e5f6a7"
-down_revision = "a1b2c3d4e5f6"
+down_revision = "c0d1e2f3a4b5"
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column(
-        "organization_members",
-        sa.Column("pos_pin_hash", sa.String(100), nullable=True),
-    )
+    conn = op.get_bind()
+    row = conn.execute(
+        sa.text(
+            "SELECT 1 FROM information_schema.columns "
+            "WHERE table_name='organization_members' AND column_name='pos_pin_hash'"
+        )
+    ).fetchone()
+    if not row:
+        op.add_column(
+            "organization_members",
+            sa.Column("pos_pin_hash", sa.String(100), nullable=True),
+        )
 
 
 def downgrade() -> None:

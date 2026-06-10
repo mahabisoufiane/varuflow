@@ -35,7 +35,7 @@ logging.config.dictConfig({
     "root": {"level": "INFO", "handlers": ["console"]},
 })
 
-from app.config import settings, validate_production_config
+from app.config import settings, validate_production_config, is_production
 from app.database import engine
 from app.middleware.country import CountryMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
@@ -129,6 +129,7 @@ from app.routers import branding
 from app.routers import dev_tools
 # POS device authentication (PIN-based, standalone POS app)
 from app.routers import pos_auth
+from app.routers import excel_reports
 from app.routers import scheduler as scheduler_router
 from app.services.scheduler import create_scheduler
 
@@ -226,8 +227,10 @@ async def lifespan(app: FastAPI):
 # attack surface (they enumerate every endpoint + schema for anyone who
 # finds the URL). The raw OpenAPI JSON stays available at /openapi.json
 # for internal tooling and the frontend API-types codegen.
-_docs_url = None if settings.ENV == "production" else "/docs"
-_redoc_url = None if settings.ENV == "production" else "/redoc"
+_prod = is_production()
+_docs_url    = None   if _prod else "/docs"
+_redoc_url   = None   if _prod else "/redoc"
+_openapi_url = None   if _prod else "/openapi.json"
 
 app = FastAPI(
     title="Varuflow API",
@@ -236,6 +239,7 @@ app = FastAPI(
     lifespan=lifespan,
     docs_url=_docs_url,
     redoc_url=_redoc_url,
+    openapi_url=_openapi_url,
 )
 
 app.state.limiter = limiter
@@ -256,7 +260,7 @@ app.add_middleware(PauseWriteGuardMiddleware)
 # (login/signup/MFA/billing/AI — see RateLimitMiddleware._PATH_LIMITS).
 # Must be added BEFORE CORSMiddleware so CORS headers are still injected
 # on 429 responses. Set RATE_LIMIT_DISABLED=true to bypass in tests.
-if settings.RATE_LIMIT_DISABLED and settings.ENV == "production":
+if settings.RATE_LIMIT_DISABLED and _prod:
     # Loud startup warning — a production deploy with rate limiting
     # disabled is almost certainly a config accident.
     import logging as _logging
@@ -280,9 +284,23 @@ app.add_middleware(CountryMiddleware)
 # request. CountryMiddleware and RequestIdMiddleware are registered above
 # (inner) so any error they produce is still wrapped by CORS headers and
 # never reaches the browser without Access-Control-Allow-Origin.
+_cors_origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
+if _prod:
+    # Strip any localhost/dev origins that may have crept into the Railway env var.
+    _filtered = [o for o in _cors_origins if "localhost" not in o and "127.0.0.1" not in o]
+    if _filtered:
+        _cors_origins = _filtered
+    else:
+        # CORS_ORIGINS on Railway only had localhost values — keep the full list so
+        # the app stays reachable, but log loudly so an operator can correct it.
+        log.warning(
+            "CORS_ORIGINS contains only localhost origins in production mode. "
+            "Set CORS_ORIGINS=https://varuflow.vercel.app on Railway."
+        )
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS.split(","),
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With", "X-Country-Code", "X-Request-ID", "X-Confirm-Delete", "X-Admin-Key"],
@@ -306,8 +324,9 @@ async def _add_security_headers(request: Request, call_next):
     response.headers["Content-Security-Policy"] = (
         "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
     )
-    # HSTS — only safe to emit when served over HTTPS (Railway terminates TLS).
-    if settings.ENV == "production":
+    # HSTS — emit when in production or when Railway signals HTTPS via X-Forwarded-Proto.
+    # The dual check handles ENV=prod (short form) and direct Railway TLS termination.
+    if _prod or request.headers.get("x-forwarded-proto") == "https":
         response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
     return response
 
@@ -462,9 +481,9 @@ app.include_router(supplier_notes.router)
 app.include_router(supplier_tags.router)
 app.include_router(supplier_contacts.router)
 app.include_router(supplier_activity.router)
-app.include_router(storefront.router)
 app.include_router(online_orders.router)
 app.include_router(shop_config.router)
+app.include_router(storefront.router)
 app.include_router(crm.router)
 app.include_router(lead_forms.router)
 app.include_router(leads.router)
@@ -557,6 +576,7 @@ app.include_router(announcements.router)
 app.include_router(job_cards.router)
 app.include_router(petty_cash.router)
 app.include_router(reports.router)
+app.include_router(excel_reports.router)
 app.include_router(pnl.router)
 app.include_router(cashflow.router)
 app.include_router(balance_sheet.router)

@@ -1,11 +1,14 @@
 """Inventory module: products, warehouses, stock, movements, suppliers, POs."""
 import csv
 import io
+import logging
 import uuid
 from decimal import Decimal
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile, status
+
+log = logging.getLogger(__name__)
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -77,22 +80,28 @@ async def list_products(
     db: AsyncSession = Depends(get_db),
 ):
     org_id = _org(ctx)
-    q = select(Product).where(Product.org_id == org_id)
-    if search:
-        like = f"%{search}%"
-        q = q.where(Product.name.ilike(like) | Product.sku.ilike(like))
-    if category:
-        q = q.where(Product.category == category)
-    if is_active is not None:
-        q = q.where(Product.is_active == is_active)
+    try:
+        q = select(Product).where(Product.org_id == org_id)
+        if search:
+            like = f"%{search}%"
+            q = q.where(Product.name.ilike(like) | Product.sku.ilike(like))
+        if category:
+            q = q.where(Product.category == category)
+        if is_active is not None:
+            q = q.where(Product.is_active == is_active)
 
-    total_result = await db.execute(select(func.count()).select_from(q.subquery()))
-    total = total_result.scalar_one()
+        total_result = await db.execute(select(func.count()).select_from(q.subquery()))
+        total = total_result.scalar_one()
 
-    q = q.order_by(Product.name).offset(skip).limit(limit)
-    result = await db.execute(q)
-    items = result.scalars().all()
-    return PaginatedProducts(items=items, total=total, skip=skip, limit=limit)
+        q = q.order_by(Product.name).offset(skip).limit(limit)
+        result = await db.execute(q)
+        items = result.scalars().all()
+        return PaginatedProducts(items=items, total=total, skip=skip, limit=limit)
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("list_products failed: %s", e, extra={"org_id": str(org_id)})
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/products", response_model=ProductOut, status_code=status.HTTP_201_CREATED)
@@ -151,12 +160,19 @@ async def get_product(
     ctx: tuple = Depends(get_current_member),
     db: AsyncSession = Depends(get_db),
 ):
-    product = await db.scalar(
-        select(Product).where(Product.id == product_id, Product.org_id == _org(ctx))
-    )
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return product
+    org_id = _org(ctx)
+    try:
+        product = await db.scalar(
+            select(Product).where(Product.id == product_id, Product.org_id == org_id)
+        )
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        return product
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("get_product failed: %s", e, extra={"org_id": str(org_id)})
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/products/{product_id}", response_model=ProductOut)

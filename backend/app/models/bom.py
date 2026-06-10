@@ -76,6 +76,7 @@ class BomLine(Base):
     )
     quantity: Mapped[Decimal] = mapped_column(Numeric(12, 4), nullable=False)
     unit: Mapped[str] = mapped_column(String(50), nullable=False, default="st")
+    cost_per_unit: Mapped[Optional[Decimal]] = mapped_column(Numeric(14, 4), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False

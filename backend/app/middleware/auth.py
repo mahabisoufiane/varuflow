@@ -246,7 +246,7 @@ async def get_current_member(
                 id=DEV_ORG_ID,
                 name="Varuflow Demo AB",
                 org_number="556123-4567",
-                plan=OrgPlan.PRO,
+                plan=OrgPlan.ENTERPRISE,
             )
             member = OrganizationMember(
                 org_id=DEV_ORG_ID,

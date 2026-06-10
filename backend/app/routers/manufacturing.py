@@ -11,12 +11,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.auth import get_current_member
 from app.middleware.plan_check import require_module
 from app.models.bom import BomHeader, BomLine
-from app.models.inventory import Product, StockLevel, StockMovement, StockMovementType
+from app.services.audit import log_action
+from app.models.inventory import Product, StockLevel, StockMovement, StockMovementType, Warehouse
 from app.models.work_orders_mfg import WorkOrder, WorkOrderLabourLine, WorkOrderMaterialLine
 
 log = logging.getLogger(__name__)
@@ -43,12 +45,14 @@ class BomLineCreate(BaseModel):
     component_product_id: uuid.UUID
     quantity: Decimal
     unit: str = "st"
+    cost_per_unit: Optional[Decimal] = None
     notes: Optional[str] = None
 
 
 class BomLineUpdate(BaseModel):
     quantity: Optional[Decimal] = None
     unit: Optional[str] = None
+    cost_per_unit: Optional[Decimal] = None
     notes: Optional[str] = None
 
 
@@ -223,17 +227,18 @@ async def list_boms(
     user, member = auth
     org_id = member.org_id
     try:
-        q = select(BomHeader).where(BomHeader.org_id == org_id)
+        q = (
+            select(BomHeader)
+            .where(BomHeader.org_id == org_id)
+            .options(selectinload(BomHeader.lines))
+        )
         if is_kit is not None:
             q = q.where(BomHeader.is_kit == is_kit)
-        boms = (await db.execute(q.order_by(BomHeader.name))).scalars().all()
+        boms = (await db.execute(q.order_by(BomHeader.name))).scalars().unique().all()
         result = []
         for b in boms:
-            lines = (await db.execute(
-                select(BomLine).where(BomLine.bom_id == b.id)
-            )).scalars().all()
             d = _row(b)
-            d["lines"] = [_row(l) for l in lines]
+            d["lines"] = [_row(l) for l in b.lines]
             result.append(d)
         return result
     except HTTPException:
@@ -280,7 +285,7 @@ async def get_bom(
         )).scalar_one_or_none()
         if not row:
             raise HTTPException(status_code=404, detail="BOM not found")
-        lines = (await db.execute(select(BomLine).where(BomLine.bom_id == bom_id))).scalars().all()
+        lines = (await db.execute(select(BomLine).where(and_(BomLine.bom_id == bom_id, BomLine.org_id == org_id)))).scalars().all()
         d = _row(row)
         d["lines"] = [_row(l) for l in lines]
         return d
@@ -432,23 +437,24 @@ async def list_work_orders(
     user, member = auth
     org_id = member.org_id
     try:
-        q = select(WorkOrder).where(WorkOrder.org_id == org_id)
+        q = (
+            select(WorkOrder)
+            .where(WorkOrder.org_id == org_id)
+            .options(
+                selectinload(WorkOrder.material_lines),
+                selectinload(WorkOrder.labour_lines),
+            )
+        )
         if status:
             q = q.where(WorkOrder.status == status)
         if bom_id:
             q = q.where(WorkOrder.bom_id == bom_id)
-        rows = (await db.execute(q.order_by(WorkOrder.created_at.desc()))).scalars().all()
+        rows = (await db.execute(q.order_by(WorkOrder.created_at.desc()))).scalars().unique().all()
         result = []
         for wo in rows:
             d = _row(wo)
-            mat_lines = (await db.execute(
-                select(WorkOrderMaterialLine).where(WorkOrderMaterialLine.work_order_id == wo.id)
-            )).scalars().all()
-            lab_lines = (await db.execute(
-                select(WorkOrderLabourLine).where(WorkOrderLabourLine.work_order_id == wo.id)
-            )).scalars().all()
-            d["material_lines"] = [_row(l) for l in mat_lines]
-            d["labour_lines"] = [_row(l) for l in lab_lines]
+            d["material_lines"] = [_row(l) for l in wo.material_lines]
+            d["labour_lines"] = [_row(l) for l in wo.labour_lines]
             result.append(d)
         return result
     except HTTPException:
@@ -473,6 +479,12 @@ async def create_work_order(
         if not bom:
             raise HTTPException(status_code=404, detail="BOM not found")
 
+        warehouse = (await db.execute(
+            select(Warehouse).where(and_(Warehouse.id == body.warehouse_id, Warehouse.org_id == org_id))
+        )).scalar_one_or_none()
+        if not warehouse:
+            raise HTTPException(status_code=404, detail="Warehouse not found")
+
         order_number = await _next_order_number(db, org_id)
         wo = WorkOrder(
             id=uuid.uuid4(),
@@ -485,7 +497,7 @@ async def create_work_order(
 
         # Auto-populate material lines from BOM
         bom_lines = (await db.execute(
-            select(BomLine).where(BomLine.bom_id == bom.id)
+            select(BomLine).where(and_(BomLine.bom_id == bom.id, BomLine.org_id == org_id))
         )).scalars().all()
         for bl in bom_lines:
             db.add(WorkOrderMaterialLine(
@@ -692,6 +704,16 @@ async def complete_work_order(
 
         movements = await _complete_work_order(db, wo, body.produced_qty, body.material_actuals, org_id)
         await db.commit()
+        await log_action(
+            db,
+            action="manufacturing.work_order_completed",
+            org_id=org_id,
+            actor_user_id=member.user_id,
+            target_type="work_order",
+            target_id=str(wo_id),
+            extra={"produced_qty": body.produced_qty, "order_number": wo.order_number},
+        )
+        await db.commit()
         await db.refresh(wo)
         return {**_row(wo), "movements": movements}
     except HTTPException:
@@ -718,6 +740,16 @@ async def cancel_work_order(
         if wo.status in ("completed", "cancelled"):
             raise HTTPException(status_code=422, detail="Cannot cancel a completed or already cancelled work order")
         wo.status = "cancelled"
+        await db.commit()
+        await log_action(
+            db,
+            action="manufacturing.work_order_cancelled",
+            org_id=org_id,
+            actor_user_id=member.user_id,
+            target_type="work_order",
+            target_id=str(wo_id),
+            extra={"order_number": wo.order_number},
+        )
         await db.commit()
         await db.refresh(wo)
         return _row(wo)
@@ -800,7 +832,7 @@ async def check_feasibility(
             raise HTTPException(status_code=404, detail="BOM not found")
 
         bom_lines = (await db.execute(
-            select(BomLine).where(BomLine.bom_id == bom.id)
+            select(BomLine).where(and_(BomLine.bom_id == bom.id, BomLine.org_id == org_id))
         )).scalars().all()
 
         shortfalls = []
@@ -855,7 +887,7 @@ async def list_kits(
         result = []
         for b in boms:
             lines = (await db.execute(
-                select(BomLine).where(BomLine.bom_id == b.id)
+                select(BomLine).where(and_(BomLine.bom_id == b.id, BomLine.org_id == org_id))
             )).scalars().all()
             d = _row(b)
             d["lines"] = [_row(l) for l in lines]
@@ -927,7 +959,7 @@ async def build_kit(
 
         # Create material lines from BOM
         bom_lines = (await db.execute(
-            select(BomLine).where(BomLine.bom_id == bom.id)
+            select(BomLine).where(and_(BomLine.bom_id == bom.id, BomLine.org_id == org_id))
         )).scalars().all()
         mat_lines = []
         for bl in bom_lines:

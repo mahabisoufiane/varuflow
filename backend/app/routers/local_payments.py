@@ -424,7 +424,8 @@ async def payment_webhook(
         if provider_session_id:
             row = await db.execute(
                 select(LocalPaymentSession).where(
-                    LocalPaymentSession.provider_session_id == provider_session_id
+                    LocalPaymentSession.provider_session_id == provider_session_id,
+                    LocalPaymentSession.provider == provider,  # prevent cross-provider spoofing
                 )
             )
             session = row.scalar_one_or_none()

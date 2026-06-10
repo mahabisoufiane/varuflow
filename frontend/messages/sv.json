@@ -753,7 +753,7 @@
   },
   "pricing": {
     "pageTitle": "Enkel, transparent prissättning",
-    "pageSubtitle": "Börja gratis. Skala i takt med dig. Inga dolda avgifter, inga transaktionsavgifter.",
+    "pageSubtitle": "No lock-in contracts. Transparent pricing built for wholesale teams.",
     "monthly": "Månadsvis",
     "yearly": "Årsvis",
     "yearlySave": "Spara 20%",
@@ -768,59 +768,66 @@
     "locked": "Låst på denna plan",
     "starter": {
       "name": "Starter",
-      "description": "För mindre grossistföretag som kommer igång.",
+      "description": "For small wholesale businesses getting started.",
       "features": [
-        "Upp till 500 produkter",
-        "Fortnox-integration",
-        "Lagerhantering",
-        "Grundläggande fakturering",
-        "Grundläggande analys",
-        "E-postsupport",
-        "1 plats"
+        "Up to 500 products",
+        "Up to 150 customers",
+        "Up to 200 invoices/month",
+        "5 team members",
+        "Inventory & stock management",
+        "PDF & email invoicing",
+        "Fortnox integration",
+        "Bulk import",
+        "Email support"
       ],
       "locked": [
-        "Mobilapp",
-        "Avancerad analys",
-        "Prioriterad support",
-        "Massimport",
-        "Anpassade integrationer",
-        "API-åtkomst"
+        "Mobile app",
+        "Advanced analytics",
+        "Priority support",
+        "API access",
+        "Custom integrations"
       ]
     },
     "professional": {
       "name": "Professional",
-      "description": "För växande team som behöver mer kraft och insikt.",
+      "description": "For growing wholesale teams that need power and insight.",
       "features": [
-        "Upp till 5 000 produkter",
-        "Allt i Starter",
-        "Avancerad analys",
-        "Prioriterad support",
-        "Upp till 5 platser",
-        "Lagervarningar",
-        "Massimport"
+        "Up to 10,000 products",
+        "Unlimited customers",
+        "Unlimited invoices",
+        "Everything in Starter",
+        "20 team members",
+        "Mobile app (Android, iOS)",
+        "Advanced analytics & forecasting",
+        "Automated dunning & reminders",
+        "Priority support (4h response)",
+        "Low stock alerts & reorder rules",
+        "B2B customer portal"
       ],
       "locked": [
-        "Mobilapp",
-        "Anpassade integrationer",
-        "API-åtkomst"
+        "API access",
+        "Custom integrations",
+        "White-label option"
       ]
     },
     "enterprise": {
       "name": "Enterprise",
-      "description": "För stora verksamheter som behöver allt, överallt.",
+      "description": "For large operations that need everything, everywhere.",
       "features": [
-        "Obegränsat antal produkter",
-        "Allt i Professional",
-        "Obegränsat antal platser",
-        "Anpassade integrationer",
-        "API-åtkomst",
-        "White-label-alternativ",
-        "Prioriterad support dygnet runt"
+        "Unlimited products & customers",
+        "Everything in Professional",
+        "Unlimited team members",
+        "API access & webhooks",
+        "Custom integrations",
+        "White-label option",
+        "Dedicated account manager",
+        "24/7 priority support",
+        "Custom onboarding"
       ],
       "stars": [
-        "Mobilapp — Android, iOS & Huawei",
-        "Dedikerad kundansvarig",
-        "Anpassad onboarding"
+        "Mobile app — Android, iOS & Huawei",
+        "SLA guarantee",
+        "Custom data residency (EU/Nordic)"
       ]
     },
     "mobileTeaser": {

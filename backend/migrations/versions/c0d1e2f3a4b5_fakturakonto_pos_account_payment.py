@@ -1,14 +1,14 @@
 """Add ACCOUNT value to pos_payment_method enum (Fakturakonto)
 
-Revision ID: a1b2c3d4e5f6
-Revises: z3t4u5v6w7x8
+Revision ID: c0d1e2f3a4b5
+Revises: 6005c017b2f6
 Create Date: 2026-06-08
 
 """
 from alembic import op
 
-revision = "a1b2c3d4e5f6"
-down_revision = "z3t4u5v6w7x8"
+revision = "c0d1e2f3a4b5"
+down_revision = "6005c017b2f6"
 branch_labels = None
 depends_on = None
 

@@ -92,6 +92,7 @@ from app.schemas.invoicing import (
     PaymentCreate,
     PaymentOut,
 )
+from app.services.audit import log_action
 from app.services.plan_limits import RESOURCE_INVOICES_PER_MONTH, LimitExceededError, check_limit
 
 router = APIRouter(prefix="/api/invoicing", tags=["invoicing"], dependencies=[Depends(require_module("invoicing"))])
@@ -122,17 +123,23 @@ async def list_customers(
     db: AsyncSession = Depends(get_db),
 ):
     org_id = _org(ctx)
-    q = select(Customer).where(Customer.org_id == org_id)
-    if search:
-        like = f"%{search}%"
-        q = q.where(
-            Customer.company_name.ilike(like) | Customer.email.ilike(like)
-        )
-    if is_active is not None:
-        q = q.where(Customer.is_active == is_active)
-    q = q.order_by(Customer.company_name).limit(limit).offset(offset)
-    result = await db.execute(q)
-    return result.scalars().all()
+    try:
+        q = select(Customer).where(Customer.org_id == org_id)
+        if search:
+            like = f"%{search}%"
+            q = q.where(
+                Customer.company_name.ilike(like) | Customer.email.ilike(like)
+            )
+        if is_active is not None:
+            q = q.where(Customer.is_active == is_active)
+        q = q.order_by(Customer.company_name).limit(limit).offset(offset)
+        result = await db.execute(q)
+        return result.scalars().all()
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("list_customers failed: %s", e, extra={"org_id": str(org_id)})
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/customers", response_model=CustomerOut, status_code=status.HTTP_201_CREATED)
@@ -142,11 +149,26 @@ async def create_customer(
     db: AsyncSession = Depends(get_db),
 ):
     org_id = _org(ctx)
-    customer = Customer(org_id=org_id, **body.model_dump())
-    db.add(customer)
-    await db.commit()
-    await db.refresh(customer)
-    return customer
+    try:
+        customer = Customer(
+            org_id=org_id,
+            company_name=body.company_name,
+            org_number=body.org_number,
+            vat_number=body.vat_number,
+            email=body.email,
+            phone=body.phone,
+            address=body.address,
+            payment_terms_days=body.payment_terms_days,
+        )
+        db.add(customer)
+        await db.commit()
+        await db.refresh(customer)
+        return customer
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("create_customer failed: %s", e, extra={"org_id": str(org_id)})
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/customers/{customer_id}", response_model=CustomerOut)
@@ -156,12 +178,18 @@ async def get_customer(
     db: AsyncSession = Depends(get_db),
 ):
     org_id = _org(ctx)
-    c = await db.scalar(
-        select(Customer).where(Customer.id == customer_id, Customer.org_id == org_id)
-    )
-    if not c:
-        raise HTTPException(status_code=404, detail="Customer not found")
-    return c
+    try:
+        c = await db.scalar(
+            select(Customer).where(Customer.id == customer_id, Customer.org_id == org_id)
+        )
+        if not c:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        return c
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("get_customer failed: %s", e, extra={"org_id": str(org_id)})
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/customers/{customer_id}", response_model=CustomerOut)
@@ -172,21 +200,29 @@ async def update_customer(
     db: AsyncSession = Depends(get_db),
 ):
     org_id = _org(ctx)
-    c = await db.scalar(
-        select(Customer).where(Customer.id == customer_id, Customer.org_id == org_id)
-    )
-    if not c:
-        raise HTTPException(status_code=404, detail="Customer not found")
-    # Partial-update semantics: only overwrite columns the client actually
-    # supplied. Without exclude_unset, `CustomerUpdate`'s schema defaults
-    # (payment_terms_days=30, email/phone/etc. -> None) silently overwrite
-    # every unspecified field — so a PUT that only wants to rename the
-    # customer wipes their contact info and resets payment terms to 30.
-    for k, v in body.model_dump(exclude_unset=True).items():
-        setattr(c, k, v)
-    await db.commit()
-    await db.refresh(c)
-    return c
+    try:
+        c = await db.scalar(
+            select(Customer).where(Customer.id == customer_id, Customer.org_id == org_id)
+        )
+        if not c:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        # Partial-update semantics: only overwrite columns the client actually
+        # supplied. Without exclude_unset, `CustomerUpdate`'s schema defaults
+        # (payment_terms_days=30, email/phone/etc. -> None) silently overwrite
+        # every unspecified field — so a PUT that only wants to rename the
+        # customer wipes their contact info and resets payment terms to 30.
+        _PROTECTED = {"id", "org_id", "created_at"}
+        for k, v in body.model_dump(exclude_unset=True).items():
+            if k not in _PROTECTED:
+                setattr(c, k, v)
+        await db.commit()
+        await db.refresh(c)
+        return c
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("update_customer failed: %s", e, extra={"org_id": str(org_id)})
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/customers/{customer_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -227,18 +263,24 @@ async def list_invoices(
     db: AsyncSession = Depends(get_db),
 ):
     org_id = _org(ctx)
-    q = (
-        select(Invoice)
-        .options(selectinload(Invoice.customer))
-        .where(Invoice.org_id == org_id)
-    )
-    if status:
-        q = q.where(Invoice.status == status)
-    if customer_id:
-        q = q.where(Invoice.customer_id == customer_id)
-    q = q.order_by(Invoice.created_at.desc()).limit(limit).offset(offset)
-    result = await db.execute(q)
-    return result.scalars().all()
+    try:
+        q = (
+            select(Invoice)
+            .options(selectinload(Invoice.customer))
+            .where(Invoice.org_id == org_id)
+        )
+        if status:
+            q = q.where(Invoice.status == status)
+        if customer_id:
+            q = q.where(Invoice.customer_id == customer_id)
+        q = q.order_by(Invoice.created_at.desc()).limit(limit).offset(offset)
+        result = await db.execute(q)
+        return result.scalars().all()
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("list_invoices failed: %s", e, extra={"org_id": str(org_id)})
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/invoices", response_model=InvoiceOut, status_code=status.HTTP_201_CREATED)
@@ -525,8 +567,43 @@ async def update_invoice_status(
             status_code=422,
             detail=f"Cannot transition from {inv.status} to {body.status}",
         )
+    previous_status = inv.status
+    transitioning_to_overdue = (
+        inv.status == InvoiceStatus.SENT and body.status == InvoiceStatus.OVERDUE
+    )
     inv.status = body.status
     await db.commit()
+
+    _, member = ctx
+    await log_action(
+        db,
+        action="invoice.status_updated",
+        org_id=org_id,
+        actor_user_id=member.user_id,
+        target_type="invoice",
+        target_id=str(invoice_id),
+        extra={"from": previous_status.value if hasattr(previous_status, "value") else str(previous_status),
+               "to": body.status.value if hasattr(body.status, "value") else str(body.status)},
+    )
+    await db.commit()
+
+    # Kick off dunning stage 1 on manual SENT→OVERDUE transition.
+    # The nightly sweep handles batch dunning; this covers manual overrides.
+    if transitioning_to_overdue:
+        try:
+            from datetime import date as _date
+            from app.services.dunning import dispatch_dunning_channels, record_dunning_event, stage_for_days_overdue
+            from app.models.organization import Organization as _Org
+            days_ov = ((_date.today() - inv.due_date.date()) if inv.due_date else 0).days if inv.due_date else 0
+            stage = stage_for_days_overdue(days_ov, inv.dunning_stage or 0) or 1
+            customer = await db.scalar(select(Customer).where(Customer.id == inv.customer_id))
+            org_obj = await db.get(_Org, org_id)
+            inserted = await record_dunning_event(db, org_id=org_id, invoice=inv, stage=stage, trigger="manual_status_change")
+            if inserted and customer and org_obj:
+                await dispatch_dunning_channels(db, invoice=inv, customer=customer, org=org_obj, stage=stage, days_overdue=days_ov, trigger="manual_status_change")
+            await db.commit()
+        except Exception as dun_err:
+            log.error("dunning dispatch failed on manual overdue", extra={"invoice_id": str(invoice_id), "error": str(dun_err)})
 
     result = await db.execute(
         select(Invoice)
@@ -1391,13 +1468,24 @@ async def stripe_invoice_webhook(
                 except ValueError:
                     inv_id = None
                 if inv_id:
+                    # Fetch org_id from webhook metadata for defense-in-depth.
+                    # Stripe signature already proves the payload is authentic,
+                    # but filtering by org_id prevents cross-org mark-as-paid
+                    # if the signing secret were ever rotated late.
+                    org_id_str = session_obj.get("metadata", {}).get("org_id")
+                    org_id_filter = []
+                    if org_id_str:
+                        try:
+                            org_id_filter = [Invoice.org_id == uuid.UUID(org_id_str)]
+                        except ValueError:
+                            pass
                     # Row-lock the invoice so concurrent webhook deliveries
                     # for the same invoice (e.g. checkout.session.completed
                     # followed closely by payment_intent.succeeded) can't
                     # both double-mark or double-insert payments.
                     inv = await db.scalar(
                         select(Invoice)
-                        .where(Invoice.id == inv_id)
+                        .where(Invoice.id == inv_id, *org_id_filter)
                         .with_for_update()
                     )
                     if inv and inv.status != InvoiceStatus.PAID:

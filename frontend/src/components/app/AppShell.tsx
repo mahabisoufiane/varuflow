@@ -220,8 +220,10 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
 
   const [isClient,         setIsClient]         = useState(false);
   const [email,            setEmail]            = useState<string | null>(null);
+  const [displayName,      setDisplayName]      = useState<string | null>(null);
   const [allowedModules,   setAllowedModules]   = useState<string[]>(["*"]);
   const [planModules,      setPlanModules]       = useState<string[]>(["*"]);
+  const [userPlan,         setUserPlan]         = useState<string | null>(null);
   const [fortnoxConnected, setFortnoxConnected] = useState(false);
   const [openaiConnected,  setOpenaiConnected]  = useState(false);
   const [sidebarOpen,      setSidebarOpen]      = useState(false);
@@ -236,6 +238,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       supabase.auth.getUser().then(({ data }) => {
         const userEmail = data.user?.email ?? null;
         setEmail(userEmail);
+        setDisplayName(data.user?.user_metadata?.full_name ?? null);
         if (userEmail && process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID && typeof window !== "undefined") {
           const w = window as unknown as Record<string, unknown>;
           if (w.$crisp) (w.$crisp as unknown[][]).push(["set", "user:email", userEmail]);
@@ -248,10 +251,12 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
     api.get<{ openai_configured: boolean }>("/api/integrations/config", { silent: true })
       .then((s) => setOpenaiConnected(s.openai_configured))
       .catch(() => {});
-    api.get<{ allowed_modules: string[]; plan_modules: string[] }>("/api/auth/me", { silent: true })
+    api.get<{ allowed_modules: string[]; plan_modules: string[]; plan?: string; organization?: { plan: string } }>("/api/auth/me", { silent: true })
       .then((me) => {
         setAllowedModules(me.allowed_modules);
         setPlanModules(me.plan_modules);
+        const plan = me.plan ?? me.organization?.plan ?? null;
+        if (plan) setUserPlan(plan);
         if (
           me.allowed_modules.length === 1 &&
           me.allowed_modules[0] === "pos"
@@ -283,9 +288,10 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   async function handleSignOut() {
-    await supabase.auth.signOut();
-    toast.success("Signed out");
-    router.push("/auth/login");
+    try {
+      if (isSupabaseConfigured) await supabase.auth.signOut();
+    } catch {}
+    router.push(`/${locale}/auth/login`);
   }
 
   function openSearch() {
@@ -294,7 +300,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const avatarLetter = isClient && email ? email[0].toUpperCase() : "?";
+  const avatarLetter = isClient && (displayName || email) ? (displayName ?? email)![0].toUpperCase() : "?";
   const branding = useBranding();
 
   const visibleSections = allowedModules.includes("*")
@@ -420,15 +426,20 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
           ))}
         </div>
 
-        <button onClick={handleSignOut} className={styles.accountRow}>
+        <button onClick={handleSignOut} className={styles.accountRow} title="Sign out">
           <div className={styles.avatar}>{avatarLetter}</div>
           <div className={styles.accountInfo}>
             <p className={styles.accountEmail}>
-              {isClient ? (email ?? "Account") : "Account"}
+              {isClient ? (displayName ?? email ?? "Account") : "Account"}
             </p>
-            <p className={styles.accountPlan}>Free plan</p>
+            <p className={styles.accountPlan}>
+              {userPlan === "PRO" ? "Professional" : userPlan === "ENTERPRISE" ? "Enterprise" : userPlan === "FREE" ? "Free" : "Starter"}
+            </p>
           </div>
-          <LogOut className={styles.logoutIcon} />
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="text-[11px] vf-text-m">Sign out</span>
+            <LogOut className={styles.logoutIcon} />
+          </div>
         </button>
       </div>
     </>

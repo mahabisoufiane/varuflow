@@ -10,7 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { cx } from "@/lib/cx";
 import styles from "./page.module.scss";
-import { ArrowRight, Package, TrendingUp, AlertTriangle, Users, Download, ShoppingBag, CheckCircle2 } from "lucide-react";
+import { ArrowRight, FileDown, Package, TrendingUp, AlertTriangle, Users, Download, ShoppingBag, CheckCircle2 } from "lucide-react";
 
 interface RevenuePoint { month: string; invoiced: number; collected: number; }
 interface TopCustomer { customer_id: string; company_name: string; total_invoiced: number; invoice_count: number; }
@@ -92,7 +92,8 @@ export default function AnalyticsPage() {
   const [data, setData]         = useState<Analytics | null>(null);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState<string | null>(null);
-  const [exporting, setExporting] = useState(false);
+  const [exporting, setExporting]       = useState(false);
+  const [exportingExcel, setExportingExcel] = useState(false);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate]     = useState("");
 
@@ -121,6 +122,16 @@ export default function AnalyticsPage() {
     } catch {
       // downloadBlob already toasts; swallow so the button resets cleanly.
     } finally { setExporting(false); }
+  }
+
+  async function handleExportExcel() {
+    setExportingExcel(true);
+    try {
+      const year = new Date(fromDate || new Date()).getFullYear();
+      await api.downloadBlob(`/api/reports/excel/revenue?year=${year}`, `revenue_${year}.xlsx`);
+    } catch {
+      // downloadBlob already toasts
+    } finally { setExportingExcel(false); }
   }
 
   if (loading) return (
@@ -225,6 +236,11 @@ export default function AnalyticsPage() {
             className="vf-btn-ghost text-xs px-4 h-9 disabled:opacity-60">
             <Download className="h-3.5 w-3.5" />
             {exporting ? "Exporting…" : "PDF"}
+          </button>
+          <button onClick={handleExportExcel} disabled={exportingExcel}
+            className="vf-btn-ghost text-xs px-4 h-9 disabled:opacity-60">
+            <FileDown className="h-3.5 w-3.5" />
+            {exportingExcel ? "Exporting…" : "Excel"}
           </button>
         </div>
       </div>

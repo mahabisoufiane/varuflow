@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { cx } from "@/lib/cx";
 import styles from "./page.module.scss";
 import {
-  AlertTriangle, ArrowRight, CheckCircle2, Package,
+  AlertTriangle, ArrowRight, CheckCircle2, FileDown, Package,
   Plus, TrendingDown, Warehouse, Activity, ShoppingCart, Search, Printer, Truck,
 } from "lucide-react";
 import { AutoReorderBadge } from "@/components/inventory/AutoReorderBadge";
@@ -54,6 +54,7 @@ export default function InventoryPage() {
   const [stock, setStock]     = useState<StockLevel[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch]   = useState("");
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     api.get<StockLevel[]>("/api/inventory/stock")
@@ -61,6 +62,15 @@ export default function InventoryPage() {
       .catch((e) => toast.error((e as Error).message))
       .finally(() => setLoading(false));
   }, []);
+
+  async function handleExportExcel() {
+    setExporting(true);
+    try {
+      const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+      await api.downloadBlob("/api/reports/excel/inventory", `inventory_${today}.xlsx`);
+    } catch (e: unknown) { toast.error((e as Error).message); }
+    finally { setExporting(false); }
+  }
 
   const lowStock        = stock.filter(s => s.is_low);
   const totalProducts   = new Set(stock.map(s => s.product_id)).size;
@@ -90,9 +100,20 @@ export default function InventoryPage() {
           <h1 className="text-xl font-bold tracking-tight vf-text-1">Inventory</h1>
           <p className="text-xs vf-text-m mt-0.5">Stock levels across all warehouses</p>
         </div>
-        <Link href="/inventory/products/new" className="vf-btn text-xs">
-          <Plus className="h-3.5 w-3.5" />Add product
-        </Link>
+        <div className="flex gap-2">
+          <button
+            onClick={handleExportExcel}
+            disabled={exporting}
+            className="vf-btn-ghost text-xs disabled:opacity-50"
+            title="Download as Excel"
+          >
+            <FileDown className="h-3.5 w-3.5" />
+            {exporting ? "Exporting…" : "Excel"}
+          </button>
+          <Link href="/inventory/products/new" className="vf-btn text-xs">
+            <Plus className="h-3.5 w-3.5" />Add product
+          </Link>
+        </div>
       </div>
 
       {/* ── KPI strip ───────────────────────────────────────────────────── */}

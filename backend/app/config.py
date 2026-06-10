@@ -212,13 +212,22 @@ class Settings(BaseSettings):
 settings = Settings()
 
 
+def is_production() -> bool:
+    """True when running in a production-like environment.
+
+    Accepts "production" or "prod" (case-insensitive) so a Railway deploy
+    with ENV=prod behaves identically to ENV=production.
+    """
+    return settings.ENV.strip().lower() in ("production", "prod")
+
+
 def validate_production_config() -> None:
     """Crash the process if dangerous defaults are still set in production.
 
     Called once from main.py lifespan BEFORE the app starts serving requests.
     Prints a clear message so Railway logs immediately surface the problem.
     """
-    if settings.ENV == "development":
+    if not is_production():
         # Local dev — all defaults are fine
         return
 

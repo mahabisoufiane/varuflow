@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, Building2, DollarSign, Package, Users, UserPlus, Link2, PartyPopper } from "lucide-react";
 
@@ -34,6 +34,13 @@ export default function OnboardingPage() {
   const searchParams = useSearchParams();
   const plan = searchParams.get("plan") ?? "";
   const supabase = createClient();
+
+  const VALID_PLANS = ["starter", "professional", "enterprise", ""];
+  const planIsInvalid = plan !== null && !VALID_PLANS.includes(plan);
+
+  useEffect(() => {
+    if (planIsInvalid) router.replace("/auth/signup");
+  }, [planIsInvalid, router]);
 
   const [step, setStep] = useState<StepKey>(1);
   const [loading, setLoading] = useState(false);
@@ -222,6 +229,7 @@ export default function OnboardingPage() {
   // ── Finish wizard ────────────────────────────────────────────────────────────
   async function finishWizard() {
     setLoading(true);
+    setApiError(null);
     try {
       const token = await getToken();
       if (!token) { router.push("/auth/login"); return; }
@@ -236,17 +244,24 @@ export default function OnboardingPage() {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
           body: JSON.stringify({ plan }),
         });
-        if (res.ok) {
-          const { url } = await res.json();
-          window.location.href = url;
-          return;
+        if (!res.ok) {
+          const b = await res.json().catch(() => ({}));
+          throw new Error(b.detail ?? "Checkout failed. Please try again or contact support.");
         }
+        const { url } = await res.json();
+        window.location.href = url;
+        return;
       }
-    } catch {}
-    router.push("/dashboard");
+      router.push("/dashboard");
+    } catch (err) {
+      setApiError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setLoading(false);
+    }
   }
 
   // ── Render ───────────────────────────────────────────────────────────────────
+  if (planIsInvalid) return null;
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
       <div className="w-full max-w-lg">
@@ -521,7 +536,7 @@ export default function OnboardingPage() {
               <span className="text-xs text-muted-foreground">Optional</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Sync invoices, VAt returns, and the chart of accounts automatically. Supported: Fortnox, Visma, and more.
+              Sync invoices, VAT returns, and the chart of accounts automatically. Fortnox is Sweden&apos;s leading accounting system — connect it here to keep Varuflow and your accountant in sync. This is optional; you can use Varuflow standalone and connect later.
             </p>
 
             <a

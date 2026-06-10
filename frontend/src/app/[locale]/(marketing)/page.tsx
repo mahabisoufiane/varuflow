@@ -1,6 +1,7 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
+import { PLAN_PRICES } from "@/lib/plan";
 import {
   ArrowRight, BarChart3, CheckCircle2, ChevronRight, FileText,
   Package, RefreshCw, ShoppingCart, TrendingUp, Users, Zap,
@@ -331,7 +332,7 @@ export default function HomePage() {
           <Badge>Pricing</Badge>
           <h2 className="mt-4 text-3xl font-bold tracking-tight">Simple pricing. No surprises.</h2>
           <p className="mt-4 text-slate-400">
-            From <span className="text-indigo-400 font-semibold">299 kr/month</span>. No per-user fees. No transaction cuts. Cancel any time.
+            From <span className="text-indigo-400 font-semibold">{PLAN_PRICES.starter.monthly.sek} kr/month</span>. No per-user fees. No transaction cuts. Cancel any time.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link

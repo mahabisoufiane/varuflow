@@ -96,7 +96,7 @@ export const VERTICALS: VerticalData[] = [
     slug: "retail",
     metaTitle: "Varuflow for Retail — Mobile POS & Inventory Management",
     metaDescription:
-      "Run your retail store with Varuflow: mobile POS, barcode scanning, real-time inventory, and e-commerce sync. Free plan available.",
+      "Run your retail store with Varuflow: mobile POS, barcode scanning, real-time inventory, and e-commerce sync. 14-day free trial, no credit card required.",
     eyebrow: "Built for modern retail",
     headline: "Sell anywhere. Never lose track of stock.",
     subheadline:

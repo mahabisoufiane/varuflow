@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CheckCircle2, Lock, ArrowRight } from "lucide-react";
+import { CheckCircle2, ArrowRight } from "lucide-react";
 import TrialSignupForm from "@/components/marketing/TrialSignupForm";
 import FAQ from "@/components/marketing/FAQ";
 import Link from "next/link";
@@ -20,16 +20,16 @@ import JsonLd, { softwareApplicationSchema } from "@/components/marketing/JsonLd
 const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://varuflow.vercel.app";
 
 export const metadata: Metadata = {
-  title: "Start Free — Try Varuflow | Varuflow",
+  title: "Try Varuflow Free for 14 Days | Varuflow",
   description:
-    "Try Varuflow free. Add up to 25 products and send 10 invoices. Upgrade anytime to unlock unlimited access, AI features, and full Pro tools.",
+    "Start your 14-day free trial of Varuflow. No credit card required. Full access to all Starter features. Upgrade to Professional when you're ready.",
   openGraph: {
-    title: "Try Varuflow Free — Upgrade When Ready",
-    description: "Start free. Upgrade when you need more.",
+    title: "14-Day Free Trial — Varuflow",
+    description: "Full Starter access for 14 days. No credit card required.",
     type: "website",
     url: `${BASE}/en/trial`,
   },
-  twitter: { card: "summary_large_image", title: "Try Varuflow Free" },
+  twitter: { card: "summary_large_image", title: "Try Varuflow Free for 14 Days" },
   alternates: {
     canonical: `${BASE}/en/trial`,
     languages: {
@@ -41,55 +41,55 @@ export const metadata: Metadata = {
   },
 };
 
-const FREE_INCLUDES = [
-  "Up to 25 products",
-  "Up to 10 invoices per month",
-  "Up to 3 customers",
-  "1 team member (owner only)",
-  "Basic inventory overview",
-  "Manual stock updates",
-  "PDF invoice download",
-  "Email support (48h response)",
+const TRIAL_INCLUDES = [
+  "Up to 500 products",
+  "Up to 150 customers",
+  "Up to 200 invoices/month",
+  "5 team members",
+  "Inventory & stock management",
+  "PDF & email invoicing",
+  "Fortnox integration",
+  "Bulk import",
+  "Email support"
 ];
 
-const PRO_LOCKED = [
-  "Unlimited products, customers & invoices",
+const PRO_FEATURES = [
+  "Up to 10,000 products",
+  "Unlimited customers & invoices",
+  "20 team members",
+  "Mobile app (Android & iOS)",
+  "Advanced analytics & forecasting",
+  "Automated dunning & reminders",
   "B2B customer portal",
-  "AI demand forecast & action cards",
-  "POS terminal (mobile & tablet)",
-  "Peppol e-invoicing & automated dunning",
-  "ZATCA, GDPR & Bokföringslagen compliance",
-  "Up to 20 team members",
-  "Fortnox & Stripe integration",
-  "Priority support (2h response)",
-  "Data export & API access",
+  "Priority support (4h response)",
+  "Low stock alerts & reorder rules",
 ];
 
 const FAQS = [
   {
-    question: "Is the free plan really free forever?",
+    question: "Do I need a credit card to start?",
     answer:
-      "Yes. The free plan is free forever with the limits shown. No credit card required to sign up. You only pay when you upgrade to Pro.",
+      "No. Your 14-day trial starts immediately with no credit card required. You only add payment details when you choose to upgrade.",
   },
   {
-    question: "What happens when I hit a limit?",
+    question: "What happens when my trial ends?",
     answer:
-      "You'll see a clear prompt to upgrade. Your existing data is never deleted — you just can't add more until you upgrade or remove old records.",
+      "Your account stays active — you keep all your data. You can continue on the Starter plan (499 kr/month) or upgrade to Professional for more capacity.",
   },
   {
-    question: "How much does Pro cost?",
+    question: "How much does Professional cost?",
     answer:
-      "Pro starts at 599 SEK/month (billed monthly) or 499 SEK/month (billed annually). See the pricing page for full details.",
+      "Professional is 1,490 kr/month (billed monthly) or 1,190 kr/month (billed annually). Starter is 499 kr/month. See the pricing page for full details.",
   },
   {
-    question: "Can I try Pro features before paying?",
+    question: "Can I upgrade or downgrade anytime?",
     answer:
-      "Yes — you get a 14-day Pro trial when you first sign up. After 14 days your account moves to the free plan unless you add a payment method.",
+      "Yes. Upgrade instantly and changes apply immediately. Downgrades apply at the next billing cycle. Cancel anytime from your billing settings.",
   },
   {
-    question: "Can I cancel anytime?",
+    question: "Is my data secure?",
     answer:
-      "Yes. Cancel from your billing settings at any time. You keep Pro access until the end of the billing period, then revert to the free plan.",
+      "All data is encrypted and stored on EU servers. We are fully GDPR compliant and follow Bokföringslagen requirements for Swedish businesses.",
   },
 ];
 
@@ -104,13 +104,13 @@ export default function TrialPage() {
           {/* Left: form */}
           <div>
             <p className="mb-4 inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-400">
-              Free forever — no card required
+              14-day trial — no credit card required
             </p>
             <h1 className="vf-text-1 text-3xl font-extrabold tracking-tight sm:text-4xl">
-              Start free.<br />Upgrade when you grow.
+              Try Varuflow free<br />for 14 days.
             </h1>
             <p className="vf-text-2 mt-4 text-base leading-relaxed">
-              Get started in under 2 minutes. Free plan is limited — upgrade to Pro to unlock everything.
+              Full Starter access from day one. Set up in under 5 minutes. Upgrade to Professional when you need more power.
             </p>
 
             <div className="mt-8">
@@ -127,13 +127,13 @@ export default function TrialPage() {
 
           {/* Right: what's free vs locked */}
           <div className="space-y-6">
-            {/* Free plan */}
+            {/* Starter trial */}
             <div className="rounded-xl border vf-border vf-bg-card p-5">
               <h2 className="vf-text-1 mb-4 text-sm font-bold uppercase tracking-widest text-green-500">
-                ✓ Free plan includes
+                ✓ Starter — included in your trial
               </h2>
               <ul className="space-y-2">
-                {FREE_INCLUDES.map((item) => (
+                {TRIAL_INCLUDES.map((item) => (
                   <li key={item} className="flex items-start gap-2.5">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
                     <span className="vf-text-2 text-sm">{item}</span>
@@ -142,24 +142,24 @@ export default function TrialPage() {
               </ul>
             </div>
 
-            {/* Pro locked */}
-            <div className="rounded-xl border border-dashed vf-border vf-bg-card p-5 opacity-80">
+            {/* Professional upgrade */}
+            <div className="rounded-xl border border-dashed vf-border vf-bg-card p-5">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-400">
-                  🔒 Unlocked with Pro
+                  ⚡ Professional — 1,490 kr/mo
                 </h2>
                 <Link
                   href="/pricing"
                   className="flex items-center gap-1 rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-500 transition-colors"
                 >
-                  Upgrade <ArrowRight className="h-3 w-3" />
+                  See plans <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
               <ul className="space-y-2">
-                {PRO_LOCKED.map((item) => (
+                {PRO_FEATURES.map((item) => (
                   <li key={item} className="flex items-start gap-2.5">
-                    <Lock className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400/60" />
-                    <span className="vf-text-m text-sm line-through decoration-indigo-400/40">{item}</span>
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400" />
+                    <span className="vf-text-2 text-sm">{item}</span>
                   </li>
                 ))}
               </ul>

@@ -351,6 +351,15 @@ async def auto_send_invoice(
         invoice_number=invoice.invoice_number,
     )
 
+    # Block auto-send for FREE orgs — trial expired or not subscribed.
+    from app.models.organization import OrgPlan
+    if org.plan == OrgPlan.FREE:
+        logger.info(
+            "recurring_send blocked: org on FREE plan",
+            extra={"org_id": str(org.id), "invoice_id": str(invoice.id)},
+        )
+        return result
+
     if not recurring.auto_send:
         return result  # explicit off — nothing to do, no audit noise
 

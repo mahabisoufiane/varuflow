@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Eye, Send, Clock, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import styles from "./page.module.scss";
+import { sanitizeHtml } from "@/lib/sanitize-html";
 
 const STATUS_MODULE: Record<string, keyof typeof styles> = { SENT: "statusSent", SCHEDULED: "statusScheduled" };
 
@@ -203,7 +204,7 @@ export default function CampaignDetailPage() {
           <h3 className="mb-3 font-medium text-[#1a2332]">Preview</h3>
           <div
             className="prose prose-sm max-w-none rounded border bg-white p-4"
-            dangerouslySetInnerHTML={{ __html: preview }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(preview) }}
           />
         </div>
       )}

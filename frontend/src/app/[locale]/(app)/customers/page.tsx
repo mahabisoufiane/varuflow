@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { cx } from "@/lib/cx";
 import styles from "./page.module.scss";
 import {
-  Building2, Mail, Phone, MessageCircle, Plus, Search, FileText, ArrowRight, X,
+  Building2, FileDown, Mail, Phone, MessageCircle, Plus, Search, FileText, ArrowRight, X,
   Hash, Globe, MapPin, Clock, AlertCircle, Users,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -74,6 +74,7 @@ export default function CustomersPage() {
   const [form, setForm]           = useState({ ...EMPTY });
   const [saving, setSaving]       = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   async function load() {
     try { setCustomers(await api.get<Customer[]>("/api/invoicing/customers?is_active=true")); }
@@ -84,6 +85,15 @@ export default function CustomersPage() {
   useEffect(() => { load(); }, []);
 
   function set(f: string, v: string) { setForm(s => ({ ...s, [f]: v })); }
+
+  async function handleExportExcel() {
+    setExporting(true);
+    try {
+      const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+      await api.downloadBlob("/api/reports/excel/customers", `customers_${today}.xlsx`);
+    } catch (e: unknown) { toast.error((e as Error).message); }
+    finally { setExporting(false); }
+  }
 
   function openCreate() {
     setEditing(null); setForm({ ...EMPTY }); setFormError(null); setOpen(true);
@@ -137,6 +147,15 @@ export default function CustomersPage() {
           <p className="text-xs vf-text-m mt-0.5">{customers.length} active customers</p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportExcel}
+            disabled={exporting}
+            className="vf-btn-ghost text-xs disabled:opacity-50"
+            title="Download as Excel"
+          >
+            <FileDown className="h-3.5 w-3.5" />
+            {exporting ? "Exporting…" : "Excel"}
+          </button>
           <Link
             href={"/customers/segments" as Parameters<typeof Link>[0]["href"]}
             className="vf-btn-secondary text-xs"

@@ -7,6 +7,7 @@ import {
   PenLine, Trash2, FileText, MapPin, Plus, ChevronDown, ChevronUp,
   RefreshCw, WifiOff, Wifi, Download, Eye, EyeOff,
 } from "lucide-react";
+import { sanitizeSvg } from "@/lib/sanitize-html";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -431,7 +432,7 @@ export default function SignaturesPage() {
                       <img src={s.svg_data} alt="Signature" className="h-24 w-full object-contain rounded-lg border border-gray-200 bg-white" />
                     )
                     : (
-                      <div className="rounded-lg bg-gray-50 p-2" dangerouslySetInnerHTML={{ __html: s.svg_data }} />
+                      <div className="rounded-lg bg-gray-50 p-2" dangerouslySetInnerHTML={{ __html: sanitizeSvg(s.svg_data) }} />
                     )
                 )}
 

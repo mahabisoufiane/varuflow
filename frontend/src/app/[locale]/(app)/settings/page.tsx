@@ -2,14 +2,14 @@
 
 import { api } from "@/lib/api-client";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { cx } from "@/lib/cx";
 import styles from "./page.module.scss";
-import { Check, CreditCard, Link2, Link2Off, RefreshCw, UserPlus, Trash2, Bell, Smartphone, Shield, Settings2, ChevronDown } from "lucide-react";
+import { Check, CreditCard, Link2, Link2Off, LogOut, RefreshCw, UserPlus, Trash2, Bell, Smartphone, Shield, Settings2, ChevronDown } from "lucide-react";
 import Link from "next/link";
 
 interface Org    { id: string; name: string; org_number: string | null; vat_number: string | null; address: string | null; plan: string; }
@@ -45,6 +45,10 @@ export default function SettingsPage() {
   const supabase = createClient();
   const params   = useParams<{ locale: string }>();
   const locale   = params?.locale ?? "en";
+
+  const [displayName,   setDisplayName]   = useState("");
+  const [nameSaving,    setNameSaving]    = useState(false);
+  const [nameOk,        setNameOk]        = useState(false);
 
   const [companyForm, setCompanyForm]     = useState({ company_name: "", org_number: "", vat_number: "", address: "" });
   const [companySaving, setCompanySaving] = useState(false);
@@ -117,7 +121,31 @@ export default function SettingsPage() {
           address:      meData.organization.address ?? "",
         });
       }).catch(() => {}).finally(() => setLoading(false));
+    if (isSupabaseConfigured) {
+      supabase.auth.getUser().then(({ data }) => {
+        setDisplayName(data.user?.user_metadata?.full_name ?? "");
+      });
+    }
   }, []);
+
+  async function handleName(e: React.FormEvent) {
+    e.preventDefault(); setNameSaving(true); setNameOk(false);
+    try {
+      const { error } = await supabase.auth.updateUser({ data: { full_name: displayName } });
+      if (error) throw error;
+      setNameOk(true);
+      setTimeout(() => setNameOk(false), 3000);
+      toast.success("Name updated");
+    } catch (e: unknown) { toast.error((e as Error).message ?? "Failed to save"); }
+    finally { setNameSaving(false); }
+  }
+
+  async function handleSettingsSignOut() {
+    try {
+      if (isSupabaseConfigured) await supabase.auth.signOut();
+    } catch {}
+    window.location.href = `/${locale}/auth/login`;
+  }
 
   function setC(f: string, v: string) { setCompanyForm(s => ({ ...s, [f]: v })); }
 
@@ -222,7 +250,7 @@ export default function SettingsPage() {
             <FieldRow label="Email" value={me?.email ?? ""} />
             <div className="grid grid-cols-2 gap-4">
               <FieldRow label="Role"  value={me?.role.toLowerCase() ?? ""} />
-              <FieldRow label="Plan"  value={`${me?.organization.plan.toLowerCase() ?? ""}${me?.organization.plan === "FREE" ? " — Early access" : ""}`} />
+              <FieldRow label="Plan"  value={me?.organization.plan === "ENTERPRISE" ? "Enterprise" : me?.organization.plan === "PRO" ? "Professional" : "Free"} />
             </div>
           </Card>
 
@@ -242,6 +270,30 @@ export default function SettingsPage() {
               </div>
             </Card>
           </Link>
+
+          {/* Personal info */}
+          <form onSubmit={handleName}>
+            <Card>
+              <h2 className="text-[13px] font-semibold vf-text-1">Personal info</h2>
+              <div className="space-y-1.5">
+                <Label htmlFor="display_name" className="text-xs font-medium vf-text-2">Display name</Label>
+                <input id="display_name" value={displayName}
+                  onChange={e => setDisplayName(e.target.value)}
+                  placeholder="Your name"
+                  className="vf-input w-full" />
+              </div>
+              <div className="flex items-center gap-3">
+                <button type="submit" disabled={nameSaving} className="vf-btn disabled:opacity-50">
+                  {nameSaving ? "Saving…" : "Save name"}
+                </button>
+                {nameOk && (
+                  <span className="flex items-center gap-1 text-sm text-emerald-400">
+                    <Check className="h-4 w-4" />Saved
+                  </span>
+                )}
+              </div>
+            </Card>
+          </form>
 
           {/* Company details */}
           <form onSubmit={handleCompany}>
@@ -339,6 +391,18 @@ export default function SettingsPage() {
               </div>
             </Card>
           )}
+
+          {/* Sign out */}
+          <Card>
+            <h2 className="text-[13px] font-semibold vf-text-1">Sign out</h2>
+            <p className="text-xs vf-text-m -mt-2">Sign out of your Varuflow account on this device.</p>
+            <button
+              onClick={handleSettingsSignOut}
+              className="vf-btn-ghost inline-flex w-fit items-center gap-2 text-red-400 hover:text-red-300"
+            >
+              <LogOut className="h-4 w-4" />Sign out
+            </button>
+          </Card>
         </>
       )}
 
@@ -546,33 +610,44 @@ function BillingTab({ plan }: { plan: string }) {
         <div className="flex items-center gap-3">
           <span className={cn(
             "rounded-full px-3 py-1 text-sm font-semibold",
-            plan === "PRO"
+            plan === "ENTERPRISE"
+              ? "text-white"
+              : plan === "PRO"
               ? "bg-indigo-600 text-white"
               : "vf-text-m"
           )}
-            style={plan !== "PRO" ? { background: "var(--vf-bg-elevated)", border: "1px solid var(--vf-border-strong)" } : {}}>
-            {plan === "PRO" ? "PRO" : "Free"}
+            style={
+              plan === "ENTERPRISE"
+                ? { background: "linear-gradient(135deg, #F59E0B, #D97706)" }
+                : plan !== "PRO"
+                ? { background: "var(--vf-bg-elevated)", border: "1px solid var(--vf-border-strong)" }
+                : {}
+            }>
+            {plan === "ENTERPRISE" ? "Enterprise" : plan === "PRO" ? "Professional" : "Starter — 14-day trial"}
           </span>
-          {plan === "PRO" && <span className="text-sm vf-text-m">All features unlocked</span>}
+          {(plan === "PRO" || plan === "ENTERPRISE") && (
+            <span className="text-sm vf-text-m">All features unlocked</span>
+          )}
         </div>
 
         {plan === "FREE" && (
           <div className={cx("rounded-xl p-4 space-y-3", styles.brandCard)}>
-            <p className="text-sm font-medium text-indigo-400">Upgrade to Varuflow PRO</p>
+            <p className="text-sm font-medium text-indigo-400">Your 14-day trial has ended</p>
+            <p className="text-xs vf-text-2">Upgrade to continue using all features.</p>
             <ul className="space-y-1.5">
-              {["Unlimited invoices", "Team members", "Peppol XML export", "Analytics", "Priority support"].map(f => (
+              {["Unlimited invoices & customers", "Up to 10,000 products", "Fortnox integration", "Advanced analytics", "Priority support"].map(f => (
                 <li key={f} className="flex items-center gap-2 text-sm vf-text-2">
                   <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0" />{f}
                 </li>
               ))}
             </ul>
             <button onClick={handleUpgrade} disabled={loading} className="vf-btn disabled:opacity-50">
-              {loading ? "Loading…" : "Upgrade now"}
+              {loading ? "Loading…" : "Upgrade to Starter — 499 kr/mo"}
             </button>
           </div>
         )}
 
-        {plan === "PRO" && (
+        {(plan === "PRO" || plan === "ENTERPRISE") && (
           <button onClick={handlePortal} disabled={loading} className="vf-btn-ghost disabled:opacity-50">
             {loading ? "Loading…" : "Manage subscription"}
           </button>

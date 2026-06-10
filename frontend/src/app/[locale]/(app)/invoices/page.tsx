@@ -9,7 +9,7 @@ import { cx } from "@/lib/cx";
 import styles from "./page.module.scss";
 import {
   AlertTriangle, ArrowRight, CheckCircle2, Clock,
-  FileText, Plus, Send, TrendingUp,
+  FileDown, FileText, Plus, Send, TrendingUp,
 } from "lucide-react";
 
 interface Invoice {
@@ -48,6 +48,7 @@ export default function InvoicesPage() {
   const [filter, setFilter] = useState<Filter>("ALL");
   const [updating, setUpdating] = useState<string | null>(null);
   const [markingOverdue, setMarkingOverdue] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   async function load() {
     try { setInvoices(await api.get<Invoice[]>("/api/invoicing/invoices")); }
@@ -66,6 +67,15 @@ export default function InvoicesPage() {
       await load();
     } catch (e: unknown) { toast.error((e as Error).message); }
     finally { setUpdating(null); }
+  }
+
+  async function handleExportExcel() {
+    setExporting(true);
+    try {
+      const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+      await api.downloadBlob("/api/reports/excel/invoices", `invoices_${today}.xlsx`);
+    } catch (e: unknown) { toast.error((e as Error).message); }
+    finally { setExporting(false); }
   }
 
   async function handleMarkOverdue() {
@@ -104,6 +114,15 @@ export default function InvoicesPage() {
           <p className="text-xs vf-text-m mt-0.5">{invoices.length} total invoices</p>
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={handleExportExcel}
+            disabled={exporting}
+            className="vf-btn-ghost text-xs disabled:opacity-50"
+            title="Download as Excel"
+          >
+            <FileDown className="h-3.5 w-3.5" />
+            {exporting ? "Exporting…" : "Excel"}
+          </button>
           <button
             onClick={handleMarkOverdue}
             disabled={markingOverdue}

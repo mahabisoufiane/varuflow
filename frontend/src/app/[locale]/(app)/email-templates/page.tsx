@@ -4,6 +4,7 @@ import { api } from "@/lib/api-client";
 import styles from "./page.module.scss";
 import { toast } from "sonner";
 import { Mail, Plus, Trash2, Copy, Send, ChevronRight, Tag, Eye, History, ToggleLeft, ToggleRight } from "lucide-react";
+import { sanitizeHtml } from "@/lib/sanitize-html";
 
 interface Template {
   id: string;
@@ -324,7 +325,7 @@ export default function EmailTemplatesPage() {
                   <hr className="mb-4" />
                   <div
                     className="prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: renderPreview(selected.body_html) }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(renderPreview(selected.body_html)) }}
                   />
                 </div>
               </div>

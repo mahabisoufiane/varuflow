@@ -160,7 +160,10 @@ export default function SignupPage() {
   const t = useTranslations();
   const supabase = createClient();
   const searchParams = useSearchParams();
-  const plan = searchParams.get("plan") ?? "";
+  // Allowlist plan values — never pass raw URL params to redirect paths
+  const VALID_PLANS = new Set(["starter", "pro", "professional", "enterprise", "free"]);
+  const rawPlan = searchParams.get("plan") ?? "";
+  const plan = VALID_PLANS.has(rawPlan.toLowerCase()) ? rawPlan : "";
 
   const [fullName, setFullName]           = useState("");
   const [email, setEmail]                 = useState("");
