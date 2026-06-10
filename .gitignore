@@ -48,6 +48,12 @@ frontend/frontend/
 # Claude
 .claude/
 
+# Security audit tools (local dev only)
+security-tools/
+
+# TypeScript build artifacts
+*.tsbuildinfo
+
 # Never commit real deployment secrets
 deploy/**/backend.env.secret
 deploy/**/frontend.env.secret
