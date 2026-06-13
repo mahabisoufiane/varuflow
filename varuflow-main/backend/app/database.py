@@ -1,7 +1,13 @@
-from collections.abc import AsyncGenerator
+from __future__ import annotations
 
+import uuid
+from collections.abc import AsyncGenerator
+from typing import Any
+
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.sql import Select
 
 from app.config import settings
 
@@ -29,3 +35,20 @@ class Base(DeclarativeBase):
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:
         yield session
+
+
+def scoped_select(model_class: type, org_id: uuid.UUID) -> Select:
+    """Return a SELECT already filtered by org_id.
+
+    Use this instead of bare select() for any query on tenant-owned data.
+    Forgetting org_id is a tenant isolation bug — this helper makes the
+    correct pattern the ergonomic default.
+
+    Example:
+        q = scoped_select(Product, org_id).where(Product.is_active == True)
+        result = await db.execute(q)
+
+    For queries that must NOT filter by org_id (e.g. public endpoints,
+    admin operations) use select() directly and add a comment explaining why.
+    """
+    return select(model_class).where(model_class.org_id == org_id)

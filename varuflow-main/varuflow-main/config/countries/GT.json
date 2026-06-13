@@ -1,0 +1,21 @@
+{
+  "iso_alpha2": "GT",
+  "display_name": "Guatemala",
+  "region": "americas",
+  "default_locale": "es-GT",
+  "currency": "GTQ",
+  "vat": {
+    "standard_rate_pct": 12.0,
+    "reduced_rates_pct": [],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d{7,8}-\\d",
+    "einvoicing_status": "FEL mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/GT/README.md"
+}

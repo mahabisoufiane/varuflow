@@ -56,6 +56,13 @@ jobs:
       - name: Run migrations
         run: poetry run alembic upgrade head
 
+      - name: Tenant isolation (security gate)
+        run: poetry run pytest tests/test_tenant_isolation.py -v --tb=short
+        env:
+          DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/varuflow_test
+          ENV: development
+          ALLOW_DEV_BYPASS: "true"
+
       - name: Run tests
         run: poetry run pytest --tb=short -q
 

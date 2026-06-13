@@ -35,7 +35,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import async_session, engine
 from app.main import app
-from app.middleware.auth import get_current_member
+from app.middleware.auth import MemberCtx, get_current_member
 from app.middleware.rate_limit import _reset_for_tests as _reset_rate_limit
 from app.models.organization import Organization, OrganizationMember, OrgRole
 
@@ -104,7 +104,7 @@ def client_factory():
     def _build(member: OrganizationMember):
         async def _override():
             user = {"user_id": member.user_id, "email": "test@varuflow.local"}
-            return user, member
+            return MemberCtx(user, member)
 
         app.dependency_overrides[get_current_member] = _override
         return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
