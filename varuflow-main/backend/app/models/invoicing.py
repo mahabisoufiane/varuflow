@@ -22,7 +22,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database import Base
+from app.database import Base, SoftDeleteMixin
 
 
 class InvoiceStatus(str, enum.Enum):
@@ -44,7 +44,7 @@ class RecurringFrequency(str, enum.Enum):
     MONTHLY = "MONTHLY"
 
 
-class Customer(Base):
+class Customer(SoftDeleteMixin, Base):
     __tablename__ = "customers"
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -114,7 +114,7 @@ class Customer(Base):
     )
 
 
-class Invoice(Base):
+class Invoice(SoftDeleteMixin, Base):
     __tablename__ = "invoices"
     __table_args__ = (
         # Enforced at DB level by migration v15. Prevents concurrent

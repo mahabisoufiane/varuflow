@@ -2,7 +2,7 @@
 **Date:** 2026-06-13  
 **Auditor:** Claude Code (automated review of source + pip-audit output)  
 **Scope:** varuflow-main/ — backend (FastAPI), frontend (Next.js), Dockerfile, CI, dependencies  
-**Phase:** 0 — Audit only. No fixes applied.
+**Phase:** 4 complete — Data Integrity.
 
 ---
 
@@ -57,15 +57,13 @@
 ### H-4 — aiohttp cross-origin cookie leak (CVE-2026-47265) ✅ NOT IN VENV
 **Detail:** Verified 2026-06-14: `aiohttp` not present in Poetry venv. See C-3. No action required.
 
-### H-5 — Background scheduler jobs not audited for tenant isolation
-**File:** `backend/app/services/scheduler.py`, `backend/app/routers/scheduler.py`  
-**Detail:** APScheduler jobs (dunning sweeps, auto-reorder, AI sequences, cart recovery) run without a per-request auth context. If any job queries data without explicit `org_id` filtering, it could process one tenant's records for all tenants. Not yet reviewed systematically.  
-**Fix:** Audit every scheduled function in `services/scheduler.py`. Ensure each query has `.where(Model.org_id == job_org_id)`. Add unit tests that seed two orgs and assert jobs don't bleed across.
+### H-5 — Background scheduler jobs not audited for tenant isolation ✅ RESOLVED (Phase 3)
+**File:** `backend/app/services/scheduler.py`  
+**Fix applied 2026-06-14:** Full audit of all 33 scheduled functions. All jobs use one of two safe patterns: (a) explicit fan-out — fetch all orgs then scope each delivery to that org's data; (b) cross-org maintenance sweep (e.g., quote expiry, token cleanup) that modifies records by business criteria without ever mixing org A's data into org B's delivery. No cross-tenant data leakage found. Added `tests/test_scheduler_isolation.py` with 3 tests: isolation of `_quote_expiry_sweep` across two orgs, draft-status guard, and scheduler job-ID registration smoke test.
 
-### H-6 — No automated database backup script in repo
-**File:** (missing — no `scripts/backup.py` or similar)  
-**Detail:** No scripted, tested backup procedure exists in the repository. The `PROD_AUDIT.md` prompt identifies this as required: a backup script + documented, tested restore. Railway Postgres offers point-in-time recovery but it's not operator-runnable from the codebase.  
-**Fix:** Phase 3 — write `scripts/backup.sh` (pg_dump → compressed → off-site store) and `scripts/restore.sh` with a sandbox-only guard. Document restore procedure in `OPERATIONS.md`.
+### H-6 — No automated database backup script in repo ✅ RESOLVED (Phase 3)
+**File:** `scripts/backup.sh`, `scripts/restore.sh`  
+**Fix applied 2026-06-14:** `scripts/backup.sh` — pg_dump `--format=custom --compress=9` piped through gzip to stdout; caller pipes to a file or S3. `scripts/restore.sh` — hard guard: `ENV != development` → exit 1 with clear message; prompts for confirmation before dropping objects; gunzip → pg_restore `--clean --if-exists`. Restore procedure documented in script header.
 
 ### H-7 — `paramiko` SHA-1 algorithm allowed (CVE-2026-44405) ✅ NOT IN VENV
 **Detail:** Verified 2026-06-14: `paramiko` not present in Poetry venv. System-pip-only artifact. No action required.
@@ -82,15 +80,14 @@
 
 ## MEDIUM
 
-### M-1 — request_id not propagated into all log contexts
-**File:** `backend/app/middleware/request_id.py`  
-**Detail:** The middleware injects `X-Request-ID` into the response header but `request_id` is not added to Python logger's `extra` dict globally — so log lines from services called deeper in the stack won't carry the ID. Tenant/user correlation works only for lines explicitly logged with `extra={"org_id": ...}`.  
-**Fix:** Use a `contextvars.ContextVar` populated by the middleware; add a logging filter that injects `request_id`, `org_id`, and `user_id` into every log record.
+### M-1 — request_id not propagated into all log contexts ✅ RESOLVED (Phase 3)
+**File:** `backend/app/main.py`  
+**Fix applied 2026-06-14:** `request_id_ctx` ContextVar already existed in `middleware/request_id.py` (set by `RequestIdMiddleware`). Added `_RequestContextFilter` logging filter in `main.py` that reads the ContextVar on every log record and stamps `record.request_id`. Updated `_JsonFormatter.format()` to emit `"request_id"` in the JSON output when non-null. Filter registered on the root console handler via `dictConfig`. Every log line from any service function now carries the correlation ID automatically.
 
-### M-2 — Soft delete not universal across all business-critical models
+### M-2 — Soft delete not universal across all business-critical models ✅ RESOLVED (Phase 4)
 **File:** `backend/app/models/` — spot check needed across 160+ model files  
 **Detail:** CLAUDE.md Rule 5 specifies soft delete on Customer, Invoice, Product, Organization. Some models (tasks, stock movements, audit entries) use hard delete. Without systematic soft-delete + retention, accidental deletes are unrecoverable.  
-**Fix:** Audit which tables need soft delete. Add `deleted_at: datetime | None` column + Alembic migration for any missing ones. Add a base mixin in `database.py` that exposes `.soft_delete()` and a `is_deleted` filter.
+**Fix applied 2026-06-14:** Added `SoftDeleteMixin` to `app/database.py` with `.soft_delete()`, `.is_deleted`, and `deleted_at: Mapped[datetime | None]` column. Applied mixin to `Customer`, `Invoice` (invoicing.py), `Product` (inventory.py), and `Organization` (organization.py). Alembic migration `a1b2c3d4e5f6` adds `deleted_at TIMESTAMPTZ NULL` to all four tables. NULL = active; router-level filtering is opt-in per endpoint.
 
 ### M-3 — No GDPR data-export endpoint verified
 **File:** (expected in routers, unverified)  
@@ -102,35 +99,33 @@
 **Detail:** The status-history endpoint returns per-service uptime buckets and recent incidents with no authentication. While this is intentionally public (status page), it exposes infrastructure topology (which services exist, when they degraded) to unauthenticated callers. Low operational risk but worth documenting.  
 **Fix:** Document as intentional in `OPERATIONS.md`. If incident descriptions should be private, gate this endpoint behind X-Admin-Token.
 
-### M-5 — `bcrypt<4.0.0` pin creates version drift
+### M-5 — `bcrypt<4.0.0` pin creates version drift ✅ RESOLVED (Phase 4)
 **File:** `backend/pyproject.toml` — `bcrypt = ">=3.2.0,<4.0.0"`  
 **Detail:** The pin prevents using bcrypt 4.x due to a passlib self-test failure. This is documented in the comment but passlib is no longer actively maintained. Remaining on bcrypt 3.x means missing security fixes in 4.x.  
-**Fix:** Migrate away from passlib to direct bcrypt 4.x usage (`bcrypt.hashpw` / `bcrypt.checkpw`) or switch to `argon2-cffi` for password hashing. Unpin bcrypt after migration.
+**Fix applied 2026-06-14:** Replaced `passlib.context.CryptContext` with direct `bcrypt 4.x` API calls (`bcrypt.hashpw` / `bcrypt.checkpw` / `bcrypt.gensalt`) in `services/auth_service.py` and `routers/pos_auth.py`. Removed `passlib` from `pyproject.toml`. Updated constraint to `bcrypt = ">=4.0.0"`. Wire format (`$2b$12$...`) is unchanged — existing password hashes verify correctly with the direct API.
 
 ### M-6 — APScheduler uses in-memory job store
 **File:** `backend/app/services/scheduler.py`  
 **Detail:** APScheduler defaults to in-memory storage for jobs. On Railway, a restart (e.g., deploy, crash) drops all scheduled one-off jobs. Recurring jobs survive (they're recreated at startup) but deferred one-off jobs (e.g., "send follow-up in 24h") are lost silently.  
 **Fix:** Configure APScheduler with a PostgreSQL job store (`SQLAlchemyJobStore` using the existing DB URL) so jobs survive restarts. Or migrate to a proper task queue (Celery + Redis).
 
-### M-7 — No seed/demo script with production guard
-**File:** (missing — no `scripts/seed.py`)  
-**Detail:** The dev bypass auto-creates a demo org+member in `middleware/auth.py` (good), but there's no explicit seeding script with an `if ENV != "development": sys.exit(1)` guard. Phase 3 requires this.  
-**Fix:** Create `scripts/seed_dev.py` with a hard guard: `assert os.getenv("ENV") == "development", "Refusing to seed non-dev environment"`.
+### M-7 — No seed/demo script with production guard ✅ RESOLVED (Phase 3)
+**File:** `scripts/seed_dev.py`  
+**Fix applied 2026-06-14:** Created `scripts/seed_dev.py` with hard guard at top: `assert os.getenv("ENV") == "development", "Refusing to seed non-development environment."` Script is idempotent (checks if demo org already exists before inserting). Creates demo org (ENTERPRISE plan) + owner member with fixed UUIDs for repeatability.
 
-### M-8 — Middleware order in `main.py` should be verified after every change
-**File:** `backend/app/main.py`  
-**Detail:** CORS must be first. The existing CLAUDE.md documents this and says it "broke production once." The middleware registration order is fragile — any developer adding `app.add_middleware(...)` at the top of a block can silently reorder it. No automated test asserts the order.  
-**Fix:** Add a test `test_middleware_order.py` that introspects `app.middleware_stack` and asserts `CORSMiddleware` is outermost.
+### M-8 — Middleware order in `main.py` should be verified after every change ✅ RESOLVED (Phase 3)
+**File:** `backend/tests/test_middleware_order.py`  
+**Fix applied 2026-06-14:** Created `tests/test_middleware_order.py` with 3 tests: (1) CORSMiddleware is outer to RateLimitMiddleware in the built ASGI chain; (2) CORSMiddleware is outer to RequestIdMiddleware; (3) CORSMiddleware is present in `app.user_middleware`. Tests walk `app.middleware_stack` (the built ASGI chain) from outermost to innermost and compare positions.
 
 ### M-9 — No PII inventory document
 **File:** (missing — `DATA_PROCESSING.md` referenced in Phase 7)  
 **Detail:** ~160 models, many containing customer PII (email, phone, address, TOTP secrets, financial data). No authoritative inventory maps which columns hold PII, what retention policy applies, or confirms encryption status.  
 **Fix:** Phase 7 — generate `DATA_PROCESSING.md` by scanning all models for string columns that look like PII (`email`, `phone`, `address`, `name`, `iban`, etc.) and cross-referencing with `app/services/encryption.py`.
 
-### M-10 — Connection pool shared with scheduler jobs
+### M-10 — Connection pool shared with scheduler jobs ✅ RESOLVED (Phase 4)
 **File:** `backend/app/database.py`  
 **Detail:** APScheduler jobs and HTTP request handlers share the same `async_session` pool (pool_size=10, max_overflow=20). Under load, long-running scheduler jobs can exhaust connections and starve HTTP handlers. No connection timeout is configured on the pool.  
-**Fix:** Add `pool_timeout=30` and `connect_args={"command_timeout": 60}` to the engine. Consider a separate pool for the scheduler with lower max_overflow.
+**Fix applied 2026-06-14:** Added `pool_timeout=30` (raise `TimeoutError` after 30 s waiting for a connection) and `connect_args={"command_timeout": 60}` (asyncpg per-statement timeout) to `create_async_engine`. HTTP handlers now fail fast instead of blocking indefinitely if the pool is exhausted.
 
 ### M-11 — Frontend auth guards not systematically verified
 **File:** `frontend/src/app/[locale]/` — 369 pages  
@@ -151,19 +146,17 @@
 **Detail:** `CALENDLY_DETRACTOR_URL`, `CALENDLY_CSM_URL`, `CALENDLY_FOUNDER_URL` default to `https://calendly.com/varuflow/...`. These are non-sensitive but if Calendly links change, a code deploy is required.  
 **Fix:** Already env-var backed (pydantic-settings will read from env). No code change needed — just ensure Railway Variables are set if the defaults need to change.
 
-### L-3 — Health endpoint leaks ENV name
-**File:** `backend/app/routers/health.py` — `"env": settings.ENV`  
-**Detail:** `/health` returns `"env": "production"` (or "development") to any unauthenticated caller. This leaks environment info useful to attackers. Minor issue — the response is intentional for ops tooling.  
-**Fix:** Remove `env` from the unauthenticated response; move to the `deep` (admin-gated) block.
+### L-3 — Health endpoint leaks ENV name ✅ RESOLVED (Phase 3)
+**File:** `backend/app/routers/health.py`  
+**Fix applied 2026-06-14:** Removed `"env": settings.ENV` from the public `/health` response body. The field is no longer emitted to unauthenticated callers. Ops tooling that needs the environment value should read it from Railway Variables directly or use the gated `?deep=1` endpoint with `X-Admin-Token`.
 
 ### L-4 — `RATE_LIMIT_DISABLED` flag could be accidentally enabled in production ✅ RESOLVED (Phase 2)
 **File:** `backend/app/config.py`  
 **Fix applied 2026-06-14:** Added `RATE_LIMIT_DISABLED=True` as item 8 in `validate_production_config()`. The app now refuses to start in production if rate limiting is disabled.
 
-### L-5 — No `KNOWN_LIMITS.md` file yet
-**File:** (missing)  
-**Detail:** Several constraints (in-memory rate limiter, single-replica APScheduler, BankID test env, bcrypt<4.0.0 pin) are known architectural limits that are currently only documented in comments and CLAUDE.md.  
-**Fix:** Create `KNOWN_LIMITS.md` before Phase 6 and list each limit with: what it is, what the trigger for upgrading it is, and what the upgrade path looks like.
+### L-5 — No `KNOWN_LIMITS.md` file yet ✅ RESOLVED (Phase 3)
+**File:** `KNOWN_LIMITS.md` (created)  
+**Fix applied 2026-06-14:** Created `KNOWN_LIMITS.md` with 5 documented limits: (1) in-memory rate limiter, (2) APScheduler in-memory job store, (3) BankID test environment default, (4) bcrypt<4.0.0 pin, (5) advisory-lock single-database scope. Each entry documents the trigger condition, current mitigation, and upgrade path with ticket references.
 
 ### L-6 — Docker image does not pin base Python version digest
 **File:** `Dockerfile` — `FROM python:3.11-slim`  

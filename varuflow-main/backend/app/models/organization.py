@@ -10,7 +10,7 @@ from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Tim
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database import Base
+from app.database import Base, SoftDeleteMixin
 
 
 class OrgPlan(str, enum.Enum):
@@ -27,7 +27,7 @@ class OrgRole(str, enum.Enum):
     MEMBER = "MEMBER"
 
 
-class Organization(Base):
+class Organization(SoftDeleteMixin, Base):
     __tablename__ = "organizations"
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -148,6 +148,19 @@ class Organization(Base):
     trial_source: Mapped[str | None] = mapped_column(String(50), nullable=True)
     # ─────────────────────────────────────────────────────────────────────────
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    # v109 — Country workspaces. `entity_type` distinguishes standalone orgs
+    # from parent hubs and country branches. `parent_org_id` links a branch
+    # back to its hub. `country_code` is ISO-3166-1 alpha-2 (SE, NO, DK…).
+    entity_type: Mapped[str] = mapped_column(
+        String(20), server_default="standalone", default="standalone", nullable=False
+    )  # standalone | parent | branch
+    parent_org_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("organizations.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    country_code: Mapped[str | None] = mapped_column(String(2), nullable=True)
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -188,6 +201,14 @@ class OrganizationMember(Base):
     push_portal_order_enabled: Mapped[bool] = mapped_column(
         Boolean, server_default="true", default=True, nullable=False
     )
+    # Module access mode: "ALL" = sees everything their plan allows (default for owner/admin),
+    # "RESTRICTED" = only sees modules listed in member_modules table.
+    module_access_mode: Mapped[str] = mapped_column(
+        String(20), server_default="ALL", default="ALL", nullable=False
+    )
+    # POS PIN: bcrypt hash of the 6-digit PIN the cashier uses to log in to
+    # the tablet POS. NULL means this member has no POS access via PIN.
+    pos_pin_hash: Mapped[str | None] = mapped_column(String(100), nullable=True)
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

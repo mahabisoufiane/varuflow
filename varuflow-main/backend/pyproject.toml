@@ -21,6 +21,7 @@ httpx = ">=0.28"
 python-jose = {extras = ["cryptography"], version = ">=3.4.0"}
 python-multipart = ">=0.0.20"
 reportlab = ">=4.4"
+openpyxl = ">=3.1"
 slowapi = ">=0.1.9"
 stripe = ">=12.0"
 openai = ">=1.78"
@@ -28,10 +29,7 @@ email-validator = ">=2.2"
 apscheduler = {version = ">=3.11", extras = ["asyncio"]}
 sentry-sdk = {version = ">=2.25", extras = ["fastapi"]}
 # ── Standalone local auth ──────────────────────────────────────────────────
-passlib = {extras = ["bcrypt"], version = ">=1.7"}
-# bcrypt 4.0.0+ rejects passwords >72 bytes in its wrap-bug detection, which
-# breaks passlib's internal self-test at import time. Pin below 4.0.0.
-bcrypt = ">=3.2.0,<4.0.0"
+bcrypt = ">=4.0.0"
 pyotp = ">=2.9"
 aiosmtplib = ">=3.0"
 # ── PostHog product analytics ─────────────────────────────────────────────

@@ -17,9 +17,9 @@ import secrets
 import uuid
 from datetime import UTC, datetime, timedelta
 
+import bcrypt as _bcrypt
 import pyotp
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 # Crypto primitives
 # --------------------------------------------------------------------------- #
 
-_pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
+_BCRYPT_ROUNDS = 12
 
 # Precomputed hash of a fixed dummy password used to equalise the
 # "user not found" and "user exists with wrong password" code paths.
@@ -40,7 +40,10 @@ _pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12
 # timing difference lets an attacker enumerate registered emails.
 # The plaintext is irrelevant \u2014 what matters is that _verify_password
 # always performs one bcrypt comparison on every login attempt.
-_DUMMY_BCRYPT_HASH = _pwd_ctx.hash("dummy-password-for-timing-equalisation")
+_DUMMY_BCRYPT_HASH = _bcrypt.hashpw(
+    b"dummy-password-for-timing-equalisation",
+    _bcrypt.gensalt(_BCRYPT_ROUNDS),
+).decode()
 
 _ACCESS_TOKEN_EXPIRE_MINUTES = 15
 _REFRESH_TOKEN_EXPIRE_DAYS = 7
@@ -52,11 +55,11 @@ _ALGORITHM = "HS256"
 
 
 def _hash_password(plain: str) -> str:
-    return _pwd_ctx.hash(plain)
+    return _bcrypt.hashpw(plain.encode(), _bcrypt.gensalt(_BCRYPT_ROUNDS)).decode()
 
 
 def _verify_password(plain: str, hashed: str) -> bool:
-    return _pwd_ctx.verify(plain, hashed)
+    return _bcrypt.checkpw(plain.encode(), hashed.encode())
 
 
 def _secure_token() -> str:
@@ -344,7 +347,7 @@ async def refresh_access_token(
     # Either way, the safe response is to revoke the entire session family so
     # the attacker loses access and the user is forced to re-authenticate.
     if rt.revoked:
-        log.warning(
+        log.warning(  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
             "Refresh token reuse detected — revoking all tokens | user_id=%s",
             rt.user_id,
         )
@@ -476,7 +479,7 @@ async def totp_disable(
         user.failed_login_attempts += 1
         if user.failed_login_attempts >= _MAX_FAILED_ATTEMPTS:
             user.locked_until = datetime.now(UTC) + timedelta(minutes=_LOCKOUT_MINUTES)
-            log.warning("Account locked (mfa_disable/password) | user_id=%s", user_id)
+            log.warning("Account locked (mfa_disable/password) | user_id=%s", user_id)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         await db.commit()
         raise ValueError("INVALID_PASSWORD")
 
@@ -599,5 +602,5 @@ async def confirm_password_reset(
         rt.revoked = True
 
     await db.commit()
-    log.info("Password reset complete | user_id=%s", user.id)
+    log.info("Password reset complete | user_id=%s", user.id)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
     return user.id
