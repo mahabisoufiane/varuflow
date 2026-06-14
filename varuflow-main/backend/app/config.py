@@ -42,9 +42,10 @@ class Settings(BaseSettings):
 
     # ── Third-party services ──────────────────────────────────────────────────
     RESEND_API_KEY:       str = ""
-    STRIPE_SECRET_KEY:    str = ""
-    STRIPE_WEBHOOK_SECRET:str = ""
-    STRIPE_PRO_PRICE_ID:  str = ""
+    STRIPE_SECRET_KEY:         str = ""
+    STRIPE_WEBHOOK_SECRET:     str = ""
+    STRIPE_STARTER_PRICE_ID:   str = ""   # Starter plan (499 SEK/mo) — falls back to PRO price if blank
+    STRIPE_PRO_PRICE_ID:       str = ""   # Professional plan (1490 SEK/mo)
     FORTNOX_CLIENT_ID:    str = ""
     FORTNOX_CLIENT_SECRET:str = ""
     # Must be set per deployment (dev / preprod / prod / per-country).
@@ -211,13 +212,22 @@ class Settings(BaseSettings):
 settings = Settings()
 
 
+def is_production() -> bool:
+    """True when running in a production-like environment.
+
+    Accepts "production" or "prod" (case-insensitive) so a Railway deploy
+    with ENV=prod behaves identically to ENV=production.
+    """
+    return settings.ENV.strip().lower() in ("production", "prod")
+
+
 def validate_production_config() -> None:
     """Crash the process if dangerous defaults are still set in production.
 
     Called once from main.py lifespan BEFORE the app starts serving requests.
     Prints a clear message so Railway logs immediately surface the problem.
     """
-    if settings.ENV == "development":
+    if not is_production():
         # Local dev — all defaults are fine
         return
 
@@ -303,7 +313,16 @@ def validate_production_config() -> None:
             "Set it to: https://varuflow-production.up.railway.app/api/integrations/fortnox/callback"
         )
 
-    # 8. Sentry DSN \u2014 not a hard crash, but a missing DSN means silent failures
+    # 8. RATE_LIMIT_DISABLED must never be True in production \u2014 it silently
+    #    removes all rate limits and could be accidentally left over from a
+    #    debugging session.
+    if settings.RATE_LIMIT_DISABLED:
+        errors.append(
+            "RATE_LIMIT_DISABLED=True in production disables ALL rate limiting. "
+            "Remove this flag from Railway Variables before going live."
+        )
+
+    # 9. Sentry DSN \u2014 not a hard crash, but a missing DSN means silent failures
     #    in production. Log a critical warning so it shows up in Railway logs.
     if not settings.SENTRY_DSN:
         log.warning(

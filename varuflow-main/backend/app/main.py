@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import logging.config
 import os
@@ -17,13 +18,34 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 
-# Structured JSON-style logging
+
+class _JsonFormatter(logging.Formatter):
+    """True structured-JSON formatter.
+
+    Replaces the previous format-string approach which used %(message)r
+    (Python repr) and produced invalid JSON whenever a log message contained
+    double-quotes, newlines, or non-ASCII characters.
+    """
+
+    def format(self, record: logging.LogRecord) -> str:
+        record.message = record.getMessage()
+        doc: dict = {
+            "time": self.formatTime(record, self.datefmt),
+            "level": record.levelname,
+            "logger": record.name,
+            "msg": record.message,
+        }
+        if record.exc_info:
+            doc["exc"] = self.formatException(record.exc_info)
+        return json.dumps(doc, ensure_ascii=False)
+
+
 logging.config.dictConfig({
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
         "json": {
-            "format": '{"time":"%(asctime)s","level":"%(levelname)s","logger":"%(name)s","msg":%(message)r}',
+            "()": _JsonFormatter,
         }
     },
     "handlers": {
@@ -35,7 +57,7 @@ logging.config.dictConfig({
     "root": {"level": "INFO", "handlers": ["console"]},
 })
 
-from app.config import settings, validate_production_config
+from app.config import settings, validate_production_config, is_production
 from app.database import engine
 from app.middleware.country import CountryMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
@@ -43,7 +65,7 @@ from app.middleware.readonly import ReadOnlyMiddleware
 from app.middleware.pause_guard import PauseWriteGuardMiddleware
 from app.middleware.request_id import RequestIdMiddleware
 from app.routers import accounting, activity, ai_automation, ai_engine, analytics, approval_chains, audit, auth, auto_reorder, bank_feed, bi, billing, bookings, budget, campaigns, balance_sheet, cashflow, ceo_dashboard, churn_dashboard, commissions, compliance_audit_chain, compliance_data_residency, compliance_field_masking, compliance_pentest, contract_signing, contracts, countries, credit_notes, crm, crm_sync, currencies, custom_fields, customer_activity, customer_contacts, customer_notes, customer_statements, customer_tags, data_import, developer, documents, einvoice, email_sequences, expense_activity, expense_budgets, expense_notes, expense_reports, expense_tags, expenses, financial_reports, fixed_assets, forecasting, franchise, gcc_payments, gdpr, gdpr_consent, gift_cards, health, hr_employee_onboarding, hr_employees, hr_leave, hr_org_chart, hr_reviews, hr_time, hr_timesheets, hr_training, integrations, inventory, inventory_audit, invoice_activity, invoice_notes, invoice_tags, invoice_templates, invoicing, kpi_goals, labels, lead_forms, leads, ledger, local_auth, loyalty, manufacturing, market_expansion, meeting_links, mileage_logs, mobile_routes, mobile_signatures, mobile_terminal, mobile_voice_notes, multi_entity, notification_channels, notifications, okr, onboarding, online_orders, open_banking, partner_program, payroll, payment_options, after_sales, messaging, petty_cash, pnl, policy_docs, portal, portal_admin, pos, pos_quick_buttons, pricing_experiments, product_activity, product_import, product_notes, product_tags, projects, purchase_order_notes, purchase_order_tags, purchase_order_activity, purchase_requests, qc, quotes, recurring, recurring_expenses, referrals, reports, reviews, sandbox, saved_filters, scenario_planning, scheduling, search, segments, settings_security, shifts, shop_config, shopify_sync, stock_counts, stock_transfers, storefront, supplier_activity, supplier_contacts, supplier_credit_notes, supplier_notes, supplier_portal, supplier_statements, supplier_tags, tags, team, uploads, vat_return, visma_sync, waitlist, warehouse_activity, warehouse_notes, warehouse_tags, webhooks, widget, work_management, zapier_connect, zatca, zakat, tasks, announcements, job_cards, email_templates, sms_outbox, local_payments, merchant_subscriptions, reconciliation, bom_extras, landed_costs, vendor_ratings, kitting, dashboard_builder, report_builder, cashflow_prediction, anomaly_detection, cohort_analysis, esign, risk_register, insurance, regulatory_calendar, whistleblower, conflict_of_interest, carbon, esg, supplier_sustainability, investor_updates, cap_table, board_packs, data_room, marketing_attribution, ab_testing, landing_pages, marketing_broadcasts, nps, sop_library, checklists, recurring_reminders, decision_log, family_accounts, booking_subscriptions, group_bookings, booking_waitlist, wallet_passes, customer_app_config, customer_chat, video_consultations, voice_notes, notification_prefs, service_status, service_timeline, live_tracking, photo_updates, customer_history
-from app.routers import accounting_partners, operator_referrals
+from app.routers import accounting_partners, operator_referrals, admin as admin_router
 # Sprint 9: Personalization + Loyalty & Rewards
 from app.routers import (
     achievements,
@@ -124,6 +146,13 @@ from app.routers import (
 from app.routers import trial
 # Upsell trigger engine
 from app.routers import upsells
+from app.routers import branding
+# Dev-only tooling (plan switcher etc.) — import always, 404-guarded inside
+from app.routers import dev_tools
+# POS device authentication (PIN-based, standalone POS app)
+from app.routers import pos_auth
+from app.routers import excel_reports
+from app.routers import scheduler as scheduler_router
 from app.services.scheduler import create_scheduler
 
 # slowapi's `get_remote_address` reads `request.client.host`, which on
@@ -212,7 +241,12 @@ async def lifespan(app: FastAPI):
     scheduler = create_scheduler()
     scheduler.start()
     yield
-    scheduler.shutdown(wait=False)
+    # Drain in-flight jobs before the process exits so Railway's 30 s
+    # SIGTERM→SIGKILL window is used for a clean shutdown.  shutdown() is
+    # synchronous, so run it in the thread-pool executor to avoid blocking
+    # the event loop while waiting for pending asyncio tasks to finish.
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, lambda: scheduler.shutdown(wait=True))
     await engine.dispose()
 
 
@@ -220,8 +254,10 @@ async def lifespan(app: FastAPI):
 # attack surface (they enumerate every endpoint + schema for anyone who
 # finds the URL). The raw OpenAPI JSON stays available at /openapi.json
 # for internal tooling and the frontend API-types codegen.
-_docs_url = None if settings.ENV == "production" else "/docs"
-_redoc_url = None if settings.ENV == "production" else "/redoc"
+_prod = is_production()
+_docs_url    = None   if _prod else "/docs"
+_redoc_url   = None   if _prod else "/redoc"
+_openapi_url = None   if _prod else "/openapi.json"
 
 app = FastAPI(
     title="Varuflow API",
@@ -230,6 +266,7 @@ app = FastAPI(
     lifespan=lifespan,
     docs_url=_docs_url,
     redoc_url=_redoc_url,
+    openapi_url=_openapi_url,
 )
 
 app.state.limiter = limiter
@@ -250,7 +287,7 @@ app.add_middleware(PauseWriteGuardMiddleware)
 # (login/signup/MFA/billing/AI — see RateLimitMiddleware._PATH_LIMITS).
 # Must be added BEFORE CORSMiddleware so CORS headers are still injected
 # on 429 responses. Set RATE_LIMIT_DISABLED=true to bypass in tests.
-if settings.RATE_LIMIT_DISABLED and settings.ENV == "production":
+if settings.RATE_LIMIT_DISABLED and _prod:
     # Loud startup warning — a production deploy with rate limiting
     # disabled is almost certainly a config accident.
     import logging as _logging
@@ -274,9 +311,23 @@ app.add_middleware(CountryMiddleware)
 # request. CountryMiddleware and RequestIdMiddleware are registered above
 # (inner) so any error they produce is still wrapped by CORS headers and
 # never reaches the browser without Access-Control-Allow-Origin.
+_cors_origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
+if _prod:
+    # Strip any localhost/dev origins that may have crept into the Railway env var.
+    _filtered = [o for o in _cors_origins if "localhost" not in o and "127.0.0.1" not in o]
+    if _filtered:
+        _cors_origins = _filtered
+    else:
+        # CORS_ORIGINS on Railway only had localhost values — keep the full list so
+        # the app stays reachable, but log loudly so an operator can correct it.
+        log.warning(
+            "CORS_ORIGINS contains only localhost origins in production mode. "
+            "Set CORS_ORIGINS=https://varuflow.vercel.app on Railway."
+        )
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS.split(","),
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With", "X-Country-Code", "X-Request-ID", "X-Confirm-Delete", "X-Admin-Key"],
@@ -300,8 +351,9 @@ async def _add_security_headers(request: Request, call_next):
     response.headers["Content-Security-Policy"] = (
         "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
     )
-    # HSTS — only safe to emit when served over HTTPS (Railway terminates TLS).
-    if settings.ENV == "production":
+    # HSTS — emit when in production or when Railway signals HTTPS via X-Forwarded-Proto.
+    # The dual check handles ENV=prod (short form) and direct Railway TLS termination.
+    if _prod or request.headers.get("x-forwarded-proto") == "https":
         response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
     return response
 
@@ -362,8 +414,11 @@ app.include_router(inventory.router)
 app.include_router(stock_counts.router)
 app.include_router(invoicing.router)
 app.include_router(waitlist.router)
+app.include_router(admin_router.router)
 app.include_router(analytics.router)
 app.include_router(team.router)
+app.include_router(branding.router)
+app.include_router(dev_tools.router)
 app.include_router(recurring.router)
 app.include_router(recurring.public_router)
 app.include_router(recurring_expenses.router)
@@ -371,6 +426,8 @@ app.include_router(mileage_logs.router)
 app.include_router(expense_budgets.router)
 app.include_router(expense_reports.router)
 app.include_router(pos.router)
+app.include_router(pos_auth.router)
+app.include_router(scheduler_router.router)
 app.include_router(billing.router)
 app.include_router(integrations.router)
 app.include_router(portal.router)
@@ -451,9 +508,9 @@ app.include_router(supplier_notes.router)
 app.include_router(supplier_tags.router)
 app.include_router(supplier_contacts.router)
 app.include_router(supplier_activity.router)
-app.include_router(storefront.router)
 app.include_router(online_orders.router)
 app.include_router(shop_config.router)
+app.include_router(storefront.router)
 app.include_router(crm.router)
 app.include_router(lead_forms.router)
 app.include_router(leads.router)
@@ -546,6 +603,7 @@ app.include_router(announcements.router)
 app.include_router(job_cards.router)
 app.include_router(petty_cash.router)
 app.include_router(reports.router)
+app.include_router(excel_reports.router)
 app.include_router(pnl.router)
 app.include_router(cashflow.router)
 app.include_router(balance_sheet.router)
