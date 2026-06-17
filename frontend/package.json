@@ -55,7 +55,7 @@
     "sass": "^1.100.0",
     "shiki": "^1.22.2",
     "sonner": "2.0.7",
-    "tailwind-merge": "^2.6.1",
+    "tailwind-merge": "^3.6.0",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
