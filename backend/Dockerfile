@@ -1,4 +1,4 @@
-FROM python:3.11-slim AS builder
+FROM python:3.14-slim AS builder
 
 RUN pip install poetry==1.8.2
 
@@ -6,7 +6,7 @@ WORKDIR /build
 COPY pyproject.toml poetry.lock* ./
 RUN poetry export -f requirements.txt -o requirements.txt --without dev
 
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 WORKDIR /app
 
