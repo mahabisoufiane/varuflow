@@ -1,0 +1,264 @@
+"use client";
+
+import { createClient, signInWithGoogle, signInWithMicrosoft } from "@/lib/supabase/client";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
+import { Eye, EyeOff, Loader2, Zap } from "lucide-react";
+import ThemeToggle from "@/components/ui/ThemeToggle";
+import BankIDButton from "@/components/auth/BankIDButton";
+
+/* ── Locale switcher ─────────────────────────────────────────────────────── */
+function LocaleSwitcher() {
+  const pathname = usePathname();
+  const router   = useRouter();
+  const locale   = useLocale();
+  return (
+    <div className="flex items-center gap-1 rounded-lg border p-0.5" style={{ borderColor: "var(--vf-border)" }}>
+      {(["sv", "en"] as const).map((l) => (
+        <button key={l} onClick={() => router.replace(pathname, { locale: l })}
+          className="rounded-md px-2.5 py-1 text-xs font-semibold transition-all duration-150"
+          style={{
+            background: locale === l ? "var(--vf-bg-elevated)" : "transparent",
+            color: locale === l ? "var(--vf-text-primary)" : "var(--vf-text-muted)",
+          }}>
+          {l.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ── Left panel ──────────────────────────────────────────────────────────── */
+function AuthLeft() {
+  return (
+    <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between overflow-hidden p-12 text-white"
+      style={{ background: "linear-gradient(135deg,#0F172A 0%,#1E293B 100%)" }}>
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full opacity-20 animate-orb-float"
+          style={{ background: "radial-gradient(circle,#6366F1 0%,transparent 70%)" }} />
+        <div className="absolute top-1/2 -right-24 h-80 w-80 rounded-full opacity-15 animate-orb-float"
+          style={{ background: "radial-gradient(circle,#4F46E5 0%,transparent 70%)", animationDelay: "3s" }} />
+        <div className="absolute -bottom-24 left-1/3 h-64 w-64 rounded-full opacity-10 animate-orb-float"
+          style={{ background: "radial-gradient(circle,#818CF8 0%,transparent 70%)", animationDelay: "6s" }} />
+      </div>
+      <div className="relative flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#6366F1] to-[#4F46E5]">
+          <Zap className="h-[18px] w-[18px] text-white" />
+        </div>
+        <span className="text-xl font-bold tracking-tight">Varuflow</span>
+      </div>
+      <div className="relative space-y-8">
+        <div>
+          <h1 className="text-4xl font-bold leading-tight tracking-tight">
+            The smart backoffice<br />for Nordic wholesalers.
+          </h1>
+          <p className="mt-4 text-base text-white/50">
+            Inventory, invoicing, POS, and AI-driven insights — all in one platform.
+          </p>
+        </div>
+        <ul className="space-y-3">
+          {["Real-time inventory across all warehouses","Invoicing with Stripe & Fortnox integration","AI advisor that flags risks before they cost you"].map((item) => (
+            <li key={item} className="flex items-center gap-3 text-sm text-white/70">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6366F1]/20 border border-[#6366F1]/30 text-[#818CF8] text-xs font-bold">✓</span>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <p className="relative text-xs text-white/25">© {new Date().getFullYear()} Varuflow AB</p>
+    </div>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
+      <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z" fill="#34A853"/>
+      <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z" fill="#FBBC05"/>
+      <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z" fill="#EA4335"/>
+    </svg>
+  );
+}
+
+function MicrosoftIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <rect x="0" y="0" width="8.5" height="8.5" fill="#F25022"/>
+      <rect x="9.5" y="0" width="8.5" height="8.5" fill="#7FBA00"/>
+      <rect x="0" y="9.5" width="8.5" height="8.5" fill="#00A4EF"/>
+      <rect x="9.5" y="9.5" width="8.5" height="8.5" fill="#FFB900"/>
+    </svg>
+  );
+}
+
+function ErrorBanner({ message }: { message: string }) {
+  return (
+    <div className="flex items-start gap-2.5 rounded-xl border border-red-500/20 bg-red-500/10 px-3.5 py-3 text-sm text-red-400" role="alert" data-testid="auth-error-banner">
+      <svg className="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-11.25a.75.75 0 011.5 0v4.5a.75.75 0 01-1.5 0v-4.5zm.75 7.5a.875.875 0 100-1.75.875.875 0 000 1.75z" clipRule="evenodd" />
+      </svg>
+      <span>{message}</span>
+    </div>
+  );
+}
+
+function safeNext(raw: string | null): string {
+  if (!raw) return "/dashboard";
+  if (raw.startsWith("//") || raw.includes("://")) return "/dashboard";
+  return raw.startsWith("/") ? raw : "/dashboard";
+}
+
+function mapAuthError(msg: string, t: ReturnType<typeof useTranslations>): string {
+  const m = msg.toLowerCase();
+  if (m.includes("invalid login") || m.includes("invalid credentials") || m.includes("wrong password")) return t("errors.invalidCredentials");
+  if (m.includes("email not confirmed")) return t("errors.emailNotConfirmed");
+  if (m.includes("too many") || m.includes("rate limit")) return t("errors.accountLocked");
+  if (m.includes("network") || m.includes("fetch") || m.includes("failed to fetch")) return t("errors.networkError");
+  return t("errors.serverError");
+}
+
+/* ── Page ────────────────────────────────────────────────────────────────── */
+export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const t = useTranslations();
+  const supabase = createClient();
+  const next = safeNext(searchParams.get("next"));
+
+  const [email, setEmail]             = useState("");
+  const [password, setPassword]       = useState("");
+  const [showPw, setShowPw]           = useState(false);
+  const [loading, setLoading]         = useState(false);
+  const [oauthLoading, setOauthLoading] = useState<"google"|"microsoft"|null>(null);
+  const [error, setError]             = useState<string|null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{email?:string;password?:string}>({});
+
+  function validate() {
+    const e: {email?:string;password?:string} = {};
+    if (!email.trim()) e.email = t("errors.validationError");
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = t("errors.validationError");
+    if (!password) e.password = t("errors.validationError");
+    setFieldErrors(e);
+    return !Object.keys(e).length;
+  }
+
+  async function handlePassword(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!validate()) return;
+    setLoading(true); setError(null);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return setError(mapAuthError(error.message, t));
+      window.location.href = next;
+    } catch { setError(t("errors.networkError")); }
+    finally { setLoading(false); }
+  }
+
+  async function handleGoogle() {
+    setOauthLoading("google"); setError(null);
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) { setError(mapAuthError(error.message, t)); setOauthLoading(null); }
+    } catch { setError(t("errors.networkError")); setOauthLoading(null); }
+  }
+
+  async function handleMicrosoft() {
+    setOauthLoading("microsoft"); setError(null);
+    try {
+      const { error } = await signInWithMicrosoft();
+      if (error) { setError(mapAuthError(error.message, t)); setOauthLoading(null); }
+    } catch { setError(t("errors.networkError")); setOauthLoading(null); }
+  }
+
+  return (
+    <div className="flex min-h-screen" style={{ background: "var(--vf-bg-primary)" }}>
+      <AuthLeft />
+      <div className="relative flex w-full lg:w-1/2 flex-col items-center justify-center px-6 py-12">
+        <div className="absolute top-6 right-6 flex items-center gap-3">
+          <LocaleSwitcher />
+          <ThemeToggle />
+        </div>
+
+        <div className="w-full max-w-sm space-y-6 rounded-2xl p-8 animate-fade-in"
+          style={{ background:"var(--vf-glass-bg)", backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)", border:"1px solid var(--vf-glass-border)" }}>
+
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold" style={{ color:"var(--vf-text-primary)" }}>{t("auth.login")}</h2>
+            <p className="text-sm" style={{ color:"var(--vf-text-secondary)" }}>{t("auth.loginDescription")}</p>
+          </div>
+
+          {/* Social */}
+          <div className="space-y-2.5">
+            <button type="button" onClick={handleGoogle} disabled={!!oauthLoading||loading} data-testid="google-login-button"
+              className="flex h-11 w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] text-sm font-medium transition-all hover:bg-white/[0.10] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ color:"var(--vf-text-primary)" }}>
+              {oauthLoading==="google" ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
+              {t("auth.continueWithGoogle")}
+            </button>
+            <button type="button" onClick={handleMicrosoft} disabled={!!oauthLoading||loading}
+              className="flex h-11 w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] text-sm font-medium transition-all hover:bg-white/[0.10] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ color:"var(--vf-text-primary)" }}>
+              {oauthLoading==="microsoft" ? <Loader2 className="h-4 w-4 animate-spin" /> : <MicrosoftIcon />}
+              {t("auth.continueWithMicrosoft")}
+            </button>
+            <BankIDButton disabled={!!oauthLoading||loading} />
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1" style={{ background:"var(--vf-border)" }} />
+            <span className="text-[11px] font-semibold tracking-widest" style={{ color:"var(--vf-text-muted)" }}>{t("auth.orDivider")}</span>
+            <div className="h-px flex-1" style={{ background:"var(--vf-border)" }} />
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handlePassword} noValidate className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium" style={{ color:"var(--vf-text-secondary)" }}>{t("auth.email")}</label>
+              <input type="email" autoComplete="email" value={email} data-testid="email-input"
+                onChange={(e) => { setEmail(e.target.value); setFieldErrors(p=>({...p,email:undefined})); }}
+                placeholder="you@company.se" className="vf-input"
+                style={{ borderColor:fieldErrors.email ? "rgba(239,68,68,0.6)" : undefined }} />
+              {fieldErrors.email && <p className="text-xs" style={{ color:"#EF4444" }}>{fieldErrors.email}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium" style={{ color:"var(--vf-text-secondary)" }}>{t("auth.password")}</label>
+                <Link href="/auth/forgot-password" className="text-xs font-semibold text-[#6366F1] hover:text-[#4F46E5] transition-colors">
+                  {t("auth.forgotPassword")}
+                </Link>
+              </div>
+              <div className="relative">
+                <input type={showPw?"text":"password"} autoComplete="current-password" value={password} data-testid="password-input"
+                  onChange={(e) => { setPassword(e.target.value); setFieldErrors(p=>({...p,password:undefined})); }}
+                  placeholder="••••••••" className="vf-input pr-11"
+                  style={{ borderColor:fieldErrors.password ? "rgba(239,68,68,0.6)" : undefined }} />
+                <button type="button" tabIndex={-1} onClick={() => setShowPw(!showPw)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color:"var(--vf-text-muted)" }}>
+                  {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {fieldErrors.password && <p className="text-xs" style={{ color:"#EF4444" }}>{fieldErrors.password}</p>}
+            </div>
+
+            {error && <ErrorBanner message={error} />}
+
+            <button type="submit" disabled={loading||!!oauthLoading} className="vf-btn w-full" data-testid="login-button">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.signInWithPassword")}
+            </button>
+          </form>
+
+          <p className="text-center text-sm" style={{ color:"var(--vf-text-muted)" }}>
+            {t("auth.noAccount")}{" "}
+            <Link href="/auth/signup" className="font-semibold text-[#6366F1] hover:text-[#4F46E5] transition-colors">
+              {t("auth.signup")}
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

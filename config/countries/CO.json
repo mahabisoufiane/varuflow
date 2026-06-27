@@ -1,0 +1,23 @@
+{
+  "iso_alpha2": "CO",
+  "display_name": "Colombia",
+  "region": "americas",
+  "default_locale": "es-CO",
+  "currency": "COP",
+  "vat": {
+    "standard_rate_pct": 19.0,
+    "reduced_rates_pct": [
+      5.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d{9}-\\d",
+    "einvoicing_status": "DIAN mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/CO/README.md"
+}

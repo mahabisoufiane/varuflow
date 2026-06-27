@@ -1,0 +1,105 @@
+version = "8"
+
+# ---------------------------------------------------------------------------
+# Varuflow — gitleaks configuration
+#
+# We extend the upstream default ruleset (https://github.com/gitleaks/gitleaks
+# /blob/master/config/gitleaks.toml) rather than re-defining every rule. The
+# default set covers AWS, GCP, Stripe, Slack, JWTs, SSH keys, PEM blocks, etc.
+# This file only adds project-specific rules and allow-lists for known false
+# positives so a PR can be blocked on real leaks without drowning in noise.
+# ---------------------------------------------------------------------------
+
+[extend]
+useDefault = true
+
+# ---------------------------------------------------------------------------
+# Project-specific rules
+# ---------------------------------------------------------------------------
+
+[[rules]]
+id = "varuflow-fortnox-client-secret"
+description = "Fortnox OAuth client secret"
+regex = '''(?i)fortnox[_-]?client[_-]?secret['"\s:=]+['"]?[A-Za-z0-9]{24,}'''
+tags = ["secret", "fortnox"]
+
+[[rules]]
+id = "varuflow-supabase-service-role"
+description = "Supabase service-role JWT (never belongs in the repo)"
+regex = '''eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'''
+path = '''(?i)(supabase|service[_-]?role)'''
+tags = ["secret", "supabase"]
+
+[[rules]]
+id = "varuflow-stripe-live-key"
+description = "Stripe live secret key"
+regex = '''sk_live_[A-Za-z0-9]{16,}'''
+tags = ["secret", "stripe"]
+
+[[rules]]
+id = "varuflow-stripe-webhook-secret"
+description = "Stripe webhook signing secret"
+regex = '''whsec_[A-Za-z0-9]{16,}'''
+tags = ["secret", "stripe"]
+
+# ---------------------------------------------------------------------------
+# Allowlist — known false positives
+#
+# Each entry below is a deliberately excluded match and must have a one-line
+# rationale so a reviewer can tell "real leak slipped in" from "documented
+# noise" at a glance. Add to this list sparingly; prefer fixing the source.
+# ---------------------------------------------------------------------------
+
+[allowlist]
+description = "Varuflow known false-positive paths and patterns"
+
+paths = [
+  # Lockfiles contain package-integrity hashes that look like base64 secrets.
+  '''(^|/)package-lock\.json$''',
+  '''(^|/)poetry\.lock$''',
+  '''(^|/)pnpm-lock\.yaml$''',
+  '''(^|/)yarn\.lock$''',
+
+  # Generated locale files — translations occasionally echo test keys and the
+  # frontend build output contains hashed asset names. Source locales live
+  # under frontend/messages/ and are still scanned.
+  '''(^|/)frontend/\.next/''',
+  '''(^|/)frontend/out/''',
+
+  # Country reference data is static public info — no secrets.
+  '''(^|/)config/countries/[A-Z]{2}\.json$''',
+
+  # Session logs / debug artefacts captured by the agent — never shipped.
+  '''(^|/)\.vscode-server/''',
+
+  # Stripe test keys in fixtures (pk_test_ / sk_test_ patterns are used in
+  # unit tests and seed scripts; real test keys are rotated regularly and
+  # cannot unlock production).
+  '''(^|/)backend/tests/''',
+  '''(^|/)backend/scripts/seed_test_users\.py$''',
+
+  # Playbook markdown intentionally references example tokens and fake keys
+  # inline when illustrating integration wiring.
+  '''(^|/)varuflow-playbook/''',
+
+  # Security policy docs quote redacted placeholders that match some patterns.
+  '''(^|/)SECURITY\.md$''',
+  '''(^|/)docs/legal/''',
+]
+
+regexes = [
+  # Stripe test keys are safe to commit in test fixtures.
+  '''sk_test_[A-Za-z0-9]{16,}''',
+  '''pk_test_[A-Za-z0-9]{16,}''',
+
+  # Example / placeholder UUIDs used in docs and tests.
+  '''00000000-0000-0000-0000-000000000000''',
+
+  # Example JWT from jwt.io docs (the canonical "hello world" token).
+  '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ''',
+]
+
+# Commit SHAs that pre-date the scanner and were reviewed out-of-band.
+# Add entries as: "<commit-sha>  # <reason>"
+commits = [
+]

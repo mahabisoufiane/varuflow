@@ -1,0 +1,50 @@
+{
+  "code": "XK",
+  "code3": "XKX",
+  "name": { "en": "Kosovo", "local": "Kosova", "sv": "Kosovo" },
+  "region": "europe",
+  "subregion": "southeastern-europe",
+  "is_eu_member": false,
+  "is_eea_member": false,
+  "is_efta_member": false,
+  "is_schengen": false,
+  "is_eurozone": false,
+  "currency": { "code": "EUR", "symbol": "\u20ac", "name": "Euro", "decimal_places": 2, "format": "#.##0,00 \u20ac" },
+  "vat": {
+    "applicable": true,
+    "name_local": "TVSH (Tatimi mbi Vler\u00ebn e Shtuar)",
+    "standard_rate_pct": 18.0,
+    "reduced_rates_pct": [8.0],
+    "registration_threshold_eur": 30000,
+    "vat_id_format": "^\\d{9}$",
+    "vat_id_example": "123456789"
+  },
+  "invoice_rules": {
+    "language_required": ["sq", "sr"],
+    "sequential_numbering_required": true,
+    "retention_years": 5,
+    "e_invoice_required": false
+  },
+  "compliance": {
+    "data_protection_law": "Law on Protection of Personal Data",
+    "company_registry_name": "Kosovo Business Registration Agency",
+    "tax_authority_name": "Tax Administration of Kosovo"
+  },
+  "locale": {
+    "default_language": "sq",
+    "date_format": "DD.MM.YYYY",
+    "timezone": "Europe/Belgrade",
+    "number_format": { "decimal_separator": ",", "thousands_separator": ".", "currency_position": "after" }
+  },
+  "address_format": {
+    "postal_code_regex": "^\\d{5}$",
+    "postal_code_example": "10000"
+  },
+  "payment": {
+    "supported_methods": ["bank_transfer", "card"],
+    "open_banking_supported": false
+  },
+  "varuflow_localization_status": {
+    "ready_for_market": false
+  }
+}

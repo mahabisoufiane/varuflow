@@ -1,0 +1,21 @@
+{
+  "iso_alpha2": "CL",
+  "display_name": "Chile",
+  "region": "americas",
+  "default_locale": "es-CL",
+  "currency": "CLP",
+  "vat": {
+    "standard_rate_pct": 19.0,
+    "reduced_rates_pct": [],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d{7,8}-[0-9K]",
+    "einvoicing_status": "SII mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/CL/README.md"
+}

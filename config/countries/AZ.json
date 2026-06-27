@@ -1,0 +1,50 @@
+{
+  "code": "AZ",
+  "code3": "AZE",
+  "name": { "en": "Azerbaijan", "local": "Az\u0259rbaycan", "sv": "Azerbajdzjan" },
+  "region": "europe",
+  "subregion": "western-asia",
+  "is_eu_member": false,
+  "is_eea_member": false,
+  "is_efta_member": false,
+  "is_schengen": false,
+  "is_eurozone": false,
+  "currency": { "code": "AZN", "symbol": "\u20bc", "name": "Azerbaijani Manat", "decimal_places": 2, "format": "#,##0.00 \u20bc" },
+  "vat": {
+    "applicable": true,
+    "name_local": "\u018dDV (\u018flav\u0259 D\u0259y\u0259r Vergisi)",
+    "standard_rate_pct": 18.0,
+    "reduced_rates_pct": [],
+    "registration_threshold_eur": 0,
+    "vat_id_format": "^\\d{10}$",
+    "vat_id_example": "1234567890"
+  },
+  "invoice_rules": {
+    "language_required": ["az"],
+    "sequential_numbering_required": true,
+    "retention_years": 5,
+    "e_invoice_required": false
+  },
+  "compliance": {
+    "data_protection_law": "Law on Personal Data",
+    "company_registry_name": "State Register of Commercial Entities",
+    "tax_authority_name": "State Tax Service"
+  },
+  "locale": {
+    "default_language": "az",
+    "date_format": "DD.MM.YYYY",
+    "timezone": "Asia/Baku",
+    "number_format": { "decimal_separator": ",", "thousands_separator": ".", "currency_position": "after" }
+  },
+  "address_format": {
+    "postal_code_regex": "^AZ\\d{4}$",
+    "postal_code_example": "AZ1000"
+  },
+  "payment": {
+    "supported_methods": ["bank_transfer", "card"],
+    "open_banking_supported": false
+  },
+  "varuflow_localization_status": {
+    "ready_for_market": false
+  }
+}
