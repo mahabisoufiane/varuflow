@@ -1,0 +1,130 @@
+{
+  "config": {
+    "configFile": "/home/smahabi/varuflow/varuflow-main/frontend/playwright.config.ts",
+    "rootDir": "/home/smahabi/varuflow/varuflow-main/frontend/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/smahabi/varuflow/varuflow-main/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/home/smahabi/varuflow/varuflow-main/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/smahabi/varuflow/varuflow-main/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/home/smahabi/varuflow/varuflow-main/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/smahabi/varuflow/varuflow-main/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/home/smahabi/varuflow/varuflow-main/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/smahabi/varuflow/varuflow-main/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "tablet",
+        "name": "tablet",
+        "testDir": "/home/smahabi/varuflow/varuflow-main/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 4,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [],
+  "errors": [
+    {
+      "message": "Error: Cannot find module '../fixtures/auth'\nRequire stack:\n- /home/smahabi/varuflow/varuflow-main/frontend/e2e/smoke.spec.ts\n- /home/smahabi/varuflow/varuflow-main/frontend/node_modules/playwright/lib/transform/transform.js\n- /home/smahabi/varuflow/varuflow-main/frontend/node_modules/playwright/lib/common/configLoader.js\n- /home/smahabi/varuflow/varuflow-main/frontend/node_modules/playwright/lib/testActions.js\n- /home/smahabi/varuflow/varuflow-main/frontend/node_modules/playwright/lib/program.js\n- /home/smahabi/varuflow/varuflow-main/frontend/node_modules/@playwright/test/cli.js",
+      "stack": "Error: Cannot find module '../fixtures/auth'\nRequire stack:\n- /home/smahabi/varuflow/varuflow-main/frontend/e2e/smoke.spec.ts\n- /home/smahabi/varuflow/varuflow-main/frontend/node_modules/playwright/lib/transform/transform.js\n- /home/smahabi/varuflow/varuflow-main/frontend/node_modules/playwright/lib/common/configLoader.js\n- /home/smahabi/varuflow/varuflow-main/frontend/node_modules/playwright/lib/testActions.js\n- /home/smahabi/varuflow/varuflow-main/frontend/node_modules/playwright/lib/program.js\n- /home/smahabi/varuflow/varuflow-main/frontend/node_modules/@playwright/test/cli.js\n    at Object.<anonymous> (/home/smahabi/varuflow/varuflow-main/frontend/e2e/smoke.spec.ts:1:1)",
+      "location": {
+        "file": "/home/smahabi/varuflow/varuflow-main/frontend/e2e/smoke.spec.ts",
+        "column": 1,
+        "line": 1
+      },
+      "snippet": "\u001b[90m   at \u001b[39msmoke.spec.ts:1\n\n\u001b[0m\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 1 |\u001b[39m \u001b[36mimport\u001b[39m { test\u001b[33m,\u001b[39m expect } \u001b[36mfrom\u001b[39m \u001b[32m'../fixtures/auth'\u001b[39m\u001b[33m;\u001b[39m\n \u001b[90m   |\u001b[39m \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 2 |\u001b[39m \u001b[36mimport\u001b[39m { \u001b[33mTEST_ACCOUNTS\u001b[39m } \u001b[36mfrom\u001b[39m \u001b[32m'../fixtures/auth'\u001b[39m\u001b[33m;\u001b[39m\n \u001b[90m 3 |\u001b[39m\n \u001b[90m 4 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Smoke Tests — Run on Every Deploy'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-05-02T15:51:08.702Z",
+    "duration": 3516.653,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "code": "GE",
+  "code3": "GEO",
+  "name": { "en": "Georgia", "local": "\u10e1\u10d0\u10e5\u10d0\u10e0\u10d7\u10d5\u10d4\u10da\u10dd", "sv": "Georgien" },
+  "region": "europe",
+  "subregion": "western-asia",
+  "is_eu_member": false,
+  "is_eea_member": false,
+  "is_efta_member": false,
+  "is_schengen": false,
+  "is_eurozone": false,
+  "currency": { "code": "GEL", "symbol": "\u20be", "name": "Georgian Lari", "decimal_places": 2, "format": "#,##0.00 \u20be" },
+  "vat": {
+    "applicable": true,
+    "name_local": "\u10d3\u10e6\u10d2 (\u10d3\u10d0\u10db\u10d0\u10e2\u10d4\u10d1\u10d8\u10d7\u10d8 \u10e6\u10d8\u10e0\u10d4\u10d1\u10e3\u10da\u10d4\u10d1\u10d8\u10e1 \u10d2\u10d0\u10d3\u10d0\u10e1\u10d0\u10ee\u10d0\u10d3\u10d8)",
+    "standard_rate_pct": 18.0,
+    "reduced_rates_pct": [],
+    "registration_threshold_eur": 35000,
+    "vat_id_format": "^\\d{9}$",
+    "vat_id_example": "123456789"
+  },
+  "invoice_rules": {
+    "language_required": ["ka"],
+    "sequential_numbering_required": true,
+    "retention_years": 6,
+    "e_invoice_required": false
+  },
+  "compliance": {
+    "data_protection_law": "Law on Personal Data Protection",
+    "company_registry_name": "National Agency of Public Registry",
+    "tax_authority_name": "Revenue Service"
+  },
+  "locale": {
+    "default_language": "ka",
+    "date_format": "DD.MM.YYYY",
+    "timezone": "Asia/Tbilisi",
+    "number_format": { "decimal_separator": ",", "thousands_separator": " ", "currency_position": "after" }
+  },
+  "address_format": {
+    "postal_code_regex": "^\\d{4}$",
+    "postal_code_example": "0105"
+  },
+  "payment": {
+    "supported_methods": ["bank_transfer", "card"],
+    "open_banking_supported": false
+  },
+  "varuflow_localization_status": {
+    "ready_for_market": false
+  }
+}

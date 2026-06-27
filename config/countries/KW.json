@@ -1,0 +1,21 @@
+{
+  "iso_alpha2": "KW",
+  "display_name": "Kuwait",
+  "region": "middle-east",
+  "default_locale": "ar-KW",
+  "currency": "KWD",
+  "vat": {
+    "standard_rate_pct": 0.0,
+    "reduced_rates_pct": [],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d{12}",
+    "einvoicing_status": "planned"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/KW/README.md"
+}
