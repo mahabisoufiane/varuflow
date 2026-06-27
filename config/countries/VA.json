@@ -1,0 +1,50 @@
+{
+  "code": "VA",
+  "code3": "VAT",
+  "name": { "en": "Vatican City", "local": "Citt\u00e0 del Vaticano", "sv": "Vatikanstaten" },
+  "region": "europe",
+  "subregion": "southern-europe",
+  "is_eu_member": false,
+  "is_eea_member": false,
+  "is_efta_member": false,
+  "is_schengen": true,
+  "is_eurozone": true,
+  "currency": { "code": "EUR", "symbol": "\u20ac", "name": "Euro", "decimal_places": 2, "format": "#.##0,00 \u20ac" },
+  "vat": {
+    "applicable": false,
+    "name_local": "N/A",
+    "standard_rate_pct": 0,
+    "reduced_rates_pct": [],
+    "registration_threshold_eur": null,
+    "vat_id_format": null,
+    "vat_id_example": null
+  },
+  "invoice_rules": {
+    "language_required": ["it", "la"],
+    "sequential_numbering_required": true,
+    "retention_years": 10,
+    "e_invoice_required": false
+  },
+  "compliance": {
+    "data_protection_law": "REQUIRES_VERIFICATION",
+    "company_registry_name": "N/A",
+    "tax_authority_name": "N/A"
+  },
+  "locale": {
+    "default_language": "it",
+    "date_format": "DD/MM/YYYY",
+    "timezone": "Europe/Vatican",
+    "number_format": { "decimal_separator": ",", "thousands_separator": ".", "currency_position": "after" }
+  },
+  "address_format": {
+    "postal_code_regex": "^00120$",
+    "postal_code_example": "00120"
+  },
+  "payment": {
+    "supported_methods": ["bank_transfer"],
+    "open_banking_supported": false
+  },
+  "varuflow_localization_status": {
+    "ready_for_market": false
+  }
+}

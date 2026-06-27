@@ -1,0 +1,25 @@
+{
+  "iso_alpha2": "FR",
+  "display_name": "France",
+  "region": "europe",
+  "default_locale": "fr-FR",
+  "currency": "EUR",
+  "vat": {
+    "standard_rate_pct": 20.0,
+    "reduced_rates_pct": [
+      10.0,
+      5.5,
+      2.1
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": true,
+    "tax_id_regex": "FR[A-Z0-9]{2}\\d{9}",
+    "einvoicing_status": "B2B mandatory from 2026"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/FR/README.md"
+}

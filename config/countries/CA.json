@@ -1,0 +1,21 @@
+{
+  "iso_alpha2": "CA",
+  "display_name": "Canada",
+  "region": "americas",
+  "default_locale": "en-CA",
+  "currency": "CAD",
+  "vat": {
+    "standard_rate_pct": 5.0,
+    "reduced_rates_pct": [],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d{9}RT\\d{4}",
+    "einvoicing_status": "B2G mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/CA/README.md"
+}
