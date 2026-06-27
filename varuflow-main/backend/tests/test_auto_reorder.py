@@ -8,8 +8,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from app.models.auto_reorder import AutoReorderRun
-from app.models.inventory import (
+from app.features.inventory.auto_reorder_models import AutoReorderRun
+from app.features.inventory.models import (
     Product,
     PurchaseOrder,
     PurchaseOrderItem,
@@ -20,8 +20,8 @@ from app.models.inventory import (
     Supplier,
     Warehouse,
 )
-from app.models.audit import AuditLogEntry
-from app.models.organization import OrgRole
+from app.features.compliance.audit_models import AuditLogEntry
+from app.features.auth.organization import OrgRole
 from sqlalchemy import select
 
 

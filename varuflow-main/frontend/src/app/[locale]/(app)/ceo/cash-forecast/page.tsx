@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { RoleGuard } from "@/components/app/RoleContext";
 import { AlertTriangle, TrendingDown, CheckCircle2, DollarSign, Calendar } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 interface SeriesPoint { day: number; date: string; balance: number; inflow: number; outflow: number }
 interface UpcomingInflow { invoice_number: string; customer: string; due_date: string; expected: number }
@@ -29,21 +31,21 @@ function BalanceBar({ value, max }: { value: number; max: number }) {
   );
 }
 
-export default function CashForecastPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
+function CashForecastPageInner() {
   const [data, setData] = useState<ForecastData | null>(null);
   const [horizon, setHorizon] = useState(90);
   const [loading, setLoading] = useState(false);
 
-  const f = (url: string) => fetch(`${apiBase}${url}`, { credentials: "include" });
-
   async function load(h: number) {
     setLoading(true);
-    const res = await f(`/api/ceo/cash-forecast?horizon_days=${h}`);
-    if (res.ok) setData(await res.json());
+    try {
+      const result = await api.get<ForecastData>(`/api/ceo/cash-forecast?horizon_days=${h}`);
+      setData(result);
+    } catch {}
     setLoading(false);
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load(horizon); }, [horizon]);
 
   const fmt = (v: number) => v.toLocaleString("sv-SE", { maximumFractionDigits: 0 });
@@ -199,5 +201,13 @@ export default function CashForecastPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function CashForecastPage() {
+  return (
+    <RoleGuard minRole="ADMIN">
+      <CashForecastPageInner />
+    </RoleGuard>
   );
 }

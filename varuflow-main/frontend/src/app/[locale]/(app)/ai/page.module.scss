@@ -1,0 +1,94 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+.card {
+  border-radius: $vf-radius-xl;
+  border: 1px solid;
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.cardDetail {
+  border-top: 1px solid rgba(255, 255, 255, 0.50);
+  background: rgba(255, 255, 255, 0.40);
+  padding: 0.75rem 1rem;
+}
+
+.priorityBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $vf-radius-sm;
+  padding: 2px 6px;
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+
+.moduleBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $vf-radius-sm;
+  padding: 2px 6px;
+  font-size: 0.625rem;
+  font-weight: 500;
+}
+
+.iconBtn {
+  border-radius: $vf-radius-sm;
+  padding: 0.25rem;
+  color: #9ca3af;
+  transition: background 100ms ease, color 100ms ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.60);
+    color: #374151;
+  }
+}
+
+.dismissBtn {
+  @extend .iconBtn;
+
+  &:hover {
+    color: #ef4444;
+  }
+}
+
+.approveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: $vf-radius-lg;
+  background: #1a2332;
+  padding: 6px 10px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: white;
+  transition: background 100ms ease;
+
+  &:hover {
+    background: #2a3342;
+  }
+
+  &:disabled {
+    opacity: 0.60;
+  }
+}
+
+.emptyState {
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  background: white;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+}

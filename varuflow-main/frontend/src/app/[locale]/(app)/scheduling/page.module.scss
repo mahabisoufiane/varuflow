@@ -1,0 +1,12 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+// ── Scheduling overtime indicator badge ──────────────────────────────────────
+
+.overtimeBadge {
+  font-size: 0.75rem;
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 0.125rem 0.375rem;
+  border-radius: $vf-radius-sm;
+}

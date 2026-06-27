@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { BookOpen, Plus, X, Users, Check } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 interface MeetingNote {
   id: string; title: string | null; content: string | null;
@@ -13,9 +14,6 @@ interface MeetingNote {
 interface Customer { id: string; name: string }
 
 export default function MeetingNotesPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string, init?: RequestInit) => fetch(`${apiBase}${url}`, { credentials: "include", ...init });
-
   const [notes, setNotes] = useState<MeetingNote[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,8 +23,8 @@ export default function MeetingNotesPage() {
 
   async function load() {
     const [n, c] = await Promise.all([
-      f("/api/work/meeting-notes").then(r => r.ok ? r.json() : []),
-      f("/api/invoicing/customers").then(r => r.ok ? r.json() : []),
+      api.get<MeetingNote[]>("/api/work/meeting-notes").catch(() => [] as MeetingNote[]),
+      api.get<Customer[]>("/api/invoicing/customers").catch(() => [] as Customer[]),
     ]);
     setNotes(n); setCustomers(c); setLoading(false);
   }
@@ -40,13 +38,14 @@ export default function MeetingNotesPage() {
       customer_id: form.customer_id || null,
       attendees: form.attendees ? form.attendees.split(",").map(s => s.trim()) : [],
     };
-    const res = await f("/api/work/meeting-notes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    if (!res.ok) { toast.error("Failed"); return; }
-    toast.success("Note saved"); setShowForm(false); setForm({ title: "", content: "", customer_id: "", meeting_date: new Date().toISOString().slice(0, 16), attendees: "" }); load();
+    try {
+      await api.post<MeetingNote>("/api/work/meeting-notes", body);
+      toast.success("Note saved"); setShowForm(false); setForm({ title: "", content: "", customer_id: "", meeting_date: new Date().toISOString().slice(0, 16), attendees: "" }); load();
+    } catch { toast.error("Failed"); }
   }
 
   async function remove(id: string) {
-    await f(`/api/work/meeting-notes/${id}`, { method: "DELETE" });
+    await api.delete(`/api/work/meeting-notes/${id}`);
     setNotes(prev => prev.filter(n => n.id !== id)); setSelected(null); toast.success("Deleted");
   }
 

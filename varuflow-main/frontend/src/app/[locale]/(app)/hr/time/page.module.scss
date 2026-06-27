@@ -1,0 +1,16 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Time entry billable badge ─────────────────────────────────────────────────
+
+.billableBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.billableYes { @extend .billableBadge; background: #dbeafe; color: #1e40af; }
+.billableNo  { @extend .billableBadge; background: #f3f4f6; color: #4b5563; }

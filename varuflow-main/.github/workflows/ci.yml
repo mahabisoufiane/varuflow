@@ -53,6 +53,10 @@ jobs:
       - name: Lint with Ruff
         run: poetry run ruff check app
 
+      - name: Type check with mypy (non-blocking — M3, ~599 pre-existing errors being driven down)
+        run: poetry run mypy app
+        continue-on-error: true
+
       - name: Run migrations
         run: poetry run alembic upgrade head
 

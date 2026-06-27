@@ -58,7 +58,7 @@ export default function DunningPage() {
 
   async function sendReminder(itemId: string) {
     try {
-      await api.post(`/api/invoices/dunning/${itemId}/remind`)
+      await api.post(`/api/invoices/dunning/${itemId}/remind`, {})
       toast.success("Reminder sent successfully.")
       fetchDunning()
     } catch (error) {

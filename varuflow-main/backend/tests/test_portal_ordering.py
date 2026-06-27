@@ -19,23 +19,23 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select, text
 
 from app.main import app
-from app.models.audit import AuditLogEntry
-from app.models.customer_price_override import CustomerPriceOverride
-from app.models.inventory import (
+from app.features.compliance.audit_models import AuditLogEntry
+from app.features.customers.customer_price_override import CustomerPriceOverride
+from app.features.inventory.models import (
     Product,
     StockLevel,
     StockMovement,
     StockMovementType,
     Warehouse,
 )
-from app.models.invoicing import (
+from app.features.invoicing.models import (
     Customer,
     CustomerPortalToken,
     Invoice,
     InvoiceLineItem,
     InvoiceStatus,
 )
-from app.models.organization import Organization
+from app.features.auth.organization import Organization
 
 
 

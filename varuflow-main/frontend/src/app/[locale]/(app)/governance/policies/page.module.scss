@@ -1,0 +1,21 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Policy category badges (with borders) ─────────────────────────────────────
+
+.categoryBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.categoryHr         { @extend .categoryBadge; background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.categoryFinance    { @extend .categoryBadge; background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+.categoryIt         { @extend .categoryBadge; background: #eef2ff; color: #4338ca; border-color: #c7d2fe; }
+.categoryLegal      { @extend .categoryBadge; background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.categoryOperations { @extend .categoryBadge; background: #f0fdfa; color: #0f766e; border-color: #99f6e4; }
+.categorySecurity   { @extend .categoryBadge; background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+.categoryOther      { @extend .categoryBadge; background: #f3f4f6; color: #6b7280; border-color: #e5e7eb; }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { BarChart3, MinusCircle } from "lucide-react";
 
@@ -16,21 +17,17 @@ interface ConsolidatedData {
 }
 
 export default function ConsolidatedReportsPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const now = new Date();
   const [period, setPeriod] = useState(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`);
   const [data, setData] = useState<ConsolidatedData | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const fetch_ = (url: string) => fetch(`${apiBase}${url}`, { credentials: "include" });
-
   async function load() {
     setLoading(true);
     try {
-      const res = await fetch_(`/api/multi-entity/consolidated/${period}`);
-      if (res.ok) setData(await res.json());
-      else toast.error("Failed to load report");
-    } catch { toast.error("Network error"); }
+      const result = await api.get<ConsolidatedData>(`/api/multi-entity/consolidated/${period}`);
+      setData(result);
+    } catch { toast.error("Failed to load report"); }
     setLoading(false);
   }
 

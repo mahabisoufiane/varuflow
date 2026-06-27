@@ -21,7 +21,7 @@ def upgrade() -> None:
         sa.Column("id", UUID(as_uuid=True), primary_key=True),
         sa.Column("org_id", UUID(as_uuid=True), sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("project_id", UUID(as_uuid=True), sa.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True),
-        sa.Column("staff_id", UUID(as_uuid=True), sa.ForeignKey("staff.id", ondelete="SET NULL"), nullable=True, index=True),
+        sa.Column("staff_id", UUID(as_uuid=True), nullable=True, index=True),
         sa.Column("operator_name", sa.String(255), nullable=True),
         sa.Column("entry_date", sa.Date(), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),

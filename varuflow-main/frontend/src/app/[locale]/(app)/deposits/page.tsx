@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface Deposit {
   id: string;
@@ -20,6 +21,12 @@ const STATUS_COLORS: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
   paid: "bg-green-100 text-green-800",
   cancelled: "bg-gray-100 text-gray-500",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:   "statusPending",
+  paid:      "statusPaid",
+  cancelled: "statusCancelled",
 };
 
 export default function DepositsPage() {
@@ -68,7 +75,7 @@ export default function DepositsPage() {
                 <td className="px-4 py-2 text-xs text-gray-500">{d.customer_id.slice(0, 8)}…</td>
                 <td className="px-4 py-2 font-medium">{d.amount.toLocaleString()} {d.currency}</td>
                 <td className="px-4 py-2">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[d.status] || "bg-gray-100"}`}>{d.status}</span>
+                  <span className={styles[STATUS_MODULE[d.status] ?? "statusPending"]}>{d.status}</span>
                 </td>
                 <td className="px-4 py-2 text-xs">{new Date(d.created_at).toLocaleDateString()}</td>
                 <td className="px-4 py-2 text-xs">{d.paid_at ? new Date(d.paid_at).toLocaleDateString() : "—"}</td>

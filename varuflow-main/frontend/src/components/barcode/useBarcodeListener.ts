@@ -49,6 +49,11 @@ export function useBarcodeListener({ onScan, inputRef, enabled = true }: Options
       lastKeyTime.current = now;
 
       if (e.key === "Enter" || e.key === "Tab") {
+        if (buffer.current.length >= MIN_BARCODE_LENGTH) {
+          // Prevent the Enter/Tab from submitting a parent form or shifting focus
+          e.preventDefault();
+          e.stopPropagation();
+        }
         if (flushTimer.current) clearTimeout(flushTimer.current);
         flush();
         return;

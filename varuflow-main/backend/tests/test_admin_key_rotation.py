@@ -15,7 +15,7 @@ from sqlalchemy import select
 
 from app.config import settings
 from app.main import app
-from app.models.audit import AuditLogEntry
+from app.features.compliance.audit_models import AuditLogEntry
 
 
 

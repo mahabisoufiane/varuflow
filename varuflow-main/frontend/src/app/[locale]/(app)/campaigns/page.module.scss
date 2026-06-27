@@ -1,0 +1,71 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+.tableCard {
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  background: white;
+  overflow: hidden;
+}
+
+.tableRow {
+  border-top: 1px solid var(--vf-border);
+  transition: background 100ms ease;
+
+  &:hover {
+    background: #f9fafb;
+  }
+}
+
+.emptyState {
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  background: white;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.skeletonRow {
+  height: 4rem;
+  border-radius: $vf-radius-xl;
+  background: #f3f4f6;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.badgeSent {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $vf-radius-full;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+}
+
+.badgeScheduled {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $vf-radius-full;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(59, 130, 246, 0.12);
+  color: #1e40af;
+}
+
+.badgeDraft {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $vf-radius-full;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--vf-bg-elevated, #f3f4f6);
+  color: var(--vf-text-muted);
+}

@@ -356,7 +356,7 @@ async def gather_product_metrics(
     """
     from sqlalchemy import func, select
 
-    from app.models.inventory import (
+    from app.features.inventory.models import (
         Product,
         StockLevel,
         StockMovement,
@@ -476,7 +476,7 @@ async def compute_post_period_actuals(
     """
     from sqlalchemy import func, select
 
-    from app.models.inventory import StockMovement, StockMovementType
+    from app.features.inventory.models import StockMovement, StockMovementType
 
     if not product_ids:
         return {}

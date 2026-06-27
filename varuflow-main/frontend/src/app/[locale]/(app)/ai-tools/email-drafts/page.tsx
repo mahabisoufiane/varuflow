@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
 
 interface DraftResult {
   id: string;
@@ -34,8 +29,6 @@ interface DraftHistoryItem {
 }
 
 export default function EmailDraftsPage() {
-  const params = useParams();
-
   const [messageId, setMessageId] = useState("");
   const [tone, setTone] = useState("professional");
   const [draft, setDraft] = useState<DraftResult | null>(null);
@@ -49,11 +42,7 @@ export default function EmailDraftsPage() {
     setHistoryLoading(true);
     try {
       const query = filter ? `?message_id=${encodeURIComponent(filter)}` : "";
-      const res = await fetch(`${API}/api/ai/email-drafts${query}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setHistory(await res.json());
+      setHistory(await api.get<DraftHistoryItem[]>(`/api/ai/email-drafts${query}`));
     } catch {
       // non-critical
     } finally {
@@ -71,16 +60,7 @@ export default function EmailDraftsPage() {
     setError("");
     setDraft(null);
     try {
-      const res = await fetch(`${API}/api/ai/email-drafts/generate`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message_id: messageId, tone }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setDraft(await res.json());
+      setDraft(await api.post<DraftResult>("/api/ai/email-drafts/generate", { message_id: messageId, tone }));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Generation failed");
     } finally {
@@ -91,11 +71,7 @@ export default function EmailDraftsPage() {
   async function handleAccept() {
     if (!draft) return;
     try {
-      const res = await fetch(`${API}/api/ai/email-drafts/${draft.id}/accept`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await api.post(`/api/ai/email-drafts/${draft.id}/accept`, {});
       setDraft(null);
       await fetchHistory();
     } catch (e: unknown) {
@@ -106,10 +82,7 @@ export default function EmailDraftsPage() {
   async function handleReject() {
     if (!draft) return;
     try {
-      await fetch(`${API}/api/ai/email-drafts/${draft.id}/reject`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      await api.post(`/api/ai/email-drafts/${draft.id}/reject`, {});
     } catch {
       // ignore
     } finally {

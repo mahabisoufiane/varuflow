@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { FlaskConical, Plus, Play, Trash2, Users, TrendingUp, TrendingDown } from "lucide-react";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface Experiment {
   id: string; name: string; description: string | null; status: string;
@@ -25,6 +26,13 @@ const STATUS_COLORS: Record<string, string> = {
   active: "bg-green-100 text-green-700",
   paused: "bg-yellow-100 text-yellow-700",
   completed: "bg-blue-100 text-blue-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft:     "statusDraft",
+  active:    "statusActive",
+  paused:    "statusPaused",
+  completed: "statusCompleted",
 };
 
 export default function ExperimentsPage() {
@@ -175,7 +183,7 @@ export default function ExperimentsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold text-gray-900">{exp.name}</h3>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[exp.status]}`}>{exp.status}</span>
+                      <span className={styles[STATUS_MODULE[exp.status] ?? "statusDraft"]}>{exp.status}</span>
                     </div>
                     <div className="mt-2 flex gap-6 text-sm text-gray-500">
                       <span className="flex items-center gap-1">

@@ -1,0 +1,15 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+// ── Time tracking approval badges ─────────────────────────────────────────────
+
+.approvalBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.approvalPending  { @extend .approvalBadge; background: #fef9c3; color: #854d0e; }
+.approvalApproved { @extend .approvalBadge; background: #dcfce7; color: #166534; }
+.approvalRejected { @extend .approvalBadge; background: #fee2e2; color: #b91c1c; }

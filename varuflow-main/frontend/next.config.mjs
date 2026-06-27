@@ -30,14 +30,38 @@ const nextConfig = {
   // (frontend/src/tests/test_security_headers.mjs) and diff-audited in
   // isolation. See docs/operations/security-hardening.md.
   async headers() {
+    const securityHeaders = buildSecurityHeaders({
+      apiUrl:      process.env.NEXT_PUBLIC_API_URL,
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      sentryDsn:   process.env.NEXT_PUBLIC_SENTRY_DSN,
+    });
+
+    // Dev only: `next dev` (Turbopack) serves HMR + bootstrap scripts that the
+    // strict production CSP blocks — 'strict-dynamic' makes CSP3 browsers trust
+    // ONLY nonce-tagged scripts, and nothing issues a nonce here, so every
+    // script (and thus hydration) is blocked and the page renders blank.
+    // Relax script-src for development; production keeps the full policy and
+    // the golden-string test in src/lib/security-headers.mjs is unaffected.
+    if (process.env.NODE_ENV !== "production") {
+      for (const h of securityHeaders) {
+        if (h.key === "Content-Security-Policy") {
+          h.value = h.value
+            .replace(" 'strict-dynamic'", "")
+            .replace(
+              "script-src 'self' 'unsafe-inline'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+            )
+            // Allow connections to any supabase.co subdomain in dev so that
+            // a missing or wrong NEXT_PUBLIC_SUPABASE_URL doesn't block auth.
+            .replace("connect-src ", "connect-src https://*.supabase.co wss://*.supabase.co ");
+        }
+      }
+    }
+
     return [
       {
         source: "/(.*)",
-        headers: buildSecurityHeaders({
-          apiUrl:      process.env.NEXT_PUBLIC_API_URL,
-          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-          sentryDsn:   process.env.NEXT_PUBLIC_SENTRY_DSN,
-        }),
+        headers: securityHeaders,
       },
     ];
   },

@@ -12,33 +12,30 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
+import pageStyles from "./page.module.scss";
 
 const STATUS_TABS = ["all", "open", "in_review", "resolved", "escalated"] as const;
 type DisputeStatus = (typeof STATUS_TABS)[number];
 
 function disputeStatusClass(status: string) {
-  const map: Record<string, string> = {
-    open: "bg-red-100 text-red-800",
-    in_review: "bg-yellow-100 text-yellow-800",
-    resolved: "bg-green-100 text-green-800",
-    escalated: "bg-orange-100 text-orange-800",
-    closed: "bg-gray-100 text-gray-800",
+  const map: Record<string, keyof typeof pageStyles> = {
+    open:      "statusOpen",
+    in_review: "statusInReview",
+    resolved:  "statusResolved",
+    escalated: "statusEscalated",
+    closed:    "statusClosed",
   };
-  return map[status] ?? "bg-gray-100 text-gray-800";
+  return pageStyles[map[status] ?? "statusClosed"];
 }
 
 function senderBadgeClass(senderType: string) {
-  const map: Record<string, string> = {
-    customer: "bg-purple-100 text-purple-800",
-    staff: "bg-blue-100 text-blue-800",
-    admin: "bg-red-100 text-red-800",
+  const map: Record<string, keyof typeof pageStyles> = {
+    customer: "senderCustomer",
+    staff:    "senderStaff",
+    admin:    "senderAdmin",
   };
-  return map[senderType] ?? "bg-gray-100 text-gray-800";
+  return pageStyles[map[senderType] ?? "senderStaff"];
 }
 
 interface Dispute {
@@ -88,11 +85,7 @@ export default function DisputesPage() {
     try {
       const params = new URLSearchParams();
       if (statusFilter !== "all") params.set("status", statusFilter);
-      const res = await fetch(`${API}/api/disputes?${params}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setDisputes(await res.json());
+      setDisputes(await api.get<Dispute[]>(`/api/disputes?${params}`));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load disputes");
     } finally {
@@ -103,16 +96,12 @@ export default function DisputesPage() {
   async function loadDetail(dispute: Dispute) {
     setSelectedDispute(dispute);
     try {
-      const [detailRes, msgRes] = await Promise.all([
-        fetch(`${API}/api/disputes/${dispute.id}`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }),
-        fetch(`${API}/api/disputes/${dispute.id}/messages`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }),
+      const [detail, msgs] = await Promise.all([
+        api.get<Dispute>(`/api/disputes/${dispute.id}`).catch(() => null),
+        api.get<DisputeMessage[]>(`/api/disputes/${dispute.id}/messages`).catch(() => [] as DisputeMessage[]),
       ]);
-      if (detailRes.ok) setSelectedDispute(await detailRes.json());
-      if (msgRes.ok) setMessages(await msgRes.json());
+      if (detail) setSelectedDispute(detail);
+      setMessages(msgs);
     } catch {
       // non-fatal
     }
@@ -128,15 +117,7 @@ export default function DisputesPage() {
     if (!selectedDispute) return;
     setReplyLoading(true);
     try {
-      const res = await fetch(`${API}/api/disputes/${selectedDispute.id}/messages`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ sender_type: replySenderType, sender_name: replySenderName, body: replyBody }),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post(`/api/disputes/${selectedDispute.id}/messages`, { sender_type: replySenderType, sender_name: replySenderName, body: replyBody });
       setReplyBody("");
       loadDetail(selectedDispute);
     } catch (e: unknown) {
@@ -149,11 +130,7 @@ export default function DisputesPage() {
   async function handleDisputeAction(action: "resolve" | "escalate" | "close") {
     if (!selectedDispute) return;
     try {
-      const res = await fetch(`${API}/api/disputes/${selectedDispute.id}/${action}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post(`/api/disputes/${selectedDispute.id}/${action}`, {});
       fetchDisputes();
       setSelectedDispute(null);
       setMessages([]);
@@ -167,20 +144,12 @@ export default function DisputesPage() {
     setFormLoading(true);
     setFormError("");
     try {
-      const res = await fetch(`${API}/api/disputes`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          customer_id: fCustomerId,
-          type: fType,
-          description: fDescription,
-          opened_by: fOpenedBy,
-        }),
+      await api.post<Dispute>("/api/disputes", {
+        customer_id: fCustomerId,
+        type: fType,
+        description: fDescription,
+        opened_by: fOpenedBy,
       });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
       setFCustomerId(""); setFDescription("");
       fetchDisputes();
     } catch (e: unknown) {
@@ -246,7 +215,7 @@ export default function DisputesPage() {
                         </TableCell>
                         <TableCell>
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${disputeStatusClass(d.status)}`}
+                            className={disputeStatusClass(d.status)}
                           >
                             {d.status}
                           </span>
@@ -327,7 +296,7 @@ export default function DisputesPage() {
                 <CardTitle className="text-base flex items-center justify-between">
                   Dispute Detail
                   <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${disputeStatusClass(selectedDispute.status)}`}
+                    className={disputeStatusClass(selectedDispute.status)}
                   >
                     {selectedDispute.status}
                   </span>
@@ -357,7 +326,7 @@ export default function DisputesPage() {
                     <div key={m.id} className="border rounded-md p-3 space-y-1">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${senderBadgeClass(m.sender_type)}`}
+                          className={senderBadgeClass(m.sender_type)}
                         >
                           {m.sender_type}
                         </span>

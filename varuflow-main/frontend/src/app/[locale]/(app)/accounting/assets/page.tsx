@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -86,6 +88,14 @@ const CATEGORY_COLOR: Record<string, string> = {
   VEHICLE:   "bg-emerald-500/20 text-emerald-300",
   IP:        "bg-purple-500/20 text-purple-300",
   OTHER:     "bg-gray-500/20 text-gray-300",
+};
+
+const CATEGORY_MODULE: Record<string, keyof typeof styles> = {
+  BUILDING:  "categoryBuilding",
+  EQUIPMENT: "categoryEquipment",
+  VEHICLE:   "categoryVehicle",
+  IP:        "categoryIP",
+  OTHER:     "categoryOther",
 };
 
 function totalNBV(assets: Asset[]) {
@@ -298,6 +308,7 @@ export default function AssetsPage() {
   const [showRevalue, setShowRevalue]   = useState(false);
   const [showReport, setShowReport]     = useState(false);
   const [includeDisposed, setIncludeDisposed] = useState(false);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
   const [depPeriod, setDepPeriod]       = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -321,8 +332,12 @@ export default function AssetsPage() {
     try {
       const data = await api.get<Asset[]>(`/api/accounting/assets?include_disposed=${includeDisposed}`);
       setAssets(data);
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to load assets");
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error(err instanceof Error ? err.message : "Failed to load assets");
     } finally { setLoading(false); }
   }, [includeDisposed]);
 
@@ -397,6 +412,8 @@ export default function AssetsPage() {
   };
 
   const totalNbv = totalNBV(assets);
+
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Fixed Assets" />;
 
   return (
     <>
@@ -540,7 +557,7 @@ export default function AssetsPage() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <p className="font-semibold vf-text-1 text-sm">{asset.name}</p>
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${CATEGORY_COLOR[asset.category] ?? "bg-gray-500/20 text-gray-300"}`}>
+                          <span className={styles[CATEGORY_MODULE[asset.category] ?? "categoryOther"]}>
                             {asset.category}
                           </span>
                           {asset.is_disposed && (

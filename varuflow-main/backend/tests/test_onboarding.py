@@ -15,8 +15,8 @@ from __future__ import annotations
 import pytest
 from sqlalchemy import select, func
 
-from app.models.onboarding import OnboardingProgress
-from app.routers.onboarding import ONBOARDING_STEPS
+from app.features.auth.model_onboarding import OnboardingProgress
+from app.features.auth.onboarding import ONBOARDING_STEPS
 
 
 

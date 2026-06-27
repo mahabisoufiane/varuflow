@@ -193,7 +193,6 @@
     "aiPhotoTags": "AI Photo Tagging",
     "aiPricing": "AI Price Suggestions",
     "aiPersonas": "AI Customer Personas",
-    "calendarSync": "Calendar Sync",
     "zapierConnector": "Zapier / Make",
     "customerWebhooks": "Webhooks",
     "apiKeys": "API Keys",
@@ -754,7 +753,7 @@
   },
   "pricing": {
     "pageTitle": "Simple, transparent pricing",
-    "pageSubtitle": "Start free. Scale as you grow. No hidden fees, no per-transaction cuts.",
+    "pageSubtitle": "No lock-in contracts. Transparent pricing built for wholesale teams.",
     "monthly": "Monthly",
     "yearly": "Yearly",
     "yearlySave": "Save 20%",
@@ -771,61 +770,64 @@
       "name": "Starter",
       "description": "For small wholesale businesses getting started.",
       "features": [
-        "Up to 100 products",
-        "Up to 50 invoices/month",
-        "Up to 20 customers",
-        "Inventory management",
-        "Basic invoicing",
-        "Email support",
-        "3 seats"
+        "Up to 500 products",
+        "Up to 150 customers",
+        "Up to 200 invoices/month",
+        "5 team members",
+        "Inventory & stock management",
+        "PDF & email invoicing",
+        "Fortnox integration",
+        "Bulk import",
+        "Email support"
       ],
       "locked": [
-        "Fortnox integration",
         "Mobile app",
         "Advanced analytics",
         "Priority support",
-        "Bulk import",
-        "Custom integrations",
-        "API access"
+        "API access",
+        "Custom integrations"
       ]
     },
     "professional": {
       "name": "Professional",
-      "description": "For growing teams who need more power and insight.",
+      "description": "For growing wholesale teams that need power and insight.",
       "features": [
-        "Up to 2,000 products",
-        "Unlimited invoices",
+        "Up to 10,000 products",
         "Unlimited customers",
+        "Unlimited invoices",
         "Everything in Starter",
-        "Fortnox integration",
-        "Advanced analytics",
+        "20 team members",
+        "Mobile app (Android, iOS)",
+        "Advanced analytics & forecasting",
+        "Automated dunning & reminders",
         "Priority support (4h response)",
-        "Up to 10 seats",
-        "Low stock alerts",
-        "Bulk import"
+        "Low stock alerts & reorder rules",
+        "B2B customer portal"
       ],
       "locked": [
-        "Mobile app",
+        "API access",
         "Custom integrations",
-        "API access"
+        "White-label option"
       ]
     },
     "enterprise": {
       "name": "Enterprise",
       "description": "For large operations that need everything, everywhere.",
       "features": [
-        "Unlimited products",
+        "Unlimited products & customers",
         "Everything in Professional",
-        "Unlimited seats",
+        "Unlimited team members",
+        "API access & webhooks",
         "Custom integrations",
-        "API access",
         "White-label option",
-        "24/7 priority support"
+        "Dedicated account manager",
+        "24/7 priority support",
+        "Custom onboarding"
       ],
       "stars": [
         "Mobile app — Android, iOS & Huawei",
-        "Dedicated account manager",
-        "Custom onboarding"
+        "SLA guarantee",
+        "Custom data residency (EU/Nordic)"
       ]
     },
     "mobileTeaser": {

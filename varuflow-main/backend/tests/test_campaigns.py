@@ -32,13 +32,21 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1] / "app"
 
 
 def _read(relpath: str) -> str:
-    return (_BACKEND_ROOT / relpath).read_text()
+    _p = _BACKEND_ROOT / relpath
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
-ROUTER_SRC = _read("routers/campaigns.py")
+ROUTER_SRC = _read("features/marketing/campaigns.py")
 SERVICE_SRC = _read("services/campaign_engine.py")
 SCHEDULER_SRC = _read("services/scheduler.py")
-MODEL_SRC = _read("models/campaigns.py")
+MODEL_SRC = _read("features/marketing/models.py")
 EMAIL_SRC = _read("services/email.py")
 MAIN_SRC = _read("main.py")
 MIGRATION_SRC = (
@@ -47,7 +55,7 @@ MIGRATION_SRC = (
     / "versions"
     / "b1c2d3e4f5a6_v55_campaigns.py"
 ).read_text()
-INVOICING_SRC = _read("models/invoicing.py")
+INVOICING_SRC = _read("features/invoicing/models.py")
 
 
 SECRET = "test-secret-do-not-use-in-production"
@@ -368,6 +376,9 @@ def test_compute_stats_open_rate_no_sends():
 
 
 def test_router_registered_in_main():
-    assert "campaigns.router" in MAIN_SRC
-    # Import line includes ``campaigns``.
-    assert "campaigns," in MAIN_SRC
+
+    # Registered via marketing_router (vertical-slice architecture).
+    # The individual module is wired inside the feature router, not directly in main.py.
+    feat_src = _read("features/marketing/router.py")
+    assert "campaigns" in feat_src
+    assert "marketing_router" in MAIN_SRC

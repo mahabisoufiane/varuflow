@@ -12,8 +12,8 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.grace_period import GracePeriodStatus, SubscriptionGracePeriod
-from app.models.organization import OrgPlan, Organization
+from app.features.billing.grace_period import GracePeriodStatus, SubscriptionGracePeriod
+from app.features.auth.organization import OrgPlan, Organization
 from app.services.audit import log_action
 
 log = logging.getLogger(__name__)

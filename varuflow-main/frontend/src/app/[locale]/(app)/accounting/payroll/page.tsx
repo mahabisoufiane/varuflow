@@ -16,6 +16,9 @@ import { useCallback, useEffect, useState } from "react";
 import { Wallet, Loader2, Plus, RefreshCw, CheckCircle, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
+import { RoleGuard } from "@/components/app/RoleContext";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -56,9 +59,26 @@ const STATUS_COLORS: Record<string, string> = {
   PAID: "text-indigo-400 bg-indigo-400/10",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  DRAFT:    "statusDraft",
+  APPROVED: "statusApproved",
+  PAID:     "statusPaid",
+};
+
 // ─── Component ──────────────────────────────────────────────────────────────
 
+// Payroll exposes salaries — managers only. Mirrors the backend
+// require_role(ADMIN) on /api/accounting/payroll. The guard blocks direct-URL
+// access; hiding the nav link alone is not a security boundary.
 export default function PayrollPage() {
+  return (
+    <RoleGuard minRole="ADMIN">
+      <PayrollPageInner />
+    </RoleGuard>
+  );
+}
+
+function PayrollPageInner() {
   const [runs, setRuns]           = useState<PayrollRun[]>([]);
   const [loading, setLoading]     = useState(true);
   const [selected, setSelected]   = useState<PayrollRun | null>(null);
@@ -73,13 +93,19 @@ export default function PayrollPage() {
     employee_name: "", gross_salary: "", income_tax: "0", personal_number: "", notes: "",
   });
 
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const data = await api.get<PayrollRun[]>("/api/accounting/payroll");
       setRuns(data);
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to load payroll runs");
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error(err instanceof Error ? err.message : "Failed to load payroll runs");
     } finally { setLoading(false); }
   }, []);
 
@@ -148,8 +174,10 @@ export default function PayrollPage() {
     window.open(`/api/accounting/payroll/${selected.id}/agi-xml`, "_blank");
   };
 
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Payroll" />;
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+    <>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Wallet className="w-6 h-6 text-indigo-400" />
@@ -216,7 +244,7 @@ export default function PayrollPage() {
                     </p>
                     <p className="text-xs vf-text-m mt-0.5">{run.entries.length} employees</p>
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[run.status] ?? ""}`}>
+                  <span className={styles[STATUS_MODULE[run.status] ?? "statusDraft"]}>
                     {run.status}
                   </span>
                 </div>
@@ -356,6 +384,6 @@ export default function PayrollPage() {
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }

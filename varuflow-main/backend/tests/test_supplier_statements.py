@@ -14,11 +14,19 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(p: str) -> str:
-    return (_BACKEND_ROOT / p).read_text()
+    _p = _BACKEND_ROOT / p
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
 SERVICE_SRC = _read("app/services/supplier_statement.py")
-ROUTER_SRC  = _read("app/routers/supplier_statements.py")
+ROUTER_SRC  = _read("app/features/purchases/supplier_statements.py")
 MAIN_SRC    = _read("app/main.py")
 
 
@@ -308,8 +316,12 @@ def test_router_filters_payables_without_issue_date():
 
 
 def test_router_registered_in_main():
-    assert "supplier_statements.router" in MAIN_SRC
-    assert "supplier_statements," in MAIN_SRC
+
+    # Registered via purchases_router (vertical-slice architecture).
+    # The individual module is wired inside the feature router, not directly in main.py.
+    feat_src = _read("app/features/purchases/router.py")
+    assert "supplier_statements" in feat_src
+    assert "purchases_router" in MAIN_SRC
 
 
 # ── Service source contract ──────────────────────────────────────────────

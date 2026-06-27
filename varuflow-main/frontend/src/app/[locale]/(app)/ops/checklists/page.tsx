@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, RefreshCw, CheckSquare, Trash2, ChevronDown, ChevronRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface ChecklistItem {
   id: string;
@@ -52,6 +53,13 @@ const FREQ_CONFIG: Record<string, { label: string; color: string }> = {
   weekly:  { label: "Weekly",  color: "bg-blue-100 text-blue-700"    },
   monthly: { label: "Monthly", color: "bg-purple-100 text-purple-700" },
   manual:  { label: "Manual",  color: "bg-gray-100 text-gray-600"    },
+};
+
+const FREQ_MODULE: Record<string, keyof typeof styles> = {
+  daily:   "freqDaily",
+  weekly:  "freqWeekly",
+  monthly: "freqMonthly",
+  manual:  "freqManual",
 };
 
 type TabType = "templates" | "runs";
@@ -292,17 +300,13 @@ export default function ChecklistsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b">
+      <div className={styles.tabBar}>
         {(["templates", "runs"] as const).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-              tab === t
-                ? "border-[#1a2332] text-[#1a2332]"
-                : "border-transparent text-muted-foreground hover:text-gray-700"
-            }`}
+            className={`${styles.tab} ${tab === t ? styles.tabActive : ""}`}
           >
             {t === "templates" ? "Templates" : "Active Runs"}
           </button>
@@ -311,7 +315,7 @@ export default function ChecklistsPage() {
 
       {/* New template form */}
       {showNew && tab === "templates" && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className={styles.formCard}>
           <h3 className="text-sm font-semibold text-gray-900">Create Template</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -320,7 +324,7 @@ export default function ChecklistsPage() {
                 value={newForm.title}
                 onChange={(e) => setNewForm((f) => ({ ...f, title: e.target.value }))}
                 placeholder="Daily Opening Checklist"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className={styles.formInput}
               />
             </div>
             <div className="space-y-1">
@@ -329,7 +333,7 @@ export default function ChecklistsPage() {
                 value={newForm.category}
                 onChange={(e) => setNewForm((f) => ({ ...f, category: e.target.value }))}
                 placeholder="Operations, Finance…"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className={styles.formInput}
               />
             </div>
           </div>
@@ -340,7 +344,7 @@ export default function ChecklistsPage() {
                 value={newForm.description}
                 onChange={(e) => setNewForm((f) => ({ ...f, description: e.target.value }))}
                 placeholder="Optional description…"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className={styles.formInput}
               />
             </div>
             <div className="space-y-1">
@@ -348,7 +352,7 @@ export default function ChecklistsPage() {
               <select
                 value={newForm.frequency}
                 onChange={(e) => setNewForm((f) => ({ ...f, frequency: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className={styles.formInput}
               >
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
@@ -382,14 +386,14 @@ export default function ChecklistsPage() {
             <p className="text-gray-600 font-medium">No templates yet</p>
           </div>
         ) : (
-          <div className="rounded-xl border bg-white shadow-sm divide-y divide-gray-100">
+          <div className={styles.templateList}>
             {templates.map((tmpl) => {
               const freq = FREQ_CONFIG[tmpl.frequency] ?? FREQ_CONFIG.manual;
               const isExpanded = expandedId === tmpl.id;
 
               return (
                 <div key={tmpl.id}>
-                  <div className="flex items-center gap-4 px-5 py-4">
+                  <div className={styles.templateRow}>
                     <button
                       type="button"
                       onClick={() => setExpandedId(isExpanded ? null : tmpl.id)}
@@ -405,7 +409,7 @@ export default function ChecklistsPage() {
                             {tmpl.category}
                           </span>
                         )}
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${freq.color}`}>
+                        <span className={styles[FREQ_MODULE[tmpl.frequency] ?? "freqManual"]}>
                           {freq.label}
                         </span>
                       </div>

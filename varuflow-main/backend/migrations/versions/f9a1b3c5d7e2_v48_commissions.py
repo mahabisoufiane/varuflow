@@ -53,7 +53,6 @@ def upgrade() -> None:
         sa.Column(
             "staff_id",
             postgresql.UUID(as_uuid=True),
-            sa.ForeignKey("staff.id", ondelete="CASCADE"),
             nullable=False,
             index=True,
         ),
@@ -148,7 +147,6 @@ def upgrade() -> None:
         sa.Column(
             "staff_id",
             postgresql.UUID(as_uuid=True),
-            sa.ForeignKey("staff.id", ondelete="RESTRICT"),
             nullable=False,
             index=True,
         ),
@@ -186,7 +184,6 @@ def upgrade() -> None:
         sa.Column(
             "staff_id",
             postgresql.UUID(as_uuid=True),
-            sa.ForeignKey("staff.id", ondelete="SET NULL"),
             nullable=True,
         ),
     )
@@ -196,7 +193,6 @@ def upgrade() -> None:
         sa.Column(
             "staff_id",
             postgresql.UUID(as_uuid=True),
-            sa.ForeignKey("staff.id", ondelete="SET NULL"),
             nullable=True,
         ),
     )

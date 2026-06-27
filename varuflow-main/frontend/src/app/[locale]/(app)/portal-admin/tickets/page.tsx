@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { apiClient } from "@/lib/api-client";
+import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface Ticket {
   id: string;
@@ -33,11 +34,25 @@ const PRIORITY_COLORS: Record<string, string> = {
   urgent: "bg-red-100 text-red-700",
 };
 
+const PRIORITY_MODULE: Record<string, keyof typeof styles> = {
+  low:    "priorityLow",
+  normal: "priorityNormal",
+  high:   "priorityHigh",
+  urgent: "priorityUrgent",
+};
+
 const STATUS_COLORS: Record<string, string> = {
   open: "bg-yellow-100 text-yellow-800",
   in_progress: "bg-blue-100 text-blue-800",
   resolved: "bg-green-100 text-green-700",
   closed: "bg-gray-100 text-gray-600",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  open:        "statusOpen",
+  in_progress: "statusInProgress",
+  resolved:    "statusResolved",
+  closed:      "statusClosed",
 };
 
 export default function PortalAdminTicketsPage() {
@@ -50,13 +65,13 @@ export default function PortalAdminTicketsPage() {
 
   const load = () => {
     const qs = filter ? `?status=${filter}` : "";
-    apiClient.get<Ticket[]>(`/api/portal-admin/tickets${qs}`)
+    api.get<Ticket[]>(`/api/portal-admin/tickets${qs}`)
       .then(setTickets)
       .catch(() => {});
   };
 
   const loadDetail = (id: string) => {
-    apiClient.get<Ticket>(`/api/portal-admin/tickets/${id}`)
+    api.get<Ticket>(`/api/portal-admin/tickets/${id}`)
       .then(setSelected)
       .catch(() => {});
   };
@@ -64,7 +79,7 @@ export default function PortalAdminTicketsPage() {
   useEffect(() => { load(); }, [filter]);
 
   const update = async (id: string, patch: Record<string, unknown>) => {
-    await apiClient.patch(`/api/portal-admin/tickets/${id}`, patch);
+    await api.patch(`/api/portal-admin/tickets/${id}`, patch);
     load();
     if (selected?.id === id) loadDetail(id);
   };
@@ -73,7 +88,7 @@ export default function PortalAdminTicketsPage() {
     if (!replyBody.trim() || !selected) return;
     setLoading(true);
     try {
-      await apiClient.post(`/api/portal-admin/tickets/${selected.id}/reply`, { body: replyBody, is_internal: isInternal });
+      await api.post(`/api/portal-admin/tickets/${selected.id}/reply`, { body: replyBody, is_internal: isInternal });
       setReplyBody("");
       setIsInternal(false);
       loadDetail(selected.id);
@@ -120,10 +135,10 @@ export default function PortalAdminTicketsPage() {
             >
               <div className="flex items-center justify-between gap-1">
                 <span className="text-sm font-medium text-gray-900 truncate">{t.subject}</span>
-                {badge(t.status, STATUS_COLORS[t.status] ?? "bg-gray-100 text-gray-600")}
+                <span className={styles[STATUS_MODULE[t.status] ?? "statusOpen"]}>{t.status}</span>
               </div>
               <div className="flex items-center gap-2 mt-1">
-                {badge(t.priority, PRIORITY_COLORS[t.priority] ?? "bg-gray-100")}
+                <span className={styles[PRIORITY_MODULE[t.priority] ?? "priorityNormal"]}>{t.priority}</span>
                 {t.ticket_type && <span className="text-xs text-gray-400">{t.ticket_type}</span>}
                 {t.sla_overdue && <span className="text-xs text-red-600 font-medium">SLA overdue</span>}
                 <span className="text-xs text-gray-400 ml-auto">{hoursOpen(t.created_at)}</span>
@@ -147,8 +162,8 @@ export default function PortalAdminTicketsPage() {
               <div>
                 <h2 className="font-bold text-gray-900">{selected.subject}</h2>
                 <div className="flex items-center gap-2 mt-1">
-                  {badge(selected.status, STATUS_COLORS[selected.status] ?? "bg-gray-100")}
-                  {badge(selected.priority, PRIORITY_COLORS[selected.priority] ?? "bg-gray-100")}
+                  <span className={styles[STATUS_MODULE[selected.status] ?? "statusOpen"]}>{selected.status}</span>
+                  <span className={styles[PRIORITY_MODULE[selected.priority] ?? "priorityNormal"]}>{selected.priority}</span>
                   {selected.sla_hours && (
                     <span className={`text-xs ${selected.sla_overdue ? "text-red-600 font-semibold" : "text-gray-500"}`}>
                       SLA {selected.sla_hours}h{selected.sla_overdue ? " — OVERDUE" : ""}

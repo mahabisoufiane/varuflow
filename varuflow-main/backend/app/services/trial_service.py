@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.organization import OrgPlan, Organization
+from app.features.auth.organization import OrgPlan, Organization
 
 logger = logging.getLogger(__name__)
 

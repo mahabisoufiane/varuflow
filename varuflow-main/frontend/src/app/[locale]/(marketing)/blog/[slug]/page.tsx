@@ -9,6 +9,7 @@ import {
   getCategoryTitle,
 } from "@/lib/sanity/getPosts";
 import { SanityBody } from "@/lib/sanity/portableText";
+import { sanitizeArticleHtml } from "@/lib/sanitize-html-server";
 import TableOfContents from "./TableOfContents";
 import ShareButtons from "./ShareButtons";
 import LeadMagnetForm from "@/components/marketing/LeadMagnetForm";
@@ -219,7 +220,7 @@ export default async function ArticlePage({ params }: { params: Promise<Params> 
                     prose-td:border prose-td:border-white/8 prose-td:px-3 prose-td:py-2 prose-td:text-sm
                     prose-a:text-indigo-400 prose-a:underline hover:prose-a:text-indigo-300
                     prose-strong:text-white prose-code:text-indigo-300 prose-code:bg-white/8 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-code:text-xs"
-                  dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeArticleHtml(post.bodyHtml) }}
                 />
               )}
             </div>

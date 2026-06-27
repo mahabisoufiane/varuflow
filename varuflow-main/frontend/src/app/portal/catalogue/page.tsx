@@ -9,6 +9,8 @@ import {
   PORTAL_CUSTOMER_KEY,
 } from "@/lib/portal-client";
 
+const PORTAL_REORDER_KEY = "portal_reorder";
+
 interface CatalogueItem {
   product_id: string;
   name: string;
@@ -62,7 +64,20 @@ export default function PortalCataloguePage() {
     }
     portalApi
       .get<CatalogueResponse>("/api/portal/catalogue")
-      .then(setCatalogue)
+      .then((data) => {
+        setCatalogue(data);
+        // Pre-fill cart from reorder (set by orders page)
+        const reorderRaw = localStorage.getItem(PORTAL_REORDER_KEY);
+        if (reorderRaw) {
+          try {
+            const lines: { product_id: string; quantity: number }[] = JSON.parse(reorderRaw);
+            const preCart: Record<string, number> = {};
+            for (const l of lines) preCart[l.product_id] = l.quantity;
+            setCart(preCart);
+          } catch { /* ignore malformed */ }
+          localStorage.removeItem(PORTAL_REORDER_KEY);
+        }
+      })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, [router]);

@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api-client";
 import { RefreshCw, Clock, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface WaitlistEntry {
   id: string;
@@ -29,14 +29,17 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   cancelled: { label: "Cancelled", color: "bg-gray-100 text-gray-500" },
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  waiting:   "statusWaiting",
+  offered:   "statusOffered",
+  booked:    "statusBooked",
+  expired:   "statusExpired",
+  cancelled: "statusCancelled",
+};
+
 type StatusFilter = "all" | "waiting" | "offered" | "booked" | "expired" | "cancelled";
 
 export default function WaitlistPage() {
-  const router = useRouter();
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale ?? "en";
-  const supabase = createClient();
-
   const [entries, setEntries] = useState<WaitlistEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<StatusFilter>("all");
@@ -52,26 +55,12 @@ export default function WaitlistPage() {
     notes: "",
   });
 
-  async function getToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }
-  function apiUrl(p: string) { return `${process.env.NEXT_PUBLIC_API_URL}${p}`; }
-
   async function load() {
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push(`/${locale}/auth/login`); return; }
-      const res = await fetch(apiUrl("/api/waitlist"), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (res.ok) {
-        const data: WaitlistEntry[] = await res.json();
-        data.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-        setEntries(data);
-      }
+      const data = await api.get<WaitlistEntry[]>("/api/waitlist");
+      data.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      setEntries(data);
     } catch {
       toast.error("Failed to load waitlist");
     } finally {
@@ -85,26 +74,15 @@ export default function WaitlistPage() {
     if (!addForm.customer_id.trim()) { toast.error("Customer ID is required"); return; }
     setActionLoading("add");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl("/api/waitlist"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          customer_id: addForm.customer_id,
-          service_id: addForm.service_id || null,
-          preferred_date: addForm.preferred_date || null,
-          preferred_time_from: addForm.preferred_time_from || null,
-          preferred_time_to: addForm.preferred_time_to || null,
-          flexibility_days: parseInt(addForm.flexibility_days),
-          notes: addForm.notes || null,
-        }),
+      await api.post("/api/waitlist", {
+        customer_id: addForm.customer_id,
+        service_id: addForm.service_id || null,
+        preferred_date: addForm.preferred_date || null,
+        preferred_time_from: addForm.preferred_time_from || null,
+        preferred_time_to: addForm.preferred_time_to || null,
+        flexibility_days: parseInt(addForm.flexibility_days),
+        notes: addForm.notes || null,
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to add to waitlist");
-        return;
-      }
       toast.success("Added to waitlist");
       setShowAddForm(false);
       setAddForm({ customer_id: "", service_id: "", preferred_date: "", preferred_time_from: "", preferred_time_to: "", flexibility_days: "0", notes: "" });
@@ -119,17 +97,7 @@ export default function WaitlistPage() {
   async function notifyEntry(id: string) {
     setActionLoading(id + "_notify");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/waitlist/${id}/notify`), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to notify customer");
-        return;
-      }
+      await api.post(`/api/waitlist/${id}/notify`, {});
       toast.success("Customer notified, offer expires in 24h");
       await load();
     } catch {
@@ -142,17 +110,7 @@ export default function WaitlistPage() {
   async function bookEntry(id: string) {
     setActionLoading(id + "_book");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/waitlist/${id}/book`), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to book");
-        return;
-      }
+      await api.post(`/api/waitlist/${id}/book`, {});
       toast.success("Waitlist booking confirmed");
       await load();
     } catch {
@@ -165,17 +123,7 @@ export default function WaitlistPage() {
   async function removeEntry(id: string) {
     setActionLoading(id + "_remove");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/waitlist/${id}`), {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to remove");
-        return;
-      }
+      await api.delete(`/api/waitlist/${id}`);
       toast.success("Removed from waitlist");
       await load();
     } catch {
@@ -314,7 +262,7 @@ export default function WaitlistPage() {
                       </p>
                     )}
                   </div>
-                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.color}`}>
+                  <span className={styles[STATUS_MODULE[e.status] ?? "statusWaiting"]}>
                     {cfg.label}
                   </span>
                   <div className="flex items-center gap-1.5 flex-shrink-0">

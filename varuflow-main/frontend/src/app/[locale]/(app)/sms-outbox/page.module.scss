@@ -1,0 +1,19 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+// ── SMS outbox channel and direction badges ──────────────────────────────────
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.channelWhatsapp { @extend .badge; background: #dcfce7; color: #15803d; }
+.channelSms      { @extend .badge; background: #dbeafe; color: #1d4ed8; }
+
+.directionIn  { @extend .badge; background: #f3e8ff; color: #7e22ce; }
+.directionOut { @extend .badge; background: #f3f4f6; color: #4b5563; }

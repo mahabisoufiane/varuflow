@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Package2, Plus, Loader2, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 interface BomLine {
   id: string;
@@ -44,6 +45,7 @@ export default function KitsPage() {
   const [buildingKit, setBuildingKit] = useState<Kit | null>(null);
   const [buildForm, setBuildForm] = useState({ qty: 1, warehouse_id: "" });
   const [building, setBuilding] = useState(false);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   async function load() {
     try {
@@ -56,7 +58,11 @@ export default function KitsPage() {
       if (productList.items) setProducts(productList.items);
       else if (Array.isArray(productList)) setProducts(productList);
       setWarehouses(whList);
-    } catch {
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "manufacturing", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
       toast.error("Failed to load kits");
     } finally {
       setLoading(false);
@@ -104,6 +110,8 @@ export default function KitsPage() {
       setBuilding(false);
     }
   }
+
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Kits" />;
 
   return (
     <div className="p-6 max-w-6xl mx-auto">

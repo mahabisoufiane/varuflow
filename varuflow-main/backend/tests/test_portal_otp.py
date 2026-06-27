@@ -19,11 +19,19 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(relpath: str) -> str:
-    return (_BACKEND_ROOT / relpath).read_text()
+    _p = _BACKEND_ROOT / relpath
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
-ROUTER_SRC = _read("app/routers/portal.py")
-MODEL_SRC = _read("app/models/portal_otp.py")
+ROUTER_SRC = _read("app/features/portal/portal.py")
+MODEL_SRC = _read("app/features/portal/portal_otp.py")
 SERVICE_SRC = _read("app/services/portal_otp.py")
 EMAIL_SRC = _read("app/services/email.py")
 

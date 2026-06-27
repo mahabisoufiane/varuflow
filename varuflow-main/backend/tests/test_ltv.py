@@ -7,14 +7,14 @@ from decimal import Decimal
 
 import pytest
 
-from app.models.invoicing import (
+from app.features.invoicing.models import (
     Customer,
     Invoice,
     InvoiceStatus,
     Payment,
     PaymentMethod,
 )
-from app.models.organization import OrgPlan
+from app.features.auth.organization import OrgPlan
 
 
 

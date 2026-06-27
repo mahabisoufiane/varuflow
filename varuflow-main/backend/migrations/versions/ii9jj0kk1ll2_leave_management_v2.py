@@ -26,7 +26,7 @@ def upgrade() -> None:
         "leave_entitlements",
         sa.Column("id", UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()")),
         sa.Column("org_id", UUID(as_uuid=True), sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("staff_id", UUID(as_uuid=True), sa.ForeignKey("staff.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("staff_id", UUID(as_uuid=True), nullable=False),
         sa.Column("leave_type", sa.String(20), nullable=False),     # annual | sick | parental | unpaid
         sa.Column("year", sa.Integer, nullable=False),
         sa.Column("days_allocated", sa.Numeric(5, 1), nullable=False, server_default="0"),

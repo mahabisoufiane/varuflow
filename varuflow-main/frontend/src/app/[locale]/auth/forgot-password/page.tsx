@@ -57,8 +57,8 @@ export default function ForgotPasswordPage() {
           <ThemeToggle />
         </div>
         <div className="w-full max-w-sm space-y-6 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#6366F1]/15 border border-[#6366F1]/20">
-            <Mail className="h-8 w-8 text-[#6366F1]" />
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#2563EB]/15 border border-[#2563EB]/20">
+            <Mail className="h-8 w-8 text-[#2563EB]" />
           </div>
           <div className="space-y-2">
             <h2 className="text-2xl font-bold" style={{ color:"var(--vf-text-primary)" }}>
@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
             </p>
           </div>
           <Link href="/auth/login"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-[#6366F1] hover:text-[#4F46E5] transition-colors">
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2563EB] hover:text-[#1D4ED8] transition-colors">
             <ArrowLeft className="h-3.5 w-3.5" />
             {t("auth.backToSignIn")}
           </Link>
@@ -91,7 +91,7 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-sm space-y-8 animate-fade-in">
         {/* Logo */}
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#6366F1] to-[#4F46E5]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#2563EB] to-[#1D4ED8]">
             <Zap className="h-4 w-4 text-white" />
           </div>
           <span className="text-base font-bold tracking-tight" style={{ color:"var(--vf-text-primary)" }}>Varuflow</span>

@@ -6,7 +6,7 @@ caught per-channel: the invoice stays created, the other channels still
 attempt, and everything is audited so the owner can see what happened.
 
 This module deliberately does NOT perform invoice *generation* — that
-stays in ``app.routers.recurring.run_now`` so the manual trigger and
+stays in ``app.features.invoicing.recurring.run_now`` so the manual trigger and
 the scheduler share one implementation. ``auto_send_invoice`` is
 invoked after generation, receiving the already-committed invoice.
 
@@ -34,7 +34,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.invoicing import (
+from app.features.invoicing.models import (
     Customer,
     Invoice,
     InvoiceLineItem,
@@ -42,7 +42,7 @@ from app.models.invoicing import (
     RecurringFrequency,
     RecurringInvoice,
 )
-from app.models.organization import Organization
+from app.features.auth.organization import Organization
 from app.services.audit import log_action
 
 logger = logging.getLogger(__name__)
@@ -241,7 +241,7 @@ async def _send_email_channel(
     Mirrors the manual ``POST /invoices/{id}/send`` path so that failure
     modes and behaviour stay identical to the owner clicking Send.
     """
-    from app.routers.invoicing import _generate_invoice_pdf
+    from app.features.invoicing.router import _generate_invoice_pdf
     from app.services.email import send_invoice_email
 
     if not invoice.customer or not invoice.customer.email:
@@ -292,7 +292,7 @@ async def _send_peppol_channel(
         return False, "customer_peppol_id_missing"
 
     try:
-        from app.routers.invoicing import _generate_peppol_xml
+        from app.features.invoicing.router import _generate_peppol_xml
 
         xml_bytes = _generate_peppol_xml(invoice, org)
     except Exception as e:  # noqa: BLE001 — VAT format, schema, etc.
@@ -350,6 +350,15 @@ async def auto_send_invoice(
         invoice_id=invoice.id,
         invoice_number=invoice.invoice_number,
     )
+
+    # Block auto-send for FREE orgs — trial expired or not subscribed.
+    from app.features.auth.organization import OrgPlan
+    if org.plan == OrgPlan.FREE:
+        logger.info(
+            "recurring_send blocked: org on FREE plan",
+            extra={"org_id": str(org.id), "invoice_id": str(invoice.id)},
+        )
+        return result
 
     if not recurring.auto_send:
         return result  # explicit off — nothing to do, no audit noise

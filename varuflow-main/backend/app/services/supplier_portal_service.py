@@ -237,7 +237,7 @@ async def issue_token(
     email send + commit). The raw token is returned *only* here and
     is never fetchable again.
     """
-    from app.models.supplier_portal import SupplierPortalToken
+    from app.features.purchases.supplier_portal_models import SupplierPortalToken
 
     raw = generate_token()
     token_hash = hash_token(raw)
@@ -262,7 +262,7 @@ async def lookup_by_raw_token(db, *, raw_token: str):
     """
     from sqlalchemy import select
 
-    from app.models.supplier_portal import SupplierPortalToken
+    from app.features.purchases.supplier_portal_models import SupplierPortalToken
 
     stmt = select(SupplierPortalToken).where(
         SupplierPortalToken.token_hash == hash_token(raw_token)
@@ -279,7 +279,7 @@ async def touch_last_used(db, *, token_id: uuid.UUID) -> None:
     """
     from sqlalchemy import update
 
-    from app.models.supplier_portal import SupplierPortalToken
+    from app.features.purchases.supplier_portal_models import SupplierPortalToken
 
     try:
         await db.execute(
@@ -301,7 +301,7 @@ async def revoke_token(db, *, token_id: uuid.UUID, org_id: uuid.UUID) -> bool:
     """
     from sqlalchemy import update
 
-    from app.models.supplier_portal import SupplierPortalToken
+    from app.features.purchases.supplier_portal_models import SupplierPortalToken
 
     result = await db.execute(
         update(SupplierPortalToken)
@@ -323,7 +323,7 @@ async def list_supplier_pos(db, *, supplier_id: uuid.UUID, org_id: uuid.UUID):
     from sqlalchemy import select
     from sqlalchemy.orm import selectinload
 
-    from app.models.inventory import PurchaseOrder, PurchaseOrderStatus
+    from app.features.inventory.models import PurchaseOrder, PurchaseOrderStatus
 
     stmt = (
         select(PurchaseOrder)
@@ -350,7 +350,7 @@ async def get_supplier_po(db, *, po_id: uuid.UUID, supplier_id: uuid.UUID, org_i
     from sqlalchemy import select
     from sqlalchemy.orm import selectinload
 
-    from app.models.inventory import PurchaseOrder, PurchaseOrderStatus
+    from app.features.inventory.models import PurchaseOrder, PurchaseOrderStatus
 
     stmt = (
         select(PurchaseOrder)
@@ -384,7 +384,7 @@ async def confirm_po(
     """
     from sqlalchemy import update
 
-    from app.models.inventory import PurchaseOrder, PurchaseOrderStatus
+    from app.features.inventory.models import PurchaseOrder, PurchaseOrderStatus
 
     now = datetime.now(timezone.utc)
     result = await db.execute(
@@ -410,7 +410,7 @@ async def find_active_tokens(db, *, org_id: uuid.UUID, supplier_id: uuid.UUID | 
     """
     from sqlalchemy import select
 
-    from app.models.supplier_portal import SupplierPortalToken
+    from app.features.purchases.supplier_portal_models import SupplierPortalToken
 
     stmt = select(SupplierPortalToken).where(
         SupplierPortalToken.org_id == org_id,

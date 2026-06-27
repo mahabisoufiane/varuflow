@@ -1,0 +1,16 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Cross-entity role badges ───────────────────────────────────────────────────
+
+.roleBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.roleOwner  { @extend .roleBadge; background: #fee2e2; color: #b91c1c; }
+.roleAdmin  { @extend .roleBadge; background: #ffedd5; color: #c2410c; }
+.roleMember { @extend .roleBadge; background: #dbeafe; color: #1d4ed8; }
+.roleViewer { @extend .roleBadge; background: #f3f4f6; color: #4b5563; }

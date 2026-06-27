@@ -8,6 +8,7 @@ import {
   FileCheck2, RefreshCw, Download, Search, AlertTriangle,
   CheckCircle, XCircle, Clock, BarChart3
 } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface ZatcaRecord {
   id: string; org_id: string; invoice_id: string;
@@ -27,6 +28,14 @@ const STATUS_STYLE: Record<string, { bg: string; label: string; Icon: any }> = {
   cleared:       { bg: "bg-green-100 text-green-700",  label: "Cleared",       Icon: CheckCircle },
   rejected:      { bg: "bg-red-100 text-red-700",      label: "Rejected",      Icon: XCircle },
   not_submitted: { bg: "bg-gray-100 text-gray-600",    label: "Not Submitted", Icon: AlertTriangle },
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:       "statusPending",
+  submitted:     "statusSubmitted",
+  cleared:       "statusCleared",
+  rejected:      "statusRejected",
+  not_submitted: "statusNotSubmitted",
 };
 
 export default function ZatcaDashboardPage() {
@@ -79,17 +88,7 @@ export default function ZatcaDashboardPage() {
 
   async function downloadXml(invoiceId: string) {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
-      const response = await fetch(`${apiUrl}/api/mena/zatca/${invoiceId}/xml`, {
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Failed");
-      const text = await response.text();
-      const blob = new Blob([text], { type: "application/xml" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = `zatca-${invoiceId}.xml`; a.click();
-      URL.revokeObjectURL(url);
+      await api.downloadBlob(`/api/mena/zatca/${invoiceId}/xml`, `zatca-${invoiceId}.xml`);
     } catch {
       toast.error("Failed to download XML");
     }
@@ -209,7 +208,7 @@ export default function ZatcaDashboardPage() {
                     <p className="text-sm font-mono truncate">{r.invoice_id}</p>
                     <p className="text-xs text-muted-foreground font-mono">{r.invoice_hash.slice(0, 32)}…</p>
                   </div>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${s.bg}`}>
+                  <span className={styles[STATUS_MODULE[r.clearance_status] ?? "statusNotSubmitted"]}>
                     {s.label}
                   </span>
                   <span className="text-xs text-muted-foreground">

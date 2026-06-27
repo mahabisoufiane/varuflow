@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface Variant {
   id: string;
@@ -33,6 +34,12 @@ const STATUS_COLOR: Record<string, string> = {
   draft: "bg-gray-100 text-gray-600",
   running: "bg-blue-100 text-blue-700",
   complete: "bg-green-100 text-green-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft:    "statusDraft",
+  running:  "statusRunning",
+  complete: "statusComplete",
 };
 
 export default function ABTestingPage() {
@@ -249,7 +256,7 @@ export default function ABTestingPage() {
                       <p className="text-xs text-green-600 mt-0.5 font-medium">Winner: {t.winner_variant}</p>
                     )}
                   </div>
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLOR[t.status] ?? STATUS_COLOR.draft}`}>
+                  <span className={styles[STATUS_MODULE[t.status] ?? "statusDraft"]}>
                     {t.status}
                   </span>
                   <div className="flex items-center gap-2">

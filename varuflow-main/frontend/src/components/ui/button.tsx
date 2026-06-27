@@ -10,33 +10,33 @@ import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
   // Base: shared across all variants
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] select-none",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold transition-all duration-base ease-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vf-brand-primary)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] select-none",
   {
     variants: {
       variant: {
-        // Indigo gradient — primary CTA
+        // Brand blue — primary CTA
         primary:
-          "bg-gradient-to-br from-[#6366F1] to-[#4F46E5] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:from-[#7C7FF5] hover:to-[#5850E6] hover:scale-[1.01] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_0_16px_rgba(99,102,241,0.3)]",
+          "bg-[var(--vf-brand-primary)] text-white shadow-sm hover:bg-[var(--vf-brand-primary-hover)] hover:shadow-[0_4px_12px_rgba(37,99,235,0.25)]",
         // Glass — secondary action
         secondary:
           "border text-[var(--vf-text-secondary)] hover:text-[var(--vf-text-primary)] hover:scale-[1.01]",
         // Transparent — nav / subtle
         ghost:
-          "text-[var(--vf-text-secondary)] hover:bg-[var(--vf-glass-bg)] hover:text-[var(--vf-text-primary)]",
-        // Red gradient — destructive action
+          "text-[var(--vf-text-secondary)] hover:bg-[var(--vf-hover)] hover:text-[var(--vf-text-primary)]",
+        // Red — destructive action
         danger:
-          "bg-gradient-to-br from-[#EF4444] to-[#DC2626] text-white hover:scale-[1.01] hover:shadow-[0_0_16px_rgba(239,68,68,0.3)]",
-        // Green gradient — confirm / success
+          "bg-[#DC2626] text-white hover:bg-[#B91C1C] hover:shadow-[0_4px_12px_rgba(220,38,38,0.25)]",
+        // Green — confirm / success
         success:
-          "bg-gradient-to-br from-[#10B981] to-[#059669] text-white hover:scale-[1.01] hover:shadow-[0_0_16px_rgba(16,185,129,0.3)]",
+          "bg-[#059669] text-white hover:bg-[#047857] hover:shadow-[0_4px_12px_rgba(5,150,105,0.25)]",
         // shadcn compat aliases
         default:
-          "bg-gradient-to-br from-[#6366F1] to-[#4F46E5] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:from-[#7C7FF5] hover:to-[#5850E6] hover:scale-[1.01]",
+          "bg-[var(--vf-brand-primary)] text-white shadow-sm hover:bg-[var(--vf-brand-primary-hover)] hover:shadow-[0_4px_12px_rgba(37,99,235,0.25)]",
         destructive:
-          "bg-gradient-to-br from-[#EF4444] to-[#DC2626] text-white hover:scale-[1.01]",
+          "bg-[#DC2626] text-white hover:bg-[#B91C1C]",
         outline:
           "border text-[var(--vf-text-secondary)] hover:text-[var(--vf-text-primary)]",
-        link: "text-[#6366F1] underline-offset-4 hover:underline h-auto px-0 rounded-none",
+        link: "text-[var(--vf-brand-primary)] underline-offset-4 hover:underline h-auto px-0 rounded-none",
       },
       size: {
         default: "h-12 px-5 rounded-xl text-sm",
@@ -46,10 +46,9 @@ const buttonVariants = cva(
       },
     },
     compoundVariants: [
-      // Glass border color for secondary/outline in dark mode
       {
         variant: ["secondary", "outline"],
-        className: "border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.05)]",
+        className: "border-[var(--vf-border)] bg-[var(--vf-bg-surface)]",
       },
     ],
     defaultVariants: {

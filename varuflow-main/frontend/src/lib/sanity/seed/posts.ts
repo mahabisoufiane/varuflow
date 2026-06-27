@@ -53,6 +53,7 @@ export interface SeedPost {
   tableOfContents: TocItem[];
   bodyHtml: string;
   internalLinks: Array<{ href: string; label: string }>;
+  canonicalUrl?: string;
   externalLinks: Array<{ href: string; label: string }>;
   cta: { headline: string; body: string; buttonLabel: string; href: string };
 }
@@ -709,8 +710,8 @@ export const SEED_POSTS: SeedPost[] = [
 <table>
   <thead><tr><th>Plan</th><th>Varuflow</th><th>Fortnox</th></tr></thead>
   <tbody>
-    <tr><td>Starting price</td><td>Free (up to 100 products)</td><td>From ~199 SEK/month (limited)</td></tr>
-    <tr><td>Full-featured plan</td><td>599 SEK/month (unlimited users)</td><td>~1,995 SEK/month (5-user base)</td></tr>
+    <tr><td>Starting price</td><td>499 SEK/month (Starter — 14-day trial)</td><td>From ~199 SEK/month (limited)</td></tr>
+    <tr><td>Full-featured plan</td><td>1,490 SEK/month Professional (unlimited users)</td><td>~1,995 SEK/month (5-user base)</td></tr>
     <tr><td>Per-user fees</td><td>None</td><td>+199 SEK/user above base</td></tr>
     <tr><td>Inventory add-on</td><td>Included</td><td>+299 SEK/month</td></tr>
     <tr><td>Customer portal</td><td>Included</td><td>Not available</td></tr>
@@ -719,7 +720,7 @@ export const SEED_POSTS: SeedPost[] = [
     <tr><td>ZATCA support</td><td>Included</td><td>Not available</td></tr>
   </tbody>
 </table>
-<p>For a 5-person team wanting inventory + Peppol + portal, Fortnox costs approximately 2,643 SEK/month. Varuflow costs 599 SEK/month. The gap widens with team size.</p>
+<p>For a 5-person team wanting inventory + Peppol + portal, Fortnox costs approximately 2,643 SEK/month. Varuflow costs 1,490 SEK/month (Professional). The gap widens with team size.</p>
 <h2 id="feature-comparison">Full feature comparison</h2>
 <table>
   <thead><tr><th>Feature</th><th>Varuflow</th><th>Fortnox</th></tr></thead>
@@ -1073,7 +1074,7 @@ export const SEED_POSTS: SeedPost[] = [
 </tbody></table>
 <h2 id="faq">FAQ</h2>
 <h3>Does multi-warehouse require the Enterprise plan?</h3>
-<p>No. Multi-warehouse is included in Varuflow Pro (599 SEK/month). No surcharge per location.</p>`,
+<p>No. Multi-warehouse is included in Varuflow Professional (1,490 SEK/month). No surcharge per location.</p>`,
   },
 
   // ─── 10. Founder Story (EN) ──────────────────────────────────────────────

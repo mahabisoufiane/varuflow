@@ -29,12 +29,20 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1] / "app"
 
 
 def _read(relpath: str) -> str:
-    return (_BACKEND_ROOT / relpath).read_text()
+    _p = _BACKEND_ROOT / relpath
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
-ROUTER_SRC = _read("routers/inventory_audit.py")
+ROUTER_SRC = _read("features/inventory/inventory_audit.py")
 SERVICE_SRC = _read("services/inventory_audit_service.py")
-INVENTORY_SRC = _read("routers/inventory.py")
+INVENTORY_SRC = _read("features/inventory/inventory.py")
 AUDIT_SVC_SRC = _read("services/audit.py")
 MAIN_SRC = _read("main.py")
 
@@ -196,7 +204,7 @@ def test_org_isolation():
 def test_plan_gate():
     # PRO-gated at the router level — every endpoint inherits.
     assert "from app.middleware.plan_check import require_plan" in ROUTER_SRC
-    assert "from app.models.organization import OrgPlan" in ROUTER_SRC
+    assert "from app.features.auth.organization import OrgPlan" in ROUTER_SRC
     assert "dependencies=[Depends(require_plan(OrgPlan.PRO))]" in ROUTER_SRC
 
 
@@ -224,8 +232,12 @@ def test_linked_to_audit_log():
 
 
 def test_router_registered_in_main():
-    assert "inventory_audit" in MAIN_SRC
-    assert "app.include_router(inventory_audit.router)" in MAIN_SRC
+
+    # Registered via inventory_router (vertical-slice architecture).
+    # The individual module is wired inside the feature router, not directly in main.py.
+    feat_src = _read("features/inventory/router.py")
+    assert "inventory_audit" in feat_src
+    assert "inventory_router" in MAIN_SRC
 
 
 def test_csv_headers_match_spec():

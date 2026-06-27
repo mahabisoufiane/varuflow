@@ -1,14 +1,39 @@
 import { test, expect } from './fixtures/auth';
 
+async function seedCustomer(page: import('@playwright/test').Page, request: import('@playwright/test').APIRequestContext) {
+  const apiBase = process.env.PLAYWRIGHT_API_URL || 'http://localhost:8000';
+  const token = await page.evaluate(
+    () => localStorage.getItem('vf-auth-token') || localStorage.getItem('vf-auth-token-local') || '',
+  );
+  if (token) {
+    await request.post(`${apiBase}/api/customers`, {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { company_name: 'E2E Invoice Customer' },
+      failOnStatusCode: false,
+    });
+  }
+}
+
+async function selectFirstCustomer(page: import('@playwright/test').Page) {
+  const customerSelect = page.locator('[data-testid="customer-select"]');
+  await expect(customerSelect).toBeVisible({ timeout: 10_000 });
+  await page.waitForFunction(() => {
+    const sel = document.querySelector('[data-testid="customer-select"]') as HTMLSelectElement;
+    return sel != null && sel.options.length > 1;
+  }, { timeout: 10_000 });
+  await customerSelect.selectOption({ index: 1 });
+}
+
 test.describe('Invoicing', () => {
 
-  test('create invoice — happy path saves as draft', async ({ authedPage: page }) => {
+  test('create invoice — happy path saves as draft', async ({ authedPage: page, request }) => {
     await page.goto('/invoices/new');
     await page.waitForLoadState('domcontentloaded');
+    await seedCustomer(page, request);
+    await page.reload();
+    await page.waitForLoadState('domcontentloaded');
 
-    // Select first available customer
-    const customerSelect = page.locator('select').first();
-    await customerSelect.selectOption({ index: 1 });
+    await selectFirstCustomer(page);
 
     // Fill line item
     const descInput = page.locator('input[placeholder="Service or item…"]').first();
@@ -30,12 +55,14 @@ test.describe('Invoicing', () => {
     ).toBeVisible({ timeout: 5_000 });
   });
 
-  test('add multiple line items and verify totals', async ({ authedPage: page }) => {
+  test('add multiple line items and verify totals', async ({ authedPage: page, request }) => {
     await page.goto('/invoices/new');
     await page.waitForLoadState('domcontentloaded');
+    await seedCustomer(page, request);
+    await page.reload();
+    await page.waitForLoadState('domcontentloaded');
 
-    const customerSelect = page.locator('select').first();
-    await customerSelect.selectOption({ index: 1 });
+    await selectFirstCustomer(page);
 
     // Line 1
     await page.locator('input[placeholder="Service or item…"]').nth(0).fill('Item One');

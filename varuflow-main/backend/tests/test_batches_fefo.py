@@ -17,7 +17,7 @@ import pytest_asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.inventory import (
+from app.features.inventory.models import (
     Product,
     ProductBatch,
     StockLevel,

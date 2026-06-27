@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { BookOpen, Plus, Edit3, Eye, EyeOff, X, Check, ChevronRight } from "lucide-react";
+import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface PolicyDoc {
   id: string; title: string; category: string; is_published: boolean;
@@ -19,6 +21,16 @@ const CATEGORY_COLORS: Record<string, string> = {
   operations: "bg-teal-50 text-teal-700 border-teal-200",
   security: "bg-red-50 text-red-700 border-red-200",
   other: "bg-gray-100 text-gray-600 border-gray-200",
+};
+
+const CATEGORY_MODULE: Record<string, keyof typeof styles> = {
+  hr:         "categoryHr",
+  finance:    "categoryFinance",
+  it:         "categoryIt",
+  legal:      "categoryLegal",
+  operations: "categoryOperations",
+  security:   "categorySecurity",
+  other:      "categoryOther",
 };
 
 // Minimal markdown renderer: bold, headers, bullets
@@ -38,9 +50,6 @@ function MarkdownView({ content }: { content: string }) {
 }
 
 export default function PoliciesPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string, init?: RequestInit) => fetch(`${apiBase}${url}`, { credentials: "include", ...init });
-
   const [docs, setDocs] = useState<PolicyDoc[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,65 +62,66 @@ export default function PoliciesPage() {
 
   useEffect(() => {
     Promise.all([
-      f("/api/governance/policies").then(r => r.ok ? r.json() : []).then(setDocs),
-      f("/api/governance/policies/categories").then(r => r.ok ? r.json() : []).then(setCategories),
+      api.get<PolicyDoc[]>("/api/governance/policies").then(setDocs).catch(() => {}),
+      api.get<Category[]>("/api/governance/policies/categories").then(setCategories).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
 
   async function openDoc(doc: PolicyDoc) {
-    const res = await f(`/api/governance/policies/${doc.id}`);
-    if (!res.ok) { toast.error("Failed to load"); return; }
-    const full = await res.json();
-    setActiveDoc(full);
-    setEditing(false);
+    try {
+      const full = await api.get<PolicyDoc>(`/api/governance/policies/${doc.id}`);
+      setActiveDoc(full);
+      setEditing(false);
+    } catch {
+      toast.error("Failed to load");
+    }
   }
 
   async function createDoc() {
     if (!newDoc.title) { toast.error("Title is required"); return; }
-    const res = await f("/api/governance/policies", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newDoc),
-    });
-    if (!res.ok) { toast.error("Failed to create"); return; }
-    const created = await res.json();
-    setDocs(prev => [...prev, created]);
-    setShowForm(false);
-    toast.success("Policy created");
-    openDoc(created);
+    try {
+      const created = await api.post<PolicyDoc>("/api/governance/policies", newDoc);
+      setDocs(prev => [...prev, created]);
+      setShowForm(false);
+      toast.success("Policy created");
+      openDoc(created);
+    } catch {
+      toast.error("Failed to create");
+    }
   }
 
   async function saveEdit() {
     if (!editDoc) return;
-    const res = await f(`/api/governance/policies/${editDoc.id}`, {
-      method: "PATCH", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      const updated = await api.patch<PolicyDoc>(`/api/governance/policies/${editDoc.id}`, {
         title: editDoc.title, category: editDoc.category,
         content: editDoc.content || "", is_published: editDoc.is_published,
-      }),
-    });
-    if (!res.ok) { toast.error("Failed to save"); return; }
-    const updated = await res.json();
-    setDocs(prev => prev.map(d => d.id === updated.id ? updated : d));
-    setActiveDoc(updated);
-    setEditing(false);
-    setEditDoc(null);
-    toast.success("Policy saved");
+      });
+      setDocs(prev => prev.map(d => d.id === updated.id ? updated : d));
+      setActiveDoc(updated);
+      setEditing(false);
+      setEditDoc(null);
+      toast.success("Policy saved");
+    } catch {
+      toast.error("Failed to save");
+    }
   }
 
   async function togglePublish(doc: PolicyDoc) {
-    const res = await f(`/api/governance/policies/${doc.id}`, {
-      method: "PATCH", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ is_published: !doc.is_published }),
-    });
-    if (!res.ok) { toast.error("Failed"); return; }
-    const updated = await res.json();
-    setDocs(prev => prev.map(d => d.id === updated.id ? updated : d));
-    if (activeDoc?.id === updated.id) setActiveDoc(updated);
-    toast.success(updated.is_published ? "Published" : "Unpublished");
+    try {
+      const updated = await api.patch<PolicyDoc>(`/api/governance/policies/${doc.id}`, { is_published: !doc.is_published });
+      setDocs(prev => prev.map(d => d.id === updated.id ? updated : d));
+      if (activeDoc?.id === updated.id) setActiveDoc(updated);
+      toast.success(updated.is_published ? "Published" : "Unpublished");
+    } catch {
+      toast.error("Failed");
+    }
   }
 
   async function deleteDoc(id: string) {
-    await f(`/api/governance/policies/${id}`, { method: "DELETE" });
+    try {
+      await api.delete(`/api/governance/policies/${id}`);
+    } catch {}
     setDocs(prev => prev.filter(d => d.id !== id));
     if (activeDoc?.id === id) setActiveDoc(null);
     toast.success("Deleted");
@@ -187,7 +197,7 @@ export default function PoliciesPage() {
                   {!doc.is_published && <EyeOff className="h-3 w-3 text-gray-400" />}
                 </div>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className={`text-xs px-1.5 py-0.5 rounded border ${CATEGORY_COLORS[doc.category] || CATEGORY_COLORS.other}`}>
+                  <span className={styles[CATEGORY_MODULE[doc.category] ?? "categoryOther"]}>
                     {catMap[doc.category] || doc.category}
                   </span>
                   <span className="text-xs text-gray-400">v{doc.version}</span>

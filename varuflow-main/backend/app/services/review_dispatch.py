@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.reviews import ReviewRequest
+from app.features.marketing.reviews_models import ReviewRequest
 from app.services import review_service as svc
 
 

@@ -26,7 +26,7 @@ import pytest_asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.webhook import WebhookDelivery, WebhookEndpoint
+from app.features.integrations.webhook import WebhookDelivery, WebhookEndpoint
 from app.services import webhook_dispatcher as wd
 
 

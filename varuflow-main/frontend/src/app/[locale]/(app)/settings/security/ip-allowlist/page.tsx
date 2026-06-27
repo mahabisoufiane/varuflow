@@ -107,14 +107,14 @@ export default function IpAllowlistPage() {
         <p className="text-xs vf-text-m mt-0.5">{t("subtitle")}</p>
       </div>
 
-      <div className="vf-section p-4 space-y-2 text-xs vf-text-m" style={{ borderRadius: 14 }}>
+      <div className="vf-section p-4 space-y-2 text-xs vf-text-m" >
         <p>{t("info_empty")}</p>
         <p>{t("info_nonempty")}</p>
         <p className="text-red-400">{t("info_warning")}</p>
       </div>
 
       {/* Add form ──────────────────────────────────────────────────── */}
-      <form onSubmit={handleAdd} className="vf-section p-5 space-y-4" style={{ borderRadius: 14 }}>
+      <form onSubmit={handleAdd} className="vf-section p-5 space-y-4" >
         <h2 className="text-sm font-semibold vf-text-1">{t("add_title")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
@@ -135,7 +135,7 @@ export default function IpAllowlistPage() {
       </form>
 
       {/* List ─────────────────────────────────────────────────────── */}
-      <div className="vf-section p-5 space-y-3" style={{ borderRadius: 14 }}>
+      <div className="vf-section p-5 space-y-3" >
         <h2 className="text-sm font-semibold vf-text-1">{t("entries_title")}</h2>
         {entries.length === 0 ? (
           <p className="text-xs vf-text-m">{t("no_entries")}</p>

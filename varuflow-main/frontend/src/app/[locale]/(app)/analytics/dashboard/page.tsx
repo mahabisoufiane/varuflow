@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { Plus, Trash2, GripVertical, Settings2, BarChart3, Users, Package, FileText, TrendingDown, DollarSign, AlertTriangle, CreditCard } from "lucide-react";
+import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 interface Widget {
   id: string; widget_type: string;
@@ -29,7 +31,6 @@ const WIDGET_ICON: Record<string, React.ComponentType<{className?: string}>> = {
 };
 
 export default function DashboardBuilderPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [dashboards, setDashboards] = useState<Dashboard[]>([]);
   const [activeDash, setActiveDash] = useState<string | null>(null);
   const [layout, setLayout] = useState<Widget[]>([]);
@@ -39,39 +40,42 @@ export default function DashboardBuilderPage() {
   const [newDashName, setNewDashName] = useState("");
   const [saving, setSaving] = useState(false);
   const [months, setMonths] = useState(6);
-
-  const f = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
+  const [planBlocked, setPlanBlocked] = useState<{module: string; plan: string} | null>(null);
 
   async function loadDashboards() {
-    const res = await f("/api/bi/dashboards");
-    if (res.ok) {
-      const d = await res.json();
+    try {
+      const d = await api.get<{dashboards: Dashboard[]}>("/api/bi/dashboards");
       setDashboards(d.dashboards);
       if (d.dashboards.length && !activeDash) {
         setActiveDash(d.dashboards[0].id);
+      }
+    } catch (e) {
+      if (isPlanGateError(e)) {
+        const err = e as Error & { module?: string; currentPlan?: string };
+        setPlanBlocked({ module: err.module ?? "analytics", plan: err.currentPlan ?? "FREE" });
       }
     }
   }
 
   async function loadDashboard(id: string) {
-    const res = await f(`/api/bi/dashboards/${id}`);
-    if (res.ok) {
-      const d = await res.json();
+    try {
+      const d = await api.get<{layout: Widget[]}>(`/api/bi/dashboards/${id}`);
       setLayout(d.layout || []);
-    }
+    } catch {}
   }
 
   const loadWidgetData = useCallback(async (widgets: Widget[]) => {
     const results: Record<string, WidgetData> = {};
     await Promise.all(
       widgets.map(async (w) => {
-        const res = await f(`/api/bi/widgets/${w.widget_type}?months=${months}`);
-        if (res.ok) results[w.id] = await res.json();
+        try {
+          const data = await api.get<WidgetData>(`/api/bi/widgets/${w.widget_type}?months=${months}`);
+          results[w.id] = data;
+        } catch {}
       })
     );
     setWidgetData(results);
-  }, [months, apiBase]);
+  }, [months]);
 
   useEffect(() => { loadDashboards(); }, []);
   useEffect(() => { if (activeDash) loadDashboard(activeDash); }, [activeDash]);
@@ -79,36 +83,34 @@ export default function DashboardBuilderPage() {
 
   async function createDashboard() {
     if (!newDashName.trim()) { toast.error("Enter a name"); return; }
-    const res = await f("/api/bi/dashboards", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newDashName, layout: [] }),
-    });
-    if (res.ok) {
-      const d = await res.json();
+    try {
+      const d = await api.post<{id: string}>("/api/bi/dashboards", { name: newDashName, layout: [] });
       toast.success("Dashboard created");
       setShowNewDash(false);
       setNewDashName("");
       await loadDashboards();
       setActiveDash(d.id);
+    } catch {
+      toast.error("Failed to create dashboard");
     }
   }
 
   async function saveLayout() {
     if (!activeDash) return;
     setSaving(true);
-    const res = await f(`/api/bi/dashboards/${activeDash}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ layout }),
-    });
-    if (res.ok) toast.success("Layout saved");
-    else toast.error("Save failed");
+    try {
+      await api.patch(`/api/bi/dashboards/${activeDash}`, { layout });
+      toast.success("Layout saved");
+    } catch {
+      toast.error("Save failed");
+    }
     setSaving(false);
   }
 
   async function deleteDashboard(id: string) {
-    await f(`/api/bi/dashboards/${id}`, { method: "DELETE" });
+    try {
+      await api.delete(`/api/bi/dashboards/${id}`);
+    } catch {}
     setDashboards(d => d.filter(x => x.id !== id));
     if (activeDash === id) setActiveDash(null);
     toast.success("Deleted");
@@ -198,6 +200,17 @@ export default function DashboardBuilderPage() {
     }
 
     return <div className="text-xs text-gray-400">No data</div>;
+  }
+
+  if (planBlocked) {
+    return (
+      <PlanGateBlock
+        module={planBlocked.module}
+        currentPlan={planBlocked.plan}
+        featureName="Custom Dashboards"
+        description="Build drag-and-drop KPI dashboards with real-time data widgets."
+      />
+    );
   }
 
   return (

@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { RefreshCw, Trash2, MapPin, Navigation, Copy, Square } from "lucide-react";
+import { api } from "@/lib/api-client";
+import { RefreshCw, MapPin, Navigation, Copy, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface TrackingSession {
   id: string;
@@ -32,11 +32,6 @@ function relativeTime(dateStr: string | null): string {
 }
 
 export default function TrackingPage() {
-  const router = useRouter();
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale ?? "en";
-  const supabase = createClient();
-
   const [sessions, setSessions] = useState<TrackingSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -50,20 +45,11 @@ export default function TrackingPage() {
     destination_lng: "",
   });
 
-  async function getToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }
-  function apiUrl(p: string) { return `${process.env.NEXT_PUBLIC_API_URL}${p}`; }
-
   async function load() {
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push(`/${locale}/auth/login`); return; }
-      const res = await fetch(apiUrl("/api/tracking"), { headers: { Authorization: `Bearer ${token}` } });
-      if (res.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (res.ok) setSessions(await res.json());
+      const data = await api.get<TrackingSession[]>("/api/tracking");
+      setSessions(data);
     } catch {
       toast.error("Failed to load tracking sessions");
     } finally {
@@ -76,29 +62,18 @@ export default function TrackingPage() {
   async function startSession() {
     setActionLoading("start");
     try {
-      const token = await getToken();
-      if (!token) return;
       const body: Record<string, unknown> = {
         appointment_id: startForm.appointment_id || null,
         customer_id: startForm.customer_id || null,
         destination_lat: startForm.destination_lat ? parseFloat(startForm.destination_lat) : null,
         destination_lng: startForm.destination_lng ? parseFloat(startForm.destination_lng) : null,
       };
-      const res = await fetch(apiUrl("/api/tracking"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to start tracking");
-        return;
-      }
+      await api.post("/api/tracking", body);
       toast.success("Tracking session started");
       setStartForm({ appointment_id: "", customer_id: "", destination_lat: "", destination_lng: "" });
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -109,27 +84,16 @@ export default function TrackingPage() {
     if (!lf) return;
     setActionLoading("loc_" + id);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/tracking/${id}/location`), {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          lat: parseFloat(lf.lat),
-          lng: parseFloat(lf.lng),
-          eta_minutes: lf.eta ? parseInt(lf.eta) : null,
-        }),
+      await api.patch(`/api/tracking/${id}/location`, {
+        lat: parseFloat(lf.lat),
+        lng: parseFloat(lf.lng),
+        eta_minutes: lf.eta ? parseInt(lf.eta) : null,
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to update location");
-        return;
-      }
       toast.success("Location updated");
       setExpandedLocation(null);
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -138,21 +102,11 @@ export default function TrackingPage() {
   async function endSession(id: string) {
     setActionLoading("end_" + id);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/tracking/${id}/end`), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to end session");
-        return;
-      }
+      await api.post(`/api/tracking/${id}/end`, {});
       toast.success("Session ended");
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -263,9 +217,7 @@ export default function TrackingPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      s.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
-                    }`}>
+                    <span className={styles[s.status === "active" ? "statusActive" : "statusInactive"]}>
                       {s.status === "active" && <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />}
                       {s.status}
                     </span>

@@ -7,6 +7,10 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Eye, Send, Clock, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
+import { sanitizeHtml } from "@/lib/sanitize-html";
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = { SENT: "statusSent", SCHEDULED: "statusScheduled" };
 
 interface Campaign {
   id: string;
@@ -31,9 +35,9 @@ interface Stats {
 }
 
 function StatusBadge({ status }: { status: Campaign["status"] }) {
-  if (status === "SENT") return <Badge className="bg-green-100 text-green-800">Sent</Badge>;
-  if (status === "SCHEDULED") return <Badge className="bg-blue-100 text-blue-800">Scheduled</Badge>;
-  return <Badge variant="secondary">Draft</Badge>;
+  if (status === "SENT") return <span className={styles[STATUS_MODULE["SENT"] ?? "statusDefault"]}>Sent</span>;
+  if (status === "SCHEDULED") return <span className={styles[STATUS_MODULE["SCHEDULED"] ?? "statusDefault"]}>Scheduled</span>;
+  return <span className={styles.statusDefault}>Draft</span>;
 }
 
 export default function CampaignDetailPage() {
@@ -200,7 +204,7 @@ export default function CampaignDetailPage() {
           <h3 className="mb-3 font-medium text-[#1a2332]">Preview</h3>
           <div
             className="prose prose-sm max-w-none rounded border bg-white p-4"
-            dangerouslySetInnerHTML={{ __html: preview }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(preview) }}
           />
         </div>
       )}

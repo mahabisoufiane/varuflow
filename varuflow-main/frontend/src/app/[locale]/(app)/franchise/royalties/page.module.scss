@@ -1,0 +1,61 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Royalty invoice status badges ─────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusDraft {
+  @extend .statusBadge;
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.statusSent {
+  @extend .statusBadge;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.statusPaid {
+  @extend .statusBadge;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusOverdue {
+  @extend .statusBadge;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+// ── Table card ────────────────────────────────────────────────────────────────
+
+.tableCard {
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  overflow: hidden;
+  background: var(--vf-bg-surface);
+}
+
+.tableRow {
+  display: grid;
+  align-items: center;
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--vf-border);
+  font-size: 0.8125rem;
+  transition: background 100ms ease;
+
+  &:hover {
+    background: var(--vf-bg-elevated);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}

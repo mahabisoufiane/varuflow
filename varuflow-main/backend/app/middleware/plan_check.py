@@ -13,10 +13,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import get_current_user
-from app.models.organization import OrgPlan, Organization, OrganizationMember
+from app.features.auth.organization import OrgPlan, OrgRole, Organization, OrganizationMember
 from app.services.plan_limits import (
     ApproachingLimitError,
     LimitExceededError,
+    PLAN_MODULES,
     check_limit,
     is_feature_unlocked,
 )
@@ -28,6 +29,18 @@ _PLAN_RANK: dict[OrgPlan, int] = {
     OrgPlan.FREE: 0,
     OrgPlan.PRO:  1,
     OrgPlan.ENTERPRISE: 2,
+}
+
+# Role hierarchy — controls *role-within-module* access. Having a module grants
+# the module; the role then decides how much of it you see:
+#   MEMBER = regular employee (own data: own leave, own timesheet, clock in/out)
+#   ADMIN  = manager / HR admin (team data: roster, approvals, reviews)
+#   OWNER  = owner (payroll, salaries, destructive actions)
+# A higher rank satisfies any lower requirement.
+_ROLE_RANK: dict[OrgRole, int] = {
+    OrgRole.MEMBER: 0,
+    OrgRole.ADMIN:  1,
+    OrgRole.OWNER:  2,
 }
 
 
@@ -86,6 +99,46 @@ def require_plan(minimum: OrgPlan):
     return _check
 
 
+def require_role(minimum: OrgRole):
+    """Return a FastAPI dependency that enforces a minimum *org role*.
+
+    This is the role-within-module guard. Use it ALONGSIDE ``require_module``:
+    the module check decides whether the user can touch the feature at all;
+    this check decides whether their role is senior enough for the specific
+    action. Example — every HR member can file their own leave, but only a
+    manager (ADMIN) can approve someone else's:
+
+        @router.post("/leave")                       # any HR member
+        async def request_leave(...): ...
+
+        @router.post("/leave/{id}/approve",          # managers only
+            dependencies=[Depends(require_role(OrgRole.ADMIN))])
+        async def approve_leave(...): ...
+
+    Raises 403 with a structured payload the frontend can branch on:
+        {"code": "INSUFFICIENT_ROLE", "required": "ADMIN", "current": "MEMBER"}
+    """
+    from app.middleware.auth import get_current_member  # local: avoids circular import
+
+    async def _check(ctx: tuple = Depends(get_current_member)) -> None:
+        _user_dict, member = ctx
+        if _ROLE_RANK.get(member.role, 0) < _ROLE_RANK.get(minimum, 99):
+            log.warning(
+                '"event":"role_gate_denied","user_id":"%s","has":"%s","required":"%s"',
+                member.user_id, member.role.value, minimum.value,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "code": "INSUFFICIENT_ROLE",
+                    "required": minimum.value,
+                    "current": member.role.value,
+                },
+            )
+
+    return _check
+
+
 def require_feature(feature_name: str):
     """Return a FastAPI dependency that blocks the endpoint when *feature_name*
     is not available on the caller's current plan.
@@ -124,6 +177,73 @@ def require_feature(feature_name: str):
                     "feature": feature_name,
                     "current_plan": plan.value,
                     "suggested_upgrade_url": f"{settings.FRONTEND_URL}/en/settings/billing",
+                },
+            )
+
+    return _check
+
+
+def require_module(module_key: str):
+    """Return a FastAPI dependency that enforces module-level access.
+
+    Checks two layers:
+    1. Plan tier — is this module available on the org's plan?
+    2. User assignment — is this user granted access to the module?
+
+    OWNER and ADMIN roles bypass the user assignment check (they have
+    access to all modules their plan allows). Only MEMBER-role users
+    with ``module_access_mode = 'RESTRICTED'`` are gated.
+
+    Usage:
+        @router.get("/sales")
+        async def list_sales(
+            _: None = Depends(require_module("pos")),
+            ...
+        ): ...
+    """
+    from app.middleware.auth import get_current_member
+    from app.features.auth.modules import MemberModule
+    from app.features.auth.organization import OrgRole
+
+    async def _check(
+        ctx: tuple = Depends(get_current_member),
+        db: AsyncSession = Depends(get_db),
+    ) -> None:
+        _user_dict, member = ctx
+        org_id = member.org_id
+        plan = await _get_org_plan(member.user_id, db)
+
+        plan_key = plan.value if hasattr(plan, "value") else str(plan)
+        allowed_modules = PLAN_MODULES.get(plan_key, frozenset())
+
+        if "*" not in allowed_modules and module_key not in allowed_modules:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "code": "MODULE_NOT_IN_PLAN",
+                    "module": module_key,
+                    "current_plan": plan_key,
+                },
+            )
+
+        if member.role in (OrgRole.OWNER, OrgRole.ADMIN):
+            return
+
+        if getattr(member, "module_access_mode", "ALL") == "ALL":
+            return
+
+        has_access = await db.scalar(
+            select(MemberModule.id).where(
+                MemberModule.member_id == member.id,
+                MemberModule.module_key == module_key,
+            )
+        )
+        if not has_access:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "code": "MODULE_NOT_ASSIGNED",
+                    "module": module_key,
                 },
             )
 

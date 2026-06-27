@@ -151,7 +151,7 @@ async def record_referral_conversion(
     commission, then writes status, timestamps, and amounts.
     """
     from sqlalchemy import select as _select
-    from app.models.accounting_partners import AccountingPartnerReferral
+    from app.features.analytics.accounting_partners import AccountingPartnerReferral
     from app.services.audit import log_action
 
     try:
@@ -264,7 +264,7 @@ async def process_monthly_accounting_commissions(db) -> int:
     Returns the number of referrals processed.
     """
     from sqlalchemy import select as _select
-    from app.models.accounting_partners import AccountingPartnerReferral
+    from app.features.analytics.accounting_partners import AccountingPartnerReferral
 
     try:
         result = await db.execute(

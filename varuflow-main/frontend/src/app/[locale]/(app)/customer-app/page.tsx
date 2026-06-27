@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api-client";
 import { RefreshCw, Smartphone, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface AppConfig {
   app_name: string;
@@ -39,12 +39,13 @@ const PLATFORM_BADGE: Record<string, string> = {
   web: "bg-blue-100 text-blue-700",
 };
 
-export default function CustomerAppConfigPage() {
-  const router = useRouter();
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale ?? "en";
-  const supabase = createClient();
+const PLATFORM_MODULE: Record<string, keyof typeof styles> = {
+  ios:     "platformIos",
+  android: "platformAndroid",
+  web:     "platformWeb",
+};
 
+export default function CustomerAppConfigPage() {
   const [config, setConfig] = useState<AppConfig>({
     app_name: "",
     primary_color: "#1a2332",
@@ -68,28 +69,17 @@ export default function CustomerAppConfigPage() {
     app_version: "",
   });
 
-  async function getToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }
-  function apiUrl(p: string) { return `${process.env.NEXT_PUBLIC_API_URL}${p}`; }
-
   async function load() {
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push(`/${locale}/auth/login`); return; }
-
-      const headers = { Authorization: `Bearer ${token}` };
-      const [cfgRes, statsRes, tokRes] = await Promise.all([
-        fetch(apiUrl("/api/customer-app/config"), { headers }),
-        fetch(apiUrl("/api/customer-app/stats"), { headers }),
-        fetch(apiUrl("/api/customer-app/push-tokens"), { headers }),
+      const [cfg, statsData, toks] = await Promise.all([
+        api.get<AppConfig>("/api/customer-app/config"),
+        api.get<AppStats>("/api/customer-app/stats"),
+        api.get<PushToken[]>("/api/customer-app/push-tokens"),
       ]);
-      if (cfgRes.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (cfgRes.ok) setConfig(await cfgRes.json());
-      if (statsRes.ok) setStats(await statsRes.json());
-      if (tokRes.ok) setTokens(await tokRes.json());
+      setConfig(cfg);
+      setStats(statsData);
+      setTokens(toks);
     } catch {
       toast.error("Failed to load customer app config");
     } finally {
@@ -102,21 +92,10 @@ export default function CustomerAppConfigPage() {
   async function saveConfig() {
     setSaving(true);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl("/api/customer-app/config"), {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(config),
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to save config");
-        return;
-      }
+      await api.patch("/api/customer-app/config", config);
       toast.success("Config saved");
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setSaving(false);
     }
@@ -125,21 +104,11 @@ export default function CustomerAppConfigPage() {
   async function deleteToken(id: string) {
     setActionLoading(id);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/customer-app/push-tokens/${id}`), {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to delete token");
-        return;
-      }
+      await api.delete(`/api/customer-app/push-tokens/${id}`);
       toast.success("Token deleted");
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -152,24 +121,13 @@ export default function CustomerAppConfigPage() {
     }
     setActionLoading("register");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl("/api/customer-app/push-tokens"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(tokenForm),
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to register token");
-        return;
-      }
+      await api.post("/api/customer-app/push-tokens", tokenForm);
       toast.success("Push token registered");
       setShowTokenForm(false);
       setTokenForm({ customer_id: "", token: "", platform: "ios", app_version: "" });
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -273,7 +231,7 @@ export default function CustomerAppConfigPage() {
           <div className="flex gap-2 flex-wrap">
             {Object.entries(stats.by_platform).map(([platform, count]) => (
               <span key={platform}
-                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${PLATFORM_BADGE[platform] ?? "bg-gray-100 text-gray-700"}`}>
+                className={styles[PLATFORM_MODULE[platform] ?? "platformWeb"]}>
                 {platform}: {count}
               </span>
             ))}
@@ -343,7 +301,7 @@ export default function CustomerAppConfigPage() {
                   <p className="text-xs font-mono text-gray-700 truncate">{t.customer_id.slice(0, 8)}…</p>
                   <p className="text-xs text-muted-foreground">v{t.app_version}</p>
                 </div>
-                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${PLATFORM_BADGE[t.platform] ?? "bg-gray-100 text-gray-700"}`}>
+                <span className={styles[PLATFORM_MODULE[t.platform] ?? "platformWeb"]}>
                   {t.platform}
                 </span>
                 <p className="text-xs text-muted-foreground hidden sm:block">

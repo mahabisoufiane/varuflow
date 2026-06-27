@@ -147,7 +147,7 @@ export default async function ComparePage(
                     i === COMPARE_DIMENSIONS.length - 1
                       ? "none"
                       : "1px solid var(--vf-divider)",
-                  background: "rgba(99,102,241,0.04)",
+                  background: "rgba(37,99,235,0.04)",
                 }}
               >
                 <Cell value={data.varuflow[dim]} />

@@ -29,14 +29,22 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1] / "app"
 
 
 def _read(relpath: str) -> str:
-    return (_BACKEND_ROOT / relpath).read_text()
+    _p = _BACKEND_ROOT / relpath
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
-ROUTER_SRC = _read("routers/documents.py")
+ROUTER_SRC = _read("features/projects/documents.py")
 SERVICE_SRC = _read("services/document_service.py")
-MODEL_SRC = _read("models/documents.py")
+MODEL_SRC = _read("features/projects/documents_models.py")
 MAIN_SRC = _read("main.py")
-GDPR_SRC = _read("routers/gdpr.py")
+GDPR_SRC = _read("features/compliance/gdpr.py")
 MIGRATION_SRC = (
     _BACKEND_ROOT.parent
     / "migrations"
@@ -251,8 +259,12 @@ def test_audit_log_on_upload_and_delete():
 
 
 def test_router_registered_in_main():
-    assert "documents" in MAIN_SRC
-    assert "app.include_router(documents.router)" in MAIN_SRC
+
+    # Registered via projects_router (vertical-slice architecture).
+    # The individual module is wired inside the feature router, not directly in main.py.
+    feat_src = _read("features/projects/router.py")
+    assert "documents" in feat_src
+    assert "projects_router" in MAIN_SRC
 
 
 def test_migration_v58_chains_from_v57():

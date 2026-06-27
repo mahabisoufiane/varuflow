@@ -328,7 +328,7 @@ async def load_warehouses(db, *, org_id: uuid.UUID, ids: list[uuid.UUID]):
     """
     from sqlalchemy import select
 
-    from app.models.inventory import Warehouse
+    from app.features.inventory.models import Warehouse
 
     if not ids:
         return []
@@ -344,7 +344,7 @@ async def load_warehouses(db, *, org_id: uuid.UUID, ids: list[uuid.UUID]):
 async def get_stock_level(db, *, product_id: uuid.UUID, warehouse_id: uuid.UUID):
     from sqlalchemy import select
 
-    from app.models.inventory import StockLevel
+    from app.features.inventory.models import StockLevel
 
     result = await db.execute(
         select(StockLevel).where(
@@ -372,7 +372,7 @@ async def adjust_stock_level(
     Positive deltas create the row on demand — destination
     warehouses may never have seen this SKU before.
     """
-    from app.models.inventory import StockLevel
+    from app.features.inventory.models import StockLevel
 
     existing = await get_stock_level(
         db, product_id=product_id, warehouse_id=warehouse_id,
@@ -413,7 +413,7 @@ async def record_movement(
     row; the router passes the transfer id so the movement shows up
     when auditing the transfer downstream.
     """
-    from app.models.inventory import StockMovement
+    from app.features.inventory.models import StockMovement
 
     row = StockMovement(
         org_id=org_id,
@@ -434,7 +434,7 @@ async def load_transfer(db, *, transfer_id: uuid.UUID, org_id: uuid.UUID):
     from sqlalchemy import select
     from sqlalchemy.orm import selectinload
 
-    from app.models.stock_transfers import StockTransfer
+    from app.features.inventory.stock_transfers_models import StockTransfer
 
     stmt = (
         select(StockTransfer)
@@ -466,7 +466,7 @@ async def list_transfers(
     from sqlalchemy import or_, select
     from sqlalchemy.orm import selectinload
 
-    from app.models.stock_transfers import StockTransfer, StockTransferStatus
+    from app.features.inventory.stock_transfers_models import StockTransfer, StockTransferStatus
 
     stmt = (
         select(StockTransfer)

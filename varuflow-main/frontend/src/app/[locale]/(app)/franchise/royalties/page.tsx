@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { Receipt, Calculator, Send, CheckCircle2 } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Agreement { id: string; franchisee_name: string; royalty_basis: string; billing_cycle: string; status: string }
 interface Royalty { id: string; agreement_id: string; period: string; revenue_basis?: string; royalty_amount: string; currency: string; status: string; due_date?: string; paid_at?: string }
@@ -14,8 +16,14 @@ const STATUS_COLORS: Record<string, string> = {
   overdue: "bg-red-100 text-red-600",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft:   "statusDraft",
+  sent:    "statusSent",
+  paid:    "statusPaid",
+  overdue: "statusOverdue",
+};
+
 export default function RoyaltiesPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const now = new Date();
   const [period, setPeriod] = useState(`${now.getFullYear()}-${String(now.getMonth()).padStart(2, "0") || "12"}`);
   const [agreements, setAgreements] = useState<Agreement[]>([]);
@@ -26,16 +34,14 @@ export default function RoyaltiesPage() {
   const [sending, setSending] = useState<string | null>(null);
   const [marking, setMarking] = useState<string | null>(null);
 
-  const fetch_ = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
 
   async function load() {
     const [aRes, rRes] = await Promise.all([
-      fetch_("/api/franchise/agreements?status=active&limit=50"),
-      fetch_("/api/franchise/royalties?limit=50"),
+      api.get<{agreements: Agreement[]}>("/api/franchise/agreements?status=active&limit=50").catch(() => null),
+      api.get<{royalties: Royalty[]}>("/api/franchise/royalties?limit=50").catch(() => null),
     ]);
-    if (aRes.ok) setAgreements((await aRes.json()).agreements);
-    if (rRes.ok) setRoyalties((await rRes.json()).royalties);
+    if (aRes) setAgreements(aRes.agreements ?? []);
+    if (rRes) setRoyalties(rRes.royalties ?? []);
   }
 
   useEffect(() => { load(); }, []);
@@ -43,36 +49,36 @@ export default function RoyaltiesPage() {
   async function calculate() {
     if (!selectedAgreement) { toast.error("Select an agreement"); return; }
     setCalculating(true);
-    const body: Record<string, unknown> = {};
-    if (revenueBasis) body.revenue_basis = parseFloat(revenueBasis);
-    const res = await fetch_(`/api/franchise/royalties/calculate/${selectedAgreement}/${period}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (res.ok) {
+    try {
+      const body: Record<string, unknown> = {};
+      if (revenueBasis) body.revenue_basis = parseFloat(revenueBasis);
+      await api.post(`/api/franchise/royalties/calculate/${selectedAgreement}/${period}`, body);
       toast.success("Royalty calculated");
       await load();
-    } else {
-      const err = await res.json();
-      toast.error(err.detail || "Calculation failed");
+    } catch (err: any) {
+      toast.error(err?.message || "Calculation failed");
+    } finally {
+      setCalculating(false);
     }
-    setCalculating(false);
   }
 
   async function send(id: string) {
     setSending(id);
-    const res = await fetch_(`/api/franchise/royalties/${id}/send`, { method: "POST" });
-    if (res.ok) { toast.success("Royalty billing sent"); await load(); }
-    else toast.error("Failed to send");
+    try {
+      await api.post(`/api/franchise/royalties/${id}/send`, {});
+      toast.success("Royalty billing sent");
+      await load();
+    } catch { toast.error("Failed to send"); }
     setSending(null);
   }
 
   async function markPaid(id: string) {
     setMarking(id);
-    const res = await fetch_(`/api/franchise/royalties/${id}/mark-paid`, { method: "PATCH" });
-    if (res.ok) { toast.success("Marked as paid"); await load(); }
-    else toast.error("Failed");
+    try {
+      await api.patch(`/api/franchise/royalties/${id}/mark-paid`, {});
+      toast.success("Marked as paid");
+      await load();
+    } catch { toast.error("Failed"); }
     setMarking(null);
   }
 
@@ -130,7 +136,7 @@ export default function RoyaltiesPage() {
                   {r.paid_at ? ` · Paid ${new Date(r.paid_at).toLocaleDateString()}` : ""}
                 </p>
               </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[r.status] || "bg-gray-100 text-gray-600"}`}>
+              <span className={styles[STATUS_MODULE[r.status] ?? "statusDraft"]}>
                 {r.status}
               </span>
               <div className="flex gap-2 flex-shrink-0">

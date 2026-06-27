@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api-client";
 import { RefreshCw, Users, Trash2, ChevronDown, ChevronRight, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface FamilyMember {
   id: string;
@@ -33,12 +33,15 @@ const RELATIONSHIP_BADGE: Record<string, string> = {
   other: "bg-gray-100 text-gray-700",
 };
 
-export default function FamilyAccountsPage() {
-  const router = useRouter();
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale ?? "en";
-  const supabase = createClient();
+const RELATIONSHIP_MODULE: Record<string, keyof typeof styles> = {
+  partner: "relationshipPartner",
+  child:   "relationshipChild",
+  parent:  "relationshipParent",
+  sibling: "relationshipSibling",
+  other:   "relationshipOther",
+};
 
+export default function FamilyAccountsPage() {
   const [groups, setGroups] = useState<FamilyGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
@@ -55,22 +58,11 @@ export default function FamilyAccountsPage() {
     name: string; relationship: string; date_of_birth: string; customer_id: string;
   }>>({});
 
-  async function getToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }
-  function apiUrl(p: string) { return `${process.env.NEXT_PUBLIC_API_URL}${p}`; }
-
   async function load() {
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push(`/${locale}/auth/login`); return; }
-      const res = await fetch(apiUrl("/api/family"), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (res.ok) setGroups(await res.json());
+      const data = await api.get<FamilyGroup[]>("/api/family");
+      setGroups(data);
     } catch {
       toast.error("Failed to load family accounts");
     } finally {
@@ -84,18 +76,7 @@ export default function FamilyAccountsPage() {
     if (!createForm.primary_customer_id.trim()) { toast.error("Primary customer ID is required"); return; }
     setActionLoading("create");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl("/api/family"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(createForm),
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to create group");
-        return;
-      }
+      await api.post("/api/family", createForm);
       toast.success("Family group created");
       setShowCreateForm(false);
       setCreateForm({ primary_customer_id: "", name: "", shared_loyalty: true });
@@ -110,17 +91,7 @@ export default function FamilyAccountsPage() {
   async function deleteGroup(id: string) {
     setActionLoading(id + "_delete");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/family/${id}`), {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to delete group");
-        return;
-      }
+      await api.delete(`/api/family/${id}`);
       toast.success("Family group deleted");
       await load();
     } catch {
@@ -135,23 +106,12 @@ export default function FamilyAccountsPage() {
     if (!form || !form.name.trim()) { toast.error("Member name is required"); return; }
     setActionLoading(groupId + "_add_member");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/family/${groupId}/members`), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          name: form.name,
-          relationship: form.relationship,
-          date_of_birth: form.date_of_birth || null,
-          customer_id: form.customer_id || null,
-        }),
+      await api.post(`/api/family/${groupId}/members`, {
+        name: form.name,
+        relationship: form.relationship,
+        date_of_birth: form.date_of_birth || null,
+        customer_id: form.customer_id || null,
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to add member");
-        return;
-      }
       toast.success("Member added");
       setAddMemberForms((f) => ({ ...f, [groupId]: { name: "", relationship: "partner", date_of_birth: "", customer_id: "" } }));
       await load();
@@ -165,17 +125,7 @@ export default function FamilyAccountsPage() {
   async function removeMember(groupId: string, memberId: string) {
     setActionLoading(memberId + "_remove");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/family/${groupId}/members/${memberId}`), {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to remove member");
-        return;
-      }
+      await api.delete(`/api/family/${groupId}/members/${memberId}`);
       toast.success("Member removed");
       await load();
     } catch {
@@ -309,7 +259,7 @@ export default function FamilyAccountsPage() {
                                 )}
                               </div>
                             </div>
-                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${RELATIONSHIP_BADGE[m.relationship] ?? "bg-gray-100 text-gray-700"}`}>
+                            <span className={styles[RELATIONSHIP_MODULE[m.relationship] ?? "relationshipOther"]}>
                               {m.relationship}
                             </span>
                             <Button variant="ghost" size="sm" disabled={actionLoading === m.id + "_remove"}

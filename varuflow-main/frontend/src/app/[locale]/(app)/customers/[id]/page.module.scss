@@ -1,0 +1,16 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Invoice status badges ────────────────────────────────────────────────────
+
+.statusBadge {
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+}
+
+.statusDraft   { @extend .statusBadge; background: #f3f4f6; color: #4b5563; }
+.statusSent    { @extend .statusBadge; background: #dbeafe; color: #1d4ed8; }
+.statusPaid    { @extend .statusBadge; background: #d1fae5; color: #065f46; }
+.statusOverdue { @extend .statusBadge; background: #fee2e2; color: #dc2626; }

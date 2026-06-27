@@ -29,12 +29,20 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1] / "app"
 
 
 def _read(relpath: str) -> str:
-    return (_BACKEND_ROOT / relpath).read_text()
+    _p = _BACKEND_ROOT / relpath
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
-ROUTER_SRC = _read("routers/developer.py")
+ROUTER_SRC = _read("features/integrations/developer.py")
 SERVICE_SRC = _read("services/developer_key_service.py")
-MODEL_SRC = _read("models/developer.py")
+MODEL_SRC = _read("features/integrations/developer_models.py")
 MAIN_SRC = _read("main.py")
 AUTH_SRC = _read("middleware/auth.py")
 MIGRATION_SRC = (
@@ -239,8 +247,12 @@ def test_audit_log():
 
 
 def test_router_registered_in_main():
-    assert "developer" in MAIN_SRC
-    assert "app.include_router(developer.router)" in MAIN_SRC
+
+    # Registered via integrations_router (vertical-slice architecture).
+    # The individual module is wired inside the feature router, not directly in main.py.
+    feat_src = _read("features/integrations/router.py")
+    assert "developer" in feat_src
+    assert "integrations_router" in MAIN_SRC
 
 
 def test_migration_v59_chains_from_v58():

@@ -26,7 +26,7 @@ from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
-from app.models.status import HealthCheck, StatusIncident
+from app.features.portal.status import HealthCheck, StatusIncident
 
 log = logging.getLogger(__name__)
 

@@ -27,8 +27,8 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.accounting import JournalEntry, JournalLine
-from app.models.invoicing import Invoice, Payment
+from app.features.analytics.accounting_models import JournalEntry, JournalLine
+from app.features.invoicing.models import Invoice, Payment
 
 log = logging.getLogger(__name__)
 
@@ -117,7 +117,7 @@ async def post_invoice(
     # Determine primary VAT account — default to 25%
     vat_account = "2610"
     try:
-        from app.models.invoicing import InvoiceLineItem  # local import to avoid circular
+        from app.features.invoicing.models import InvoiceLineItem  # local import to avoid circular
         lines_q = await db.execute(
             select(InvoiceLineItem).where(InvoiceLineItem.invoice_id == invoice.id)
         )

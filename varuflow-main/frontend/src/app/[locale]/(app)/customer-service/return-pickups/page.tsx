@@ -1,10 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -13,11 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 type PickupStatus = "all" | "pending" | "scheduled" | "collected" | "failed";
 
@@ -44,11 +39,16 @@ const STATUS_BADGE: Record<string, string> = {
   failed: "bg-red-100 text-red-800",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:   "statusPending",
+  scheduled: "statusScheduled",
+  collected: "statusCollected",
+  failed:    "statusFailed",
+};
+
 const STATUS_TABS: PickupStatus[] = ["all", "pending", "scheduled", "collected", "failed"];
 
 export default function ReturnPickupsPage() {
-  const params = useParams();
-
   const [items, setItems] = useState<ReturnPickup[]>([]);
   const [statusFilter, setStatusFilter] = useState<PickupStatus>("all");
   const [customerFilter, setCustomerFilter] = useState("");
@@ -80,11 +80,6 @@ export default function ReturnPickupsPage() {
   const [scheduleSaving, setScheduleSaving] = useState(false);
   const [scheduleError, setScheduleError] = useState("");
 
-  const headers = {
-    Authorization: `Bearer ${getToken()}`,
-    "Content-Type": "application/json",
-  };
-
   async function loadItems() {
     setLoading(true);
     setError("");
@@ -92,9 +87,7 @@ export default function ReturnPickupsPage() {
       const qs = new URLSearchParams();
       if (statusFilter !== "all") qs.set("status", statusFilter);
       if (customerFilter) qs.set("customer_id", customerFilter);
-      const res = await fetch(`${API}/api/return-pickups?${qs}`, { headers });
-      if (!res.ok) throw new Error("Failed to load pickups");
-      const data = await res.json();
+      const data = await api.get<ReturnPickup[] | { items: ReturnPickup[] }>(`/api/return-pickups?${qs}`);
       setItems(Array.isArray(data) ? data : data.items ?? []);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load pickups");
@@ -124,12 +117,7 @@ export default function ReturnPickupsPage() {
       };
       if (newForm.invoice_id) body.invoice_id = newForm.invoice_id;
 
-      const res = await fetch(`${API}/api/return-pickups`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error("Failed to create pickup");
+      await api.post("/api/return-pickups", body);
       setNewOpen(false);
       setNewForm({
         customer_id: "",
@@ -154,12 +142,7 @@ export default function ReturnPickupsPage() {
     setScheduleSaving(true);
     setScheduleError("");
     try {
-      const res = await fetch(`${API}/api/return-pickups/${id}/schedule`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(scheduleForm),
-      });
-      if (!res.ok) throw new Error("Failed to schedule pickup");
+      await api.post(`/api/return-pickups/${id}/schedule`, scheduleForm);
       setScheduleId(null);
       setScheduleForm({ courier_provider: "", courier_tracking_number: "" });
       loadItems();
@@ -172,11 +155,7 @@ export default function ReturnPickupsPage() {
 
   async function handleCollect(id: string) {
     try {
-      const res = await fetch(`${API}/api/return-pickups/${id}/collect`, {
-        method: "POST",
-        headers,
-      });
-      if (!res.ok) throw new Error();
+      await api.post(`/api/return-pickups/${id}/collect`, {});
       loadItems();
     } catch {
       setError("Failed to mark as collected");
@@ -348,9 +327,7 @@ export default function ReturnPickupsPage() {
                         {item.preferred_time_slot}
                       </TableCell>
                       <TableCell>
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[item.status] ?? ""}`}
-                        >
+                        <span className={styles[STATUS_MODULE[item.status] ?? "statusPending"]}>
                           {item.status}
                         </span>
                       </TableCell>

@@ -7,6 +7,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, Minus, Plus } from "lucide-react";
+import styles from "./page.module.scss";
+
+const MOVEMENT_MODULE: Record<string, keyof typeof styles> = { IN: "movIn", OUT: "movOut", ADJUSTMENT: "movAdjustment" };
 
 interface Movement {
   id: string; type: "IN" | "OUT" | "ADJUSTMENT"; quantity: number;
@@ -188,17 +191,17 @@ export default function MovementsPage() {
 
 function MovementBadge({ type }: { type: "IN" | "OUT" | "ADJUSTMENT" }) {
   if (type === "IN") return (
-    <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">
+    <span className={styles[MOVEMENT_MODULE["IN"] ?? "movIn"]}>
       <ArrowDown className="h-3 w-3" />IN
     </span>
   );
   if (type === "OUT") return (
-    <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">
+    <span className={styles[MOVEMENT_MODULE["OUT"] ?? "movIn"]}>
       <ArrowUp className="h-3 w-3" />OUT
     </span>
   );
   return (
-    <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-700">
+    <span className={styles[MOVEMENT_MODULE["ADJUSTMENT"] ?? "movIn"]}>
       <Minus className="h-3 w-3" />ADJ
     </span>
   );

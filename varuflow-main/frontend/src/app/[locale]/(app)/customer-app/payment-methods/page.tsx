@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,8 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
 
 interface PaymentMethod {
   id: string;
@@ -25,13 +23,10 @@ interface PaymentMethod {
 }
 
 export default function PaymentMethodsPage() {
-  const { locale } = useParams<{ locale: string }>();
   const [items, setItems] = useState<PaymentMethod[]>([]);
   const [filterCustomerId, setFilterCustomerId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : "";
 
   async function fetchItems() {
     setLoading(true);
@@ -39,46 +34,34 @@ export default function PaymentMethodsPage() {
     try {
       const params = new URLSearchParams();
       if (filterCustomerId) params.set("customer_id", filterCustomerId);
-      const res = await fetch(`${API}/api/payment-methods?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to load payment methods."); return; }
-      setItems(await res.json());
-    } catch {
-      setError("Network error.");
+      const data = await api.get<PaymentMethod[]>(`/api/payment-methods?${params}`);
+      setItems(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load payment methods.");
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => { fetchItems(); }, []);
+  useEffect(() => { fetchItems(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function setDefault(id: string) {
     setError("");
     try {
-      const res = await fetch(`${API}/api/payment-methods/${id}/set-default`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) { setError("Failed to set default."); return; }
+      await api.post(`/api/payment-methods/${id}/set-default`, {});
       fetchItems();
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to set default.");
     }
   }
 
   async function deleteItem(id: string) {
     setError("");
     try {
-      const res = await fetch(`${API}/api/payment-methods/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) { setError("Delete failed."); return; }
+      await api.delete(`/api/payment-methods/${id}`);
       setItems(items.filter((i) => i.id !== id));
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Delete failed.");
     }
   }
 

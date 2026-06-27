@@ -12,7 +12,7 @@ from sqlalchemy import and_, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.email_sequences import (
+from app.features.marketing.email_sequences_models import (
     EmailSequence,
     EmailSequenceEnrollment,
     EmailSequenceStep,
@@ -99,8 +99,8 @@ async def enroll_segment_sequences(db: AsyncSession) -> int:
 
     Returns the number of new enrollments created.
     """
-    from app.models.segments import SegmentMember
-    from app.models.invoicing import Customer
+    from app.features.customers.segments_models import SegmentMember
+    from app.features.invoicing.models import Customer
 
     result = await db.execute(
         select(EmailSequence).where(

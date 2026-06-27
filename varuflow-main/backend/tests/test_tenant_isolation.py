@@ -29,20 +29,20 @@ import pytest_asyncio
 from sqlalchemy import delete as _sql_delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.audit import AuditLogEntry
-from app.models.campaigns import Campaign
-from app.models.documents import Document
-from app.models.expenses import Expense
-from app.models.inventory import (
+from app.features.compliance.audit_models import AuditLogEntry
+from app.features.marketing.models import Campaign
+from app.features.projects.documents_models import Document
+from app.features.expenses.models import Expense
+from app.features.inventory.models import (
     Product,
     PurchaseOrder,
     PurchaseOrderStatus,
     Supplier,
     Warehouse,
 )
-from app.models.invoicing import Customer, Invoice, InvoiceLineItem, InvoiceStatus
-from app.models.organization import OrgPlan, Organization, OrganizationMember, OrgRole
-from app.models.tasks import Task
+from app.features.invoicing.models import Customer, Invoice, InvoiceLineItem, InvoiceStatus
+from app.features.auth.organization import OrgPlan, Organization, OrganizationMember, OrgRole
+from app.features.projects.tasks_models import Task
 
 
 # ─────────────────────────────────────────────────────────────────────────────

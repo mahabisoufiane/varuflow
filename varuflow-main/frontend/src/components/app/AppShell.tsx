@@ -2,7 +2,9 @@
 
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { api } from "@/lib/api-client";
-import { cn } from "@/lib/utils";
+import { BrandingProvider, useBranding } from "@/lib/branding";
+import { RoleProvider, useRole } from "@/components/app/RoleContext";
+import { hasMinRole, type OrgRole } from "@/lib/roles";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -28,10 +30,15 @@ import {
   Video, Camera, MapPin, AlertCircle,
   Gift, Flame, Heart, Globe,
   Shield, FileSearch,
+  ChevronRight, Lock,
 } from "lucide-react";
 import Script from "next/script";
 import dynamic from "next/dynamic";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { WorkspaceSwitcher } from "@/components/app/WorkspaceSwitcher";
+import { DevToolbar } from "@/components/app/DevToolbar";
+import { cx } from "@/lib/cx";
+import styles from "./AppShell.module.scss";
 
 const AiChat              = dynamic(() => import("@/components/app/AiChat"),              { ssr: false });
 const CommandPalette      = dynamic(() => import("@/components/app/CommandPalette"),      { ssr: false });
@@ -39,461 +46,147 @@ const PwaInstallBanner    = dynamic(() => import("@/components/app/PwaInstallBan
 const SessionTimeoutModal = dynamic(() => import("@/components/app/SessionTimeoutModal"), { ssr: false });
 const MaintenanceBanner   = dynamic(() => import("@/components/app/MaintenanceBanner").then(m => m.MaintenanceBanner), { ssr: false });
 
-/* ── Nav groups ─────────────────────────────────────────────────────────────── */
-const NAV_GROUPS = [
+/* ── Sidebar sections (collapsible) ────────────────────────────────────────── */
+// `minRole` (optional) gates a link by role-within-module. Omitted ⇒ any member
+// with the module sees it. Set to "ADMIN" for manager views (roster, approvals)
+// and "OWNER" for owner-only views (payroll, salaries). Keep in sync with the
+// backend require_role() guards on the matching endpoints.
+type NavItem = { href: string; icon: typeof LayoutDashboard; key: string; module: string; minRole?: OrgRole };
+type SidebarSection = { key: string; icon: typeof LayoutDashboard; label: string; items: NavItem[]; modules: string[] };
+
+const SIDEBAR_SECTIONS: SidebarSection[] = [
   {
-    label: "Overview",
+    key: "core",
+    icon: Home,
+    label: "Core",
+    modules: ["dashboard", "invoicing", "pos"],
     items: [
-      { href: "/dashboard", icon: LayoutDashboard, key: "dashboard" },
-      { href: "/analytics", icon: BarChart3,        key: "analytics" },
+      { href: "/dashboard",   icon: LayoutDashboard, key: "dashboard",    module: "dashboard" },
+      { href: "/invoices",    icon: FileText,        key: "invoices",     module: "invoicing" },
+      { href: "/quotes",      icon: FileSignature,   key: "quotes",       module: "invoicing" },
+      { href: "/customers",   icon: Users,           key: "customers",    module: "invoicing" },
+      { href: "/recurring",   icon: RefreshCw,       key: "recurring",    module: "invoicing" },
+      { href: "/shop/orders", icon: ShoppingBag,     key: "shopOrders",   module: "invoicing" },
+      { href: "/pos",         icon: ShoppingCart,    key: "cashRegister", module: "pos"       },
     ],
   },
   {
+    key: "inventory",
+    icon: Package,
+    label: "Inventory",
+    modules: ["inventory"],
+    items: [
+      { href: "/inventory",      icon: Package,    key: "inventory",     module: "inventory" },
+      { href: "/kitting",        icon: Package2,   key: "kitting",       module: "inventory" },
+      { href: "/landed-costs",   icon: DollarSign, key: "landedCosts",   module: "inventory" },
+      { href: "/vendor-ratings", icon: Activity,   key: "vendorRatings", module: "inventory" },
+    ],
+  },
+  {
+    key: "operations",
+    icon: Wrench,
     label: "Operations",
+    modules: ["hr", "manufacturing"],
     items: [
-      { href: "/inventory", icon: Package,      key: "inventory"    },
-      { href: "/invoices",  icon: FileText,      key: "invoices"     },
-      { href: "/quotes",           icon: FileSignature,  key: "quotes"          },
-      { href: "/payment-options",  icon: CreditCard,     key: "paymentOptions"  },
-      { href: "/local-payments",   icon: Globe,          key: "localPayments"   },
-      { href: "/deposits",         icon: Banknote,       key: "deposits"        },
-      { href: "/after-sales",      icon: ReceiptText,    key: "afterSales"      },
-      { href: "/recurring",        icon: RefreshCw,      key: "recurring"       },
-      { href: "/merchant-subscriptions", icon: RefreshCw, key: "merchantSubs"  },
-      { href: "/reconciliation",   icon: BarChart2,      key: "reconciliation"  },
-      { href: "/pos",       icon: ShoppingCart, key: "cashRegister" },
-      { href: "/customers", icon: Users,        key: "customers"    },
-      { href: "/email-templates", icon: Mail,           key: "emailTemplates" },
-      { href: "/sms-outbox",      icon: MessageCircle,  key: "smsOutbox"      },
+      // Employee-facing (any HR member): their own leave, shifts, timesheets.
+      { href: "/hr/leave",               icon: CalendarOff,   key: "hrLeave",      module: "hr"            },
+      { href: "/hr/shifts",              icon: CalendarDays,  key: "hrShifts",     module: "hr"            },
+      { href: "/hr/timesheets",          icon: ClipboardCheck,key: "hrTimesheets", module: "hr"            },
+      // Manager-facing (ADMIN+): roster, employee directory, org chart, scheduling.
+      { href: "/hr",                     icon: Users2,        key: "hrEmployees",  module: "hr", minRole: "ADMIN" },
+      { href: "/scheduling",             icon: CalendarDays,  key: "schRoster",    module: "hr", minRole: "ADMIN" },
+      { href: "/projects",               icon: FolderKanban,  key: "pmProjects",   module: "hr"            },
+      { href: "/work",                   icon: ClipboardList, key: "wmTasks",      module: "hr"            },
+      { href: "/hr/org-chart",           icon: GitFork,       key: "hrOrgChart",   module: "hr", minRole: "ADMIN" },
+      { href: "/manufacturing",          icon: Factory,       key: "mfgOrders",    module: "manufacturing" },
+      { href: "/manufacturing/bom",      icon: BookCopy,      key: "mfgBom",       module: "manufacturing" },
+      { href: "/manufacturing/kits",     icon: Package2,      key: "mfgKits",      module: "manufacturing" },
+      { href: "/manufacturing/planning", icon: CalendarCheck2,key: "mfgPlanning",  module: "manufacturing" },
+      { href: "/manufacturing/qc",       icon: ClipboardCheck,key: "mfgQc",        module: "manufacturing" },
     ],
   },
   {
-    label: "Intelligence",
-    items: [
-      { href: "/ai",               icon: Bot,           key: "aiAdvisor"    },
-      { href: "/ai/automation",    icon: TrendingUp,    key: "aiAutomation" },
-      { href: "/ai/workflows",     icon: GitBranch,     key: "aiWorkflows"  },
-      { href: "/ai/contracts",     icon: FileSignature, key: "aiContracts"  },
-    ],
-  },
-  {
-    label: "CEO & Finance",
-    items: [
-      { href: "/ceo",               icon: TrendingUp,     key: "ceoDashboard"  },
-      { href: "/ceo/cash-forecast",         icon: DollarSign,     key: "ceoCashFlow"        },
-      { href: "/cashflow-prediction",        icon: TrendingUp,     key: "cashflowPrediction" },
-      { href: "/anomaly-detection",          icon: ShieldCheck,    key: "anomalyDetection"   },
-      { href: "/ceo/kpi-goals",     icon: Target,         key: "ceoKpiGoals"   },
-      { href: "/ceo/okr",           icon: GitBranch,      key: "okrGoals"      },
-      { href: "/budget",            icon: PiggyBank,      key: "budgetWorkflow"},
-      { href: "/ceo/board-report",  icon: FileBarChart2,  key: "ceoBoardReport"},
-      { href: "/ceo/scenarios",     icon: GitBranch,      key: "ceoScenarios"  },
-    ],
-  },
-  {
-    label: "Growth",
-    items: [
-      { href: "/growth",              icon: TrendingUp,    key: "growthHub"       },
-      { href: "/growth/partners",     icon: Users,         key: "growthPartners"  },
-      { href: "/growth/experiments",  icon: FlaskConical,  key: "growthExp"       },
-      { href: "/growth/expansion",    icon: Globe,         key: "growthExpansion" },
-      { href: "/growth/churn",        icon: TrendingDown,  key: "growthChurn"     },
-    ],
-  },
-  {
-    label: "Business Intelligence",
-    items: [
-      { href: "/analytics/dashboard",  icon: LayoutDashboard, key: "biDashboards"  },
-      { href: "/analytics/reports",    icon: ClipboardList,   key: "biReports"     },
-      { href: "/analytics/scheduled",  icon: Clock,           key: "biScheduled"   },
-      { href: "/analytics/benchmarks", icon: BarChart2,       key: "biBenchmarks"  },
-      { href: "/analytics/cohorts",    icon: Users2,          key: "biCohorts"        },
-      { href: "/cohort-analysis",       icon: BarChart3,       key: "cohortAnalysis"   },
-      { href: "/dashboard-builder",     icon: LayoutDashboard, key: "dashboardBuilder" },
-      { href: "/report-builder",        icon: FileBarChart2,   key: "reportBuilder"   },
-    ],
-  },
-  {
-    label: "CRM & Sales",
-    items: [
-      { href: "/crm",           icon: Target,     key: "crmPipeline"  },
-      { href: "/crm/list",      icon: List,       key: "crmList"      },
-      { href: "/crm/analytics", icon: BarChart2,  key: "crmAnalytics" },
-      { href: "/crm/forecast",  icon: TrendingUp, key: "crmForecast"  },
-      { href: "/crm/sequences", icon: Mail,       key: "crmSequences" },
-      { href: "/crm/leads",        icon: Users,      key: "crmLeads"     },
-      { href: "/crm/leads/forms",  icon: Link2,      key: "crmLeadForms" },
-      { href: "/crm/meetings",  icon: Calendar,   key: "crmMeetings"  },
-    ],
-  },
-  {
-    label: "HR & People",
-    items: [
-      { href: "/hr",            icon: Users2,       key: "hrEmployees" },
-      { href: "/hr/leave",          icon: CalendarOff,  key: "hrLeave"         },
-      { href: "/hr/leave/calendar", icon: CalendarDays, key: "hrLeaveCalendar" },
-      { href: "/hr/shifts",         icon: CalendarDays, key: "hrShifts"        },
-      { href: "/hr/timesheets",     icon: ClipboardCheck, key: "hrTimesheets"  },
-      { href: "/hr/onboarding",     icon: CheckSquare,  key: "hrOnboarding"    },
-      { href: "/hr/training",       icon: GraduationCap, key: "hrTraining"     },
-      { href: "/hr/time",           icon: Timer,        key: "hrTime"          },
-      { href: "/hr/reviews",        icon: ClipboardList, key: "hrReviews"      },
-      { href: "/hr/org-chart",      icon: GitFork,      key: "hrOrgChart"      },
-    ],
-  },
-  {
-    label: "Manufacturing",
-    items: [
-      { href: "/manufacturing",          icon: Factory,        key: "mfgOrders"   },
-      { href: "/manufacturing/bom",      icon: BookCopy,       key: "mfgBom"      },
-      { href: "/manufacturing/planning", icon: CalendarCheck2, key: "mfgPlanning" },
-      { href: "/manufacturing/qc",       icon: ClipboardCheck, key: "mfgQc"       },
-      { href: "/manufacturing/kits",     icon: Package2,       key: "mfgKits"     },
-      { href: "/kitting",                icon: Package,        key: "kitting"     },
-      { href: "/landed-costs",           icon: DollarSign,     key: "landedCosts" },
-      { href: "/vendor-ratings",         icon: Activity,       key: "vendorRatings" },
-    ],
-  },
-  {
-    label: "Projects",
-    items: [
-      { href: "/projects",            icon: FolderKanban, key: "pmProjects"   },
-      { href: "/time-tracking",       icon: Clock,        key: "pmTime"       },
-      { href: "/projects/pl",         icon: BarChart2,    key: "pmPl"         },
-      { href: "/projects/retainers",  icon: Repeat2,      key: "pmRetainers"  },
-    ],
-  },
-  {
-    label: "Work Management",
-    items: [
-      { href: "/work",               icon: ClipboardList,  key: "wmTasks"        },
-      { href: "/work/announcements", icon: Megaphone,      key: "wmAnnouncements" },
-      { href: "/work/messages",      icon: MessageCircle,  key: "wmMessages"      },
-      { href: "/work/meeting-notes", icon: BookOpen,       key: "wmMeetingNotes"  },
-      { href: "/work/orders",        icon: Wrench,         key: "wmWorkOrders"   },
-      { href: "/work/tickets",       icon: Ticket,         key: "wmTickets"      },
-      { href: "/job-cards",          icon: Wrench,         key: "wmJobCards"     },
-    ],
-  },
-  {
-    label: "Scheduling",
-    items: [
-      { href: "/scheduling",          icon: CalendarDays,    key: "schRoster"   },
-      { href: "/scheduling/swaps",    icon: ArrowLeftRight,  key: "schSwaps"    },
-      { href: "/scheduling/overtime", icon: Clock,           key: "schOvertime" },
-    ],
-  },
-  {
+    key: "finance",
+    icon: Landmark,
     label: "Finance",
+    modules: ["finance"],
     items: [
-      { href: "/purchase-requests", icon: FileSpreadsheet, key: "finPurchaseRequests" },
-      { href: "/petty-cash",        icon: Banknote,        key: "finPettyCash" },
+      // Manager-facing financials (ADMIN+): dashboards, ledger, VAT, bank, budget.
+      { href: "/ceo",                    icon: TrendingUp,     key: "ceoDashboard",        module: "finance", minRole: "ADMIN" },
+      { href: "/ceo/cash-forecast",      icon: DollarSign,     key: "ceoCashFlow",         module: "finance", minRole: "ADMIN" },
+      { href: "/accounting",             icon: BookOpen,       key: "ledger",              module: "finance", minRole: "ADMIN" },
+      { href: "/accounting/vat",         icon: ReceiptText,    key: "vatReturn",           module: "finance", minRole: "ADMIN" },
+      // Salaries — managers (ADMIN+), matching the payroll router's guard.
+      { href: "/accounting/payroll",     icon: Wallet,         key: "payroll",             module: "finance", minRole: "ADMIN" },
+      { href: "/accounting/bank-feed",   icon: Building2,      key: "bankFeed",            module: "finance", minRole: "ADMIN" },
+      { href: "/budget",                 icon: PiggyBank,      key: "budgetWorkflow",      module: "finance", minRole: "ADMIN" },
+      { href: "/reconciliation",         icon: BarChart2,      key: "reconciliation",      module: "finance", minRole: "ADMIN" },
+      // Employee-facing: submit purchase requests and expense claims.
+      { href: "/purchase-requests",      icon: FileSpreadsheet,key: "finPurchaseRequests", module: "finance" },
+      { href: "/expenses",               icon: Receipt,        key: "expenses",            module: "finance" },
     ],
   },
   {
-    label: "Reports",
+    key: "growth",
+    icon: BarChart3,
+    label: "Growth",
+    modules: ["crm", "analytics", "ai"],
     items: [
-      { href: "/reports/dashboard",    icon: BarChart3,  key: "rptDashboard" },
-      { href: "/reports/productivity", icon: Activity,   key: "rptProductivity" },
-      { href: "/reports/attendance",   icon: CalendarCheck2, key: "rptAttendance" },
-      { href: "/reports/pnl",          icon: BarChart3,  key: "rptPnl" },
-      { href: "/reports/cashflow",     icon: TrendingUp, key: "rptCashflow" },
-      { href: "/reports/balance-sheet", icon: Landmark,   key: "rptBalanceSheet" },
+      { href: "/crm",                    icon: Target,         key: "crmPipeline",         module: "crm"       },
+      { href: "/crm/leads",              icon: Users,          key: "crmLeads",            module: "crm"       },
+      { href: "/crm/forecast",           icon: TrendingUp,     key: "crmForecast",         module: "crm"       },
+      { href: "/b2b",                    icon: Building2,      key: "b2bHub",              module: "crm"       },
+      { href: "/analytics",              icon: BarChart3,      key: "analytics",           module: "analytics" },
+      { href: "/analytics/dashboard",    icon: LayoutDashboard,key: "biDashboards",        module: "analytics" },
+      { href: "/analytics/reports",      icon: ClipboardList,  key: "biReports",           module: "analytics" },
+      { href: "/reports/pnl",            icon: BarChart3,      key: "rptPnl",              module: "analytics" },
+      { href: "/reports/cashflow",       icon: TrendingUp,     key: "rptCashflow",         module: "analytics" },
+      { href: "/reports/balance-sheet",  icon: Landmark,       key: "rptBalanceSheet",     module: "analytics" },
+      { href: "/growth",                 icon: TrendingUp,     key: "growthHub",           module: "analytics" },
+      { href: "/marketing/broadcasts",   icon: Radio,          key: "marketingBroadcasts", module: "ai"        },
     ],
   },
   {
-    label: "Client Portal",
+    key: "ai",
+    icon: Bot,
+    label: "AI & Intelligence",
+    modules: ["ai"],
     items: [
-      { href: "/portal-admin/chat",      icon: MessageCircle, key: "portalChat" },
-      { href: "/portal-admin/tickets",   icon: HelpCircle,    key: "portalTickets" },
-      { href: "/portal-admin/reminders", icon: Bell,          key: "portalReminders" },
+      { href: "/ai",                            icon: Bot,          key: "aiAdvisor",     module: "ai" },
+      { href: "/ai/automation",                 icon: Zap,          key: "aiAutomation",  module: "ai" },
+      { href: "/ai/workflows",                  icon: GitBranch,    key: "aiWorkflows",   module: "ai" },
+      { href: "/ai-tools/product-descriptions", icon: FileText,     key: "aiProductDesc", module: "ai" },
+      { href: "/ai-tools/email-drafts",         icon: Mail,         key: "aiEmailDrafts", module: "ai" },
+      { href: "/ai-tools/pricing",              icon: DollarSign,   key: "aiPricing",     module: "ai" },
+      { href: "/inbox",                         icon: MessageCircle,key: "unifiedInbox",  module: "ai" },
     ],
   },
   {
-    label: "MENA Compliance",
-    items: [
-      { href: "/mena/zatca",    icon: FileCheck2,  key: "menaZatca"    },
-      { href: "/mena/uae-vat",  icon: ReceiptText, key: "menaUaeVat"   },
-      { href: "/mena/zakat",    icon: Calculator,  key: "menaZakat"    },
-      { href: "/mena/payments", icon: CreditCard,  key: "menaPayments" },
-    ],
-  },
-  {
-    label: "Integrations",
-    items: [
-      { href: "/integrations",               icon: Plug,        key: "intgHub"           },
-      { href: "/integrations/shopify",        icon: ShoppingBag, key: "intgShopify"       },
-      { href: "/integrations/crm",            icon: Users,       key: "intgCrm"           },
-      { href: "/integrations/notifications",  icon: Bell,        key: "intgNotifications" },
-      { href: "/integrations/accounting",     icon: BookOpen,    key: "intgAccounting"    },
-      { href: "/integrations/banking",        icon: Building2,   key: "intgBanking"       },
-      { href: "/integrations/zapier",         icon: Zap,         key: "intgZapier"        },
-    ],
-  },
-  {
-    label: "Mobile & Field",
-    items: [
-      { href: "/mobile",             icon: Navigation, key: "mobileHub"        },
-      { href: "/mobile/routes",      icon: Navigation, key: "mobileRoutes"     },
-      { href: "/mobile/signatures",  icon: PenLine,    key: "mobileSignatures" },
-      { href: "/mobile/terminal",    icon: Wifi,       key: "mobileTerminal"   },
-      { href: "/mobile/invoices",    icon: FileText,   key: "mobileInvoices"   },
-      { href: "/mobile/voice-notes", icon: Mic,        key: "mobileVoiceNotes" },
-    ],
-  },
-  {
-    label: "Multi-Entity",
-    items: [
-      { href: "/multi-entity",               icon: Network,          key: "multiEntityHub"         },
-      { href: "/multi-entity/subsidiaries",   icon: Building2,        key: "subsidiaries"            },
-      { href: "/multi-entity/consolidated",   icon: BarChart3,        key: "consolidatedReports"     },
-      { href: "/multi-entity/intercompany",   icon: ArrowLeftRight,   key: "intercompanyTransfers"   },
-      { href: "/multi-entity/permissions",    icon: Shield,           key: "entityPermissions"       },
-    ],
-  },
-  {
-    label: "Franchise",
-    items: [
-      { href: "/franchise",              icon: GitBranch, key: "franchiseHub"         },
-      { href: "/franchise/onboarding",   icon: Users,     key: "franchiseeOnboarding" },
-      { href: "/franchise/royalties",    icon: Receipt,   key: "royaltyBilling"       },
-      { href: "/franchise/catalog",      icon: Package,   key: "franchiseCatalog"     },
-    ],
-  },
-  {
-    label: "Compliance",
-    items: [
-      { href: "/settings/security/audit-chain",   icon: Shield,        key: "auditChain"      },
-      { href: "/settings/security/field-masking",  icon: EyeOff,        key: "fieldMasking"    },
-      { href: "/settings/security/data-residency", icon: Globe,         key: "dataResidency"   },
-      { href: "/settings/security/pentest",        icon: FileSearch,    key: "pentestReports"  },
-      { href: "/contract-signing",                 icon: FileSignature, key: "contractSigning" },
-      { href: "/gdpr",                             icon: Shield,        key: "gdprConsent"     },
-      { href: "/compliance/risk",                  icon: Fingerprint,   key: "riskRegister"    },
-      { href: "/compliance/insurance",             icon: Building2,     key: "insurancePolicies"},
-      { href: "/compliance/regulatory",            icon: CalendarClock, key: "regulatoryCalendar"},
-      { href: "/compliance/whistleblower",         icon: Eye,           key: "whistleblower"   },
-      { href: "/compliance/conflicts",             icon: Users2,        key: "conflictRegister" },
-    ],
-  },
-  {
-    label: "Sustainability",
-    items: [
-      { href: "/sustainability/carbon",            icon: Leaf,          key: "carbonFootprint" },
-      { href: "/sustainability/esg",               icon: BarChart3,     key: "esgReports"      },
-      { href: "/sustainability/suppliers",         icon: Award,         key: "supplierSustainability" },
-    ],
-  },
-  {
-    label: "Customer App",
-    items: [
-      { href: "/customer-app",                icon: Smartphone,  key: "customerApp"          },
-      { href: "/customer-app/wallet",         icon: CreditCard,  key: "walletPasses"         },
-      { href: "/customer-app/family",         icon: Users,       key: "familyAccounts"       },
-      { href: "/customer-app/subscriptions",  icon: Repeat2,     key: "bookingSubscriptions" },
-      { href: "/customer-app/group-bookings", icon: UserPlus,    key: "groupBookings"        },
-      { href: "/customer-app/waitlist",       icon: Clock,       key: "bookingWaitlist"      },
-      { href: "/customer-app/chat",            icon: MessageCircle, key: "customerChat"       },
-      { href: "/customer-app/video",           icon: Video,         key: "videoConsultations" },
-      { href: "/customer-app/voice-notes",     icon: Mic,           key: "voiceNotes"         },
-      { href: "/customer-app/reminder-prefs",  icon: Bell,          key: "reminderPrefs"        },
-      { href: "/customer-app/status-alerts",   icon: AlertCircle,   key: "liveStatusAlerts"     },
-      { href: "/customer-app/timelines",       icon: List,          key: "serviceTimelines"     },
-      { href: "/customer-app/tracking",        icon: MapPin,        key: "liveTracking"         },
-      { href: "/customer-app/photos",          icon: Camera,        key: "photoUpdates"         },
-      { href: "/customer-app/history",         icon: Clock,         key: "customerHistory"      },
-    ],
-  },
-  {
-    label: "Personalization",
-    items: [
-      { href: "/customer-app/preferences",     icon: Settings,      key: "customerPreferences"  },
-      { href: "/customer-app/recommendations", icon: Zap,           key: "aiRecommendations"    },
-      { href: "/customer-app/important-dates", icon: CalendarClock, key: "importantDates"       },
-      { href: "/customer-app/payment-methods", icon: CreditCard,    key: "savedPaymentMethods"  },
-      { href: "/customer-app/staff-notes",     icon: PenLine,       key: "staffNotes"           },
-    ],
-  },
-  {
-    label: "Loyalty & Rewards",
-    items: [
-      { href: "/customer-app/membership-tiers",  icon: Shield,    key: "membershipTiers"   },
-      { href: "/customer-app/achievements",       icon: Award,     key: "achievements"      },
-      { href: "/customer-app/birthday-vouchers",  icon: Gift,      key: "birthdayVouchers"  },
-      { href: "/customer-app/referrals",          icon: UserPlus,  key: "referralTracking"  },
-      { href: "/customer-app/streaks",            icon: Flame,     key: "loyaltyStreaks"    },
-    ],
-  },
-  {
-    label: "Convenience",
-    items: [
-      { href: "/customer-app/wallet-payments",      icon: CreditCard,   key: "walletPayments"        },
-      { href: "/customer-app/addresses",            icon: Home,         key: "addressBook"           },
-      { href: "/customer-app/calendar-sync",        icon: Calendar,     key: "calendarSync"          },
-      { href: "/customer-app/accountant-forwarding",icon: Mail,         key: "accountantForwarding"  },
-      { href: "/customer-app/receipt-exports",      icon: Receipt,      key: "receiptExports"        },
-    ],
-  },
-  {
-    label: "B2B Buyers",
-    items: [
-      { href: "/b2b",                       icon: Building2,    key: "b2bHub"              },
-      { href: "/b2b/buyer-pos",             icon: FileText,     key: "buyerPurchaseOrders" },
-      { href: "/b2b/org-members",           icon: Users2,       key: "buyerOrgMembers"     },
-      { href: "/b2b/negotiated-pricing",    icon: DollarSign,   key: "negotiatedPricing"   },
-      { href: "/b2b/quote-comparisons",     icon: BarChart2,    key: "quoteComparisons"    },
-    ],
-  },
-  {
-    label: "Trust & Verification",
-    items: [
-      { href: "/trust/reviews",     icon: Star,        key: "verifiedReviews"      },
-      { href: "/trust/credentials", icon: FileCheck2,  key: "staffCredentials"     },
-      { href: "/trust/capacity",    icon: Activity,    key: "bookingCapacity"      },
-      { href: "/trust/portfolio",   icon: Camera,      key: "portfolioGallery"     },
-    ],
-  },
-  {
-    label: "Customer Service",
-    items: [
-      { href: "/customer-service/live-chat",       icon: MessageCircle, key: "liveChatWidget"   },
-      { href: "/customer-service/chatbot",         icon: Bot,           key: "chatbotAssistant" },
-      { href: "/customer-service/knowledge-base",  icon: BookOpen,      key: "knowledgeBase"    },
-      { href: "/customer-service/return-pickups",  icon: Package,       key: "returnPickups"    },
-    ],
-  },
-  {
-    label: "Trust & Safety",
-    items: [
-      { href: "/trust-safety/identity-verification", icon: Fingerprint,  key: "identityVerification" },
-      { href: "/trust-safety/background-checks",     icon: ShieldCheck,  key: "backgroundChecks"     },
-      { href: "/trust-safety/insurance",             icon: Shield,       key: "insuranceAddons"       },
-      { href: "/trust-safety/disputes",              icon: HelpCircle,   key: "disputeResolution"     },
-      { href: "/trust-safety/merchant-reviews",      icon: Star,         key: "merchantReviews"       },
-    ],
-  },
-  {
-    label: "Inbox",
-    items: [
-      { href: "/inbox",                icon: MessageCircle, key: "unifiedInbox"         },
-      { href: "/inbox/translation",    icon: Globe,         key: "autoTranslation"      },
-      { href: "/inbox/smart-replies",  icon: Zap,           key: "smartReplies"         },
-      { href: "/inbox/sentiment",      icon: Activity,      key: "sentimentAnalysis"    },
-    ],
-  },
-  {
-    label: "Reporting",
-    items: [
-      { href: "/reporting/statements",       icon: FileText,     key: "customerStatements"   },
-      { href: "/reporting/mobile-dashboard", icon: Smartphone,   key: "mobileDashboard"      },
-      { href: "/reporting/voice-reports",    icon: Mic,          key: "voiceReports"         },
-      { href: "/reporting/anomalies",        icon: Bell,         key: "anomalyAlerts"        },
-    ],
-  },
-  {
-    label: "AI Tools",
-    items: [
-      { href: "/ai-tools/product-descriptions", icon: Bot,        key: "aiProductDesc"        },
-      { href: "/ai-tools/email-drafts",         icon: Mail,       key: "aiEmailDrafts"        },
-      { href: "/ai-tools/photo-tags",           icon: Camera,     key: "aiPhotoTags"          },
-      { href: "/ai-tools/pricing",              icon: DollarSign, key: "aiPricing"            },
-      { href: "/ai-tools/personas",             icon: Users,      key: "aiPersonas"           },
-    ],
-  },
-  {
-    label: "Developer & API",
-    items: [
-      { href: "/integrations/calendar",  icon: Calendar,     key: "calendarSync"        },
-      { href: "/integrations/zapier",    icon: Zap,          key: "zapierConnector"     },
-      { href: "/integrations/webhooks",  icon: Link2,        key: "customerWebhooks"    },
-      { href: "/integrations/api-keys",  icon: Fingerprint,  key: "apiKeys"             },
-      { href: "/integrations/api-docs",  icon: BookCopy,     key: "apiDocs"             },
-    ],
-  },
-  {
-    label: "Quality of Life",
-    items: [
-      { href: "/settings/search",               icon: Search,   key: "fastSearch"          },
-      { href: "/settings/notification-bundles", icon: Bell,     key: "notificationBundles" },
-      { href: "/settings/timezones",            icon: Clock,    key: "timezoneSettings"    },
-    ],
-  },
-  {
-    label: "Mobile",
-    items: [
-      { href: "/mobile/widgets",   icon: Smartphone, key: "homeScreenWidgets" },
-      { href: "/mobile/watch",     icon: Clock,      key: "watchApp"          },
-      { href: "/mobile/shortcuts", icon: Mic,        key: "voiceShortcuts"    },
-      { href: "/mobile/alerts",    icon: Bell,       key: "lockScreenAlerts"  },
-    ],
-  },
-  {
-    label: "Operational Excellence",
-    items: [
-      { href: "/ops/sop",        icon: BookOpen,      key: "sopLibrary"         },
-      { href: "/ops/checklists", icon: CheckSquare,   key: "checklists"         },
-      { href: "/ops/reminders",  icon: Bell,          key: "recurringReminders" },
-      { href: "/ops/decisions",  icon: ClipboardList, key: "decisionLog"        },
-    ],
-  },
-  {
-    label: "Investor & Board",
-    items: [
-      { href: "/investor/updates",    icon: TrendingUp,    key: "investorUpdates"  },
-      { href: "/investor/cap-table",  icon: PieChart,      key: "capTable"         },
-      { href: "/investor/board-packs",icon: FileText,      key: "boardPacks"       },
-      { href: "/investor/data-room",  icon: FolderLock,    key: "dataRoom"         },
-    ],
-  },
-  {
-    label: "Marketing",
-    items: [
-      { href: "/marketing/attribution",    icon: Target,        key: "marketingAttribution" },
-      { href: "/marketing/ab-testing",     icon: GitBranch,     key: "abTesting"            },
-      { href: "/marketing/landing-pages",  icon: LayoutDashboard, key: "landingPages"       },
-      { href: "/marketing/broadcasts",     icon: Radio,         key: "marketingBroadcasts"  },
-      { href: "/marketing/surveys",        icon: Star,          key: "npsSurveys"           },
-    ],
-  },
-  {
-    label: "Governance",
-    items: [
-      { href: "/governance",               icon: ShieldCheck,    key: "govHub"         },
-      { href: "/governance/approvals",     icon: ClipboardCheck, key: "govApprovals"   },
-      { href: "/governance/policies",      icon: BookOpen,       key: "govPolicies"    },
-      { href: "/governance/sign-contract", icon: FileSignature,  key: "govSign"        },
-    ],
-  },
-  {
-    label: "Accounting",
-    items: [
-      { href: "/accounting",           icon: BookOpen,     key: "ledger"     },
-      { href: "/accounting/reports",   icon: BarChart3,    key: "reports"    },
-      { href: "/accounting/vat",       icon: ReceiptText,  key: "vatReturn"  },
-      { href: "/accounting/assets",    icon: Landmark,     key: "assets"     },
-      { href: "/accounting/payroll",   icon: Wallet,       key: "payroll"    },
-      { href: "/accounting/budget",    icon: PiggyBank,    key: "budget"     },
-      { href: "/accounting/bank-feed",           icon: Building2,   key: "bankFeed"   },
-      { href: "/accounting/bank-reconciliation", icon: CheckSquare, key: "bankRecon"  },
-    ],
-  },
-  {
-    label: "E-commerce",
-    items: [
-      { href: "/shop/orders", icon: ShoppingBag, key: "shopOrders" },
-      { href: "/shop/config", icon: Store,       key: "shopConfig" },
-    ],
-  },
-  {
+    key: "settings",
+    icon: Settings,
     label: "Settings",
+    modules: ["settings"],
     items: [
-      { href: "/settings",               icon: Settings,       key: "settings"    },
-      { href: "/settings/setup-health",  icon: Activity,       key: "setupHealth" },
-      { href: "/settings/data-import",   icon: FileSpreadsheet, key: "dataImport" },
-      { href: "/settings/sandbox",       icon: FlaskConical,   key: "sandbox"     },
+      { href: "/settings",              icon: Settings,       key: "settings",       module: "settings" },
+      { href: "/settings/setup-health", icon: Activity,       key: "setupHealth",    module: "settings" },
+      { href: "/settings/data-import",  icon: FileSpreadsheet,key: "dataImport",     module: "settings" },
+      { href: "/integrations",          icon: Plug,           key: "intgHub",        module: "settings" },
+      { href: "/integrations/api-keys", icon: Fingerprint,    key: "apiKeys",        module: "settings" },
+      { href: "/multi-entity",          icon: Network,        key: "multiEntityHub", module: "settings" },
     ],
   },
-] as const;
+];
+
+function getSectionForPath(pathname: string): string | null {
+  for (const section of SIDEBAR_SECTIONS) {
+    for (const item of section.items) {
+      if (pathname === item.href || pathname.startsWith(item.href + "/")) {
+        return section.key;
+      }
+    }
+  }
+  return null;
+}
 
 /* Mobile bottom nav */
 const MOBILE_NAV = [
@@ -529,38 +222,56 @@ function getPageTitle(pathname: string): string {
 }
 
 /* ── Component ──────────────────────────────────────────────────────────────── */
-export default function AppShell({ children }: { children: React.ReactNode }) {
+function AppShellInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router   = useRouter();
   const locale   = useLocale();
   const t        = useTranslations("nav");
   const supabase = createClient();
 
+  // Role + module grants come from the shared RoleProvider (single /api/auth/me
+  // fetch) so the sidebar, page guards, and any feature flag agree on one truth.
+  const { role, allowedModules, planModules, plan: userPlan } = useRole();
+
   const [isClient,         setIsClient]         = useState(false);
   const [email,            setEmail]            = useState<string | null>(null);
+  const [displayName,      setDisplayName]      = useState<string | null>(null);
   const [fortnoxConnected, setFortnoxConnected] = useState(false);
   const [openaiConnected,  setOpenaiConnected]  = useState(false);
   const [sidebarOpen,      setSidebarOpen]      = useState(false);
+  const [expandedSection,  setExpandedSection]  = useState<string | null>(null);
 
   useEffect(() => {
     setIsClient(true);
+    const saved = localStorage.getItem("vf-sidebar-section");
+    const fromPath = getSectionForPath(pathname);
+    setExpandedSection(saved && !fromPath ? saved : fromPath ?? "core");
     if (isSupabaseConfigured) {
       supabase.auth.getUser().then(({ data }) => {
         const userEmail = data.user?.email ?? null;
         setEmail(userEmail);
+        setDisplayName(data.user?.user_metadata?.full_name ?? null);
         if (userEmail && process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID && typeof window !== "undefined") {
           const w = window as unknown as Record<string, unknown>;
           if (w.$crisp) (w.$crisp as unknown[][]).push(["set", "user:email", userEmail]);
         }
       });
     }
-    api.get<{ connected: boolean }>("/api/integrations/fortnox/status")
+    api.get<{ connected: boolean }>("/api/integrations/fortnox/status", { silent: true })
       .then((s) => setFortnoxConnected(s.connected))
       .catch(() => {});
-    api.get<{ openai_configured: boolean }>("/api/integrations/config")
+    api.get<{ openai_configured: boolean }>("/api/integrations/config", { silent: true })
       .then((s) => setOpenaiConnected(s.openai_configured))
       .catch(() => {});
   }, []);
+
+  // POS-only members (cash-register staff) are sent straight to the register.
+  // Driven by the shared role context rather than a second /api/auth/me fetch.
+  useEffect(() => {
+    if (allowedModules.length === 1 && allowedModules[0] === "pos") {
+      router.push("/register");
+    }
+  }, [allowedModules]);
 
   function isActive(href: string) {
     if (!isClient) return false;
@@ -568,10 +279,25 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return pathname === href || pathname.startsWith(href + "/");
   }
 
+  function toggleSection(key: string) {
+    const next = expandedSection === key ? null : key;
+    setExpandedSection(next);
+    if (next) localStorage.setItem("vf-sidebar-section", next);
+  }
+
+  useEffect(() => {
+    const section = getSectionForPath(pathname);
+    if (section && section !== expandedSection) {
+      setExpandedSection(section);
+      localStorage.setItem("vf-sidebar-section", section);
+    }
+  }, [pathname]);
+
   async function handleSignOut() {
-    await supabase.auth.signOut();
-    toast.success("Signed out");
-    router.push("/auth/login");
+    try {
+      if (isSupabaseConfigured) await supabase.auth.signOut();
+    } catch {}
+    router.push(`/${locale}/auth/login`);
   }
 
   function openSearch() {
@@ -580,124 +306,152 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const avatarLetter = isClient && email ? email[0].toUpperCase() : "?";
+  const avatarLetter = isClient && (displayName || email) ? (displayName ?? email)![0].toUpperCase() : "?";
+  const branding = useBranding();
+
+  const visibleSections = allowedModules.includes("*")
+    ? SIDEBAR_SECTIONS
+    : SIDEBAR_SECTIONS.filter((s) => s.modules.some((m) => allowedModules.includes(m)));
+
+  const lockedSections = (planModules.includes("*") || allowedModules.includes("*"))
+    ? []
+    : SIDEBAR_SECTIONS.filter(
+        (s) =>
+          !s.modules.some((m) => allowedModules.includes(m)) &&
+          !s.modules.some((m) => planModules.includes(m))
+      );
 
   /* ── Sidebar content ────────────────────────────────────────────────────── */
   const SidebarContent = () => (
     <>
       {/* Logo */}
-      <div className="flex h-[57px] shrink-0 items-center gap-3 px-5"
-        style={{ borderBottom: "1px solid var(--vf-border)" }}>
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 shadow-glow shrink-0">
-          <Zap className="h-3.5 w-3.5 text-white" />
-        </div>
-        <span className="bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent text-[15px] font-bold tracking-tight flex-1 min-w-0">
-          Varuflow
+      <div className={styles.logoBar}>
+        {branding.logo_url ? (
+          <img src={branding.logo_url} alt={branding.app_name} className={styles.logoImg} />
+        ) : (
+          <div className={styles.logoIcon}
+            style={{ background: `linear-gradient(135deg, ${branding.primary_color}, ${branding.accent_color})` }}>
+            <Zap className="h-3.5 w-3.5 text-white" />
+          </div>
+        )}
+        <span className={styles.logoText}
+          style={{ background: `linear-gradient(to right, ${branding.primary_color}, ${branding.accent_color})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          {branding.app_name}
         </span>
         {isClient && fortnoxConnected && (
-          <span className="shrink-0 rounded-full bg-emerald-500/15 border border-emerald-500/25 px-1.5 py-0.5 text-[9px] font-bold text-emerald-500 tracking-wide">
-            FX
-          </span>
+          <span className={styles.logoBadge}>FX</span>
         )}
-        <button
-          className="lg:hidden ml-1 vf-text-m hover:vf-text-1 transition-colors"
-          onClick={() => setSidebarOpen(false)}
-        >
+        <button className={styles.closeBtn} onClick={() => setSidebarOpen(false)}>
           <X className="h-4 w-4" />
         </button>
       </div>
 
-      {/* Nav groups */}
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-2 py-3">
-        {NAV_GROUPS.map((group, gi) => (
-          <div key={group.label} className={cn(gi > 0 && "mt-3")}>
-            <p className="mb-1 px-3 text-[10px] font-semibold vf-text-m uppercase tracking-[0.08em] select-none">
-              {group.label}
-            </p>
-            <div className="flex flex-col gap-[1px]">
-              {group.items.map(({ href, icon: Icon, key }) => {
-                const active = isActive(href);
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={() => setSidebarOpen(false)}
-                    className={cn(
-                      "group relative flex items-center gap-2.5 rounded-xl px-3 py-[7px] text-[13px] font-medium transition-all duration-100",
-                      active
-                        ? "bg-indigo-500/[0.12] text-indigo-500"
-                        : "vf-text-m hover:vf-text-2 hover:bg-[var(--vf-hover)]"
-                    )}
-                  >
-                    {active && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-indigo-500" />
-                    )}
-                    <Icon className={cn(
-                      "h-[18px] w-[18px] shrink-0 transition-colors",
-                      active ? "text-indigo-500" : "vf-text-m group-hover:vf-text-2"
-                    )} />
-                    {t(key as Parameters<typeof t>[0])}
-                  </Link>
-                );
-              })}
+      {/* Nav sections */}
+      <nav className={styles.nav}>
+        {visibleSections.map((section) => {
+          const isExpanded = expandedSection === section.key;
+          const hasActive = section.items.some(item => isActive(item.href));
+          const SectionIcon = section.icon;
+          return (
+            <div key={section.key}>
+              <button
+                onClick={() => toggleSection(section.key)}
+                className={cx(styles.sectionBtn, hasActive && styles.sectionBtnActive)}
+              >
+                <SectionIcon className={cx(styles.sectionIcon, hasActive && styles.sectionIconActive)} />
+                <span className={styles.sectionLabel}>{section.label}</span>
+                <ChevronRight className={cx(styles.sectionChevron, isExpanded && styles.sectionChevronOpen)} />
+              </button>
+              {isExpanded && (
+                <div className={styles.itemList}>
+                  {section.items
+                    .filter(item =>
+                      (allowedModules.includes("*") || allowedModules.includes(item.module)) &&
+                      // Role-within-module: hide manager/owner links from juniors.
+                      // Module grant ("*") is plan-based and does NOT imply role,
+                      // so this check always applies.
+                      (!item.minRole || hasMinRole(role, item.minRole))
+                    )
+                    .map(({ href, icon: Icon, key }) => {
+                    const active = isActive(href);
+                    return (
+                      <Link
+                        key={href}
+                        href={href}
+                        onClick={() => setSidebarOpen(false)}
+                        className={cx(styles.navItem, active && styles.navItemActive)}
+                      >
+                        <Icon className={cx(styles.navItemIcon, active && styles.navItemIconActive)} />
+                        {t(key as Parameters<typeof t>[0])}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
+        {lockedSections.length > 0 && (
+          <>
+            <div className={styles.lockedDivider} />
+            {lockedSections.map((section) => {
+              const SectionIcon = section.icon;
+              return (
+                <div key={section.key} className={styles.lockedSection}>
+                  <SectionIcon className={cx(styles.sectionIcon)} />
+                  <span className={cx(styles.sectionLabel, "vf-text-2")}>{section.label}</span>
+                  <span className={styles.lockedBadge}>
+                    <Lock className={styles.lockedIcon} />
+                    PRO
+                  </span>
+                </div>
+              );
+            })}
+          </>
+        )}
       </nav>
 
-      {/* Bottom: theme + locale + account */}
-      <div className="shrink-0 px-2 py-3 space-y-1" style={{ borderTop: "1px solid var(--vf-border)" }}>
-        {/* Theme toggle */}
-        <div className="flex justify-end px-1 pb-1">
+      {/* Bottom */}
+      <div className={styles.sidebarBottom}>
+        <div className={styles.themeRow}>
           <ThemeToggle />
         </div>
 
-        {/* AI indicator */}
         {isClient && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg">
-            <span className={cn(
-              "h-1.5 w-1.5 rounded-full shrink-0",
-              openaiConnected ? "bg-emerald-500 animate-pulse-dot" : "bg-[var(--vf-text-muted)]/30"
-            )} />
-            <span className="text-[11px] vf-text-m">
+          <div className={styles.aiStatus}>
+            <span className={cx(styles.aiDot, openaiConnected ? styles.aiDotConnected : styles.aiDotDisconnected)} />
+            <span className={styles.aiLabel}>
               AI {openaiConnected ? "connected" : "not configured"}
             </span>
           </div>
         )}
 
-        {/* Locale switcher */}
-        <div className="flex gap-[2px] px-1">
+        <div className={styles.localeRow}>
           {LOCALES.map(({ code, label }) => (
             <button
               key={code}
               onClick={() => router.replace(pathname, { locale: code })}
-              className={cn(
-                "flex-1 rounded-md py-1.5 text-[10px] font-bold tracking-wider transition-colors",
-                isClient && locale === code
-                  ? "vf-text-2 bg-[var(--vf-bg-elevated)]"
-                  : "vf-text-m hover:vf-text-m"
-              )}
+              className={cx(styles.localeBtn, isClient && locale === code && styles.localeBtnActive)}
             >
               {label}
             </button>
           ))}
         </div>
 
-        {/* Account row */}
-        <button
-          onClick={handleSignOut}
-          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 transition-colors vf-row group"
-        >
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-violet-700 text-[11px] font-bold text-white select-none">
-            {avatarLetter}
-          </div>
-          <div className="flex-1 min-w-0 text-left">
-            <p className="truncate text-[12px] font-medium vf-text-2 transition-colors">
-              {isClient ? (email ?? "Account") : "Account"}
+        <button onClick={handleSignOut} className={styles.accountRow} title="Sign out">
+          <div className={styles.avatar}>{avatarLetter}</div>
+          <div className={styles.accountInfo}>
+            <p className={styles.accountEmail}>
+              {isClient ? (displayName ?? email ?? "Account") : "Account"}
             </p>
-            <p className="text-[10px] vf-text-m">Free plan</p>
+            <p className={styles.accountPlan}>
+              {userPlan === "PRO" ? "Professional" : userPlan === "ENTERPRISE" ? "Enterprise" : userPlan === "FREE" ? "Free" : "Starter"}
+            </p>
           </div>
-          <LogOut className="h-3.5 w-3.5 shrink-0 vf-text-m transition-colors" />
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="text-[11px] vf-text-m">Sign out</span>
+            <LogOut className={styles.logoutIcon} />
+          </div>
         </button>
       </div>
     </>
@@ -721,78 +475,49 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      <div className="flex min-h-screen" style={{ background: "var(--vf-bg-primary)" }}>
+      <div className={styles.shell}>
 
         {/* Mobile overlay */}
         {sidebarOpen && (
-          <div
-            className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
+          <div className={styles.overlay} onClick={() => setSidebarOpen(false)} />
         )}
 
         {/* Sidebar */}
-        <aside className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-[220px] shrink-0 flex-col transition-transform duration-200 lg:static lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        )} style={{ background: "var(--vf-bg-primary)", borderRight: "1px solid var(--vf-border)" }}>
+        <aside className={cx(styles.sidebar, sidebarOpen && styles.sidebarOpen)}>
           <SidebarContent />
         </aside>
 
         {/* Main column */}
-        <div className="flex flex-1 min-w-0 flex-col">
+        <div className={styles.main}>
 
           {/* Mobile top bar */}
-          <header className="flex h-14 shrink-0 items-center gap-3 px-4 lg:hidden"
-            style={{ borderBottom: "1px solid var(--vf-border)" }}>
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="vf-text-m hover:vf-text-1 transition-colors"
-            >
+          <header className={styles.mobileHeader}>
+            <button onClick={() => setSidebarOpen(true)} className={styles.menuBtn}>
               <Menu className="h-5 w-5" />
             </button>
-            <span className="bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent text-[15px] font-bold tracking-tight">
-              Varuflow
-            </span>
+            <span className={styles.mobileLogo}>{branding.app_name}</span>
           </header>
 
           {/* Desktop topbar */}
-          <header className="hidden lg:flex h-[57px] shrink-0 items-center justify-between gap-4 px-6"
-            style={{ borderBottom: "1px solid var(--vf-border)" }}>
-            <h1 className="text-[13px] font-semibold tracking-tight vf-text-1">
-              {getPageTitle(pathname)}
-            </h1>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={openSearch}
-                className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs vf-text-m transition-all vf-btn-ghost h-9"
-              >
-                <Search className="h-3.5 w-3.5" />
-                <span className="hidden xl:inline">Search</span>
-                <kbd className="hidden xl:inline-block rounded-md px-1.5 py-0.5 text-[10px] vf-text-m font-mono"
-                  style={{ background: "var(--vf-bg-elevated)", border: "1px solid var(--vf-border)" }}>
-                  ⌘K
-                </kbd>
+          <header className={styles.desktopHeader}>
+            <h1 className={styles.pageTitle}>{getPageTitle(pathname)}</h1>
+            <div className={styles.headerActions}>
+              <button onClick={openSearch} className={styles.searchBtn}>
+                <Search className={styles.searchIcon} />
+                <span className={styles.searchLabel}>Search</span>
+                <kbd className={styles.searchKbd}>⌘K</kbd>
               </button>
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-violet-700 text-[11px] font-bold text-white select-none">
-                {avatarLetter}
-              </div>
+              <WorkspaceSwitcher />
+              <div className={styles.avatarHeader}>{avatarLetter}</div>
             </div>
           </header>
 
           {/* Page content */}
-          <main className="flex-1 min-w-0 overflow-auto">
-            <div
-              className="mx-auto max-w-6xl px-4 sm:px-6 py-6 page-enter"
-              style={{ paddingBottom: "calc(var(--bottom-nav-height, 0px) + 24px)" }}
-            >
+          <main className={styles.content}>
+            <div className={styles.pageWrapper}>
               {children}
             </div>
           </main>
-
-          {/* Mobile bottom nav is now provided by
-              `<MobileBottomNav />` (Item 12) — mounted inside the app
-              layout so it can live alongside the FAB + quick-action sheet. */}
         </div>
       </div>
 
@@ -800,6 +525,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <AiChat />
       <PwaInstallBanner />
       <SessionTimeoutModal />
+      {process.env.NODE_ENV === "development" && <DevToolbar />}
     </>
+  );
+}
+
+export default function AppShell({ children }: { children: React.ReactNode }) {
+  return (
+    <BrandingProvider>
+      <RoleProvider>
+        <AppShellInner>{children}</AppShellInner>
+      </RoleProvider>
+    </BrandingProvider>
   );
 }

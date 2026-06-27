@@ -1,7 +1,7 @@
 """Source-contract tests for the POS router."""
 import inspect
 
-SRC = inspect.getsource(__import__("app.routers.pos", fromlist=["_"]))
+SRC = inspect.getsource(__import__("app.features.pos.pos", fromlist=["_"]))
 
 
 # ── Auth dependency ──────────────────────────────────────────────────────────

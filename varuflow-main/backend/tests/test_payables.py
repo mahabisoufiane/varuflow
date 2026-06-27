@@ -8,8 +8,8 @@ from decimal import Decimal
 import pytest
 from sqlalchemy import select
 
-from app.models.audit import AuditLogEntry
-from app.models.inventory import (
+from app.features.compliance.audit_models import AuditLogEntry
+from app.features.inventory.models import (
     Product,
     PurchaseOrder,
     PurchaseOrderItem,
@@ -18,7 +18,7 @@ from app.models.inventory import (
     Supplier,
     Warehouse,
 )
-from app.models.payable_invoice import PayableInvoice
+from app.features.purchases.payable_invoice import PayableInvoice
 from app.services.payables import create_payable_from_po
 
 

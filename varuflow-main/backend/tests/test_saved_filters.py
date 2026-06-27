@@ -12,7 +12,15 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(p: str) -> str:
-    return (_BACKEND_ROOT / p).read_text()
+    _p = _BACKEND_ROOT / p
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
 MIGRATION_SRC = _read("migrations/versions/f0b2d4e6a8c1_v70_saved_filters.py")
@@ -206,7 +214,10 @@ def test_model_matches_migration():
 
 def test_router_registered_on_api_saved_filters():
     assert 'prefix="/api/saved-filters"' in ROUTER_SRC
-    assert "app.include_router(saved_filters.router)" in MAIN_SRC
+    # saved_filters is registered via portal_router (vertical-slice architecture)
+    feat_src = _read("app/features/portal/router.py")
+    assert "saved_filters" in feat_src
+    assert "portal_router" in MAIN_SRC
 
 
 def test_router_has_four_endpoints():

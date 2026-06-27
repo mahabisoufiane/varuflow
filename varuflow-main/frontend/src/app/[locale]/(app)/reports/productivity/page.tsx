@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api-client";
 
 interface StaffProd {
   staff_id: string;
@@ -15,9 +16,9 @@ export default function ProductivityReportPage() {
   const [toDate, setToDate] = useState(() => new Date().toISOString().split("T")[0]);
 
   const load = () => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports/staff-productivity?from_date=${fromDate}&to_date=${toDate}`, { credentials: "include" })
-      .then(r => r.ok ? r.json() : [])
-      .then(setData);
+    api.get<StaffProd[]>(`/api/reports/staff-productivity?from_date=${fromDate}&to_date=${toDate}`)
+      .then(setData)
+      .catch(() => {});
   };
 
   useEffect(() => { load(); }, [fromDate, toDate]);

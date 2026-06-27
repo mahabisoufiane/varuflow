@@ -15,6 +15,8 @@ import { useCallback, useEffect, useState } from "react";
 import { PiggyBank, Loader2, Plus, RefreshCw, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -63,6 +65,11 @@ const STATUS_COLORS: Record<string, string> = {
   APPROVED: "text-emerald-400 bg-emerald-400/10",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  DRAFT:    "statusDraft",
+  APPROVED: "statusApproved",
+};
+
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export default function BudgetPage() {
@@ -81,6 +88,8 @@ export default function BudgetPage() {
   const [vsData, setVsData]         = useState<VsActualLine[] | null>(null);
   const [vsLoading, setVsLoading]   = useState(false);
 
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
+
   // Editable cells: {account_code: {month: value}}
   const [cells, setCells] = useState<Record<string, Record<number, string>>>({});
 
@@ -89,8 +98,12 @@ export default function BudgetPage() {
     try {
       const data = await api.get<Budget[]>("/api/accounting/budgets");
       setBudgets(data);
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to load budgets");
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error(err instanceof Error ? err.message : "Failed to load budgets");
     } finally { setLoading(false); }
   }, []);
 
@@ -172,8 +185,10 @@ export default function BudgetPage() {
     } finally { setVsLoading(false); }
   };
 
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Budget" />;
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <PiggyBank className="w-6 h-6 text-indigo-400" />
@@ -235,7 +250,7 @@ export default function BudgetPage() {
                 <p className="font-semibold vf-text-1 text-sm">{b.name}</p>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-xs vf-text-m">FY{b.fiscal_year}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[b.status] ?? ""}`}>
+                  <span className={styles[STATUS_MODULE[b.status] ?? "statusDraft"]}>
                     {b.status}
                   </span>
                 </div>
@@ -380,6 +395,6 @@ export default function BudgetPage() {
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }

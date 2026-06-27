@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { cx } from "@/lib/cx";
+import styles from "./page.module.scss";
 import {
   Watch, Plus, Trash2, X, Copy, Check,
   Clock, Calendar, Bluetooth,
@@ -137,7 +139,7 @@ export default function WatchPage() {
 
       {/* Pair Form */}
       {showForm && (
-        <div className="vf-section p-5" style={{ borderRadius: 14 }}>
+        <div className="vf-section p-5" >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-[13px] font-semibold vf-text-1">Pair a new watch</h2>
             <button onClick={() => setShowForm(false)} className="vf-text-m hover:text-red-400 transition-colors">
@@ -151,8 +153,7 @@ export default function WatchPage() {
                 value={deviceId}
                 onChange={(e) => setDeviceId(e.target.value)}
                 placeholder="e.g. A1B2C3D4-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-                className="vf-input text-xs w-full"
-                style={{ height: 36 }}
+                className={cx("vf-input text-xs w-full", styles.inputSm)}
                 disabled={submitting}
               />
               <p className="text-[11px] vf-text-m mt-1">
@@ -164,8 +165,7 @@ export default function WatchPage() {
               <select
                 value={platform}
                 onChange={(e) => setPlatform(e.target.value as WatchSession["platform"])}
-                className="vf-input text-xs w-full"
-                style={{ height: 36 }}
+                className={cx("vf-input text-xs w-full", styles.inputSm)}
                 disabled={submitting}
               >
                 <option value="apple_watch">Apple Watch</option>
@@ -198,7 +198,7 @@ export default function WatchPage() {
 
         {loading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex gap-4 px-5 py-4" style={{ borderBottom: "1px solid var(--vf-divider)" }}>
+            <div key={i} className={cx("flex gap-4 px-5 py-4", styles.dividerRow)}>
               <div className="h-4 w-40 skeleton rounded" />
               <div className="h-4 w-24 skeleton rounded ml-auto" />
             </div>
@@ -206,7 +206,7 @@ export default function WatchPage() {
         ) : sessions.length === 0 ? (
           <div className="py-16 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl"
-              style={{ background: "var(--vf-bg-elevated)" }}>
+              >
               <Watch className="h-6 w-6 vf-text-m" />
             </div>
             <p className="text-sm font-medium vf-text-2">No watches paired</p>
@@ -217,8 +217,7 @@ export default function WatchPage() {
             const meta = PLATFORM_META[s.platform];
             const expired = isExpired(s.expires_at);
             return (
-              <div key={s.id} className="flex items-center gap-4 px-5 py-4"
-                style={{ borderBottom: i < sessions.length - 1 ? "1px solid var(--vf-divider)" : "none" }}>
+              <div key={s.id} className={cx("flex items-center gap-4 px-5 py-4", i < sessions.length - 1 ? styles.dividerRow : "")}>
                 <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", meta.bg)}>
                   <Watch className={cn("h-4 w-4", meta.color)} />
                 </div>
@@ -268,7 +267,7 @@ export default function WatchPage() {
 
         {loading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex gap-4 px-5 py-4" style={{ borderBottom: "1px solid var(--vf-divider)" }}>
+            <div key={i} className={cx("flex gap-4 px-5 py-4", styles.dividerRow)}>
               <div className="h-4 w-16 skeleton rounded" />
               <div className="h-4 w-32 skeleton rounded" />
             </div>
@@ -280,8 +279,7 @@ export default function WatchPage() {
           </div>
         ) : (
           schedule.map((item, i) => (
-            <div key={item.id} className="flex items-center gap-4 px-5 py-4"
-              style={{ borderBottom: i < schedule.length - 1 ? "1px solid var(--vf-divider)" : "none" }}>
+            <div key={item.id} className={cx("flex items-center gap-4 px-5 py-4", i < schedule.length - 1 ? styles.dividerRow : "")}>
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-500/10">
                 <Clock className="h-4 w-4 text-indigo-400" />
               </div>
@@ -306,11 +304,9 @@ export default function WatchPage() {
 
       {/* Token Modal */}
       {tokenModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+        <div className={cx("fixed inset-0 z-50 flex items-center justify-center p-4", styles.modalOverlay)}
           onClick={() => setTokenModal(null)}>
-          <div className="w-full max-w-md vf-section p-6 space-y-4"
-            style={{ borderRadius: 18 }}
+          <div className={cx("w-full max-w-md vf-section p-6 space-y-4", styles.modalCard)}
             onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h2 className="text-[15px] font-bold vf-text-1">Watch Session Token</h2>
@@ -324,8 +320,7 @@ export default function WatchPage() {
             </p>
 
             {/* Token display */}
-            <div className="rounded-xl p-4 font-mono text-xs break-all vf-text-1"
-              style={{ background: "var(--vf-bg-elevated)", border: "1px solid var(--vf-border)" }}>
+            <div className={cx("vf-text-1", styles.tokenDisplay)}>
               {tokenModal.token}
             </div>
 

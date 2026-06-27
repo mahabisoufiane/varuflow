@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface CapTableSummary {
   total_shareholders: number;
@@ -50,6 +51,13 @@ const TYPE_COLOR: Record<string, string> = {
   investor: "bg-green-100 text-green-700",
   employee: "bg-purple-100 text-purple-700",
   other: "bg-gray-100 text-gray-600",
+};
+
+const TYPE_MODULE: Record<string, keyof typeof styles> = {
+  founder:  "typeFounder",
+  investor: "typeInvestor",
+  employee: "typeEmployee",
+  other:    "typeOther",
 };
 
 export default function CapTablePage() {
@@ -307,7 +315,7 @@ export default function CapTablePage() {
                   <p className="text-sm font-medium text-gray-900">{sh.name}</p>
                   {sh.email && <p className="text-xs text-muted-foreground">{sh.email}</p>}
                 </div>
-                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${TYPE_COLOR[sh.shareholder_type] ?? TYPE_COLOR.other}`}>
+                <span className={styles[TYPE_MODULE[sh.shareholder_type] ?? "typeOther"]}>
                   {sh.shareholder_type}
                 </span>
               </div>

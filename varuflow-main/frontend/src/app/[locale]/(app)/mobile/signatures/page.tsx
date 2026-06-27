@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import {
   PenLine, Trash2, FileText, MapPin, Plus, ChevronDown, ChevronUp,
   RefreshCw, WifiOff, Wifi, Download, Eye, EyeOff,
 } from "lucide-react";
+import { sanitizeSvg } from "@/lib/sanitize-html";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -115,8 +117,7 @@ function SignaturePad({ onCapture }: { onCapture: (dataUrl: string) => void }) {
       <canvas
         ref={canvasRef}
         width={640} height={220}
-        className="w-full rounded-xl border-2 border-gray-300 bg-white"
-        style={{ touchAction: "none", cursor: "crosshair" }}
+        className="w-full rounded-xl border-2 border-gray-300 bg-white touch-none cursor-crosshair"
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
@@ -138,7 +139,6 @@ function SignaturePad({ onCapture }: { onCapture: (dataUrl: string) => void }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function SignaturesPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [sigs, setSigs] = useState<Sig[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -159,9 +159,6 @@ export default function SignaturesPage() {
   const [gpsLoading, setGpsLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const fetch_ = useCallback((url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts }), [apiBase]);
-
   useEffect(() => {
     setIsOnline(navigator.onLine);
     const up = () => { setIsOnline(true); };
@@ -177,17 +174,15 @@ export default function SignaturesPage() {
 
   useEffect(() => {
     if (isOnline) load(1);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
   async function load(p: number) {
     try {
-      const res = await fetch_(`/api/mobile/signatures?page=${p}&limit=20`);
-      if (res.ok) {
-        const j = await res.json();
-        setSigs(j.signatures);
-        setTotal(j.total);
-        setPage(p);
-      }
+      const j = await api.get<{ signatures?: Sig[]; total?: number }>(`/api/mobile/signatures?page=${p}&limit=20`);
+      setSigs(j.signatures ?? []);
+      setTotal(j.total ?? 0);
+      setPage(p);
     } catch { /* offline — silent */ }
   }
 
@@ -222,24 +217,18 @@ export default function SignaturesPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch_("/api/mobile/signatures", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          signer_name: formName,
-          signer_role: formRole || undefined,
-          document_type: formDocType,
-          ref_id: formRefId || undefined,
-          svg_data: captured,
-        }),
+      await api.post("/api/mobile/signatures", {
+        signer_name: formName,
+        signer_role: formRole || undefined,
+        document_type: formDocType,
+        ref_id: formRefId || undefined,
+        svg_data: captured,
       });
-      if (res.ok) {
-        toast.success("Signature saved");
-        resetForm();
-        await load(1);
-      } else {
-        toast.error("Failed to save");
-      }
+      toast.success("Signature saved");
+      resetForm();
+      await load(1);
+    } catch {
+      toast.error("Failed to save");
     } finally {
       setSubmitting(false);
     }
@@ -258,16 +247,12 @@ export default function SignaturesPage() {
     const remaining: OfflineSig[] = [];
     for (const item of pending) {
       try {
-        const res = await fetch_("/api/mobile/signatures", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            signer_name: item.signer_name, signer_role: item.signer_role || undefined,
-            document_type: item.document_type, ref_id: item.ref_id || undefined,
-            svg_data: item.svg_data,
-          }),
+        await api.post("/api/mobile/signatures", {
+          signer_name: item.signer_name, signer_role: item.signer_role || undefined,
+          document_type: item.document_type, ref_id: item.ref_id || undefined,
+          svg_data: item.svg_data,
         });
-        if (res.ok) { count++; } else { remaining.push(item); }
+        count++;
       } catch { remaining.push(item); }
     }
     saveOffline(remaining);
@@ -278,7 +263,7 @@ export default function SignaturesPage() {
   }
 
   async function deleteSig(id: string) {
-    await fetch_(`/api/mobile/signatures/${id}`, { method: "DELETE" });
+    await api.delete(`/api/mobile/signatures/${id}`).catch(() => {});
     toast.success("Deleted");
     await load(page);
   }
@@ -447,7 +432,7 @@ export default function SignaturesPage() {
                       <img src={s.svg_data} alt="Signature" className="h-24 w-full object-contain rounded-lg border border-gray-200 bg-white" />
                     )
                     : (
-                      <div className="rounded-lg bg-gray-50 p-2" dangerouslySetInnerHTML={{ __html: s.svg_data }} />
+                      <div className="rounded-lg bg-gray-50 p-2" dangerouslySetInnerHTML={{ __html: sanitizeSvg(s.svg_data) }} />
                     )
                 )}
 
@@ -457,7 +442,7 @@ export default function SignaturesPage() {
                 </div>
 
                 <div className="flex gap-2">
-                  <a href={`${apiBase}/api/mobile/signatures/${s.id}/pdf`} target="_blank" rel="noopener noreferrer"
+                  <a href={api.downloadUrl(`/api/mobile/signatures/${s.id}/pdf`)} target="_blank" rel="noopener noreferrer"
                     className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-blue-200 py-2 text-xs font-medium text-blue-600 hover:bg-blue-50">
                     <FileText className="h-3.5 w-3.5" /> PDF
                   </a>

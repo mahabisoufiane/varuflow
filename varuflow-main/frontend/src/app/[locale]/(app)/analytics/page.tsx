@@ -8,7 +8,9 @@ import {
   BarChart, Bar, PieChart, Pie, Cell,
 } from "recharts";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Package, TrendingUp, AlertTriangle, Users, Download, ShoppingBag, CheckCircle2 } from "lucide-react";
+import { cx } from "@/lib/cx";
+import styles from "./page.module.scss";
+import { ArrowRight, FileDown, Package, TrendingUp, AlertTriangle, Users, Download, ShoppingBag, CheckCircle2 } from "lucide-react";
 
 interface RevenuePoint { month: string; invoiced: number; collected: number; }
 interface TopCustomer { customer_id: string; company_name: string; total_invoiced: number; invoice_count: number; }
@@ -31,7 +33,7 @@ function fmtMonth(m: string) {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  PAID: "#10b981", SENT: "#6366f1", OVERDUE: "#ef4444", DRAFT: "#94a3b8",
+  PAID: "#059669", SENT: "#2563EB", OVERDUE: "#DC2626", DRAFT: "#94a3b8",
 };
 
 function defaultRange() {
@@ -56,7 +58,7 @@ function ChartTooltip({ active, payload, label }: {
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="vf-section px-3 py-2.5 text-sm shadow-elevated" style={{ minWidth: 160 }}>
+    <div className={cx("vf-section px-3 py-2.5 text-sm shadow-elevated", styles.tooltip)}>
       {label && <p className="text-xs vf-text-m font-medium mb-1.5">{label}</p>}
       {payload.map((p) => (
         <div key={p.name} className="flex items-center justify-between gap-4">
@@ -90,7 +92,8 @@ export default function AnalyticsPage() {
   const [data, setData]         = useState<Analytics | null>(null);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState<string | null>(null);
-  const [exporting, setExporting] = useState(false);
+  const [exporting, setExporting]       = useState(false);
+  const [exportingExcel, setExportingExcel] = useState(false);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate]     = useState("");
 
@@ -121,6 +124,16 @@ export default function AnalyticsPage() {
     } finally { setExporting(false); }
   }
 
+  async function handleExportExcel() {
+    setExportingExcel(true);
+    try {
+      const year = new Date(fromDate || new Date()).getFullYear();
+      await api.downloadBlob(`/api/reports/excel/revenue?year=${year}`, `revenue_${year}.xlsx`);
+    } catch {
+      // downloadBlob already toasts
+    } finally { setExportingExcel(false); }
+  }
+
   if (loading) return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -144,8 +157,7 @@ export default function AnalyticsPage() {
   );
 
   if (error) return (
-    <div className="rounded-xl px-5 py-4 text-sm text-red-400"
-      style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+    <div className={styles.errorBanner}>
       {error}
     </div>
   );
@@ -174,9 +186,9 @@ export default function AnalyticsPage() {
       label: "Invoiced",
       value: `${fmt(totalInvoiced)} SEK`,
       icon: TrendingUp,
-      color: "#6366f1",
-      bg: "rgba(99,102,241,0.10)",
-      border: "rgba(99,102,241,0.20)",
+      color: "#2563EB",
+      bg: "rgba(37,99,235,0.10)",
+      border: "rgba(37,99,235,0.20)",
     },
     {
       label: "Collected",
@@ -215,15 +227,20 @@ export default function AnalyticsPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)}
-            className="vf-input w-auto text-xs" style={{ height: 36 }} />
+            className={cx("vf-input w-auto text-xs", styles.dateInput)} />
           <span className="text-xs vf-text-m">to</span>
           <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)}
-            className="vf-input w-auto text-xs" style={{ height: 36 }} />
+            className={cx("vf-input w-auto text-xs", styles.dateInput)} />
           <button onClick={() => load(fromDate, toDate)} className="vf-btn text-xs px-4 h-9">Apply</button>
           <button onClick={handleExport} disabled={exporting}
             className="vf-btn-ghost text-xs px-4 h-9 disabled:opacity-60">
             <Download className="h-3.5 w-3.5" />
             {exporting ? "Exporting…" : "PDF"}
+          </button>
+          <button onClick={handleExportExcel} disabled={exportingExcel}
+            className="vf-btn-ghost text-xs px-4 h-9 disabled:opacity-60">
+            <FileDown className="h-3.5 w-3.5" />
+            {exportingExcel ? "Exporting…" : "Excel"}
           </button>
         </div>
       </div>
@@ -231,10 +248,10 @@ export default function AnalyticsPage() {
       {/* ── KPI row ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {kpis.map(({ label, value, icon: Icon, color, bg, border }) => (
-          <div key={label} className="rounded-xl p-5 transition-all"
+          <div key={label} className={styles.kpiCard}
             style={{ background: bg, border: `1px solid ${border}` }}>
             <div className="flex items-center gap-2 mb-3">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg"
+              <span className={styles.kpiIcon}
                 style={{ background: `${color}18` }}>
                 <Icon className="h-4 w-4" style={{ color }} />
               </span>
@@ -262,8 +279,8 @@ export default function AnalyticsPage() {
           <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="gInvoiced" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor="#6366f1" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                <stop offset="5%"  stopColor="#2563EB" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#2563EB" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="gCollected" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%"  stopColor="#10b981" stopOpacity={0.3} />
@@ -279,7 +296,7 @@ export default function AnalyticsPage() {
               tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
               axisLine={false} tickLine={false} />
             <Tooltip content={<ChartTooltip />} />
-            <Area type="monotone" dataKey="Invoiced"  stroke="#6366f1" fill="url(#gInvoiced)"  strokeWidth={2} dot={false} />
+            <Area type="monotone" dataKey="Invoiced"  stroke="#2563EB" fill="url(#gInvoiced)"  strokeWidth={2} dot={false} />
             <Area type="monotone" dataKey="Collected" stroke="#10b981" fill="url(#gCollected)" strokeWidth={2} dot={false} />
           </AreaChart>
         </ResponsiveContainer>
@@ -357,8 +374,8 @@ export default function AnalyticsPage() {
                         {fmt(Number(c.total_invoiced))} SEK
                       </span>
                     </div>
-                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--vf-bg-elevated)" }}>
-                      <div className="h-1.5 rounded-full bg-indigo-500 transition-all duration-500"
+                    <div className={styles.progressTrack}>
+                      <div className={styles.progressBar}
                         style={{ width: `${pct}%` }} />
                     </div>
                   </div>
@@ -395,7 +412,7 @@ export default function AnalyticsPage() {
                   fontSize: 12,
                 }}
               />
-              <Bar dataKey="Revenue" fill="#6366f1" radius={[0, 6, 6, 0]} maxBarSize={20} />
+              <Bar dataKey="Revenue" fill="#2563EB" radius={[0, 6, 6, 0]} maxBarSize={20} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -411,14 +428,14 @@ export default function AnalyticsPage() {
           </h2>
           <div className="grid grid-cols-2 gap-3">
             {[
-              { label: "Products",    value: data.inventory.total_products,  color: "#6366f1" },
+              { label: "Products",    value: data.inventory.total_products,  color: "#2563EB" },
               { label: "Warehouses",  value: data.inventory.warehouse_count, color: "#8b5cf6" },
               { label: "Low stock",   value: data.inventory.low_stock_count, color: data.inventory.low_stock_count > 0 ? "#f59e0b" : "#10b981" },
               { label: "Stock value", value: `${fmt(Number(data.inventory.total_stock_value))} SEK`, color: "#10b981" },
             ].map(({ label, value, color }) => (
               <div key={label} className="vf-stat-tile">
                 <p className="text-[10px] vf-text-m font-medium uppercase tracking-wide mb-1">{label}</p>
-                <p className="font-bold text-[15px] tabular-nums" style={{ color }}>{value}</p>
+                <p className={styles.statValue} style={{ color }}>{value}</p>
               </div>
             ))}
           </div>
@@ -445,8 +462,7 @@ export default function AnalyticsPage() {
                 { label: "Total overdue",  value: `${fmt(Number(data.overdue.overdue_total))} SEK`,  cls: "text-red-400" },
                 { label: "Oldest overdue", value: `${data.overdue.oldest_days} days`,                cls: "vf-text-1" },
               ].map(({ label, value, cls }) => (
-                <div key={label} className="flex items-center justify-between py-2"
-                  style={{ borderBottom: "1px solid var(--vf-divider)" }}>
+                <div key={label} className={styles.overdueRow}>
                   <span className="text-sm vf-text-m">{label}</span>
                   <span className={cn("text-sm font-semibold tabular-nums", cls)}>{value}</span>
                 </div>

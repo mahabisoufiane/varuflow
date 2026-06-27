@@ -29,12 +29,20 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1] / "app"
 
 
 def _read(relpath: str) -> str:
-    return (_BACKEND_ROOT / relpath).read_text()
+    _p = _BACKEND_ROOT / relpath
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
-ROUTER_SRC = _read("routers/supplier_portal.py")
+ROUTER_SRC = _read("features/purchases/supplier_portal.py")
 EMAIL_SRC = _read("services/email.py")
-MODEL_SRC = _read("models/supplier_portal.py")
+MODEL_SRC = _read("features/purchases/supplier_portal_models.py")
 MIGRATION_SRC = (_BACKEND_ROOT.parent / "migrations" / "versions" /
                  "d0e1f2a3b4c5_v52_supplier_portal.py").read_text()
 
@@ -474,7 +482,7 @@ def test_issue_token_flow_with_mocked_db():
 
     # Stub the lazy SupplierPortalToken import so we don't have to
     # load app.models at test time. ``issue_token`` imports it via
-    # ``from app.models.supplier_portal import SupplierPortalToken``;
+    # ``from app.features.purchases.supplier_portal_models import SupplierPortalToken``;
     # we inject a fake module into sys.modules.
     import sys
     import types as _types

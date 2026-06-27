@@ -1,122 +1,48 @@
 "use client";
 
-/** Tablet-optimized POS page (Item 10).
- *
- * Layout:
- *   >= md (768 px): two-column grid [60% / 40%] — product grid left,
- *                   sticky cart right.
- *   <  md:           single column — product grid on top, cart
- *                   collapsible bottom sheet.
- *
- * All cart / session / payment state lives in `<PosProvider>` from
- * `@/lib/pos-store`; this file is purely a composition layer. */
+import { ExternalLink, Monitor, Wifi } from "lucide-react";
 
-import { useRef, useState } from "react";
-import { useTranslations } from "next-intl";
-import { PosProvider, usePos } from "@/lib/pos-store";
-import PosProductGrid from "@/components/pos/PosProductGrid";
-import PosCartPanel from "@/components/pos/PosCartPanel";
-import PosReceiptModal from "@/components/pos/PosReceiptModal";
-import PosSessionControls from "@/components/pos/PosSessionControls";
-import PosQuickButtons from "@/components/pos/PosQuickButtons";
-import { usePosKeyboard } from "@/components/pos/usePosKeyboard";
-import { toast } from "sonner";
-
-function PosScreen() {
-  const t = useTranslations("pos");
-  const searchRef = useRef<HTMLInputElement | null>(null);
-  const [cartOpen, setCartOpen] = useState(false);
-  const { submitSale, cart, session, lastSale } = usePos();
-
-  usePosKeyboard({
-    searchRef,
-    onCompleteSale: async () => {
-      if (cart.length === 0 || !session) return;
-      try {
-        await submitSale();
-      } catch (e) {
-        toast.error((e as Error).message);
-      }
-    },
-    onToggleSession: () => {
-      // The SessionControls button is the canonical toggle; shortcut
-      // just clicks the visible button so accessibility + visual state
-      // stay in sync.
-      document.querySelector<HTMLButtonElement>(
-        '[data-testid="pos-close-session"]',
-      )?.click();
-    },
-  });
-
+export default function PosRedirectPage() {
   return (
-    <div className="flex h-[calc(100vh-64px)] flex-col gap-3 bg-gray-50 p-3 dark:bg-gray-900">
-      <header className="flex items-center justify-between">
-        <h1 className="text-xl font-bold dark:text-gray-100">POS</h1>
-        <PosSessionControls />
-      </header>
-
-      {/* Quick-access preset buttons — cashier shortcuts for top-selling items */}
-      <PosQuickButtons />
-
-      <section
-        className="grid flex-1 grid-cols-1 gap-3 overflow-hidden md:grid-cols-[60%_40%]"
-        data-testid="pos-layout"
-      >
-        <div className="min-h-0" data-testid="pos-left-column">
-          <PosProductGrid searchRef={searchRef} />
+    <div className="flex min-h-[60vh] items-center justify-center p-8">
+      <div className="max-w-md w-full rounded-2xl border border-gray-200 bg-white p-8 shadow-sm text-center space-y-5">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50">
+          <Monitor className="h-7 w-7 text-emerald-600" />
         </div>
-        <div className="hidden min-h-0 md:block" data-testid="pos-right-column">
-          <PosCartPanel />
-        </div>
-      </section>
 
-      {/* Mobile sticky cart summary + bottom sheet */}
-      <button
-        type="button"
-        onClick={() => setCartOpen((v) => !v)}
-        className="fixed bottom-3 left-3 right-3 z-30 flex h-14 items-center justify-between rounded-xl bg-emerald-600 px-4 text-white shadow-lg md:hidden"
-        data-testid="pos-mobile-cart-toggle"
-      >
-        <span className="font-semibold">
-          {cart.reduce((n, it) => n + it.qty, 0)} items
-        </span>
-        <span>{t("complete_sale")} →</span>
-      </button>
-      {cartOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 md:hidden"
-          onClick={() => setCartOpen(false)}
-        >
-          <div
-            className="absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white p-3"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <PosCartPanel />
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">POS has moved</h1>
+          <p className="mt-2 text-sm text-gray-500">
+            The cash register is now a standalone app — optimized for tablets
+            with offline support and faster load times.
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-left space-y-2">
+          <div className="flex items-center gap-2 text-xs font-medium text-emerald-700">
+            <Wifi className="h-3.5 w-3.5" />
+            Works offline
+          </div>
+          <div className="flex items-center gap-2 text-xs font-medium text-emerald-700">
+            <Monitor className="h-3.5 w-3.5" />
+            Installable on tablets (Add to Home Screen)
           </div>
         </div>
-      )}
 
-      {/* Keyboard shortcut hint bar — desktop only */}
-      <footer
-        aria-label={t("keyboard_shortcuts")}
-        className="hidden text-xs text-gray-500 dark:text-gray-400 md:flex md:gap-4"
-      >
-        <span><kbd className="rounded border px-1 dark:border-gray-600">/</kbd> search</span>
-        <span><kbd className="rounded border px-1 dark:border-gray-600">F2</kbd> {t("complete_sale")}</span>
-        <span><kbd className="rounded border px-1 dark:border-gray-600">F3</kbd> session</span>
-        <span><kbd className="rounded border px-1 dark:border-gray-600">+ / −</kbd> qty</span>
-        <span><kbd className="rounded border px-1 dark:border-gray-600">Esc</kbd> clear</span>
-      </footer>
+        <a
+          href={process.env.NEXT_PUBLIC_POS_URL ?? "http://localhost:3002"}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
+        >
+          Open POS App
+          <ExternalLink className="h-4 w-4" />
+        </a>
 
-      {lastSale && <PosReceiptModal />}
+        <p className="text-xs text-gray-400">
+          POS settings and reports remain available in Settings → POS Configuration.
+        </p>
+      </div>
     </div>
-  );
-}
-
-export default function PosPage() {
-  return (
-    <PosProvider>
-      <PosScreen />
-    </PosProvider>
   );
 }

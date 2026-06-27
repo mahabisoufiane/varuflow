@@ -8,6 +8,7 @@ import {
   AlertTriangle, ShieldCheck, RefreshCw, ChevronDown, ChevronUp,
   Search, X, Check, Flag, Clock, TrendingDown
 } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Finding {
   id: string;
@@ -36,10 +37,22 @@ const SEVERITY_STYLE: Record<string, string> = {
   low:    "bg-blue-100 text-blue-700",
 };
 
+const SEVERITY_MODULE: Record<string, keyof typeof styles> = {
+  high:   "severityHigh",
+  medium: "severityMedium",
+  low:    "severityLow",
+};
+
 const STATUS_STYLE: Record<string, string> = {
   open:       "bg-orange-100 text-orange-700",
   dismissed:  "bg-gray-100 text-gray-500",
   escalated:  "bg-purple-100 text-purple-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  open:      "statusOpen",
+  dismissed: "statusDismissed",
+  escalated: "statusEscalated",
 };
 
 export default function AnomalyDetectionPage() {
@@ -196,14 +209,14 @@ export default function AnomalyDetectionPage() {
                 className="flex items-center gap-3 p-4 cursor-pointer hover:bg-muted/30 transition-colors"
                 onClick={() => setExpanded(expanded === f.id ? null : f.id)}
               >
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${SEVERITY_STYLE[f.severity] ?? ""}`}>
+                <span className={styles[SEVERITY_MODULE[f.severity] ?? "severityLow"]}>
                   {f.severity}
                 </span>
                 <span className="text-xs text-muted-foreground px-2 py-0.5 rounded-full border">
                   {TYPE_LABELS[f.anomaly_type] ?? f.anomaly_type}
                 </span>
                 <p className="flex-1 text-sm font-medium truncate">{f.title}</p>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_STYLE[f.status] ?? ""}`}>
+                <span className={styles[STATUS_MODULE[f.status] ?? "statusOpen"]}>
                   {f.status}
                 </span>
                 <span className="text-xs text-muted-foreground">

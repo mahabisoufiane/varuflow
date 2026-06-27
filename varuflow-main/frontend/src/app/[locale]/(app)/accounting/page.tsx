@@ -18,9 +18,12 @@
  *        POST /api/accounting/backfill
  */
 import { useCallback, useEffect, useState } from "react";
+import { RoleGuard } from "@/components/app/RoleContext";
 import { BookOpen, ChevronDown, ChevronUp, Loader2, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -101,7 +104,7 @@ const fmt = (n: string | number) =>
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
-export default function AccountingPage() {
+function AccountingPageInner() {
   const [tab, setTab] = useState<"accounts" | "journal" | "trial" | "backfill">("accounts");
 
   // Accounts
@@ -136,6 +139,8 @@ export default function AccountingPage() {
   const [backfillLoading, setBackfillLoading] = useState(false);
   const [backfillResult, setBackfillResult] = useState<BackfillResult | null>(null);
 
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
+
   // ── Data loaders ──────────────────────────────────────────────────────────
 
   const loadAccounts = useCallback(async () => {
@@ -143,8 +148,12 @@ export default function AccountingPage() {
     try {
       const data = await api.get<Account[]>("/api/accounting/accounts");
       setAccounts(data);
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to load accounts");
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error(err instanceof Error ? err.message : "Failed to load accounts");
     } finally {
       setAcctLoading(false);
     }
@@ -266,6 +275,8 @@ export default function AccountingPage() {
     { id: "backfill", label: "Backfill" },
   ];
 
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Accounting" />;
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
       {/* Header */}
@@ -278,16 +289,12 @@ export default function AccountingPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-white/10">
+      <div className={styles.tabBar}>
         {tabs.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
-              tab === t.id
-                ? "bg-indigo-500/20 text-indigo-300 border-b-2 border-indigo-400"
-                : "vf-text-m hover:text-white"
-            }`}
+            className={`${styles.tab} ${tab === t.id ? styles.tabActive : ""}`}
           >
             {t.label}
           </button>
@@ -473,14 +480,14 @@ export default function AccountingPage() {
               {journal?.items.map(entry => (
                 <div key={entry.id} className="vf-section overflow-hidden">
                   <div
-                    className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors"
+                    className={styles.entryHeader}
                     onClick={() => setExpandedEntry(expandedEntry === entry.id ? null : entry.id)}
                   >
                     <div className="flex items-center gap-4">
                       <span className="font-mono text-xs vf-text-m w-24 shrink-0">{entry.entry_date}</span>
                       <span className="text-sm vf-text-1 font-medium">{entry.description}</span>
                       {entry.source_type && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 vf-text-m">{entry.source_type}</span>
+                        <span className={styles.entryBadge}>{entry.source_type}</span>
                       )}
                       {entry.reference && (
                         <span className="text-xs vf-text-m">{entry.reference}</span>
@@ -491,8 +498,8 @@ export default function AccountingPage() {
                       : <ChevronDown className="w-4 h-4 vf-text-m" />}
                   </div>
                   {expandedEntry === entry.id && (
-                    <div className="border-t border-white/10 px-4 py-3">
-                      <table className="w-full text-xs">
+                    <div className={styles.entryDetail}>
+                      <table className={styles.journalTable}>
                         <thead>
                           <tr className="vf-text-m border-b border-white/5">
                             <th className="text-left py-1.5 font-medium">Account</th>
@@ -669,5 +676,13 @@ export default function AccountingPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AccountingPage() {
+  return (
+    <RoleGuard minRole="ADMIN">
+      <AccountingPageInner />
+    </RoleGuard>
   );
 }

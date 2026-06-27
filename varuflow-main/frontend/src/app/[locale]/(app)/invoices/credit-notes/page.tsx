@@ -4,6 +4,9 @@ import { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import { api } from "@/lib/api-client"
 import { FileText, Plus, ArrowLeft } from "lucide-react"
+import styles from "./page.module.scss"
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = { issued: "statusIssued", draft: "statusDraft", voided: "statusVoided" }
 import { toast } from "sonner"
 
 interface CreditNote {
@@ -91,11 +94,7 @@ export default function CreditNotesPage() {
                     {cn.amount.toLocaleString()} {cn.currency}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                      cn.status === "issued" ? "bg-green-100 text-green-800" :
-                      cn.status === "draft" ? "bg-gray-100 text-gray-800" :
-                      "bg-yellow-100 text-yellow-800"
-                    }`}>
+                    <span className={styles[STATUS_MODULE[cn.status] ?? "statusVoided"]}>
                       {cn.status}
                     </span>
                   </td>

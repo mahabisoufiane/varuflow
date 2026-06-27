@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Clock, Plus, Loader2, FileText, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 interface TimeEntry {
   id: string;
@@ -44,6 +45,7 @@ export default function TimeEntriesPage() {
   const [invoiceModal, setInvoiceModal] = useState(false);
   const [invoiceForm, setInvoiceForm] = useState({ customer_id: "", tax_rate: "25" });
   const [generating, setGenerating] = useState(false);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   async function load() {
     try {
@@ -58,7 +60,11 @@ export default function TimeEntriesPage() {
       setEntries(entriesList);
       setProjects(projList);
       setCustomers(custResult.items ?? custResult ?? []);
-    } catch {
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "hr", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
       toast.error("Failed to load time entries");
     } finally {
       setLoading(false);
@@ -125,6 +131,8 @@ export default function TimeEntriesPage() {
   const selectedBillableUnInvoiced = entries.filter((e) => selected.has(e.id) && e.billable && !e.invoiced);
   const totalHours = entries.reduce((s, e) => s + e.hours, 0);
   const totalValue = entries.reduce((s, e) => s + e.hours * e.hourly_rate, 0);
+
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Time Entries" />;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">

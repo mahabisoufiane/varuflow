@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 import { Users, Plus, CheckCircle2, XCircle } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Agreement {
   id: string; franchisee_name: string; franchisee_email: string; franchisee_country?: string;
@@ -16,8 +18,13 @@ const STATUS_COLORS: Record<string, string> = {
   terminated: "bg-red-100 text-red-600",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:    "statusPending",
+  active:     "statusActive",
+  terminated: "statusTerminated",
+};
+
 export default function FranchiseeOnboardingPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [agreements, setAgreements] = useState<Agreement[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -32,12 +39,10 @@ export default function FranchiseeOnboardingPage() {
     notes: "",
   });
 
-  const fetch_ = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   async function load() {
-    const res = await fetch_("/api/franchise/agreements?limit=50");
-    if (res.ok) setAgreements((await res.json()).agreements);
+    api.get<{agreements: Agreement[]}>("/api/franchise/agreements?limit=50")
+      .then(d => setAgreements(d.agreements ?? []))
+      .catch(() => {});
   }
 
   useEffect(() => { load(); }, []);
@@ -45,38 +50,32 @@ export default function FranchiseeOnboardingPage() {
   async function create() {
     if (!form.franchisee_name || !form.franchisee_email) { toast.error("Name and email required"); return; }
     setLoading(true);
-    const res = await fetch_("/api/franchise/agreements", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, royalty_rate: parseFloat(form.royalty_rate) }),
-    });
-    if (res.ok) {
+    try {
+      await api.post("/api/franchise/agreements", { ...form, royalty_rate: parseFloat(form.royalty_rate) });
       toast.success("Franchisee agreement created");
       setShowForm(false);
       await load();
-    } else {
-      const err = await res.json();
-      toast.error(err.detail || "Failed");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   async function activate(id: string) {
-    const res = await fetch_(`/api/franchise/agreements/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "active" }),
-    });
-    if (res.ok) { toast.success("Agreement activated"); await load(); }
+    try {
+      await api.patch(`/api/franchise/agreements/${id}`, { status: "active" });
+      toast.success("Agreement activated");
+      await load();
+    } catch { /* silent */ }
   }
 
   async function terminate(id: string) {
-    const res = await fetch_(`/api/franchise/agreements/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "terminated", end_date: new Date().toISOString().split("T")[0] }),
-    });
-    if (res.ok) { toast.success("Agreement terminated"); await load(); }
+    try {
+      await api.patch(`/api/franchise/agreements/${id}`, { status: "terminated", end_date: new Date().toISOString().split("T")[0] });
+      toast.success("Agreement terminated");
+      await load();
+    } catch { /* silent */ }
   }
 
   return (
@@ -159,7 +158,7 @@ export default function FranchiseeOnboardingPage() {
                     <p className="text-xs text-gray-500">{a.franchisee_email} · {a.franchisee_country}</p>
                   </div>
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_COLORS[a.status] || "bg-gray-100 text-gray-600"}`}>
+                <span className={styles[STATUS_MODULE[a.status] ?? "statusPending"]}>
                   {a.status}
                 </span>
               </div>

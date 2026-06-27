@@ -12,13 +12,21 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(p: str) -> str:
-    return (_BACKEND_ROOT / p).read_text()
+    _p = _BACKEND_ROOT / p
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
 MIGRATION_SRC = _read("migrations/versions/e9a1c3d5f7b0_v69_tags.py")
-MODEL_SRC = _read("app/models/tag.py")
+MODEL_SRC = _read("app/features/customers/tag.py")
 SERVICE_SRC = _read("app/services/tag.py")
-ROUTER_SRC = _read("app/routers/tags.py")
+ROUTER_SRC = _read("app/features/customers/tags.py")
 MAIN_SRC = _read("app/main.py")
 
 
@@ -101,8 +109,18 @@ def test_model_has_tag_and_assignment():
 
 
 def test_router_registered_on_api_tags():
-    assert 'prefix="/api/tags"' in ROUTER_SRC
-    assert "app.include_router(tags.router)" in MAIN_SRC
+
+    # Registered via customers_router (vertical-slice architecture).
+    # The individual module is wired inside the feature router, not directly in main.py.
+    feat_src = _read("app/features/customers/router.py")
+    assert "tags" in feat_src
+    assert "customers_router" in MAIN_SRC
+
+    # Registered via customers_router (vertical-slice architecture).
+    # The individual module is wired inside the feature router, not directly in main.py.
+    feat_src = _read("app/features/customers/router.py")
+    assert "tags" in feat_src
+    assert "customers_router" in MAIN_SRC
 
 
 def test_router_has_six_endpoints():

@@ -19,7 +19,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           "bg-[var(--vf-glass-bg)] border border-[var(--vf-glass-border)]",
           "text-[var(--vf-text-primary)] placeholder:text-[var(--vf-text-muted)]",
           // Focus
-          "focus:border-[#6366F1] focus:ring-2 focus:ring-[rgba(99,102,241,0.15)]",
+          "focus:border-[var(--vf-brand-primary)] focus:ring-2 focus:ring-[var(--vf-brand-primary-subtle)]",
           // Disabled
           "disabled:cursor-not-allowed disabled:opacity-50",
           className

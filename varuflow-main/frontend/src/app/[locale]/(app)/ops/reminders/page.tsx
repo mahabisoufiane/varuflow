@@ -6,6 +6,10 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, RefreshCw, Bell, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
+
+const FREQ_MODULE: Record<string, keyof typeof styles> = { daily: "freqDaily", weekly: "freqWeekly", monthly: "freqMonthly" };
+const OCC_MODULE: Record<string, keyof typeof styles> = { pending: "occPending", completed: "occCompleted", dismissed: "occDismissed", snoozed: "occSnoozed" };
 
 interface ReminderOccurrence {
   id: string;
@@ -423,7 +427,7 @@ export default function RemindersPage() {
                         ? <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         : <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />}
                       <span className="text-sm font-medium text-gray-900">{rem.title}</span>
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${freq.color}`}>
+                      <span className={styles[FREQ_MODULE[rem.frequency] ?? "freqDaily"]}>
                         {freq.label}
                       </span>
                       <span className="text-xs text-muted-foreground">{formatDayInfo(rem)}</span>
@@ -498,7 +502,7 @@ export default function RemindersPage() {
                                     {new Date(occ.due_at).toLocaleString()}
                                   </td>
                                   <td className="py-2 pr-4">
-                                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${occCfg.color}`}>
+                                    <span className={styles[OCC_MODULE[occ.status] ?? "occPending"]}>
                                       {occCfg.label}
                                     </span>
                                   </td>

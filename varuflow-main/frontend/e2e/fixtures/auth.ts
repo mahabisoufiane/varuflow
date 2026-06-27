@@ -1,9 +1,6 @@
-import { test as base, Page, expect } from '@playwright/test';
+import { test as base, Page, expect, APIRequestContext } from '@playwright/test';
 import path from 'path';
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Test accounts — must exist in the Supabase test environment (created by seed)
-// ──────────────────────────────────────────────────────────────────────────────
 export const TEST_ACCOUNTS = {
   owner:  { email: 'test-owner@varuflow-e2e.com',  password: 'E2ETest2026!' },
   admin:  { email: 'test-admin@varuflow-e2e.com',  password: 'E2ETest2026!' },
@@ -12,51 +9,85 @@ export const TEST_ACCOUNTS = {
 
 export type AccountRole = keyof typeof TEST_ACCOUNTS;
 
-// Saved auth state paths so we only log in once per role per test run
 export const AUTH_STATE = {
   owner:  path.resolve(__dirname, '../.auth/owner.json'),
   admin:  path.resolve(__dirname, '../.auth/admin.json'),
   member: path.resolve(__dirname, '../.auth/member.json'),
 };
 
-// ──────────────────────────────────────────────────────────────────────────────
-// loginAs — drives the UI login flow and waits for the dashboard
-// ──────────────────────────────────────────────────────────────────────────────
-export async function loginAs(page: Page, role: AccountRole = 'owner') {
-  const { email, password } = TEST_ACCOUNTS[role];
+const API_BASE = process.env.PLAYWRIGHT_API_URL || 'http://localhost:8000';
 
+// Uses the test-runner APIRequestContext (no CORS) to get a local-auth JWT
+async function getLocalToken(
+  request: APIRequestContext,
+  email: string,
+  password: string,
+): Promise<string> {
+  // Try login first
+  const res = await request.post(`${API_BASE}/api/local-auth/login`, {
+    data: { email, password },
+  });
+  if (res.ok()) {
+    const body = await res.json();
+    return body.access_token as string;
+  }
+
+  // Sign up + verify in DB, then retry (first run only)
+  await request.post(`${API_BASE}/api/local-auth/signup`, { data: { email, password } });
+  // Force-verify via the dev admin endpoint
+  await request.post(`${API_BASE}/api/local-auth/dev-verify`, { data: { email } }).catch(() => {});
+  const retry = await request.post(`${API_BASE}/api/local-auth/login`, { data: { email, password } });
+  if (retry.ok()) return (await retry.json()).access_token as string;
+
+  throw new Error(`Could not authenticate E2E user ${email} — run: docker exec varuflow-main-postgres-1 psql -U postgres -d varuflow -c "UPDATE auth_users SET is_email_verified=true WHERE email='${email}'"`)
+}
+
+export async function loginAs(
+  page: Page,
+  role: AccountRole = 'owner',
+  request?: APIRequestContext,
+) {
+  const { email, password } = TEST_ACCOUNTS[role];
+  const isDev = process.env.PLAYWRIGHT_ENV === 'local' || !process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  if (isDev && request) {
+    const token = await getLocalToken(request, email, password);
+    await page.goto('/en/dashboard');
+    await page.evaluate((t) => {
+      localStorage.setItem('vf-auth-token', t);
+      localStorage.setItem('vf-auth-token-local', t);
+    }, token);
+    await page.reload();
+    await page.waitForURL(/dashboard/, { timeout: 15_000 });
+    return;
+  }
+
+  // Supabase UI flow (prod/staging)
   await page.goto('/auth/login');
   await page.waitForLoadState('domcontentloaded');
-
-  // Fill credentials — login page uses HTML5 autocomplete attributes (no data-testid)
-  await page.fill('input[type="email"]',    email);
+  await page.fill('input[type="email"]', email);
   await page.fill('input[type="password"]', password);
   await page.click('button[type="submit"]');
-
-  // Wait for post-login redirect (any locale, dashboard or onboarding)
   await page.waitForURL(/\/(en\/|ar\/)?dashboard|onboarding/, { timeout: 15_000 });
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Extended test fixture — provides an already-authenticated page
-// ──────────────────────────────────────────────────────────────────────────────
 export const test = base.extend<{
-  authedPage:       Page;
-  adminPage:        Page;
-  memberPage:       Page;
+  authedPage:  Page;
+  adminPage:   Page;
+  memberPage:  Page;
 }>({
-  authedPage: async ({ page }, use) => {
-    await loginAs(page, 'owner');
+  authedPage: async ({ page, request }, use) => {
+    await loginAs(page, 'owner', request);
     await use(page);
   },
 
-  adminPage: async ({ page }, use) => {
-    await loginAs(page, 'admin');
+  adminPage: async ({ page, request }, use) => {
+    await loginAs(page, 'admin', request);
     await use(page);
   },
 
-  memberPage: async ({ page }, use) => {
-    await loginAs(page, 'member');
+  memberPage: async ({ page, request }, use) => {
+    await loginAs(page, 'member', request);
     await use(page);
   },
 });

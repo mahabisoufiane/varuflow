@@ -19,7 +19,7 @@ import httpx
 import pytest
 from sqlalchemy import select
 
-from app.models.notifications import DeviceToken
+from app.features.notifications.models import DeviceToken
 from app.services import push as push_service
 
 

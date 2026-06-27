@@ -195,7 +195,7 @@ async def get_default_template(db, *, org_id: uuid.UUID) -> dict[str, Any]:
     """
     from sqlalchemy import select
 
-    from app.models.invoice_templates import InvoiceTemplate
+    from app.features.invoicing.model_invoice_templates import InvoiceTemplate
 
     row = await db.scalar(
         select(InvoiceTemplate).where(
@@ -224,7 +224,7 @@ async def resolve_template_for_invoice(
     """
     from sqlalchemy import select
 
-    from app.models.invoice_templates import InvoiceTemplate
+    from app.features.invoicing.model_invoice_templates import InvoiceTemplate
 
     if template_id is not None:
         row = await db.scalar(
@@ -250,7 +250,7 @@ async def clear_default(
     """
     from sqlalchemy import update
 
-    from app.models.invoice_templates import InvoiceTemplate
+    from app.features.invoicing.model_invoice_templates import InvoiceTemplate
 
     stmt = (
         update(InvoiceTemplate)

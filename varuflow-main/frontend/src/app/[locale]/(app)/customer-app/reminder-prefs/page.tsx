@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api-client";
 import { Bell, RefreshCw, AlertCircle, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -62,11 +61,6 @@ function ToggleRow({ label, checked, onChange }: ToggleRowProps) {
 }
 
 export default function ReminderPrefsPage() {
-  const router = useRouter();
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale ?? "en";
-  const supabase = createClient();
-
   const [allPrefs, setAllPrefs] = useState<NotificationPrefs[]>([]);
   const [loadingAll, setLoadingAll] = useState(true);
   const [lookupId, setLookupId] = useState("");
@@ -74,22 +68,11 @@ export default function ReminderPrefsPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  async function getToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }
-  function apiUrl(p: string) { return `${process.env.NEXT_PUBLIC_API_URL}${p}`; }
-
   async function loadAll() {
     setLoadingAll(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push(`/${locale}/auth/login`); return; }
-      const res = await fetch(apiUrl("/api/notification-prefs"), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (res.ok) setAllPrefs(await res.json());
+      const data = await api.get<NotificationPrefs[]>("/api/notification-prefs");
+      setAllPrefs(data);
     } catch {
       toast.error("Failed to load preferences");
     } finally {
@@ -103,26 +86,17 @@ export default function ReminderPrefsPage() {
     if (!lookupId.trim()) { toast.error("Enter a customer ID"); return; }
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/notification-prefs/${lookupId.trim()}`), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (res.status === 404) {
+      const data = await api.get<NotificationPrefs>(`/api/notification-prefs/${lookupId.trim()}`);
+      setCurrentPrefs(data);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.includes("404")) {
         // Pre-fill defaults for new customer
         setCurrentPrefs({ customer_id: lookupId.trim(), ...DEFAULT_PREFS });
         toast.info("No prefs found — showing defaults");
-        return;
+      } else {
+        toast.error(msg || "Something went wrong");
       }
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to load preferences");
-        return;
-      }
-      setCurrentPrefs(await res.json());
-    } catch {
-      toast.error("Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -132,28 +106,17 @@ export default function ReminderPrefsPage() {
     if (!currentPrefs) return;
     setSaving(true);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/notification-prefs/${currentPrefs.customer_id}`), {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          remind_1_day: currentPrefs.remind_1_day,
-          remind_1_hour: currentPrefs.remind_1_hour,
-          channel_push: currentPrefs.channel_push,
-          channel_email: currentPrefs.channel_email,
-          channel_sms: currentPrefs.channel_sms,
-        }),
+      await api.put(`/api/notification-prefs/${currentPrefs.customer_id}`, {
+        remind_1_day: currentPrefs.remind_1_day,
+        remind_1_hour: currentPrefs.remind_1_hour,
+        channel_push: currentPrefs.channel_push,
+        channel_email: currentPrefs.channel_email,
+        channel_sms: currentPrefs.channel_sms,
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to save preferences");
-        return;
-      }
       toast.success("Preferences saved");
       await loadAll();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setSaving(false);
     }

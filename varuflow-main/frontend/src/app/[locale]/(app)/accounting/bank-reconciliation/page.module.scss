@@ -1,0 +1,90 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+.txRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--vf-border);
+  transition: background 100ms ease;
+
+  &:hover {
+    background: var(--vf-bg-elevated);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.txCard {
+  border-radius: $vf-radius-lg;
+  border: 1px solid var(--vf-border);
+  background: var(--vf-bg-surface);
+  overflow: hidden;
+}
+
+.matchedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: $vf-radius-full;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+}
+
+.unmatchedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: $vf-radius-full;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(239, 68, 68, 0.10);
+  color: #991b1b;
+}
+
+.pendingBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: $vf-radius-full;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(234, 179, 8, 0.12);
+  color: #92400e;
+}
+
+.amountCredit {
+  color: #059669;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.amountDebit {
+  color: #dc2626;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.summaryBar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.summaryCard {
+  border-radius: $vf-radius-lg;
+  border: 1px solid var(--vf-border);
+  padding: 0.75rem 1rem;
+  background: var(--vf-bg-surface);
+}

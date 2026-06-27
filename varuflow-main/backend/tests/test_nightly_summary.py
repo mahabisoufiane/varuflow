@@ -9,10 +9,10 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from sqlalchemy import select
 
-from app.models.audit import AuditLogEntry
-from app.models.invoicing import Customer, Invoice, InvoiceStatus
-from app.models.inventory import Product, StockLevel, Warehouse
-from app.models.organization import Organization
+from app.features.compliance.audit_models import AuditLogEntry
+from app.features.invoicing.models import Customer, Invoice, InvoiceStatus
+from app.features.inventory.models import Product, StockLevel, Warehouse
+from app.features.auth.organization import Organization
 from app.services.nightly_summary import (
     SummaryStats,
     _pick_insight,

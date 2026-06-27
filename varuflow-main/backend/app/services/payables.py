@@ -29,8 +29,8 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.inventory import Product, PurchaseOrder
-from app.models.payable_invoice import PayableInvoice
+from app.features.inventory.models import Product, PurchaseOrder
+from app.features.purchases.payable_invoice import PayableInvoice
 from app.services.audit import log_action
 
 if TYPE_CHECKING:

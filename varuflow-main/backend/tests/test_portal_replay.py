@@ -21,10 +21,10 @@ from sqlalchemy import select
 
 from app.config import settings
 from app.main import app
-from app.models.audit import AuditLogEntry
-from app.models.invoicing import Customer, CustomerPortalToken
-from app.models.organization import Organization
-from app.models.portal_session import PortalSession
+from app.features.compliance.audit_models import AuditLogEntry
+from app.features.invoicing.models import Customer, CustomerPortalToken
+from app.features.auth.organization import Organization
+from app.features.portal.portal_session import PortalSession
 
 
 

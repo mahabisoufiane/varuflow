@@ -26,8 +26,8 @@ import httpx
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.notifications import DeviceToken
-from app.models.organization import OrgRole, OrganizationMember
+from app.features.notifications.models import DeviceToken
+from app.features.auth.organization import OrgRole, OrganizationMember
 
 log = logging.getLogger(__name__)
 

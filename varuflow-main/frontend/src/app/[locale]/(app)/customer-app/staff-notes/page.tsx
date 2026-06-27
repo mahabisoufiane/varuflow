@@ -1,12 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
 
 interface StaffNote {
   id: string;
@@ -18,7 +16,6 @@ interface StaffNote {
 }
 
 export default function StaffNotesPage() {
-  const { locale } = useParams<{ locale: string }>();
   const [items, setItems] = useState<StaffNote[]>([]);
   const [filterCustomerId, setFilterCustomerId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,22 +25,16 @@ export default function StaffNotesPage() {
   const [newNoteVisible, setNewNoteVisible] = useState(false);
   const [posting, setPosting] = useState(false);
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : "";
-
   async function fetchItems() {
     setLoading(true);
     setError("");
     try {
       const params = new URLSearchParams();
       if (filterCustomerId) params.set("customer_id", filterCustomerId);
-      const res = await fetch(`${API}/api/staff-notes?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to load notes."); return; }
-      setItems(await res.json());
-    } catch {
-      setError("Network error.");
+      const data = await api.get<StaffNote[]>(`/api/staff-notes?${params}`);
+      setItems(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load notes.");
     } finally {
       setLoading(false);
     }
@@ -56,22 +47,16 @@ export default function StaffNotesPage() {
     setPosting(true);
     setError("");
     try {
-      const res = await fetch(`${API}/api/staff-notes`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer_id: newNoteCustomerId,
-          note_text: newNoteText,
-          is_visible_to_customer: newNoteVisible,
-        }),
+      await api.post("/api/staff-notes", {
+        customer_id: newNoteCustomerId,
+        note_text: newNoteText,
+        is_visible_to_customer: newNoteVisible,
       });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to post note."); return; }
       setNewNoteText("");
       setNewNoteVisible(false);
       fetchItems();
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to post note.");
     } finally {
       setPosting(false);
     }
@@ -80,14 +65,10 @@ export default function StaffNotesPage() {
   async function deleteNote(id: string) {
     setError("");
     try {
-      const res = await fetch(`${API}/api/staff-notes/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) { setError("Delete failed."); return; }
+      await api.delete(`/api/staff-notes/${id}`);
       setItems(items.filter((i) => i.id !== id));
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Delete failed.");
     }
   }
 

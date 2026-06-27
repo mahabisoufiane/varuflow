@@ -56,7 +56,7 @@ export default function AboutPage() {
 
       <CTABanner
         headline="Sound like something you need?"
-        subheadline="Start with the free plan — no strings attached."
+        subheadline="14-day trial, full Starter access — no credit card required."
         ctaPrimary={{ href: "/trial", label: "Start free trial" }}
         ctaSecondary={{ href: "/demo", label: "Talk to the team" }}
       />

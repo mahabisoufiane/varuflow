@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface Survey {
   id: string;
@@ -36,6 +37,12 @@ const STATUS_COLOR: Record<string, string> = {
   draft: "bg-gray-100 text-gray-600",
   active: "bg-green-100 text-green-700",
   closed: "bg-gray-100 text-gray-600",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft:  "statusDraft",
+  active: "statusActive",
+  closed: "statusClosed",
 };
 
 const DEFAULT_QUESTION = "On a scale of 0-10, how likely are you to recommend us to a friend or colleague?";
@@ -87,7 +94,10 @@ export default function SurveysPage() {
       const token = await getToken();
       if (!token) return;
       const res = await fetch(apiUrl(`/api/nps/surveys/${id}/responses`), { headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) setResponses((r) => ({ ...r, [id]: await res.json() }));
+      if (res.ok) {
+        const data = await res.json();
+        setResponses((r) => ({ ...r, [id]: data }));
+      }
     } catch { /* silent */ }
   }
 
@@ -244,7 +254,7 @@ export default function SurveysPage() {
                       <p className="text-xs text-muted-foreground">NPS</p>
                     </div>
                   )}
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLOR[s.status] ?? STATUS_COLOR.draft}`}>
+                  <span className={styles[STATUS_MODULE[s.status] ?? "statusDraft"]}>
                     {s.status}
                   </span>
                   <div className="flex items-center gap-2">

@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api-client";
 import {
   PlusCircle, Video, RefreshCw, Copy, AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface VideoConsultation {
   id: string;
@@ -40,9 +40,21 @@ const STATUS_BADGE: Record<string, string> = {
   cancelled:  "bg-red-100 text-red-600",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  scheduled: "statusScheduled",
+  active:    "statusActive",
+  ended:     "statusEnded",
+  cancelled: "statusCancelled",
+};
+
 const PROVIDER_BADGE: Record<string, string> = {
   daily:  "bg-violet-100 text-violet-700",
   twilio: "bg-orange-100 text-orange-700",
+};
+
+const PROVIDER_MODULE: Record<string, keyof typeof styles> = {
+  daily:  "providerDaily",
+  twilio: "providerTwilio",
 };
 
 function formatDuration(secs: number | null): string {
@@ -63,11 +75,6 @@ function truncate(str: string | null, n: number): string {
 }
 
 export default function VideoConsultationsPage() {
-  const router = useRouter();
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale ?? "en";
-  const supabase = createClient();
-
   const [consultations, setConsultations] = useState<VideoConsultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -81,22 +88,11 @@ export default function VideoConsultationsPage() {
   });
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  async function getToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }
-  function apiUrl(p: string) { return `${process.env.NEXT_PUBLIC_API_URL}${p}`; }
-
   async function load() {
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push(`/${locale}/auth/login`); return; }
-      const res = await fetch(apiUrl("/api/video"), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (res.ok) setConsultations(await res.json());
+      const data = await api.get<VideoConsultation[]>("/api/video");
+      setConsultations(data);
     } catch {
       toast.error("Failed to load video consultations");
     } finally {
@@ -109,21 +105,11 @@ export default function VideoConsultationsPage() {
   async function doAction(id: string, action: "start" | "end" | "cancel") {
     setActionLoading(id + "_" + action);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/video/${id}/${action}`), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? `Failed to ${action} consultation`);
-        return;
-      }
+      await api.post(`/api/video/${id}/${action}`, {});
       toast.success(`Consultation ${action}ed`);
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : `Failed to ${action} consultation`);
     } finally {
       setActionLoading(null);
     }
@@ -134,30 +120,19 @@ export default function VideoConsultationsPage() {
     if (!newForm.scheduled_for) { toast.error("Scheduled date/time is required"); return; }
     setActionLoading("create");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl("/api/video"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          customer_id: newForm.customer_id,
-          scheduled_for: newForm.scheduled_for,
-          provider: newForm.provider,
-          notes: newForm.notes || null,
-          staff_user_id: newForm.staff_user_id || null,
-        }),
+      await api.post("/api/video", {
+        customer_id: newForm.customer_id,
+        scheduled_for: newForm.scheduled_for,
+        provider: newForm.provider,
+        notes: newForm.notes || null,
+        staff_user_id: newForm.staff_user_id || null,
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to schedule consultation");
-        return;
-      }
       toast.success("Consultation scheduled");
       setShowNew(false);
       setNewForm({ customer_id: "", scheduled_for: "", provider: "daily", notes: "", staff_user_id: "" });
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -300,7 +275,7 @@ export default function VideoConsultationsPage() {
                   <p className="text-sm font-medium text-gray-900">
                     {truncate(c.customer_id, 18)}
                   </p>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[c.status] ?? "bg-gray-100 text-gray-500"}`}>
+                  <span className={styles[STATUS_MODULE[c.status] ?? "statusEnded"]}>
                     {c.status === "active" ? (
                       <span className="flex items-center gap-1">
                         <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -308,7 +283,7 @@ export default function VideoConsultationsPage() {
                       </span>
                     ) : c.status}
                   </span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PROVIDER_BADGE[c.provider] ?? "bg-gray-100 text-gray-500"}`}>
+                  <span className={styles[PROVIDER_MODULE[c.provider] ?? "providerDaily"]}>
                     {c.provider === "daily" ? "Daily.co" : "Twilio"}
                   </span>
                 </div>

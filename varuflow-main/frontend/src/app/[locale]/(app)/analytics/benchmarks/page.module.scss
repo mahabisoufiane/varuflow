@@ -1,0 +1,16 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Benchmark delta badges ────────────────────────────────────────────────────
+
+.deltaBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.deltaPositive { @extend .deltaBadge; background: #dcfce7; color: #15803d; }
+.deltaNegative { @extend .deltaBadge; background: #fef3c7; color: #b45309; }

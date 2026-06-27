@@ -48,6 +48,21 @@ frontend/frontend/
 # Claude
 .claude/
 
+# Security audit tools (local dev only)
+security-tools/
+
+# TypeScript build artifacts
+*.tsbuildinfo
+
 # Never commit real deployment secrets
 deploy/**/backend.env.secret
 deploy/**/frontend.env.secret
+
+# Design sync — converter scripts, build output, machine state
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules
+frontend/ds-styles.css
+ds-styles.css

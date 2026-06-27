@@ -1,12 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
 
 interface MembershipTier {
   id: string;
@@ -24,7 +22,6 @@ interface CustomerMembership {
 }
 
 export default function MembershipTiersPage() {
-  const { locale } = useParams<{ locale: string }>();
   const [tiers, setTiers] = useState<MembershipTier[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -40,20 +37,14 @@ export default function MembershipTiersPage() {
   const [membershipError, setMembershipError] = useState("");
   const [assigning, setAssigning] = useState(false);
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : "";
-
   async function fetchTiers() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${API}/api/membership-tiers`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to load tiers."); return; }
-      setTiers(await res.json());
-    } catch {
-      setError("Network error.");
+      const data = await api.get<MembershipTier[]>("/api/membership-tiers");
+      setTiers(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load tiers.");
     } finally {
       setLoading(false);
     }
@@ -65,17 +56,11 @@ export default function MembershipTiersPage() {
     setCreating(true);
     setError("");
     try {
-      const res = await fetch(`${API}/api/membership-tiers`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ ...newTier, min_points: parseInt(newTier.min_points) || 0 }),
-      });
-      if (res.status === 401) { setError("Unauthorized."); return; }
-      if (!res.ok) { setError("Failed to create tier."); return; }
+      await api.post("/api/membership-tiers", { ...newTier, min_points: parseInt(newTier.min_points) || 0 });
       setNewTier({ name: "", min_points: "", card_color: "#C0A060", card_text_color: "#FFFFFF", benefits: "" });
       fetchTiers();
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to create tier.");
     } finally {
       setCreating(false);
     }
@@ -84,30 +69,21 @@ export default function MembershipTiersPage() {
   async function updateTier(id: string) {
     setError("");
     try {
-      const res = await fetch(`${API}/api/membership-tiers/${id}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify(editForm),
-      });
-      if (!res.ok) { setError("Failed to update tier."); return; }
+      await api.put(`/api/membership-tiers/${id}`, editForm);
       setEditingId(null);
       fetchTiers();
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to update tier.");
     }
   }
 
   async function deleteTier(id: string) {
     setError("");
     try {
-      const res = await fetch(`${API}/api/membership-tiers/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) { setError("Delete failed."); return; }
+      await api.delete(`/api/membership-tiers/${id}`);
       setTiers(tiers.filter((t) => t.id !== id));
-    } catch {
-      setError("Network error.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Delete failed.");
     }
   }
 
@@ -116,17 +92,16 @@ export default function MembershipTiersPage() {
     setMembershipLoading(true);
     setMembershipError("");
     try {
-      const res = await fetch(`${API}/api/membership-tiers/memberships?customer_id=${assignCustomerId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { setMembershipError("Unauthorized."); return; }
-      if (res.status === 404) { setCurrentMembership(null); return; }
-      if (!res.ok) { setMembershipError("Failed to load membership."); return; }
-      const data = await res.json();
+      const data = await api.get<CustomerMembership>(`/api/membership-tiers/memberships?customer_id=${assignCustomerId}`);
       setCurrentMembership(data);
       setSelectedTierId(data.tier_id);
-    } catch {
-      setMembershipError("Network error.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.includes("404")) {
+        setCurrentMembership(null);
+      } else {
+        setMembershipError(msg || "Failed to load membership.");
+      }
     } finally {
       setMembershipLoading(false);
     }
@@ -137,15 +112,10 @@ export default function MembershipTiersPage() {
     setAssigning(true);
     setMembershipError("");
     try {
-      const res = await fetch(`${API}/api/membership-tiers/memberships/${assignCustomerId}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ tier_id: selectedTierId }),
-      });
-      if (!res.ok) { setMembershipError("Failed to assign tier."); return; }
+      await api.put(`/api/membership-tiers/memberships/${assignCustomerId}`, { tier_id: selectedTierId });
       loadMembership();
-    } catch {
-      setMembershipError("Network error.");
+    } catch (e) {
+      setMembershipError(e instanceof Error ? e.message : "Failed to assign tier.");
     } finally {
       setAssigning(false);
     }

@@ -1,239 +1,394 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
-import { useState } from "react";
+import { PLAN_PRICES } from "@/lib/plan";
 import {
-  BarChart3,
-  CheckCircle2,
-  FileText,
-  Package,
-  TrendingUp,
-  Zap,
+  ArrowRight, BarChart3, CheckCircle2, ChevronRight, FileText,
+  Package, RefreshCw, ShoppingCart, TrendingUp, Users, Zap,
+  Shield, Globe, Bot, Star,
 } from "lucide-react";
+import { ScrollReveal } from "@/components/marketing/ScrollReveal";
 
+/* ── Data ────────────────────────────────────────────────────────────────── */
 const FEATURES = [
   {
     icon: Package,
     title: "Real-time inventory",
-    body: "Track stock across multiple warehouses. Get alerts before you run out. Record goods in, out, and adjustments in seconds.",
+    body: "Live stock across every warehouse. Low-stock alerts fire before customers notice. Goods-in and adjustment records in seconds.",
+    color: "from-blue-500 to-cyan-500",
   },
   {
     icon: FileText,
-    title: "Swedish invoicing",
-    body: "Generate SE-compliant invoices with 25/12/6% VAT in one click. PDF export, payment tracking, and automatic overdue detection.",
+    title: "SE-compliant invoicing",
+    body: "25 / 12 / 6 % VAT baked in. PDF export, payment tracking, automatic overdue detection — no Fortnox copy-paste ever again.",
+    color: "from-violet-500 to-indigo-500",
   },
   {
     icon: TrendingUp,
     title: "Cash flow visibility",
-    body: "Know exactly what's outstanding and overdue. Aging reports show your receivables bucketed by 30/60/90+ days.",
+    body: "Aging reports show 30 / 60 / 90+ day buckets at a glance. Always know what's outstanding and what's overdue.",
+    color: "from-emerald-500 to-teal-500",
+  },
+  {
+    icon: ShoppingCart,
+    title: "Point of sale",
+    body: "Fast checkout with barcode scanning, split payments, and automatic stock deduction. Works offline, syncs when you reconnect.",
+    color: "from-orange-500 to-amber-500",
+  },
+  {
+    icon: Bot,
+    title: "AI advisor",
+    body: "Flags cash-flow risks, suggests reorder quantities, and drafts purchase orders — before you even think to ask.",
+    color: "from-pink-500 to-rose-500",
   },
   {
     icon: BarChart3,
     title: "Demand forecasting",
-    body: "See which products are moving fastest. Auto-generated purchase orders based on historical movement data.",
-  },
-  {
-    icon: Zap,
-    title: "Purchase orders",
-    body: "Create POs from your supplier list, track status from draft to received, and download PDFs to send directly.",
-  },
-  {
-    icon: CheckCircle2,
-    title: "GDPR & Bokföringslagen",
-    body: "Data hosted in the EU. Built from the ground up for Swedish compliance — no plugins, no workarounds.",
+    body: "See your fastest movers and seasonal patterns. Auto-generated POs based on real historical movement data.",
+    color: "from-indigo-500 to-purple-500",
   },
 ];
 
-const PAIN_POINTS = [
-  { before: "Inventory in three Excel files", after: "One live view across all warehouses" },
-  { before: "Manually copy invoice numbers into Fortnox", after: "Generate & send from the same screen" },
-  { before: "Discover stockouts when a customer calls", after: "Low-stock alerts before it happens" },
-  { before: "Month-end cash flow guess", after: "Real-time aging report, always up to date" },
+const STEPS = [
+  { n: "1", title: "Create your account", body: "Sign up in 60 seconds. No credit card required." },
+  { n: "2", title: "Import your data", body: "Upload products, customers, and opening stock from CSV or Excel." },
+  { n: "3", title: "Start selling", body: "Issue invoices, manage inventory, and accept payments — all in one tab." },
 ];
 
-export default function HomePage() {
-  const [email, setEmail] = useState("");
-  const [company, setCompany] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const TRUST_ITEMS = [
+  { icon: Shield, label: "GDPR-compliant" },
+  { icon: Globe, label: "EU data residency" },
+  { icon: CheckCircle2, label: "Bokföringslagen ready" },
+  { icon: RefreshCw, label: "99.9 % uptime SLA" },
+];
 
-  async function handleWaitlist(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
-      const res = await fetch(`${apiUrl}/api/waitlist`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, company_name: company || null }),
-      });
-      if (!res.ok) throw new Error("Something went wrong. Try again.");
-      setSubmitted(true);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  }
+const TESTIMONIALS = [
+  {
+    quote: "Finally an alternative for those of us who've outgrown Excel but don't want an ERP.",
+    name: "Mattias L.",
+    role: "Food wholesale · Gothenburg",
+  },
+  {
+    quote: "We cut invoice processing time by 70 %. The Fortnox sync alone paid for itself in week one.",
+    name: "Sara K.",
+    role: "Building supplies · Stockholm",
+  },
+  {
+    quote: "The AI advisor flagged a stockout three weeks before our busiest season. That saved us.",
+    name: "Johan A.",
+    role: "Electronics distributor · Malmö",
+  },
+];
 
+/* ── Reusable badge ───────────────────────────────────────────────────────── */
+function Badge({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col">
-      {/* ── Hero ── */}
-      <section className="relative overflow-hidden bg-[#1a2332] px-4 py-24 text-center text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.05)_0%,_transparent_70%)]" />
-        <div className="relative mx-auto max-w-3xl">
-          <span className="mb-4 inline-block rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium tracking-wide text-white/80">
-            Built for Swedish wholesalers
-          </span>
-          <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            Inventory + invoicing,
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs font-semibold tracking-wide text-indigo-400">
+      {children}
+    </span>
+  );
+}
+
+/* ── Page ─────────────────────────────────────────────────────────────────── */
+export default function HomePage() {
+  return (
+    <div className="flex flex-col text-white" style={{ background: "#070B12" }}>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          HERO
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="relative overflow-hidden px-4 pt-24 pb-32">
+        {/* Background orbs */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[900px] rounded-full opacity-20"
+            style={{ background: "radial-gradient(ellipse,#2563EB 0%,transparent 70%)" }} />
+          <div className="absolute top-1/2 -left-32 h-[400px] w-[400px] rounded-full opacity-10"
+            style={{ background: "radial-gradient(circle,#1D4ED8 0%,transparent 70%)" }} />
+          <div className="absolute bottom-0 right-0 h-[300px] w-[400px] rounded-full opacity-10"
+            style={{ background: "radial-gradient(circle,#7C3AED 0%,transparent 70%)" }} />
+          {/* Grid overlay */}
+          <div className="absolute inset-0 opacity-[0.03]"
+            style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "48px 48px" }} />
+        </div>
+
+        <div className="relative mx-auto max-w-4xl text-center">
+          <Badge>
+            <Zap className="h-3 w-3" />
+            Built for Nordic wholesalers
+          </Badge>
+
+          <h1 className="mt-6 text-5xl font-extrabold leading-tight tracking-tight sm:text-6xl lg:text-7xl">
+            The backoffice
             <br />
-            <span className="text-white/70">finally in one place</span>
+            <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">
+              Nordic wholesalers
+            </span>
+            <br />
+            actually want to use.
           </h1>
-          <p className="mt-6 text-lg text-white/70 max-w-2xl mx-auto">
-            Stop juggling Excel and Fortnox. Varuflow gives 10–50 person Swedish wholesale businesses real-time stock control, SE-compliant invoicing, and cash flow clarity.
+
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-400 leading-relaxed">
+            Inventory, invoicing, POS, and AI-driven insights — all in one platform.
+            Replace Excel, Fortnox copy-paste, and guesswork with one tab that does everything.
           </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild size="lg" className="bg-white text-[#1a2332] hover:bg-gray-100 font-semibold">
-              <a href="#waitlist">Join the waitlist</a>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10">
-              <Link href="/auth/login">Log in</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
 
-      {/* ── Before / After ── */}
-      <section className="bg-gray-50 px-4 py-16">
-        <div className="mx-auto max-w-4xl">
-          <h2 className="text-center text-2xl font-bold text-[#1a2332] mb-10">
-            Sound familiar?
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {PAIN_POINTS.map(({ before, after }, i) => (
-              <div key={i} className="rounded-xl border bg-white p-5 space-y-3">
-                <p className="flex items-start gap-2 text-sm text-red-600">
-                  <span className="mt-0.5 shrink-0 text-red-400">✕</span>
-                  {before}
-                </p>
-                <p className="flex items-start gap-2 text-sm text-green-700 font-medium">
-                  <span className="mt-0.5 shrink-0">✓</span>
-                  {after}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Features ── */}
-      <section className="px-4 py-20">
-        <div className="mx-auto max-w-5xl">
-          <h2 className="text-center text-2xl font-bold text-[#1a2332] mb-2">
-            Everything a wholesaler needs
-          </h2>
-          <p className="text-center text-muted-foreground mb-12 text-sm">
-            No add-ons. No integrations to babysit. One product that does the job.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {FEATURES.map(({ icon: Icon, title, body }) => (
-              <div key={title} className="rounded-xl border bg-white p-6 space-y-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#1a2332]/8">
-                  <Icon className="h-5 w-5 text-[#1a2332]" />
-                </div>
-                <h3 className="font-semibold text-gray-900">{title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Social proof / trust ── */}
-      <section className="bg-[#1a2332] px-4 py-16 text-white text-center">
-        <div className="mx-auto max-w-2xl space-y-4">
-          <p className="text-2xl font-bold">"Finally an alternative for those of us who've outgrown Excel but don't want an ERP."</p>
-          <p className="text-white/60 text-sm">— Beta user, food wholesale, Gothenburg</p>
-        </div>
-      </section>
-
-      {/* ── Pricing teaser ── */}
-      <section className="bg-gray-50 px-4 py-16">
-        <div className="mx-auto max-w-xl text-center">
-          <h2 className="text-2xl font-bold text-[#1a2332]">Simple, transparent pricing</h2>
-          <p className="mt-3 text-muted-foreground text-sm">
-            From 299 kr/month. No per-user fees. No transaction cuts.
-            14-day free trial on every plan.
-          </p>
-          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/pricing"
-              className="inline-flex items-center gap-2 rounded-xl bg-[#1a2332] px-6 py-3 text-sm font-semibold text-white hover:bg-[#2a3342] transition-colors"
+              href="/auth/signup"
+              className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98]"
             >
-              View pricing
+              Start free trial
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
-            <div className="inline-flex items-center gap-2 rounded-full bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-700 font-medium">
-              <CheckCircle2 className="h-4 w-4" />
-              14-day free trial
+            <Link
+              href="/demo"
+              className="flex items-center gap-2 rounded-xl border border-white/20 bg-[#1a2234] px-7 py-3.5 text-sm font-semibold text-slate-300 transition-all hover:bg-[#1e2740] hover:text-white"
+            >
+              Book a demo
+              <ChevronRight className="h-4 w-4 opacity-50" />
+            </Link>
+          </div>
+
+          <p className="mt-4 text-xs text-slate-500">
+            14-day free trial · No credit card required · Cancel any time
+          </p>
+        </div>
+
+        {/* App preview mockup */}
+        <div className="relative mx-auto mt-20 max-w-5xl px-4">
+          <div className="rounded-2xl border border-white/10 bg-[#0D1117] shadow-2xl shadow-black/60 overflow-hidden">
+            <div className="flex h-10 items-center gap-2 border-b border-white/[0.06] px-4">
+              <div className="h-3 w-3 rounded-full bg-red-500/70" />
+              <div className="h-3 w-3 rounded-full bg-yellow-500/70" />
+              <div className="h-3 w-3 rounded-full bg-green-500/70" />
+              <div className="ml-4 h-5 w-48 rounded-md bg-white/[0.04]" />
+            </div>
+            <div className="flex">
+              {/* Fake sidebar */}
+              <div className="hidden sm:flex w-[180px] shrink-0 flex-col gap-1 border-r border-white/[0.06] p-3">
+                {["Dashboard","Sales","Inventory","Finance","HR & People","Settings"].map((s, i) => (
+                  <div key={s} className={`flex items-center gap-2 rounded-lg px-3 py-2 text-[11px] font-medium ${i === 0 ? "bg-indigo-500/15 text-indigo-400" : "text-slate-500"}`}>
+                    <div className={`h-2 w-2 rounded-sm ${i === 0 ? "bg-indigo-400" : "bg-slate-700"}`} />
+                    {s}
+                  </div>
+                ))}
+              </div>
+              {/* Fake content */}
+              <div className="flex-1 p-5 space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {["Total Revenue","Open Invoices","Stock Value","Low Stock"].map((label, i) => (
+                    <div key={label} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 space-y-2">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wider">{label}</p>
+                      <div className="h-5 w-20 rounded bg-white/[0.06]" />
+                      <div className={`h-2.5 w-12 rounded text-[8px] flex items-center gap-1 ${i % 2 === 0 ? "text-emerald-500" : "text-slate-500"}`}>
+                        <div className={`h-2 w-10 rounded ${i % 2 === 0 ? "bg-emerald-500/30" : "bg-slate-700"}`} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 h-28 flex flex-col gap-2">
+                    <div className="h-3 w-24 rounded bg-white/[0.06]" />
+                    <div className="flex-1 flex items-end gap-1 pt-2">
+                      {[40,65,45,80,55,90,70,85,60,95,75,88].map((h, i) => (
+                        <div key={i} className="flex-1 rounded-t" style={{ height: `${h}%`, background: `hsl(${240 + i * 3},70%,60%,0.5)` }} />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 h-28 space-y-2">
+                    <div className="h-3 w-24 rounded bg-white/[0.06]" />
+                    {[85,60,40].map((w, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <div className="h-2 flex-1 rounded-full bg-white/[0.04]">
+                          <div className="h-2 rounded-full bg-indigo-500/50" style={{ width: `${w}%` }} />
+                        </div>
+                        <span className="text-[9px] text-slate-600 w-6">{w}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+          {/* Glow under mockup */}
+          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 h-24 w-3/4 blur-3xl opacity-20"
+            style={{ background: "radial-gradient(ellipse,#2563EB,transparent)" }} />
         </div>
       </section>
 
-      {/* ── Waitlist ── */}
-      <section id="waitlist" className="px-4 py-20">
-        <div className="mx-auto max-w-md">
-          <div className="rounded-2xl border bg-white p-8 shadow-sm">
-            {submitted ? (
-              <div className="text-center space-y-3 py-4">
-                <CheckCircle2 className="mx-auto h-12 w-12 text-green-500" />
-                <h3 className="text-xl font-bold text-[#1a2332]">You're on the list!</h3>
-                <p className="text-sm text-muted-foreground">
-                  We'll email you when Varuflow is ready for early access. Expect to hear from us soon.
-                </p>
+      {/* ═══════════════════════════════════════════════════════════════════
+          TRUST STRIP
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="border-y border-white/[0.06] bg-white/[0.015] px-4 py-5">
+        <div className="mx-auto max-w-4xl flex flex-wrap items-center justify-center gap-8">
+          {TRUST_ITEMS.map(({ icon: Icon, label }) => (
+            <div key={label} className="flex items-center gap-2 text-sm text-slate-400">
+              <Icon className="h-4 w-4 text-emerald-500 shrink-0" />
+              {label}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          FEATURES
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="px-4 py-24">
+        <div className="mx-auto max-w-5xl">
+          <div className="text-center mb-16">
+            <Badge>Features</Badge>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+              Everything in one platform.
+              <br />
+              <span className="text-slate-400">Nothing you don't need.</span>
+            </h2>
+            <p className="mt-4 text-slate-400 max-w-xl mx-auto">
+              No add-ons to install, no integrations to babysit, no consultants to call.
+              One product that does the whole job.
+            </p>
+          </div>
+
+          <ScrollReveal stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {FEATURES.map(({ icon: Icon, title, body, color }) => (
+              <div
+                key={title}
+                className="group relative rounded-2xl border border-white/[0.07] bg-white/[0.03] p-6 space-y-4 transition-all hover:border-white/[0.15] hover:bg-white/[0.05]"
+              >
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${color} shadow-lg`}>
+                  <Icon className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="font-semibold text-white text-base">{title}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">{body}</p>
               </div>
-            ) : (
-              <>
-                <h2 className="text-xl font-bold text-[#1a2332] mb-1">Join the waitlist</h2>
-                <p className="text-sm text-muted-foreground mb-6">
-                  Be first in line. Waitlist members get 3 months free at launch.
-                </p>
-                <form onSubmit={handleWaitlist} className="space-y-4">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-700">Work email *</label>
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@company.se"
-                      className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-700">Company name</label>
-                    <input
-                      type="text"
-                      value={company}
-                      onChange={(e) => setCompany(e.target.value)}
-                      placeholder="Nordisk Handel AB"
-                      className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
-                    />
-                  </div>
-                  {error && <p className="text-sm text-red-600">{error}</p>}
-                  <Button type="submit" disabled={loading} className="w-full bg-[#1a2332] hover:bg-[#2a3342] text-white">
-                    {loading ? "Sending…" : "Join waitlist — it's free"}
-                  </Button>
-                </form>
-                <p className="mt-4 text-center text-xs text-muted-foreground">
-                  No spam. Unsubscribe any time. GDPR-compliant.
-                </p>
-              </>
-            )}
+            ))}
+          </ScrollReveal>
+
+          <div className="mt-10 text-center">
+            <Link href="/features" className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
+              See all features <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          HOW IT WORKS
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="px-4 py-24 border-t border-white/[0.06]" style={{ background: "rgba(255,255,255,0.01)" }}>
+        <div className="mx-auto max-w-3xl">
+          <div className="text-center mb-14">
+            <Badge>How it works</Badge>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight">Up and running in one afternoon.</h2>
+          </div>
+          <div className="relative flex flex-col gap-8">
+            <div className="absolute left-5 top-10 bottom-10 w-px bg-gradient-to-b from-indigo-500/60 via-violet-500/40 to-transparent hidden sm:block" />
+            {STEPS.map(({ n, title, body }) => (
+              <div key={n} className="flex gap-5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 z-10">
+                  {n}
+                </div>
+                <div className="pt-1.5">
+                  <h3 className="font-semibold text-white text-base">{title}</h3>
+                  <p className="mt-1 text-sm text-slate-400">{body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          TESTIMONIALS
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="px-4 py-24 border-t border-white/[0.06]">
+        <div className="mx-auto max-w-5xl">
+          <div className="text-center mb-14">
+            <Badge>Testimonials</Badge>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight">What early users say.</h2>
+          </div>
+          <ScrollReveal stagger className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {TESTIMONIALS.map(({ quote, name, role }) => (
+              <div key={name} className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-6 space-y-4">
+                <div className="flex gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-sm text-slate-300 leading-relaxed">"{quote}"</p>
+                <div>
+                  <p className="text-sm font-semibold text-white">{name}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{role}</p>
+                </div>
+              </div>
+            ))}
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          PRICING TEASER
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="px-4 py-24 border-t border-white/[0.06]" style={{ background: "rgba(255,255,255,0.01)" }}>
+        <div className="mx-auto max-w-xl text-center">
+          <Badge>Pricing</Badge>
+          <h2 className="mt-4 text-3xl font-bold tracking-tight">Simple pricing. No surprises.</h2>
+          <p className="mt-4 text-slate-400">
+            From <span className="text-indigo-400 font-semibold">{PLAN_PRICES.starter.monthly.sek} kr/month</span>. No per-user fees. No transaction cuts. Cancel any time.
+          </p>
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/auth/signup"
+              className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-indigo-500/40 hover:scale-[1.02]"
+            >
+              Start free trial <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            <Link
+              href="/pricing"
+              className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1"
+            >
+              See all plans <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <p className="mt-4 text-xs text-slate-500">14-day free trial · No credit card required</p>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          FINAL CTA
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="relative overflow-hidden px-4 py-28 border-t border-white/[0.06]">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 opacity-20"
+            style={{ background: "radial-gradient(ellipse at center,#2563EB 0%,transparent 70%)" }} />
+        </div>
+        <div className="relative mx-auto max-w-2xl text-center">
+          <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
+            Ready to replace Excel?
+          </h2>
+          <p className="mt-4 text-lg text-slate-400">
+            Join hundreds of Nordic wholesalers who've moved their operations to Varuflow.
+          </p>
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/auth/signup"
+              className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-indigo-500/30 transition-all hover:scale-[1.02] hover:shadow-indigo-500/50 active:scale-[0.98]"
+            >
+              Start free — no card needed
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            <Link
+              href="/demo"
+              className="flex items-center gap-2 rounded-xl border border-white/20 bg-[#1a2234] px-8 py-4 text-sm font-semibold text-slate-300 transition-all hover:bg-[#1e2740] hover:text-white"
+            >
+              Book a 20-min demo
+            </Link>
+          </div>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-slate-500">
+            {["14-day free trial", "No credit card", "EU data residency", "Cancel any time"].map(t => (
+              <span key={t} className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> {t}
+              </span>
+            ))}
           </div>
         </div>
       </section>

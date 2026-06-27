@@ -92,7 +92,7 @@ async def schedule_reminders_for_appointment(
     """
     # Lazy import — keeps this module importable on Py 3.9 sandboxes
     # (the ORM model uses ``str | None`` annotations that require 3.10+).
-    from app.models.bookings import AppointmentReminder
+    from app.features.bookings.models import AppointmentReminder
 
     channel = pick_channel_for_customer(customer)
     plan = compute_reminder_schedule(
@@ -129,7 +129,7 @@ async def dispatch_due_reminders(
     # Lazy imports: see schedule_reminders_for_appointment for the Py 3.9
     # rationale. The ORM chain only needs to resolve on the scheduler's
     # execution path, not at test-collection time.
-    from app.models.bookings import Appointment, AppointmentReminder
+    from app.features.bookings.models import Appointment, AppointmentReminder
 
     rows = (
         await db.execute(
@@ -200,7 +200,7 @@ async def _lookup_contact(db: AsyncSession, appt, channel: str) -> str | None:
     """Return the phone/whatsapp number or email we should contact on."""
     if appt.customer_id is None:
         return None
-    from app.models.invoicing import Customer  # lazy: avoid cycle at import
+    from app.features.invoicing.models import Customer  # lazy: avoid cycle at import
 
     customer = await db.get(Customer, appt.customer_id)
     if customer is None:

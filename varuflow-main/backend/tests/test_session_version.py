@@ -24,7 +24,7 @@ from sqlalchemy import text
 from app.database import async_session, engine
 from app.main import app
 from app.middleware.auth import verify_session_version
-from app.models.auth import AuthUser
+from app.features.auth.models import AuthUser
 from app.services import auth_service
 
 

@@ -30,8 +30,8 @@ from decimal import Decimal
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.auto_reorder import AutoReorderRun
-from app.models.inventory import (
+from app.features.inventory.auto_reorder_models import AutoReorderRun
+from app.features.inventory.models import (
     Product,
     PurchaseOrder,
     PurchaseOrderItem,
@@ -41,7 +41,7 @@ from app.models.inventory import (
     StockMovementType,
     Supplier,
 )
-from app.models.organization import Organization
+from app.features.auth.organization import Organization
 from app.services.audit import log_action
 
 logger = logging.getLogger(__name__)

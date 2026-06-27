@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Repeat2, Plus, Loader2, FileText, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
+import styles from "./page.module.scss";
 
 interface Retainer {
   id: string;
@@ -37,6 +39,7 @@ export default function RetainersPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ project_id: "", customer_id: "", name: "", monthly_fee: "", monthly_cap_hours: "", billing_day: "1" });
   const [billing, setBilling] = useState<string | null>(null);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -47,7 +50,13 @@ export default function RetainersPage() {
       setRetainers(ret);
       setProjects(projs);
       setCustomers(custs.items ?? custs ?? []);
-    }).catch(() => toast.error("Failed to load retainers")).finally(() => setLoading(false));
+    }).catch((err) => {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "hr", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error("Failed to load retainers");
+    }).finally(() => setLoading(false));
   }, []);
 
   async function create() {
@@ -93,6 +102,8 @@ export default function RetainersPage() {
       toast.success("Deleted");
     } catch { toast.error("Failed to delete"); }
   }
+
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Retainers" />;
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -157,7 +168,7 @@ export default function RetainersPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold">{r.name}</h3>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${r.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}>
+                    <span className={styles[r.is_active ? "statusActive" : "statusInactive"]}>
                       {r.is_active ? "Active" : "Inactive"}
                     </span>
                   </div>

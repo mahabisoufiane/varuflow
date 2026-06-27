@@ -14,13 +14,21 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(p: str) -> str:
-    return (_BACKEND_ROOT / p).read_text()
+    _p = _BACKEND_ROOT / p
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
 SERVICE_SRC   = _read("app/services/mileage.py")
-ROUTER_SRC    = _read("app/routers/mileage_logs.py")
+ROUTER_SRC    = _read("app/features/expenses/mileage_logs.py")
 MIGRATION_SRC = _read("migrations/versions/b6c8d0e2f4a9_v96_mileage_logs.py")
-MODEL_SRC     = _read("app/models/mileage_log.py")
+MODEL_SRC     = _read("app/features/expenses/mileage_log.py")
 MAIN_SRC      = _read("app/main.py")
 
 
@@ -432,8 +440,10 @@ def test_router_no_log_action_on_reads():
 
 
 def test_main_imports_router():
-    assert "mileage_logs" in MAIN_SRC
+    # mileage_logs is registered via expenses_router (vertical-slice architecture)
+    feat_src = _read("app/features/expenses/router.py")
+    assert "mileage_logs" in feat_src
 
 
 def test_main_includes_router():
-    assert "app.include_router(mileage_logs.router)" in MAIN_SRC
+    assert "expenses_router" in MAIN_SRC

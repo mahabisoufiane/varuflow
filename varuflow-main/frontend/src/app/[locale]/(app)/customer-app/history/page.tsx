@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
+import { api } from "@/lib/api-client";
 import {
   RefreshCw, Trash2, Calendar, Receipt, Star, Gift,
   MessageCircle, FileText, Camera, ThumbsUp, PlusCircle, Search,
@@ -62,11 +61,6 @@ function formatEventDate(dateStr: string): string {
 }
 
 export default function CustomerHistoryPage() {
-  const router = useRouter();
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale ?? "en";
-  const supabase = createClient();
-
   const [customerId, setCustomerId] = useState("");
   const [events, setEvents] = useState<HistoryEvent[]>([]);
   const [summary, setSummary] = useState<HistorySummary | null>(null);
@@ -85,32 +79,16 @@ export default function CustomerHistoryPage() {
   });
   const [showLogForm, setShowLogForm] = useState(false);
 
-  async function getToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }
-  function apiUrl(p: string) { return `${process.env.NEXT_PUBLIC_API_URL}${p}`; }
-
-  // Auto-load if customerId is set on mount (e.g. from query param) — not needed, just use button
-  useEffect(() => {}, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   async function loadHistory() {
     if (!customerId.trim()) { toast.error("Enter a customer ID"); return; }
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push(`/${locale}/auth/login`); return; }
-      const [evtRes, sumRes] = await Promise.all([
-        fetch(apiUrl(`/api/history/${customerId}`), { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(apiUrl(`/api/history/${customerId}/summary`), { headers: { Authorization: `Bearer ${token}` } }),
+      const [eventsData, summaryData] = await Promise.all([
+        api.get<HistoryEvent[]>(`/api/history/${customerId}`),
+        api.get<HistorySummary>(`/api/history/${customerId}/summary`),
       ]);
-      if (evtRes.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (evtRes.ok) setEvents(await evtRes.json());
-      else {
-        const b = await evtRes.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to load history");
-      }
-      if (sumRes.ok) setSummary(await sumRes.json());
+      setEvents(eventsData);
+      setSummary(summaryData);
       setLoaded(true);
     } catch {
       toast.error("Failed to load history");
@@ -123,18 +101,7 @@ export default function CustomerHistoryPage() {
     if (!customerId.trim()) return;
     setActionLoading("backfill");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/history/${customerId}/backfill`), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Backfill failed");
-        return;
-      }
-      const data = await res.json();
+      const data = await api.post<{ created?: number; skipped?: number }>(`/api/history/${customerId}/backfill`, {});
       toast.success(`Created ${data.created ?? 0} events, skipped ${data.skipped ?? 0} already logged`);
       await loadHistory();
     } catch {
@@ -149,25 +116,14 @@ export default function CustomerHistoryPage() {
     if (!logForm.title.trim()) { toast.error("Title is required"); return; }
     setActionLoading("log");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/history/${customerId}`), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          event_type: logForm.event_type,
-          event_date: new Date(logForm.event_date).toISOString(),
-          title: logForm.title,
-          description: logForm.description || null,
-          amount: logForm.amount ? parseFloat(logForm.amount) : null,
-          currency: logForm.currency,
-        }),
+      await api.post(`/api/history/${customerId}`, {
+        event_type: logForm.event_type,
+        event_date: new Date(logForm.event_date).toISOString(),
+        title: logForm.title,
+        description: logForm.description || null,
+        amount: logForm.amount ? parseFloat(logForm.amount) : null,
+        currency: logForm.currency,
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to log event");
-        return;
-      }
       toast.success("Event logged");
       setLogForm({ event_type: "appointment", event_date: new Date().toISOString().slice(0, 16), title: "", description: "", amount: "", currency: "SEK" });
       setShowLogForm(false);
@@ -182,17 +138,7 @@ export default function CustomerHistoryPage() {
   async function deleteEvent(id: string) {
     setActionLoading("del_" + id);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/history/events/${id}`), {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to delete event");
-        return;
-      }
+      await api.delete(`/api/history/events/${id}`);
       toast.success("Event deleted");
       await loadHistory();
     } catch {
@@ -420,7 +366,7 @@ export default function CustomerHistoryPage() {
                       <div className={`h-8 w-8 rounded-full flex items-center justify-center ${cfg.color}`}>
                         <Icon className="h-4 w-4" />
                       </div>
-                      {!isLast && <div className="w-px flex-1 bg-gray-200 my-1" style={{ minHeight: "1rem" }} />}
+                      {!isLast && <div className="w-px flex-1 bg-gray-200 my-1 min-h-4" />}
                     </div>
 
                     {/* Content */}

@@ -37,7 +37,7 @@ from app.database import async_session, engine
 from app.main import app
 from app.middleware.auth import MemberCtx, get_current_member
 from app.middleware.rate_limit import _reset_for_tests as _reset_rate_limit
-from app.models.organization import Organization, OrganizationMember, OrgRole
+from app.features.auth.organization import Organization, OrganizationMember, OrgRole
 
 
 @pytest.fixture(autouse=True)

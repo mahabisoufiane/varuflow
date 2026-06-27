@@ -1,0 +1,22 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Statement format and status badges ───────────────────────────────────────
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.formatPdf  { @extend .badge; background: #fee2e2; color: #dc2626; }
+.formatCsv  { @extend .badge; background: #dcfce7; color: #15803d; }
+.formatJson { @extend .badge; background: #dbeafe; color: #1d4ed8; }
+
+.statusPending    { @extend .badge; background: #fef9c3; color: #a16207; }
+.statusGenerating { @extend .badge; background: #dbeafe; color: #1d4ed8; }
+.statusReady      { @extend .badge; background: #dcfce7; color: #15803d; }
+.statusFailed     { @extend .badge; background: #fee2e2; color: #dc2626; }

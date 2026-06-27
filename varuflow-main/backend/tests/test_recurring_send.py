@@ -29,8 +29,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from sqlalchemy import select
 
-from app.models.audit import AuditLogEntry
-from app.models.invoicing import (
+from app.features.compliance.audit_models import AuditLogEntry
+from app.features.invoicing.models import (
     Customer,
     Invoice,
     InvoiceLineItem,
@@ -38,7 +38,7 @@ from app.models.invoicing import (
     RecurringFrequency,
     RecurringInvoice,
 )
-from app.models.organization import OrgPlan
+from app.features.auth.organization import OrgPlan
 from app.services.recurring_send import (
     _parse_methods,
     auto_send_invoice,

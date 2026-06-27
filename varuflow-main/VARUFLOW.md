@@ -1,5 +1,27 @@
 # Varuflow — Complete Project Documentation
 
+## Quick pitch (30 seconds)
+
+Varuflow is the **all-in-one business platform for Nordic wholesalers**. Replace your spreadsheets, separate invoicing app, and manual stock tracking with one tool that covers inventory, invoicing, POS, analytics, and an AI business advisor — available in Swedish, Norwegian, Danish, and English.
+
+**Live demo:** `demo@varuflow.se` / `Demo1234!` (run `python backend/scripts/seed_demo.py` first)  
+**Video script:** [docs/DEMO_VIDEO_SCRIPT.md](docs/DEMO_VIDEO_SCRIPT.md)
+
+| Feature | What it does |
+|---------|-------------|
+| Inventory | Products, warehouses, stock movements, purchase orders, barcode scanning |
+| Invoicing | Create → PDF → email → Stripe pay link → auto-mark PAID |
+| POS | Tablet cash register with barcode scanner and receipt printing |
+| Customer portal | Magic-link self-service portal — customers view invoices and pay online |
+| AI advisor | Rules-based insight cards + GPT-4o chat in Swedish/Norwegian/Danish/English |
+| Analytics | 6-month revenue charts, top customers, top products — PDF export |
+| Fortnox | One-click sync to Sweden's dominant accounting ERP |
+| E-invoicing | Norwegian EHF/Peppol and Swedish/EU standard XML export |
+| Multi-entity | Parent org + country branches for groups operating in multiple markets |
+| Mobile | Expo React Native app (iOS + Android) |
+
+---
+
 ## What Is Varuflow?
 
 Varuflow is a **B2B SaaS platform for Nordic wholesalers**, targeting small-to-medium Swedish, Norwegian, and Danish wholesale businesses. It replaces fragmented tools (spreadsheets, separate invoicing apps, manual stock tracking) with a single integrated system covering inventory, invoicing, analytics, POS, and AI-driven business intelligence.

@@ -6,8 +6,8 @@ import uuid
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.audit import AuditLogEntry
-from app.models.organization import OrgRole, OrganizationMember
+from app.features.compliance.audit_models import AuditLogEntry
+from app.features.auth.organization import OrgRole, OrganizationMember
 
 
 

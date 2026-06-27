@@ -19,12 +19,34 @@ from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 
 
+class _RequestContextFilter(logging.Filter):
+    """Stamp every log record with the current request_id from the ContextVar.
+
+    Uses a lazy import so this class can be defined before app.* modules are
+    imported (logging is configured at module load time, before the import
+    block below). Returns None outside an HTTP context (scheduler jobs, tests)
+    which the formatter omits from the JSON output.
+    """
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        try:
+            from app.middleware.request_id import request_id_ctx
+            record.request_id = request_id_ctx.get()
+        except Exception:
+            record.request_id = None
+        return True
+
+
 class _JsonFormatter(logging.Formatter):
     """True structured-JSON formatter.
 
     Replaces the previous format-string approach which used %(message)r
     (Python repr) and produced invalid JSON whenever a log message contained
     double-quotes, newlines, or non-ASCII characters.
+
+    Emits ``request_id`` when populated by ``_RequestContextFilter`` so every
+    log line from the same HTTP request shares the same correlation ID without
+    callers having to pass it explicitly.
     """
 
     def format(self, record: logging.LogRecord) -> str:
@@ -35,6 +57,9 @@ class _JsonFormatter(logging.Formatter):
             "logger": record.name,
             "msg": record.message,
         }
+        rid = getattr(record, "request_id", None)
+        if rid:
+            doc["request_id"] = rid
         if record.exc_info:
             doc["exc"] = self.formatException(record.exc_info)
         return json.dumps(doc, ensure_ascii=False)
@@ -48,10 +73,16 @@ logging.config.dictConfig({
             "()": _JsonFormatter,
         }
     },
+    "filters": {
+        "request_context": {
+            "()": _RequestContextFilter,
+        }
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "json",
+            "filters": ["request_context"],
         }
     },
     "root": {"level": "INFO", "handlers": ["console"]},
@@ -64,95 +95,37 @@ from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.readonly import ReadOnlyMiddleware
 from app.middleware.pause_guard import PauseWriteGuardMiddleware
 from app.middleware.request_id import RequestIdMiddleware
-from app.routers import accounting, activity, ai_automation, ai_engine, analytics, approval_chains, audit, auth, auto_reorder, bank_feed, bi, billing, bookings, budget, campaigns, balance_sheet, cashflow, ceo_dashboard, churn_dashboard, commissions, compliance_audit_chain, compliance_data_residency, compliance_field_masking, compliance_pentest, contract_signing, contracts, countries, credit_notes, crm, crm_sync, currencies, custom_fields, customer_activity, customer_contacts, customer_notes, customer_statements, customer_tags, data_import, developer, documents, einvoice, email_sequences, expense_activity, expense_budgets, expense_notes, expense_reports, expense_tags, expenses, financial_reports, fixed_assets, forecasting, franchise, gcc_payments, gdpr, gdpr_consent, gift_cards, health, hr_employee_onboarding, hr_employees, hr_leave, hr_org_chart, hr_reviews, hr_time, hr_timesheets, hr_training, integrations, inventory, inventory_audit, invoice_activity, invoice_notes, invoice_tags, invoice_templates, invoicing, kpi_goals, labels, lead_forms, leads, ledger, local_auth, loyalty, manufacturing, market_expansion, meeting_links, mileage_logs, mobile_routes, mobile_signatures, mobile_terminal, mobile_voice_notes, multi_entity, notification_channels, notifications, okr, onboarding, online_orders, open_banking, partner_program, payroll, payment_options, after_sales, messaging, petty_cash, pnl, policy_docs, portal, portal_admin, pos, pos_quick_buttons, pricing_experiments, product_activity, product_import, product_notes, product_tags, projects, purchase_order_notes, purchase_order_tags, purchase_order_activity, purchase_requests, qc, quotes, recurring, recurring_expenses, referrals, reports, reviews, sandbox, saved_filters, scenario_planning, scheduling, search, segments, settings_security, shifts, shop_config, shopify_sync, stock_counts, stock_transfers, storefront, supplier_activity, supplier_contacts, supplier_credit_notes, supplier_notes, supplier_portal, supplier_statements, supplier_tags, tags, team, uploads, vat_return, visma_sync, waitlist, warehouse_activity, warehouse_notes, warehouse_tags, webhooks, widget, work_management, zapier_connect, zatca, zakat, tasks, announcements, job_cards, email_templates, sms_outbox, local_payments, merchant_subscriptions, reconciliation, bom_extras, landed_costs, vendor_ratings, kitting, dashboard_builder, report_builder, cashflow_prediction, anomaly_detection, cohort_analysis, esign, risk_register, insurance, regulatory_calendar, whistleblower, conflict_of_interest, carbon, esg, supplier_sustainability, investor_updates, cap_table, board_packs, data_room, marketing_attribution, ab_testing, landing_pages, marketing_broadcasts, nps, sop_library, checklists, recurring_reminders, decision_log, family_accounts, booking_subscriptions, group_bookings, booking_waitlist, wallet_passes, customer_app_config, customer_chat, video_consultations, voice_notes, notification_prefs, service_status, service_timeline, live_tracking, photo_updates, customer_history
-from app.routers import accounting_partners, operator_referrals, admin as admin_router
-# Sprint 9: Personalization + Loyalty & Rewards
-from app.routers import (
-    achievements,
-    ai_recommendations,
-    birthday_vouchers,
-    customer_preferences,
-    important_dates,
-    loyalty_streaks,
-    membership_tiers,
-    referrals_sprint9,
-    saved_payment_methods,
-    staff_notes,
-)
-# Sprint 10: Convenience + B2B Buyer Features
-from app.routers import (
-    accountant_forwarding,
-    buyer_pos,
-    calendar_sync,
-    customer_addresses,
-    customer_org_members,
-    negotiated_pricing,
-    quote_comparisons,
-    receipt_exports,
-    wallet_payments,
-)
-# Sprint 11: Trust & Verification + Customer Service Layer
-from app.routers import (
-    service_reviews,
-    staff_credentials,
-    booking_capacity,
-    portfolio_photos,
-    live_chat,
-    chatbot,
-    knowledge_base,
-    return_pickups,
-)
-# Sprint 12: Trust & Safety + Communication Layer
-from app.routers import (
-    identity_verification,
-    background_checks,
-    insurance_addons,
-    disputes,
-    merchant_reviews,
-    unified_inbox,
-    message_translation,
-    smart_replies,
-    sentiment_analysis,
-)
-# Sprint 13: Reporting + AI Across the Stack
-from app.routers import (
-    statement_requests,
-    mobile_kpi,
-    voice_reports,
-    anomaly_notifications,
-    ai_product_desc,
-    ai_email_draft,
-    ai_photo_tags,
-    ai_pricing,
-    ai_personas,
-)
-# Sprint 14: Integrations QoL
-from app.routers import (
-    merchant_calendar_sync,
-    zapier_connector,
-    customer_webhooks_config,
-    customer_api_keys,
-    notification_bundles,
-    location_timezones,
-)
-# Sprint 15: Mobile First
-from app.routers import (
-    home_screen_widgets,
-    watch_sessions,
-    voice_shortcuts,
-    lock_screen_alerts,
-)
-# Trial system
-from app.routers import trial
-# Upsell trigger engine
-from app.routers import upsells
-from app.routers import branding
-# Dev-only tooling (plan switcher etc.) — import always, 404-guarded inside
-from app.routers import dev_tools
-# POS device authentication (PIN-based, standalone POS app)
-from app.routers import pos_auth
-from app.routers import excel_reports
-from app.routers import scheduler as scheduler_router
+from app.features.invoicing.router import router as invoicing_router
+from app.features.auth.router import router as auth_router
+from app.features.pos.router import router as pos_router
+from app.features.hr.router import router as hr_router
+from app.features.expenses.router import router as expenses_router
+from app.features.inventory.router import router as inventory_router
+from app.features.customers.router import router as customers_router
+from app.features.purchases.router import router as purchases_router
+from app.features.analytics.router import router as analytics_router
+from app.features.bookings.router import router as bookings_router
+from app.features.loyalty.router import router as loyalty_router
+from app.features.projects.router import router as projects_router
+from app.features.storefront.router import router as storefront_router
+from app.features.marketing.router import router as marketing_router
+from app.features.compliance.router import router as compliance_router
+from app.features.integrations.router import router as integrations_router
+from app.features.notifications.router import router as notifications_router
+from app.features.portal.router import router as portal_router
+from app.features.admin.router import router as admin_router
+from app.features.ai.router import router as ai_router
+from app.features.billing.router import router as billing_router
+from app.features.corporate.router import router as corporate_router
+from app.features.mobile.router import router as mobile_router
+from app.features.settings.router import router as settings_router
+
+# Public sub-routers that must be mounted separately (no-auth endpoints)
+from app.features.bookings.bookings import public_checkin_router as _bookings_public_checkin_router
+from app.features.marketing.reviews import public_router as _reviews_public_router
+
+# Infrastructure routers (intentionally NOT in feature packages)
+from app.routers import health, uploads, scheduler as scheduler_router
 from app.services.scheduler import create_scheduler
 
 # slowapi's `get_remote_address` reads `request.client.host`, which on
@@ -231,12 +204,9 @@ async def lifespan(app: FastAPI):
     # calls asyncio.run() internally, which cannot be nested inside the
     # already-running event loop.
     loop = asyncio.get_running_loop()
-    try:
-        log.info("Running Alembic migrations…")
-        await loop.run_in_executor(None, _run_migrations)
-        log.info("Alembic migrations complete.")
-    except Exception:
-        log.exception("Alembic migration failed — continuing startup anyway.")
+    log.info("Running Alembic migrations…")
+    await loop.run_in_executor(None, _run_migrations)
+    log.info("Alembic migrations complete.")
 
     scheduler = create_scheduler()
     scheduler.start()
@@ -408,308 +378,36 @@ async def _global_exception_handler(request: Request, exc: Exception) -> JSONRes
     )
 
 app.include_router(health.router, prefix="/api")
-app.include_router(auth.router)
-app.include_router(local_auth.router)
-app.include_router(inventory.router)
-app.include_router(stock_counts.router)
-app.include_router(invoicing.router)
-app.include_router(waitlist.router)
-app.include_router(admin_router.router)
-app.include_router(analytics.router)
-app.include_router(team.router)
-app.include_router(branding.router)
-app.include_router(dev_tools.router)
-app.include_router(recurring.router)
-app.include_router(recurring.public_router)
-app.include_router(recurring_expenses.router)
-app.include_router(mileage_logs.router)
-app.include_router(expense_budgets.router)
-app.include_router(expense_reports.router)
-app.include_router(pos.router)
-app.include_router(pos_auth.router)
-app.include_router(scheduler_router.router)
-app.include_router(billing.router)
-app.include_router(integrations.router)
-app.include_router(portal.router)
-app.include_router(portal_admin.router)
-app.include_router(ai_engine.router)
-app.include_router(countries.router)
-app.include_router(gdpr.router)
-app.include_router(audit.router)
-app.include_router(einvoice.router)
-app.include_router(accounting.router)
-app.include_router(ledger.router)
-app.include_router(financial_reports.router)
-app.include_router(vat_return.router)
-app.include_router(fixed_assets.router)
-app.include_router(payroll.router)
-app.include_router(budget.router)
-app.include_router(bank_feed.router)
-app.include_router(notifications.router)
-app.include_router(onboarding.router)
-app.include_router(webhooks.router)
-app.include_router(auto_reorder.router)
-app.include_router(settings_security.router)
-app.include_router(bookings.router)
-app.include_router(bookings.public_checkin_router)
-app.include_router(commissions.router)
-app.include_router(gift_cards.router)
-app.include_router(currencies.router)
-app.include_router(loyalty.router)
-app.include_router(labels.router)
-app.include_router(supplier_portal.router)
-app.include_router(stock_transfers.router)
-app.include_router(segments.router)
-app.include_router(campaigns.router)
-app.include_router(forecasting.router)
-app.include_router(invoice_templates.router)
-app.include_router(expenses.router)
-app.include_router(expense_notes.router)
-app.include_router(expense_tags.router)
-app.include_router(expense_activity.router)
-app.include_router(documents.router)
+# Feature packages (each includes all their sub-routers)
+app.include_router(auth_router)
+app.include_router(invoicing_router)
+app.include_router(pos_router)
+app.include_router(hr_router)
+app.include_router(expenses_router)
+app.include_router(inventory_router)
+app.include_router(customers_router)
+app.include_router(purchases_router)
+app.include_router(analytics_router)
+app.include_router(bookings_router)
+app.include_router(_bookings_public_checkin_router)
+app.include_router(loyalty_router)
+app.include_router(projects_router)
+app.include_router(storefront_router)
+app.include_router(marketing_router)
+app.include_router(_reviews_public_router)
+app.include_router(compliance_router)
+app.include_router(integrations_router)
+app.include_router(notifications_router)
+app.include_router(portal_router)
+
+# New feature packages
+app.include_router(admin_router)
+app.include_router(ai_router)
+app.include_router(billing_router)
+app.include_router(corporate_router)
+app.include_router(mobile_router)
+app.include_router(settings_router)
+
+# Infrastructure (health, uploads, scheduler stay outside features/)
 app.include_router(uploads.router)
-app.include_router(developer.router)
-app.include_router(widget.router)
-app.include_router(inventory_audit.router)
-app.include_router(reviews.router)
-app.include_router(reviews.public_router)
-app.include_router(search.router)
-app.include_router(custom_fields.router)
-app.include_router(tags.router)
-app.include_router(saved_filters.router)
-app.include_router(activity.router)
-app.include_router(pos_quick_buttons.router)
-app.include_router(contracts.router)
-app.include_router(shifts.router)
-app.include_router(referrals.router)
-app.include_router(product_import.router)
-app.include_router(product_notes.router)
-app.include_router(product_tags.router)
-app.include_router(product_activity.router)
-app.include_router(warehouse_notes.router)
-app.include_router(warehouse_tags.router)
-app.include_router(warehouse_activity.router)
-app.include_router(invoice_notes.router)
-app.include_router(invoice_tags.router)
-app.include_router(invoice_activity.router)
-app.include_router(purchase_order_notes.router)
-app.include_router(purchase_order_tags.router)
-app.include_router(purchase_order_activity.router)
-app.include_router(supplier_credit_notes.router)
-app.include_router(supplier_statements.router)
-app.include_router(credit_notes.router)
-app.include_router(customer_notes.router)
-app.include_router(customer_statements.router)
-app.include_router(customer_tags.router)
-app.include_router(customer_contacts.router)
-app.include_router(customer_activity.router)
-app.include_router(supplier_notes.router)
-app.include_router(supplier_tags.router)
-app.include_router(supplier_contacts.router)
-app.include_router(supplier_activity.router)
-app.include_router(online_orders.router)
-app.include_router(shop_config.router)
-app.include_router(storefront.router)
-app.include_router(crm.router)
-app.include_router(lead_forms.router)
-app.include_router(leads.router)
-app.include_router(email_sequences.router)
-app.include_router(meeting_links.router)
-app.include_router(hr_employees.router)
-app.include_router(hr_leave.router)
-app.include_router(hr_org_chart.router)
-app.include_router(hr_reviews.router)
-app.include_router(hr_time.router)
-app.include_router(hr_timesheets.router)
-app.include_router(hr_employee_onboarding.router)
-app.include_router(hr_training.router)
-app.include_router(manufacturing.router)
-app.include_router(qc.router)
-app.include_router(projects.router)
-app.include_router(ai_automation.router)
-app.include_router(zatca.router)
-app.include_router(gcc_payments.router)
-app.include_router(zakat.router)
-app.include_router(shopify_sync.router)
-app.include_router(crm_sync.router)
-app.include_router(notification_channels.router)
-app.include_router(visma_sync.router)
-app.include_router(open_banking.router)
-app.include_router(zapier_connect.router)
-app.include_router(mobile_routes.router)
-app.include_router(mobile_signatures.router)
-app.include_router(mobile_terminal.router)
-app.include_router(mobile_voice_notes.router)
-app.include_router(multi_entity.router)
-app.include_router(franchise.router)
-app.include_router(compliance_audit_chain.router)
-app.include_router(compliance_field_masking.router)
-app.include_router(compliance_data_residency.router)
-app.include_router(compliance_pentest.router)
-app.include_router(bi.router)
-app.include_router(ceo_dashboard.router)
-app.include_router(kpi_goals.router)
-app.include_router(okr.router)
-app.include_router(risk_register.router)
-app.include_router(insurance.router)
-app.include_router(regulatory_calendar.router)
-app.include_router(whistleblower.router)
-app.include_router(conflict_of_interest.router)
-app.include_router(carbon.router)
-app.include_router(esg.router)
-app.include_router(supplier_sustainability.router)
-app.include_router(investor_updates.router)
-app.include_router(cap_table.router)
-app.include_router(board_packs.router)
-app.include_router(data_room.router)
-app.include_router(marketing_attribution.router)
-app.include_router(ab_testing.router)
-app.include_router(landing_pages.router)
-app.include_router(marketing_broadcasts.router)
-app.include_router(nps.router)
-app.include_router(sop_library.router)
-app.include_router(checklists.router)
-app.include_router(recurring_reminders.router)
-app.include_router(decision_log.router)
-app.include_router(family_accounts.router)
-app.include_router(booking_subscriptions.router)
-app.include_router(group_bookings.router)
-app.include_router(booking_waitlist.router)
-app.include_router(wallet_passes.router)
-app.include_router(customer_app_config.router)
-app.include_router(customer_chat.router)
-app.include_router(video_consultations.router)
-app.include_router(voice_notes.router)
-app.include_router(notification_prefs.router)
-app.include_router(service_status.router)
-app.include_router(service_timeline.router)
-app.include_router(live_tracking.router)
-app.include_router(photo_updates.router)
-app.include_router(customer_history.router)
-app.include_router(scenario_planning.router)
-app.include_router(partner_program.router)
-app.include_router(pricing_experiments.router)
-app.include_router(market_expansion.router)
-app.include_router(churn_dashboard.router)
-app.include_router(approval_chains.router)
-app.include_router(contract_signing.router)
-app.include_router(policy_docs.router)
-app.include_router(work_management.router)
-app.include_router(scheduling.router)
-app.include_router(purchase_requests.router)
-app.include_router(tasks.router)
-app.include_router(announcements.router)
-app.include_router(job_cards.router)
-app.include_router(petty_cash.router)
-app.include_router(reports.router)
-app.include_router(excel_reports.router)
-app.include_router(pnl.router)
-app.include_router(cashflow.router)
-app.include_router(balance_sheet.router)
-app.include_router(quotes.public_router)
-app.include_router(payment_options.router)
-app.include_router(after_sales.router)
-app.include_router(after_sales.public_router)
-app.include_router(messaging.router)
-app.include_router(email_templates.router)
-app.include_router(sms_outbox.router)
-app.include_router(local_payments.router)
-app.include_router(merchant_subscriptions.router)
-app.include_router(reconciliation.router)
-app.include_router(bom_extras.router)
-app.include_router(landed_costs.router)
-app.include_router(vendor_ratings.router)
-app.include_router(kitting.router)
-app.include_router(dashboard_builder.router)
-app.include_router(report_builder.router)
-app.include_router(cashflow_prediction.router)
-app.include_router(anomaly_detection.router)
-app.include_router(cohort_analysis.router)
-app.include_router(esign.router)
-app.include_router(data_import.router)
-app.include_router(sandbox.router)
-
-# Sprint 9: Personalization + Loyalty & Rewards
-app.include_router(customer_preferences.router)
-app.include_router(ai_recommendations.router)
-app.include_router(important_dates.router)
-app.include_router(saved_payment_methods.router)
-app.include_router(staff_notes.router)
-app.include_router(membership_tiers.router)
-app.include_router(achievements.router)
-app.include_router(birthday_vouchers.router)
-app.include_router(referrals_sprint9.router)
-app.include_router(loyalty_streaks.router)
-app.include_router(gdpr_consent.router)
-
-# Sprint 10: Convenience + B2B Buyer Features
-app.include_router(customer_addresses.router)
-app.include_router(calendar_sync.router)
-app.include_router(accountant_forwarding.router)
-app.include_router(receipt_exports.router)
-app.include_router(wallet_payments.router)
-app.include_router(buyer_pos.router)
-app.include_router(customer_org_members.router)
-app.include_router(negotiated_pricing.router)
-app.include_router(quote_comparisons.router)
-
-# Sprint 11: Trust & Verification + Customer Service Layer
-app.include_router(service_reviews.router)
-app.include_router(staff_credentials.router)
-app.include_router(booking_capacity.router)
-app.include_router(portfolio_photos.router)
-app.include_router(live_chat.router)
-app.include_router(chatbot.router)
-app.include_router(knowledge_base.router)
-app.include_router(return_pickups.router)
-
-# Sprint 12: Trust & Safety + Communication Layer
-app.include_router(identity_verification.router)
-app.include_router(background_checks.router)
-app.include_router(insurance_addons.router)
-app.include_router(disputes.router)
-app.include_router(merchant_reviews.router)
-app.include_router(unified_inbox.router)
-app.include_router(message_translation.router)
-app.include_router(smart_replies.router)
-app.include_router(sentiment_analysis.router)
-
-# Sprint 13: Reporting + AI Across the Stack
-app.include_router(statement_requests.router)
-app.include_router(mobile_kpi.router)
-app.include_router(voice_reports.router)
-app.include_router(anomaly_notifications.router)
-app.include_router(ai_product_desc.router)
-app.include_router(ai_email_draft.router)
-app.include_router(ai_photo_tags.router)
-app.include_router(ai_pricing.router)
-app.include_router(ai_personas.router)
-
-# Sprint 14: Integrations QoL
-app.include_router(merchant_calendar_sync.router)
-app.include_router(zapier_connector.router)
-app.include_router(customer_webhooks_config.router)
-app.include_router(customer_api_keys.router)
-app.include_router(notification_bundles.router)
-app.include_router(location_timezones.router)
-
-# Sprint 15: Mobile First
-app.include_router(home_screen_widgets.router)
-app.include_router(watch_sessions.router)
-app.include_router(voice_shortcuts.router)
-app.include_router(lock_screen_alerts.router)
-
-# Trial system
-app.include_router(trial.router)
-
-# Upsell trigger engine
-app.include_router(upsells.router)
-
-# Accounting firm partner programme + operator referrals
-app.include_router(accounting_partners.router)
-app.include_router(operator_referrals.router)
-
-# Trial onboarding sequences admin dashboard
-from app.routers import trial_admin
-app.include_router(trial_admin.router)
+app.include_router(scheduler_router.router)

@@ -32,12 +32,20 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1] / "app"
 
 
 def _read(relpath: str) -> str:
-    return (_BACKEND_ROOT / relpath).read_text()
+    _p = _BACKEND_ROOT / relpath
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
-ROUTER_SRC = _read("routers/forecasting.py")
+ROUTER_SRC = _read("features/analytics/forecasting.py")
 SERVICE_SRC = _read("services/forecasting_engine.py")
-ANALYTICS_SRC = _read("routers/analytics.py")
+ANALYTICS_SRC = _read("features/analytics/analytics.py")
 MAIN_SRC = _read("main.py")
 
 
@@ -238,7 +246,7 @@ def test_plan_gate():
     assert ROUTER_SRC.count("Depends(require_plan(OrgPlan.PRO))") >= 5
     assert "from app.middleware.plan_check import require_plan" in ROUTER_SRC
     # Dependency import from OrgPlan.
-    assert "from app.models.organization import OrgPlan" in ROUTER_SRC
+    assert "from app.features.auth.organization import OrgPlan" in ROUTER_SRC
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -338,8 +346,12 @@ def test_analytics_overview_includes_forecast_count():
 
 
 def test_router_registered_in_main():
-    assert "forecasting.router" in MAIN_SRC
-    assert "forecasting," in MAIN_SRC
+
+    # Registered via analytics_router (vertical-slice architecture).
+    # The individual module is wired inside the feature router, not directly in main.py.
+    feat_src = _read("features/analytics/router.py")
+    assert "forecasting" in feat_src
+    assert "analytics_router" in MAIN_SRC
 
 
 def test_gather_sort_order_is_at_risk_first():

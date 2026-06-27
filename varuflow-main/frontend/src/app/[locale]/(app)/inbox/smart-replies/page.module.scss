@@ -1,0 +1,17 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Smart reply tone badges ──────────────────────────────────────────────────
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $vf-radius-sm;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.toneProfessional { @extend .badge; background: #dbeafe; color: #1e40af; }
+.toneFriendly     { @extend .badge; background: #dcfce7; color: #166534; }
+.toneBrief        { @extend .badge; background: #f3f4f6; color: #1f2937; }

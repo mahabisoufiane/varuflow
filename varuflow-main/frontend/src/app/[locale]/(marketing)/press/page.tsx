@@ -16,7 +16,7 @@ const FACTS = [
   { label: "Headquarters", value: "Stockholm, Sweden" },
   { label: "Markets", value: "Sweden, Norway, Denmark, KSA, UAE" },
   { label: "Product", value: "Inventory & invoicing SaaS for Nordic wholesalers" },
-  { label: "Pricing", value: "Free, Pro (599 SEK/mo), Enterprise (1999 SEK/mo)" },
+  { label: "Pricing", value: "Starter 499 SEK/mo · Professional 1,490 SEK/mo · Enterprise custom" },
   { label: "Compliance", value: "Bokföringslagen, ZATCA, GDPR, Peppol" },
 ];
 
@@ -35,7 +35,7 @@ export default function PressPage() {
           <h2 className="vf-text-1 mb-4 text-xl font-bold">Company boilerplate</h2>
           <div className="rounded-2xl border border-white/8 bg-white/4 p-6">
             <p className="vf-text-2 text-sm leading-relaxed">
-              Varuflow is a cloud-based inventory and invoicing platform built for Nordic wholesalers. It combines real-time inventory management, automated invoicing, a B2B customer portal, and AI-powered demand forecasting in one product. Varuflow is compliant with Bokföringslagen (Sweden), ZATCA (Saudi Arabia), GDPR, and Peppol e-invoicing standards. The platform offers a free Starter plan, a Pro plan at 599 SEK/month, and an Enterprise plan at 1,999 SEK/month. Varuflow was founded in Stockholm in 2024.
+              Varuflow is a cloud-based inventory and invoicing platform built for Nordic wholesalers. It combines real-time inventory management, automated invoicing, a B2B customer portal, and AI-powered demand forecasting in one product. Varuflow is compliant with Bokföringslagen (Sweden), ZATCA (Saudi Arabia), GDPR, and Peppol e-invoicing standards. The platform offers a Starter plan at 499 SEK/month, a Professional plan at 1,490 SEK/month, and an Enterprise plan with custom pricing. All plans include a 14-day free trial. Varuflow was founded in Stockholm in 2024.
             </p>
           </div>
         </section>

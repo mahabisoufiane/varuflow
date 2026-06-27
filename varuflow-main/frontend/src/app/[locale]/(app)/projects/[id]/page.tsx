@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 interface Task {
   id: string;
@@ -69,11 +70,18 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   const [msForm, setMsForm] = useState({ title: "", due_date: "" });
   const [showExpForm, setShowExpForm] = useState(false);
   const [expForm, setExpForm] = useState({ description: "", amount: "", currency: "SEK", incurred_date: new Date().toISOString().slice(0, 10) });
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   useEffect(() => {
     api.get(`/api/projects/${params.id}`)
       .then(setProject)
-      .catch(() => toast.error("Failed to load project"))
+      .catch((err) => {
+        if (isPlanGateError(err)) {
+          setPlanBlocked({ module: (err as any).module ?? "hr", currentPlan: (err as any).currentPlan ?? "FREE" });
+          return;
+        }
+        toast.error("Failed to load project");
+      })
       .finally(() => setLoading(false));
   }, [params.id]);
 
@@ -158,6 +166,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   }
 
   if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin" /></div>;
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Projects" />;
   if (!project) return <div className="p-6"><p className="text-muted-foreground">Project not found.</p></div>;
 
   const openTasks = project.tasks.filter((t) => t.status !== "done");

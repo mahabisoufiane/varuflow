@@ -28,10 +28,8 @@ def upgrade() -> None:
                   sa.ForeignKey("organizations.id", ondelete="CASCADE"),
                   nullable=False),
         sa.Column("sender_id", UUID(as_uuid=True),
-                  sa.ForeignKey("staff.id", ondelete="SET NULL"),
                   nullable=True),
         sa.Column("recipient_id", UUID(as_uuid=True),
-                  sa.ForeignKey("staff.id", ondelete="SET NULL"),
                   nullable=True),
         # channel slug for group/broadcast messages, e.g. "general", "ops"
         sa.Column("channel", sa.String(50), nullable=True),
@@ -61,7 +59,6 @@ def upgrade() -> None:
                   sa.ForeignKey("staff_messages.id", ondelete="CASCADE"),
                   nullable=False),
         sa.Column("staff_id", UUID(as_uuid=True),
-                  sa.ForeignKey("staff.id", ondelete="CASCADE"),
                   nullable=False),
         sa.Column("read_at", sa.DateTime(timezone=True),
                   server_default=sa.func.now(), nullable=False),

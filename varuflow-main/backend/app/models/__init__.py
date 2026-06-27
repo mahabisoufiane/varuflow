@@ -1,279 +1,269 @@
+"""Model barrel — imports every SQLAlchemy model so Alembic can detect them.
+
+IMPORTANT: Import from concrete model files directly, NEVER via feature
+__init__.py packages, to avoid circular imports through the router layer.
+"""
 from app.database import Base  # noqa: F401
 
-# Import all models so Alembic can detect them
-from app.models.organization import Organization, OrganizationMember  # noqa: F401
-from app.models.inventory import (  # noqa: F401
-    Product,
-    ProductBatch,
-    Supplier,
-    Warehouse,
-    StockLevel,
-    StockMovement,
-    PurchaseOrder,
-    PurchaseOrderItem,
-)
-from app.models.invoicing import (  # noqa: F401
-    Customer,
-    Invoice,
-    InvoiceLineItem,
-    Payment,
-    RecurringInvoice,
-)
-from app.models.pos import PosSession, PosSale, PosSaleItem  # noqa: F401
-from app.models.waitlist import Waitlist  # noqa: F401
-from app.models.audit import AuditLogEntry  # noqa: F401
-from app.models.idempotency import IdempotencyKey  # noqa: F401
-from app.models.ai_snooze import AiCardSnooze  # noqa: F401
-from app.models.supplier_lead_time import SupplierLeadTime  # noqa: F401
-from app.models.dunning import DunningEvent  # noqa: F401
-from app.models.portal_session import PortalSession  # noqa: F401
-from app.models.customer_price_override import CustomerPriceOverride  # noqa: F401
-from app.models.notifications import DeviceToken  # noqa: F401
-from app.models.onboarding import OnboardingProgress  # noqa: F401
-from app.models.ai_usage import DailyAiUsage  # noqa: F401
-from app.models.webhook import WebhookEndpoint, WebhookDelivery  # noqa: F401
-from app.models.status import HealthCheck, StatusIncident  # noqa: F401
-from app.models.stock_count import StockCount, StockCountItem, StockCountStatus  # noqa: F401
-from app.models.auto_reorder import AutoReorderRun  # noqa: F401
-from app.models.payable_invoice import PayableInvoice  # noqa: F401
-from app.models.bookings import (  # noqa: F401
-    Appointment,
-    AppointmentReminder,
-    Service,
-    Staff,
-)
-from app.models.commissions import (  # noqa: F401
-    CommissionEntry,
-    CommissionRule,
-    CommissionRun,
-)
-from app.models.gift_cards import (  # noqa: F401
-    BundleRedemption,
-    GiftCard,
-    ServiceBundle,
-)
-from app.models.currencies import ExchangeRate  # noqa: F401
-from app.models.loyalty import (  # noqa: F401
-    LoyaltyAccount,
-    LoyaltyProgram,
-    LoyaltyTransaction,
-)
-from app.models.supplier_portal import SupplierPortalToken  # noqa: F401
-from app.models.stock_transfers import (  # noqa: F401
-    StockTransfer,
-    StockTransferItem,
-    StockTransferStatus,
-)
-from app.models.segments import (  # noqa: F401
-    Segment,
-    SegmentMember,
-    SegmentType,
-)
-from app.models.campaigns import (  # noqa: F401
-    Campaign,
-    CampaignSend,
-    CampaignSendStatus,
-    CampaignStatus,
-)
-from app.models.accounting import (  # noqa: F401
-    AccountType,
-    ChartOfAccount,
-    JournalEntry,
-    JournalLine,
-)
-from app.models.fixed_assets import FixedAsset, AssetDepreciation  # noqa: F401
-from app.models.payroll import PayrollRun, PayrollEntry  # noqa: F401
-from app.models.budget import Budget, BudgetLine  # noqa: F401
-from app.models.bank_feed import BankAccount, BankTransaction  # noqa: F401
-from app.models.ecommerce import (  # noqa: F401
-    Storefront,
-    OnlineOrder,
-    OnlineOrderItem,
-    CartSession,
-)
-from app.models.crm import Deal, DealActivity, DealStage  # noqa: F401
-from app.models.lead_forms import LeadForm, LeadFormSubmission  # noqa: F401
-from app.models.email_sequences import (  # noqa: F401
-    EmailSequence,
-    EmailSequenceStep,
-    EmailSequenceEnrollment,
-)
-from app.models.meeting_links import MeetingLink  # noqa: F401
-from app.models.hr import EmployeeProfile, EmployeeEmergencyContact  # noqa: F401
-from app.models.employee_contracts import EmployeeContract  # noqa: F401
-from app.models.leave_requests import LeaveRequest  # noqa: F401
-from app.models.leave_entitlement import LeaveEntitlement, PublicHoliday  # noqa: F401
-from app.models.time_entries import TimeEntry  # noqa: F401
-from app.models.performance import PerformanceCycle, PerformanceReview  # noqa: F401
-from app.models.bom import BomHeader, BomLine  # noqa: F401
-from app.models.work_orders_mfg import WorkOrder, WorkOrderMaterialLine, WorkOrderLabourLine  # noqa: F401
-from app.models.quality_control import QcChecklist, QcInspection  # noqa: F401
-from app.models.projects import Project, ProjectTask, ProjectMilestone, ProjectExpense, ProjectTimeEntry, ProjectRetainer  # noqa: F401
-from app.models.workflow_rules import WorkflowRule  # noqa: F401
-from app.models.zatca import ZatcaInvoice  # noqa: F401
-from app.models.gcc_payments import GccPaymentSession  # noqa: F401
-from app.models.integration_config import IntegrationConfig, NotificationChannel  # noqa: F401
-from app.models.mobile_field import DeliveryRoute, RouteStop, DigitalSignature, StripeTerminalSession, VoiceNote  # noqa: F401
-from app.models.multi_entity import IntercompanyTransfer, EliminationEntry, FranchiseAgreement, RoyaltyBilling, FranchiseCatalogPush  # noqa: F401
-from app.models.compliance import FieldMaskingRule, PentestReport  # noqa: F401
-from app.models.bi import DashboardConfig, CustomReport, ScheduledReport  # noqa: F401
-from app.models.ceo import KpiGoal, Scenario  # noqa: F401
-from app.models.growth import PartnerProgram, Partner, PartnerDeal, PricingExperiment, MarketExpansionChecklist  # noqa: F401
-from app.models.accounting_partners import AccountingFirmPartner, AccountingPartnerReferral  # noqa: F401
-from app.models.operator_referrals import OperatorReferral  # noqa: F401
-from app.models.governance import ApprovalRule, ApprovalRequest, PolicyDocument, ApprovalDelegate  # noqa: F401
-from app.models.hr_onboarding_training import EmployeeOnboardingTask, EmployeeTrainingRecord  # noqa: F401
-from app.models.work_management import WmTask, WmAnnouncement, MeetingNote, OpsWorkOrder, Ticket  # noqa: F401
-from app.models.shift_swap import ShiftSwapRequest  # noqa: F401
-from app.models.shift import Shift, ShiftPunch, RosterPublication  # noqa: F401
-from app.models.timesheet import Timesheet, TimesheetLine  # noqa: F401
-from app.models.training_management import MandatoryTrainingRequirement, TrainingRequest  # noqa: F401
-from app.models.portal_notification_prefs import PortalNotificationPreference  # noqa: F401
-from app.models.purchase_request import PurchaseRequest, PurchaseRequestItem  # noqa: F401
-from app.models.petty_cash import PettyCashTransaction  # noqa: F401
-from app.models.portal_communication import (  # noqa: F401
-    PortalChatMessage,
-    OrderTimelineEvent,
-    InvoiceViewEvent,
-    PortalTicket,
-    PortalTicketReply,
-    FriendlyReminder,
-)
-from app.models.quotes import Quote, QuoteLineItem  # noqa: F401
-from app.models.payment_options import (  # noqa: F401
-    PaymentPlan,
-    PaymentPlanInstalment,
-    EarlyPaymentDiscount,
-    DepositRequest,
-    PortalTermsAcceptance,
-    NdaAgreement,
-)
-from app.models.after_sales import (  # noqa: F401
-    ReturnRequest,
-    WarrantyRecord,
-    SatisfactionSurvey,
-    UpsellSuggestion,
-)
-from app.models.messaging import StaffMessage, StaffMessageRead  # noqa: F401
-from app.models.leads import Lead, LeadScoreEvent  # noqa: F401
-from app.models.cashflow import CashFlowAdjustment  # noqa: F401
-from app.models.vat_period import VatPeriod  # noqa: F401
-from app.models.tasks import Task, TaskComment  # noqa: F401
-from app.models.announcements import Announcement, AnnouncementRead  # noqa: F401
-from app.models.job_cards import JobCard, JobCardPart, JobCardLabour, JobCardPhoto  # noqa: F401
-from app.models.email_templates import EmailTemplate, EmailTemplateSend  # noqa: F401
-from app.models.sms_outbox import SmsMessage, SmsOptOut  # noqa: F401
-from app.models.local_payments import LocalPaymentConfig, LocalPaymentSession  # noqa: F401
-from app.models.merchant_subscriptions import MerchantSubscriptionPlan, MerchantSubscription  # noqa: F401
-from app.models.landed_costs import LandedCostCharge, LandedCostLine  # noqa: F401
-from app.models.vendor_ratings import VendorManualRating, VendorRatingCache  # noqa: F401
-from app.models.kits import KitDefinition, KitComponent, KitAssembly  # noqa: F401
-from app.models.dashboard_builder import DashboardLayout, ScheduledDashboard  # noqa: F401
-from app.models.report_builder import SavedReport, RbScheduledReport  # noqa: F401
-from app.models.anomaly import AnomalyFinding  # noqa: F401
-from app.models.cashflow_scenario import CashFlowScenario  # noqa: F401
-from app.models.esign import ESignRequest, ESignSignatory, ESignAuditEntry  # noqa: F401
-from app.models.consent import ConsentRecord, ConsentAuditLog, DsarRequest  # noqa: F401
-from app.models.import_job import ImportJob  # noqa: F401
-from app.models.cross_entity_roles import MultiEntityRole  # noqa: F401
-from app.models.okr import OkrObjective, OkrKeyResult  # noqa: F401
-from app.models.risk import RiskItem  # noqa: F401
-from app.models.insurance import InsurancePolicy, InsuranceClaim  # noqa: F401
-from app.models.regulatory_calendar import RegulatoryEvent  # noqa: F401
-from app.models.whistleblower import WhistleblowerReport  # noqa: F401
-from app.models.conflict_register import ConflictDeclaration  # noqa: F401
-from app.models.carbon import CarbonEntry  # noqa: F401
-from app.models.esg import EsgReport  # noqa: F401
-from app.models.supplier_sustainability import SupplierSustainabilityRating  # noqa: F401
-from app.models.investor import InvestorUpdate, InvestorUpdateRecipient  # noqa: F401
-from app.models.cap_table import Shareholder, ShareClass, Shareholding, DilutionScenario  # noqa: F401
-from app.models.board_pack import BoardPack  # noqa: F401
-from app.models.data_room import DataRoomFolder, DataRoomDocument, DataRoomShare  # noqa: F401
-from app.models.marketing_attribution import AttributionSource, AttributionEvent  # noqa: F401
-from app.models.ab_test import AbTest, AbTestVariant  # noqa: F401
-from app.models.landing_page import LandingPage  # noqa: F401
-from app.models.marketing_broadcast import MarketingBroadcast  # noqa: F401
-from app.models.nps import NpsSurvey, SubscriptionHealthScore  # noqa: F401
-from app.models.sop import SopDocument, SopVersion  # noqa: F401
-from app.models.checklist import ChecklistTemplate, ChecklistTemplateItem, ChecklistRun, ChecklistRunItem  # noqa: F401
-from app.models.recurring_reminder import RecurringReminder, ReminderOccurrence  # noqa: F401
-from app.models.decision_log import DecisionEntry  # noqa: F401
-from app.models.family_group import FamilyGroup, FamilyMember  # noqa: F401
-from app.models.booking_subscription import BookingSubscription  # noqa: F401
-from app.models.group_booking import GroupBooking, GroupBookingParticipant  # noqa: F401
-from app.models.booking_waitlist import BookingWaitlistEntry  # noqa: F401
-from app.models.wallet_pass import WalletPass  # noqa: F401
-from app.models.customer_app import CustomerAppPushToken, CustomerAppConfig  # noqa: F401
-from app.models.customer_chat import CustomerChatThread, CustomerChatMessage  # noqa: F401
-from app.models.video_consultation import VideoConsultation  # noqa: F401
-from app.models.customer_voice_note import CustomerVoiceNote  # noqa: F401
-from app.models.customer_notification_pref import CustomerNotificationPref  # noqa: F401
-from app.models.service_status_alert import ServiceStatusAlert  # noqa: F401
-from app.models.service_timeline import ServiceTimeline, ServiceTimelineEvent  # noqa: F401
-from app.models.live_tracking import LiveTrackingSession  # noqa: F401
-from app.models.service_photo_update import ServicePhotoUpdate  # noqa: F401
-from app.models.customer_history import CustomerHistoryEvent  # noqa: F401
-from app.models.customer_preferences import CustomerPreference  # noqa: F401
-from app.models.ai_recommendation import AiRecommendation  # noqa: F401
-from app.models.customer_important_date import CustomerImportantDate  # noqa: F401
-from app.models.saved_payment_method import SavedPaymentMethod  # noqa: F401
-from app.models.customer_staff_note import CustomerStaffNote  # noqa: F401
-from app.models.membership_tier import MembershipTier, CustomerMembership  # noqa: F401
-from app.models.achievement import Achievement, CustomerAchievement  # noqa: F401
-from app.models.birthday_voucher import BirthdayVoucher  # noqa: F401
-from app.models.referral_tracking import ReferralTracking  # noqa: F401
-from app.models.loyalty_streak import LoyaltyStreak  # noqa: F401
-from app.models.customer_address import CustomerAddress  # noqa: F401
-from app.models.calendar_sync import CalendarSyncToken  # noqa: F401
-from app.models.accountant_forwarding import AccountantForwarding  # noqa: F401
-from app.models.receipt_export import ReceiptExport  # noqa: F401
-from app.models.wallet_payment_session import WalletPaymentSession  # noqa: F401
-from app.models.buyer_purchase_order import BuyerPurchaseOrder, BuyerPoLineItem  # noqa: F401
-from app.models.customer_org_member import CustomerOrgMember, BuyerOrderApproval  # noqa: F401
-from app.models.quote_comparison import QuoteComparison  # noqa: F401
-from app.models.service_review import ServiceReview  # noqa: F401
-from app.models.staff_credential import StaffCredential  # noqa: F401
-from app.models.booking_slots_config import BookingSlotsConfig  # noqa: F401
-from app.models.staff_portfolio_photo import StaffPortfolioPhoto  # noqa: F401
-from app.models.live_chat import LiveChatSession, LiveChatMessage  # noqa: F401
-from app.models.chatbot import ChatbotConfig, ChatbotConversation  # noqa: F401
-from app.models.knowledge_base import KbCategory, KbArticle  # noqa: F401
-from app.models.return_pickup import ReturnPickupRequest  # noqa: F401
-from app.models.identity_verification import IdentityVerification  # noqa: F401
-from app.models.staff_background_check import StaffBackgroundCheck  # noqa: F401
-from app.models.service_insurance_addon import ServiceInsuranceAddon, BookingInsurancePurchase  # noqa: F401
-from app.models.dispute import Dispute, DisputeMessage  # noqa: F401
-from app.models.merchant_customer_review import MerchantCustomerReview  # noqa: F401
-from app.models.unified_message import UnifiedInboxThread, UnifiedMessage  # noqa: F401
-from app.models.message_translation import MessageTranslation  # noqa: F401
-from app.models.smart_reply_log import SmartReplyLog  # noqa: F401
-from app.models.sentiment_log import ConversationSentimentLog  # noqa: F401
-from app.models.statement_request import StatementRequest  # noqa: F401
-from app.models.mobile_kpi_config import MobileKpiConfig  # noqa: F401
-from app.models.push_notification_token import PushNotificationToken  # noqa: F401
-from app.models.voice_report_query import VoiceReportQuery  # noqa: F401
-from app.models.anomaly_notification import AnomalyNotification  # noqa: F401
-from app.models.ai_product_description import AiProductDescription  # noqa: F401
-from app.models.ai_email_draft import AiEmailDraft  # noqa: F401
-from app.models.ai_photo_tag import AiPhotoTag  # noqa: F401
-from app.models.ai_price_suggestion import AiPriceSuggestion  # noqa: F401
-from app.models.ai_customer_persona import AiCustomerPersona  # noqa: F401
-from app.models.merchant_calendar_sync import MerchantCalendarSync  # noqa: F401
-from app.models.zapier import ZapierHook, ZapierEventLog  # noqa: F401
-from app.models.customer_webhook import CustomerWebhook, CustomerWebhookDelivery  # noqa: F401
-from app.models.customer_api_key import CustomerApiKey  # noqa: F401
-from app.models.search_history import SearchHistory  # noqa: F401
-from app.models.notification_bundle import NotificationBundleConfig  # noqa: F401
-from app.models.location_timezone import OrgLocationTimezone  # noqa: F401
-from app.models.home_screen_widget import HomeScreenWidget, WidgetDataSnapshot  # noqa: F401
-from app.models.watch_session import WatchSession  # noqa: F401
-from app.models.voice_shortcut import VoiceShortcut  # noqa: F401
-from app.models.lock_screen_alert import LockScreenAlert  # noqa: F401
-from app.models.upsell import UpsellEvent  # noqa: F401
-from app.models.grace_period import SubscriptionGracePeriod, GracePeriodStatus  # noqa: F401
-from app.models.trial_sequences import (  # noqa: F401
-    TrialSequence,
-    TrialSequenceStep,
-    TrialEnrollment,
-    TrialEmailSend,
-)
+# ── Core / org (not moved) ────────────────────────────────────────────────────
+from app.features.auth.organization import *  # noqa: F401, F403
+from app.features.auth.modules import *  # noqa: F401, F403
+from app.features.portal.model_branding import *  # noqa: F401, F403
+from app.features.marketing.model_waitlist import *  # noqa: F401, F403
+from app.features.portal.idempotency import *  # noqa: F401, F403
+from app.features.ai.ai_snooze import *  # noqa: F401, F403
+from app.features.invoicing.dunning import *  # noqa: F401, F403
+from app.features.auth.model_onboarding import *  # noqa: F401, F403
+from app.features.ai.ai_usage import *  # noqa: F401, F403
+from app.features.portal.status import *  # noqa: F401, F403
+from app.features.purchases.payable_invoice import *  # noqa: F401, F403
+from app.features.settings.model_currencies import *  # noqa: F401, F403
+from app.features.mobile.mobile_field import *  # noqa: F401, F403
+from app.features.corporate.model_multi_entity import *  # noqa: F401, F403
+from app.features.corporate.cross_entity_roles import *  # noqa: F401, F403
+from app.features.compliance.governance import *  # noqa: F401, F403
+from app.features.corporate.investor import *  # noqa: F401, F403
+from app.features.corporate.model_cap_table import *  # noqa: F401, F403
+from app.features.analytics.board_pack import *  # noqa: F401, F403
+from app.features.corporate.model_data_room import *  # noqa: F401, F403
+from app.features.bookings.video_consultation import *  # noqa: F401, F403
+from app.features.bookings.service_status_alert import *  # noqa: F401, F403
+from app.features.bookings.model_service_timeline import *  # noqa: F401, F403
+from app.features.bookings.model_live_tracking import *  # noqa: F401, F403
+from app.features.bookings.service_photo_update import *  # noqa: F401, F403
+from app.features.ai.ai_recommendation import *  # noqa: F401, F403
+from app.features.notifications.model_live_chat import *  # noqa: F401, F403
+from app.features.ai.model_chatbot import *  # noqa: F401, F403
+from app.features.ai.model_knowledge_base import *  # noqa: F401, F403
+from app.features.inventory.return_pickup import *  # noqa: F401, F403
+from app.features.bookings.service_insurance_addon import *  # noqa: F401, F403
+from app.features.invoicing.dispute import *  # noqa: F401, F403
+from app.features.notifications.sentiment_log import *  # noqa: F401, F403
+from app.features.mobile.mobile_kpi_config import *  # noqa: F401, F403
+from app.features.notifications.push_notification_token import *  # noqa: F401, F403
+from app.features.ai.ai_product_description import *  # noqa: F401, F403
+from app.features.ai.model_ai_email_draft import *  # noqa: F401, F403
+from app.features.ai.ai_photo_tag import *  # noqa: F401, F403
+from app.features.ai.ai_price_suggestion import *  # noqa: F401, F403
+from app.features.ai.ai_customer_persona import *  # noqa: F401, F403
+from app.features.portal.search_history import *  # noqa: F401, F403
+from app.features.settings.location_timezone import *  # noqa: F401, F403
+from app.features.mobile.home_screen_widget import *  # noqa: F401, F403
+from app.features.mobile.watch_session import *  # noqa: F401, F403
+from app.features.ai.voice_shortcut import *  # noqa: F401, F403
+from app.features.notifications.lock_screen_alert import *  # noqa: F401, F403
+from app.features.marketing.upsell import *  # noqa: F401, F403
+from app.features.billing.grace_period import *  # noqa: F401, F403
+from app.features.auth.trial_sequences import *  # noqa: F401, F403
+from app.features.analytics.growth import *  # noqa: F401, F403
+from app.models.operator_referrals import *  # noqa: F401, F403
+from app.features.expenses.model_accountant_forwarding import *  # noqa: F401, F403
+from app.features.invoicing.receipt_export import *  # noqa: F401, F403
+from app.features.invoicing.quote_comparison import *  # noqa: F401, F403
+from app.features.customers.staff_portfolio_photo import *  # noqa: F401, F403
+from app.features.bookings.model_after_sales import *  # noqa: F401, F403
+from app.features.notifications.messaging import *  # noqa: F401, F403
+from app.features.billing.model_merchant_subscriptions import *  # noqa: F401, F403
+from app.features.invoicing.model_quotes import *  # noqa: F401, F403
+from app.features.notifications.email_templates import *  # noqa: F401, F403
+from app.features.notifications.recurring_reminder import *  # noqa: F401, F403
+from app.features.customers.family_group import *  # noqa: F401, F403
+
+# ── Features — import concrete model files directly (not __init__.py) ─────────
+
+# auth
+from app.features.auth.models import *  # noqa: F401, F403
+
+# invoicing
+from app.features.invoicing.models import *  # noqa: F401, F403
+
+# pos
+from app.features.pos.models import *  # noqa: F401, F403
+from app.features.pos.pos_quick_button import *  # noqa: F401, F403
+
+# hr
+from app.features.hr.models import *  # noqa: F401, F403
+from app.features.hr.hr_onboarding_training import *  # noqa: F401, F403
+from app.features.hr.leave_requests import *  # noqa: F401, F403
+from app.features.hr.leave_entitlement import *  # noqa: F401, F403
+from app.features.hr.shift import *  # noqa: F401, F403
+from app.features.hr.shift_swap import *  # noqa: F401, F403
+from app.features.hr.payroll_models import *  # noqa: F401, F403
+from app.features.hr.timesheet import *  # noqa: F401, F403
+from app.features.hr.time_entries import *  # noqa: F401, F403
+from app.features.hr.performance import *  # noqa: F401, F403
+from app.features.hr.employee_contracts import *  # noqa: F401, F403
+from app.features.hr.commissions_models import *  # noqa: F401, F403
+from app.features.hr.training_management import *  # noqa: F401, F403
+
+# expenses
+from app.features.expenses.models import *  # noqa: F401, F403
+from app.features.expenses.expense_budget import *  # noqa: F401, F403
+from app.features.expenses.expense_note import *  # noqa: F401, F403
+from app.features.expenses.expense_report import *  # noqa: F401, F403
+from app.features.expenses.expense_tag import *  # noqa: F401, F403
+from app.features.expenses.mileage_log import *  # noqa: F401, F403
+from app.features.expenses.fixed_assets_models import *  # noqa: F401, F403
+from app.features.expenses.petty_cash_models import *  # noqa: F401, F403
+from app.features.expenses.recurring_expense import *  # noqa: F401, F403
+
+# inventory
+from app.features.inventory.models import *  # noqa: F401, F403
+from app.features.inventory.bom import *  # noqa: F401, F403
+from app.features.inventory.stock_count import *  # noqa: F401, F403
+from app.features.inventory.stock_transfers_models import *  # noqa: F401, F403
+from app.features.inventory.quality_control import *  # noqa: F401, F403
+from app.features.inventory.kits import *  # noqa: F401, F403
+from app.features.inventory.landed_costs_models import *  # noqa: F401, F403
+from app.features.inventory.auto_reorder_models import *  # noqa: F401, F403
+from app.features.inventory.work_orders_mfg import *  # noqa: F401, F403
+from app.features.inventory.workflow_rules import *  # noqa: F401, F403
+from app.features.inventory.import_job import *  # noqa: F401, F403
+from app.features.inventory.product_note import *  # noqa: F401, F403
+from app.features.inventory.product_tag import *  # noqa: F401, F403
+from app.features.inventory.vendor_ratings_models import *  # noqa: F401, F403
+from app.features.inventory.product_variant import *  # noqa: F401, F403
+from app.features.inventory.product_waitlist import *  # noqa: F401, F403
+
+# customers
+from app.features.customers.models import *  # noqa: F401, F403
+from app.features.customers.customer_app import *  # noqa: F401, F403
+from app.features.customers.customer_address import *  # noqa: F401, F403
+from app.features.customers.customer_api_key import *  # noqa: F401, F403
+from app.features.customers.customer_chat_models import *  # noqa: F401, F403
+from app.features.customers.customer_contact import *  # noqa: F401, F403
+from app.features.customers.customer_history_models import *  # noqa: F401, F403
+from app.features.customers.customer_important_date import *  # noqa: F401, F403
+from app.features.customers.customer_note import *  # noqa: F401, F403
+from app.features.customers.customer_notification_pref import *  # noqa: F401, F403
+from app.features.customers.customer_org_member import *  # noqa: F401, F403
+from app.features.customers.customer_preferences_models import *  # noqa: F401, F403
+from app.features.customers.customer_price_override import *  # noqa: F401, F403
+from app.features.customers.customer_staff_note import *  # noqa: F401, F403
+from app.features.customers.customer_tag import *  # noqa: F401, F403
+from app.features.customers.customer_voice_note import *  # noqa: F401, F403
+from app.features.customers.customer_webhook import *  # noqa: F401, F403
+from app.features.customers.lead_forms_models import *  # noqa: F401, F403
+from app.features.customers.leads_models import *  # noqa: F401, F403
+from app.features.customers.segments_models import *  # noqa: F401, F403
+from app.features.customers.custom_field import *  # noqa: F401, F403
+from app.features.customers.tag import *  # noqa: F401, F403
+
+# purchases
+from app.features.purchases.models import *  # noqa: F401, F403
+from app.features.purchases.buyer_purchase_order import *  # noqa: F401, F403
+from app.features.purchases.purchase_order_note import *  # noqa: F401, F403
+from app.features.purchases.purchase_order_tag import *  # noqa: F401, F403
+from app.features.purchases.supplier_contact import *  # noqa: F401, F403
+from app.features.purchases.supplier_credit_note import *  # noqa: F401, F403
+from app.features.purchases.supplier_lead_time import *  # noqa: F401, F403
+from app.features.purchases.supplier_note import *  # noqa: F401, F403
+from app.features.purchases.supplier_portal_models import *  # noqa: F401, F403
+from app.features.purchases.supplier_sustainability_models import *  # noqa: F401, F403
+from app.features.purchases.supplier_tag import *  # noqa: F401, F403
+
+# analytics
+from app.features.analytics.models import *  # noqa: F401, F403
+from app.features.analytics.cashflow_models import *  # noqa: F401, F403
+from app.features.analytics.cashflow_scenario import *  # noqa: F401, F403
+from app.features.analytics.anomaly import *  # noqa: F401, F403
+from app.features.analytics.anomaly_notification import *  # noqa: F401, F403
+from app.features.analytics.budget_models import *  # noqa: F401, F403
+from app.features.analytics.ceo import *  # noqa: F401, F403
+from app.features.analytics.vat_period import *  # noqa: F401, F403
+from app.features.analytics.voice_report_query import *  # noqa: F401, F403
+from app.features.analytics.statement_request import *  # noqa: F401, F403
+from app.features.analytics.report_builder_models import *  # noqa: F401, F403
+from app.features.analytics.dashboard_builder_models import *  # noqa: F401, F403
+from app.features.analytics.zatca_models import *  # noqa: F401, F403
+from app.features.analytics.accounting_models import *  # noqa: F401, F403
+from app.features.analytics.accounting_partners import *  # noqa: F401, F403
+
+# bookings
+from app.features.bookings.models import *  # noqa: F401, F403
+from app.features.bookings.booking_slots_config import *  # noqa: F401, F403
+from app.features.bookings.booking_subscription import *  # noqa: F401, F403
+from app.features.bookings.booking_waitlist_models import *  # noqa: F401, F403
+from app.features.bookings.meeting_links_models import *  # noqa: F401, F403
+from app.features.bookings.group_booking import *  # noqa: F401, F403
+
+# loyalty
+from app.features.loyalty.models import *  # noqa: F401, F403
+from app.features.loyalty.loyalty_streak import *  # noqa: F401, F403
+from app.features.loyalty.membership_tier import *  # noqa: F401, F403
+from app.features.loyalty.birthday_voucher import *  # noqa: F401, F403
+from app.features.loyalty.gift_cards_models import *  # noqa: F401, F403
+from app.features.loyalty.referral import *  # noqa: F401, F403
+from app.features.loyalty.referral_tracking import *  # noqa: F401, F403
+from app.features.loyalty.wallet_pass import *  # noqa: F401, F403
+from app.features.loyalty.wallet_payment_session import *  # noqa: F401, F403
+from app.features.loyalty.saved_payment_method import *  # noqa: F401, F403
+from app.features.loyalty.achievement import *  # noqa: F401, F403
+
+# projects
+from app.features.projects.models import *  # noqa: F401, F403
+from app.features.projects.tasks_models import *  # noqa: F401, F403
+from app.features.projects.job_cards_models import *  # noqa: F401, F403
+from app.features.projects.work_management_models import *  # noqa: F401, F403
+from app.features.projects.okr_models import *  # noqa: F401, F403
+from app.features.projects.checklist import *  # noqa: F401, F403
+from app.features.projects.decision_log_models import *  # noqa: F401, F403
+from app.features.projects.sop import *  # noqa: F401, F403
+from app.features.projects.documents_models import *  # noqa: F401, F403
+
+# storefront
+from app.features.storefront.models import *  # noqa: F401, F403
+from app.features.storefront.local_payments_models import *  # noqa: F401, F403
+from app.features.storefront.gcc_payments_models import *  # noqa: F401, F403
+from app.features.storefront.payment_options_models import *  # noqa: F401, F403
+
+# marketing
+from app.features.marketing.models import *  # noqa: F401, F403
+from app.features.marketing.email_sequences_models import *  # noqa: F401, F403
+from app.features.marketing.marketing_attribution_models import *  # noqa: F401, F403
+from app.features.marketing.marketing_broadcast import *  # noqa: F401, F403
+from app.features.marketing.ab_test import *  # noqa: F401, F403
+from app.features.marketing.landing_page import *  # noqa: F401, F403
+from app.features.marketing.nps_models import *  # noqa: F401, F403
+from app.features.marketing.reviews_models import *  # noqa: F401, F403
+from app.features.marketing.merchant_customer_review import *  # noqa: F401, F403
+from app.features.marketing.service_review import *  # noqa: F401, F403
+
+# compliance
+from app.features.compliance.models import *  # noqa: F401, F403
+from app.features.compliance.consent import *  # noqa: F401, F403
+from app.features.compliance.esign_models import *  # noqa: F401, F403
+from app.features.compliance.whistleblower_models import *  # noqa: F401, F403
+from app.features.compliance.conflict_register import *  # noqa: F401, F403
+from app.features.compliance.regulatory_calendar_models import *  # noqa: F401, F403
+from app.features.compliance.risk import *  # noqa: F401, F403
+from app.features.compliance.insurance_models import *  # noqa: F401, F403
+from app.features.compliance.carbon_models import *  # noqa: F401, F403
+from app.features.compliance.esg_models import *  # noqa: F401, F403
+from app.features.compliance.identity_verification_models import *  # noqa: F401, F403
+from app.features.compliance.staff_background_check import *  # noqa: F401, F403
+from app.features.compliance.staff_credential import *  # noqa: F401, F403
+from app.features.compliance.audit_models import *  # noqa: F401, F403
+
+# integrations
+from app.features.integrations.models import *  # noqa: F401, F403
+from app.features.integrations.zapier import *  # noqa: F401, F403
+from app.features.integrations.bank_feed_models import *  # noqa: F401, F403
+from app.features.integrations.merchant_calendar_sync_models import *  # noqa: F401, F403
+from app.features.integrations.calendar_sync_models import *  # noqa: F401, F403
+from app.features.integrations.webhook import *  # noqa: F401, F403
+from app.features.integrations.developer_models import *  # noqa: F401, F403
+
+# notifications
+from app.features.notifications.models import *  # noqa: F401, F403
+from app.features.notifications.notification_bundle import *  # noqa: F401, F403
+from app.features.notifications.unified_message import *  # noqa: F401, F403
+from app.features.notifications.message_translation_models import *  # noqa: F401, F403
+from app.features.notifications.smart_reply_log import *  # noqa: F401, F403
+from app.features.notifications.sms_outbox_models import *  # noqa: F401, F403
+from app.features.notifications.announcements_models import *  # noqa: F401, F403
+
+# portal
+from app.features.portal.models import *  # noqa: F401, F403
+from app.features.portal.portal_notification_prefs import *  # noqa: F401, F403
+from app.features.portal.portal_session import *  # noqa: F401, F403

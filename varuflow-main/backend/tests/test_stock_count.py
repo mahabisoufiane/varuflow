@@ -10,15 +10,15 @@ import pytest_asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.audit import AuditLogEntry
-from app.models.inventory import (
+from app.features.compliance.audit_models import AuditLogEntry
+from app.features.inventory.models import (
     Product,
     StockLevel,
     StockMovement,
     StockMovementType,
     Warehouse,
 )
-from app.models.stock_count import StockCount, StockCountItem, StockCountStatus
+from app.features.inventory.stock_count import StockCount, StockCountItem, StockCountStatus
 
 
 @pytest_asyncio.fixture
@@ -294,7 +294,7 @@ async def test_scheduler_marks_stuck_counts(
     sc.submitted_at = datetime.now(timezone.utc) - timedelta(hours=48)
     await db_session.commit()
 
-    from app.routers.stock_counts import mark_stuck_counts
+    from app.features.inventory.stock_counts import mark_stuck_counts
 
     reset = await mark_stuck_counts(db_session, older_than_hours=24)
     assert reset >= 1

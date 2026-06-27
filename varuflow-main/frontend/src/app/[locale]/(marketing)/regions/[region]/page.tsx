@@ -47,7 +47,7 @@ export default async function RegionPage(
         className="relative overflow-hidden px-4 py-24 text-center"
         dir={data.dir}
       >
-        <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,0.18) 0%, transparent 70%)" }} />
+        <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 50% -10%, rgba(37,99,235,0.18) 0%, transparent 70%)" }} />
         <div className="relative mx-auto max-w-3xl">
           <p className="mb-4 inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-400">
             {data.eyebrow}

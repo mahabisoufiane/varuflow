@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { TrendingUp, TrendingDown, Minus, ChevronDown } from "lucide-react";
+import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 const SECTORS = ["wholesale", "retail", "manufacturing", "food_beverage", "construction", "services"] as const;
 
@@ -38,36 +40,29 @@ function DeltaBadge({ org, industry, higherIsBetter, unit }: { org: number | nul
   const icon = Math.abs(delta) < 0.1 ? <Minus className="h-3 w-3" /> :
     delta > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />;
   return (
-    <span className={`inline-flex items-center gap-0.5 text-xs font-medium px-1.5 py-0.5 rounded-full ${better ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
+    <span className={styles[better ? "deltaPositive" : "deltaNegative"]}>
       {icon} {delta > 0 ? "+" : ""}{delta.toFixed(1)}{unit}
     </span>
   );
 }
 
 export default function BenchmarksPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [sector, setSector] = useState<string>("wholesale");
   const [data, setData] = useState<BenchmarkData | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const f = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   async function load(s: string) {
     setLoading(true);
     try {
-      const res = await f(`/api/bi/benchmarks?sector=${s}`);
-      if (res.ok) setData(await res.json());
-      else { const e = await res.json(); toast.error(e.detail || "Failed"); }
+      const result = await api.get<BenchmarkData>(`/api/bi/benchmarks?sector=${s}`);
+      setData(result);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed");
     } finally { setLoading(false); }
   }
 
   async function saveSector(s: string) {
-    await f("/api/bi/benchmarks/sector", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sector: s }),
-    });
+    await api.patch("/api/bi/benchmarks/sector", { sector: s });
     toast.success("Sector saved");
   }
 

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, RefreshCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface AttributionSummaryRow {
   channel: string;
@@ -37,6 +38,15 @@ const CHANNEL_COLORS: Record<string, string> = {
   social: "bg-blue-100 text-blue-700",
   email: "bg-orange-100 text-orange-700",
   other: "bg-gray-100 text-gray-600",
+};
+
+const CHANNEL_MODULE: Record<string, keyof typeof styles> = {
+  google_ads: "channelGoogleAds",
+  referral:   "channelReferral",
+  organic:    "channelOrganic",
+  social:     "channelSocial",
+  email:      "channelEmail",
+  other:      "channelOther",
 };
 
 export default function AttributionPage() {
@@ -208,7 +218,7 @@ export default function AttributionPage() {
                 ) : summary.map((row) => (
                   <tr key={row.channel}>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${CHANNEL_COLORS[row.channel] ?? CHANNEL_COLORS.other}`}>
+                      <span className={styles[CHANNEL_MODULE[row.channel] ?? "channelOther"]}>
                         {row.channel}
                       </span>
                     </td>
@@ -299,7 +309,7 @@ export default function AttributionPage() {
                       {[s.utm_source, s.utm_medium, s.utm_campaign].filter(Boolean).join(" / ")}
                     </p>
                   </div>
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${CHANNEL_COLORS[s.channel] ?? CHANNEL_COLORS.other}`}>
+                  <span className={styles[CHANNEL_MODULE[s.channel] ?? "channelOther"]}>
                     {s.channel}
                   </span>
                   <button type="button" disabled={actionLoading === s.id + "_del"}

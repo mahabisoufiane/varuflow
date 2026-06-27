@@ -21,8 +21,8 @@ from typing import Iterable
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.inventory import StockLevel, StockMovement, StockMovementType
-from app.models.stock_count import StockCount, StockCountItem
+from app.features.inventory.models import StockLevel, StockMovement, StockMovementType
+from app.features.inventory.stock_count import StockCount, StockCountItem
 
 STOCK_COUNT_REASON = "Stock count adjustment"
 

@@ -5,6 +5,7 @@ import { BarChart2, Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 interface PL {
   project_id: string;
@@ -32,12 +33,19 @@ export default function PLPage() {
   const [projectId, setProjectId] = useState(searchParams.get("project_id") ?? "");
   const [pl, setPl] = useState<PL | null>(null);
   const [loading, setLoading] = useState(false);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   useEffect(() => {
     api.get("/api/projects").then((list) => {
       setProjects(list);
       if (!projectId && list.length > 0) setProjectId(list[0].id);
-    }).catch(() => toast.error("Failed to load projects"));
+    }).catch((err) => {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "hr", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error("Failed to load projects");
+    });
   }, []);
 
   useEffect(() => {
@@ -50,6 +58,8 @@ export default function PLPage() {
   }, [projectId]);
 
   const budgetPct = pl?.budget && pl.budget > 0 ? Math.min(100, (pl.total_cost / pl.budget) * 100) : null;
+
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Project P&L" />;
 
   return (
     <div className="p-6 max-w-4xl mx-auto">

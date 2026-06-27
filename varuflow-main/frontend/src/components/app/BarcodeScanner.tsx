@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useZxing } from "react-zxing";
 import { X, Loader2, AlertCircle } from "lucide-react";
+import { useScanDeduplicator } from "@/components/barcode/useScanDeduplicator";
+import { ScannerViewfinder } from "@/components/barcode/ScannerViewfinder";
 
 interface Props {
   onResult: (code: string) => void;
@@ -28,18 +30,13 @@ function NativeScanner({ onResult, onClose }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number>(0);
-  const lastCode = useRef("");
-  const lastTime = useRef(0);
   const [status, setStatus] = useState<"loading" | "scanning" | "error">("loading");
   const [errorMsg, setErrorMsg] = useState("");
+  const dedup = useScanDeduplicator();
 
   const emit = useCallback((code: string) => {
-    const now = Date.now();
-    if (code === lastCode.current && now - lastTime.current < 2000) return;
-    lastCode.current = code;
-    lastTime.current = now;
-    onResult(code);
-  }, [onResult]);
+    dedup(code, onResult);
+  }, [dedup, onResult]);
 
   useEffect(() => {
     let active = true;
@@ -99,17 +96,20 @@ function NativeScanner({ onResult, onClose }: Props) {
 // ── ZXing fallback scanner ────────────────────────────────────────────────────
 
 function ZxingScanner({ onResult, onClose }: Props) {
-  const lastCode = useRef("");
-  const lastTime = useRef(0);
+  const [errorMsg, setErrorMsg] = useState("");
+  const dedup = useScanDeduplicator();
 
   const { ref } = useZxing({
     onDecodeResult(result) {
-      const code = result.getText();
-      const now = Date.now();
-      if (code === lastCode.current && now - lastTime.current < 2000) return;
-      lastCode.current = code;
-      lastTime.current = now;
-      onResult(code);
+      dedup(result.getText(), onResult);
+    },
+    onError(err) {
+      const e = err as DOMException;
+      setErrorMsg(
+        e.name === "NotAllowedError"
+          ? "Camera permission denied. Allow camera access and try again."
+          : `Camera error: ${e.message}`
+      );
     },
     constraints: { video: { facingMode: "environment", width: { ideal: 1280 } } },
     timeBetweenDecodingAttempts: 200,
@@ -124,8 +124,8 @@ function ZxingScanner({ onResult, onClose }: Props) {
   return (
     <ScannerShell
       videoRef={ref as React.RefObject<HTMLVideoElement>}
-      status="scanning"
-      errorMsg=""
+      status={errorMsg ? "error" : "scanning"}
+      errorMsg={errorMsg}
       onClose={onClose}
     />
   );
@@ -180,21 +180,7 @@ function ScannerShell({
               muted
             />
 
-            {status === "scanning" && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="relative w-56 h-32">
-                  {[
-                    "top-0 left-0 border-t-2 border-l-2 rounded-tl",
-                    "top-0 right-0 border-t-2 border-r-2 rounded-tr",
-                    "bottom-0 left-0 border-b-2 border-l-2 rounded-bl",
-                    "bottom-0 right-0 border-b-2 border-r-2 rounded-br",
-                  ].map((cls, i) => (
-                    <div key={i} className={`absolute w-5 h-5 border-white ${cls}`} />
-                  ))}
-                  <div className="absolute inset-x-0 h-0.5 bg-green-400/80 animate-scan" />
-                </div>
-              </div>
-            )}
+            <ScannerViewfinder scanning={status === "scanning"} innerClassName="w-56 h-32" />
           </div>
 
           <p className="px-4 py-3 text-center text-xs text-white/50 bg-black">
@@ -203,10 +189,6 @@ function ScannerShell({
         </div>
       </div>
 
-      <style>{`
-        @keyframes scan { 0%, 100% { top: 10%; } 50% { top: 85%; } }
-        .animate-scan { animation: scan 2s ease-in-out infinite; position: absolute; }
-      `}</style>
     </div>
   );
 }

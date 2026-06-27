@@ -110,8 +110,8 @@ async def build_ai_context(
     """Assemble the live business snapshot for the AI chat endpoint."""
     # Local imports — keep this module importable by the migration runner
     # even before all ORM models have loaded.
-    from app.models.inventory import Product, StockLevel
-    from app.models.invoicing import Customer, Invoice, InvoiceStatus, Payment
+    from app.features.inventory.models import Product, StockLevel
+    from app.features.invoicing.models import Customer, Invoice, InvoiceStatus, Payment
 
     today = today or date.today()
     thirty_days_ago = today - timedelta(days=30)

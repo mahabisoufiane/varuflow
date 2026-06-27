@@ -1,0 +1,144 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+.tabBar {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  border-bottom: 1px solid var(--vf-border);
+  margin-bottom: 1.5rem;
+}
+
+.tab {
+  padding: 0.625rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--vf-text-muted);
+  transition: color 120ms ease, border-color 120ms ease;
+
+  &:hover {
+    color: var(--vf-text-secondary);
+  }
+}
+
+.tabActive {
+  color: var(--vf-brand-primary, #1a2332);
+  border-bottom-color: var(--vf-brand-primary, #1a2332);
+}
+
+.entryRow {
+  border-radius: $vf-radius-md;
+  cursor: pointer;
+  transition: background 100ms ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.entryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 1rem;
+}
+
+.entryBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $vf-radius-full;
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.entryDetail {
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  padding: 0.75rem 1rem;
+}
+
+.journalTable {
+  width: 100%;
+  font-size: 0.75rem;
+
+  th {
+    text-align: left;
+    padding: 6px 0;
+    font-weight: 500;
+
+    &:is(:nth-child(2), :nth-child(3)) {
+      text-align: right;
+    }
+  }
+
+  tbody tr {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  td {
+    padding: 6px 0;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+
+    &:is(:nth-child(2), :nth-child(3)) {
+      text-align: right;
+    }
+
+    &:last-child {
+      padding-left: 1rem;
+      font-family: inherit;
+    }
+  }
+}
+
+.accountRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: $vf-radius-sm;
+  transition: background 100ms ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.accountCode {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 3.5rem;
+  flex-shrink: 0;
+}
+
+.trialRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-radius: $vf-radius-sm;
+  font-size: 0.8125rem;
+
+  &:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+  }
+}
+
+.balanceOk {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: $vf-radius-md;
+  font-size: 0.75rem;
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+}
+
+.balanceError {
+  @extend .balanceOk;
+  background: rgba(244, 63, 94, 0.15);
+  color: #fca5a5;
+}

@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api-client";
 import { RefreshCw, Trash2, Camera, Eye, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -27,11 +26,6 @@ function relativeTime(dateStr: string): string {
 }
 
 export default function PhotosPage() {
-  const router = useRouter();
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale ?? "en";
-  const supabase = createClient();
-
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"all" | "unviewed">("all");
@@ -46,20 +40,11 @@ export default function PhotosPage() {
     caption: "",
   });
 
-  async function getToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }
-  function apiUrl(p: string) { return `${process.env.NEXT_PUBLIC_API_URL}${p}`; }
-
   async function load() {
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push(`/${locale}/auth/login`); return; }
-      const res = await fetch(apiUrl("/api/photos"), { headers: { Authorization: `Bearer ${token}` } });
-      if (res.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (res.ok) setPhotos(await res.json());
+      const data = await api.get<Photo[]>("/api/photos");
+      setPhotos(data);
     } catch {
       toast.error("Failed to load photos");
     } finally {
@@ -73,28 +58,17 @@ export default function PhotosPage() {
     if (!form.photo_url.trim()) { toast.error("Photo URL is required"); return; }
     setActionLoading("send");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl("/api/photos"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          appointment_id: form.appointment_id || null,
-          customer_id: form.customer_id || null,
-          photo_url: form.photo_url,
-          caption: form.caption || null,
-        }),
+      await api.post("/api/photos", {
+        appointment_id: form.appointment_id || null,
+        customer_id: form.customer_id || null,
+        photo_url: form.photo_url,
+        caption: form.caption || null,
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to send photo");
-        return;
-      }
       toast.success("Photo sent");
       setForm({ appointment_id: "", customer_id: "", photo_url: "", caption: "" });
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -103,20 +77,10 @@ export default function PhotosPage() {
   async function markViewed(id: string) {
     setActionLoading("view_" + id);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/photos/${id}/view`), {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to mark viewed");
-        return;
-      }
+      await api.patch(`/api/photos/${id}/view`, {});
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -125,22 +89,12 @@ export default function PhotosPage() {
   async function deletePhoto(id: string) {
     setActionLoading("del_" + id);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/photos/${id}`), {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to delete");
-        return;
-      }
+      await api.delete(`/api/photos/${id}`);
       toast.success("Photo deleted");
       setExpanded(null);
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -256,6 +210,7 @@ export default function PhotosPage() {
                       <Camera className="h-6 w-6 text-gray-400" />
                     </div>
                   ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={photo.photo_url}
                       alt="Service photo"
@@ -292,6 +247,7 @@ export default function PhotosPage() {
               {/* Expanded detail */}
               {expanded === photo.id && (
                 <div className="px-5 pb-5 space-y-3 bg-gray-50 border-t">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={photo.photo_url}
                     className="w-full max-w-sm rounded-lg mt-3"

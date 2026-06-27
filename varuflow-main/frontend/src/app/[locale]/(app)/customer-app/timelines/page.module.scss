@@ -1,0 +1,12 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Timeline stage badge ──────────────────────────────────────────────────────
+
+.stageBadge {
+  border-radius: $vf-radius-full;
+  background: #f3e8ff;
+  color: #7e22ce;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+}

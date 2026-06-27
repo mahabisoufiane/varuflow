@@ -210,7 +210,7 @@ async def gdpr_purge_documents(
     """
     from sqlalchemy import delete, func as _f, select as _select
 
-    from app.models.documents import Document
+    from app.features.projects.documents_models import Document
 
     # Count first so the caller can emit a single log line with
     # the number of purged rows.

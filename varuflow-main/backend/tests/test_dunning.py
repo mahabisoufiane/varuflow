@@ -7,8 +7,8 @@ from decimal import Decimal
 
 import pytest
 
-from app.models.dunning import DunningEvent
-from app.models.invoicing import Customer, Invoice, InvoiceStatus
+from app.features.invoicing.dunning import DunningEvent
+from app.features.invoicing.models import Customer, Invoice, InvoiceStatus
 from app.services.dunning import run_dunning_sweep, stage_for_days_overdue
 
 

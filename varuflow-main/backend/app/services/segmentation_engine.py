@@ -344,7 +344,7 @@ async def compute_customer_metrics(
     """
     from sqlalchemy import func, select
 
-    from app.models.invoicing import Customer, Invoice, InvoiceStatus
+    from app.features.invoicing.models import Customer, Invoice, InvoiceStatus
 
     # Pull every customer (so customers that have never purchased still
     # appear with zero metrics — the INACTIVE rule doesn't match them
@@ -423,7 +423,7 @@ async def refresh_segment(
     """
     from sqlalchemy import delete, select
 
-    from app.models.segments import Segment, SegmentMember, SegmentType
+    from app.features.customers.segments_models import Segment, SegmentMember, SegmentType
 
     if segment.type != SegmentType.AUTO:
         return int(segment.customer_count or 0)
@@ -457,7 +457,7 @@ async def refresh_all_auto_segments(
     """Refresh every AUTO segment for an org. Returns total-rows-recomputed."""
     from sqlalchemy import select
 
-    from app.models.segments import Segment, SegmentType
+    from app.features.customers.segments_models import Segment, SegmentType
 
     segments = (
         await db.execute(
@@ -485,7 +485,7 @@ async def list_segment_customer_ids(
     """Return customer ids in a segment, guarded by org ownership."""
     from sqlalchemy import select
 
-    from app.models.segments import Segment, SegmentMember
+    from app.features.customers.segments_models import Segment, SegmentMember
 
     rows = await db.execute(
         select(SegmentMember.customer_id)

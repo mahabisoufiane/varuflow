@@ -38,7 +38,6 @@ def upgrade() -> None:
         sa.Column(
             "staff_id",
             postgresql.UUID(as_uuid=True),
-            sa.ForeignKey("staff.id", ondelete="CASCADE"),
             nullable=False,
         ),
         # kind ∈ {time_off, sick, extra_shift, holiday}

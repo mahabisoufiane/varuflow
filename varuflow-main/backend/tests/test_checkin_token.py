@@ -16,7 +16,15 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(p: str) -> str:
-    return (_BACKEND_ROOT / p).read_text()
+    _p = _BACKEND_ROOT / p
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
 MIGRATION_SRC = _read(
@@ -24,7 +32,7 @@ MIGRATION_SRC = _read(
 )
 MODEL_SRC = _read("app/models/checkin_token.py")
 SERVICE_SRC = _read("app/services/checkin_token.py")
-ROUTER_SRC = _read("app/routers/bookings.py")
+ROUTER_SRC = _read("app/features/bookings/bookings.py")
 MAIN_SRC = _read("app/main.py")
 
 
@@ -152,7 +160,9 @@ def test_router_mint_and_public_redeem_registered():
     assert '@router.post(\n    "/appointments/{appointment_id}/checkin-token"' in ROUTER_SRC
     assert 'public_checkin_router = APIRouter(' in ROUTER_SRC
     assert '@public_checkin_router.post("/checkin"' in ROUTER_SRC
-    assert "app.include_router(bookings.public_checkin_router)" in MAIN_SRC
+    # public_checkin_router is wired directly as _bookings_public_checkin_router in main.py
+    assert "_bookings_public_checkin_router" in MAIN_SRC
+    assert "bookings_router" in MAIN_SRC
 
 
 def test_router_mint_is_tenant_scoped_and_logged():

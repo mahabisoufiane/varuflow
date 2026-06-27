@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Wrench, Plus, X, MapPin } from "lucide-react";
+import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface Staff { id: string; name: string }
 interface Customer { id: string; name: string }
@@ -19,10 +21,14 @@ const STATUS_COLORS: Record<string, string> = {
   completed: "bg-green-100 text-green-700", cancelled: "bg-gray-100 text-gray-600",
 };
 
-export default function WorkOrdersPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string, init?: RequestInit) => fetch(`${apiBase}${url}`, { credentials: "include", ...init });
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  open:        "statusOpen",
+  in_progress: "statusInProgress",
+  completed:   "statusCompleted",
+  cancelled:   "statusCancelled",
+};
 
+export default function WorkOrdersPage() {
   const [orders, setOrders] = useState<WorkOrder[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -34,9 +40,9 @@ export default function WorkOrdersPage() {
   async function load() {
     const params = filterStatus ? `?status=${filterStatus}` : "";
     const [o, s, c] = await Promise.all([
-      f(`/api/work/work-orders${params}`).then(r => r.ok ? r.json() : []),
-      f("/api/hr/employees").then(r => r.ok ? r.json() : []),
-      f("/api/invoicing/customers").then(r => r.ok ? r.json() : []),
+      api.get<WorkOrder[]>(`/api/work/work-orders${params}`).catch(() => [] as WorkOrder[]),
+      api.get<Staff[]>("/api/hr/employees").catch(() => [] as Staff[]),
+      api.get<Customer[]>("/api/invoicing/customers").catch(() => [] as Customer[]),
     ]);
     setOrders(o); setStaff(s); setCustomers(c); setLoading(false);
   }
@@ -46,18 +52,19 @@ export default function WorkOrdersPage() {
   async function create() {
     if (!form.title.trim()) { toast.error("Title required"); return; }
     const body = { ...form, customer_id: form.customer_id || null, assigned_staff_id: form.assigned_staff_id || null, scheduled_date: form.scheduled_date || null };
-    const res = await f("/api/work/work-orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    if (!res.ok) { toast.error("Failed"); return; }
-    toast.success("Work order created"); setShowForm(false); setForm({ title: "", description: "", customer_id: "", assigned_staff_id: "", priority: "medium", scheduled_date: "", location: "" }); load();
+    try {
+      await api.post<WorkOrder>("/api/work/work-orders", body);
+      toast.success("Work order created"); setShowForm(false); setForm({ title: "", description: "", customer_id: "", assigned_staff_id: "", priority: "medium", scheduled_date: "", location: "" }); load();
+    } catch { toast.error("Failed"); }
   }
 
   async function updateStatus(id: string, status: string) {
-    await f(`/api/work/work-orders/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
+    await api.patch<WorkOrder>(`/api/work/work-orders/${id}`, { status });
     load();
   }
 
   async function remove(id: string) {
-    await f(`/api/work/work-orders/${id}`, { method: "DELETE" });
+    await api.delete(`/api/work/work-orders/${id}`);
     setOrders(prev => prev.filter(o => o.id !== id)); toast.success("Deleted");
   }
 
@@ -119,7 +126,7 @@ export default function WorkOrdersPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium text-gray-900">{wo.title}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[wo.status]}`}>{wo.status.replace("_", " ")}</span>
+                <span className={styles[STATUS_MODULE[wo.status] ?? "statusOpen"]}>{wo.status.replace("_", " ")}</span>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${wo.priority === "urgent" ? "bg-red-100 text-red-700" : wo.priority === "high" ? "bg-orange-100 text-orange-700" : "bg-gray-100 text-gray-600"}`}>{wo.priority}</span>
               </div>
               <div className="flex gap-3 text-xs text-gray-500 mt-0.5 flex-wrap">

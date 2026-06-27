@@ -1,0 +1,62 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+.errorBanner {
+  border-radius: $vf-radius-xl;
+  padding: 1rem 1.25rem;
+  font-size: 0.875rem;
+  color: var(--vf-danger);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.kpiCard {
+  border-radius: $vf-radius-xl;
+  padding: 1.25rem;
+  @include transition(all, 150ms);
+}
+
+.kpiIcon {
+  display: inline-flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: $vf-radius-lg;
+}
+
+.tooltip {
+  min-width: 160px;
+}
+
+.dateInput {
+  height: 36px;
+}
+
+.statValue {
+  font-weight: 700;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.overdueRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--vf-divider);
+}
+
+.progressTrack {
+  height: 0.375rem;
+  border-radius: $vf-radius-full;
+  overflow: hidden;
+  background: var(--vf-bg-elevated);
+}
+
+.progressBar {
+  height: 0.375rem;
+  border-radius: $vf-radius-full;
+  background: var(--vf-brand-primary);
+  @include transition(all, 500ms);
+}

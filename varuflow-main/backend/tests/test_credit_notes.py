@@ -13,7 +13,15 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(p: str) -> str:
-    return (_BACKEND_ROOT / p).read_text()
+    _p = _BACKEND_ROOT / p
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
 MIGRATION_SRC = _read(
@@ -327,5 +335,9 @@ def test_router_issued_credits_only_count_in_cap():
 
 
 def test_router_registered_in_main():
-    assert "credit_notes.router" in MAIN_SRC
-    assert "credit_notes," in MAIN_SRC
+
+    # Registered via invoicing_router (vertical-slice architecture).
+    # The individual module is wired inside the feature router, not directly in main.py.
+    feat_src = _read("app/features/invoicing/router.py")
+    assert "credit_notes" in feat_src
+    assert "invoicing_router" in MAIN_SRC

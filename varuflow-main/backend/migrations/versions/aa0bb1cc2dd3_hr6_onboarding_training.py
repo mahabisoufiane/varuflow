@@ -20,7 +20,7 @@ def upgrade() -> None:
         "employee_onboarding_tasks",
         sa.Column("id", UUID(as_uuid=True), primary_key=True),
         sa.Column("org_id", UUID(as_uuid=True), sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("staff_id", UUID(as_uuid=True), sa.ForeignKey("staff.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("staff_id", UUID(as_uuid=True), nullable=False),
         sa.Column("title", sa.String(200), nullable=False),
         sa.Column("category", sa.String(50), nullable=False, server_default="general"),
         # it_setup | access | hr_admin | equipment | intro | compliance | general
@@ -42,7 +42,7 @@ def upgrade() -> None:
         "employee_training_records",
         sa.Column("id", UUID(as_uuid=True), primary_key=True),
         sa.Column("org_id", UUID(as_uuid=True), sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("staff_id", UUID(as_uuid=True), sa.ForeignKey("staff.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("staff_id", UUID(as_uuid=True), nullable=False),
         sa.Column("training_name", sa.String(200), nullable=False),
         sa.Column("provider", sa.String(200), nullable=True),
         sa.Column("category", sa.String(50), nullable=False, server_default="other"),

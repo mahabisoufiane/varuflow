@@ -50,28 +50,42 @@ const config: Config = {
         },
         // Varuflow semantic tokens — resolve to CSS variables for dark/light switching
         vf: {
-          // Semantic (theme-aware)
           "bg-primary":    "var(--vf-bg-primary)",
           "bg-surface":    "var(--vf-bg-surface)",
           "bg-elevated":   "var(--vf-bg-elevated)",
           "text-primary":  "var(--vf-text-primary)",
           "text-secondary":"var(--vf-text-secondary)",
           "text-muted":    "var(--vf-text-muted)",
-          // Static accent/status tokens
-          accent:          "#6366F1",
-          "accent-hover":  "#4F46E5",
-          success:         "#10B981",
-          warning:         "#F59E0B",
-          danger:          "#EF4444",
-          // Legacy aliases so existing pages don't break
+          accent:          "var(--vf-brand-primary)",
+          "accent-hover":  "var(--vf-brand-primary-hover)",
+          "accent-subtle": "var(--vf-brand-primary-subtle)",
+          teal:            "var(--vf-brand-secondary)",
+          "teal-hover":    "var(--vf-brand-secondary-hover)",
+          "teal-subtle":   "var(--vf-brand-secondary-subtle)",
+          success:         "var(--vf-success)",
+          warning:         "var(--vf-warning)",
+          danger:          "var(--vf-danger)",
           base:            "var(--vf-bg-primary)",
           surface:         "var(--vf-bg-surface)",
           elevated:        "var(--vf-bg-elevated)",
-          indigo:          "#6366F1",
-          "indigo-h":      "#818CF8",
+          indigo:          "var(--vf-brand-primary)",
+          "indigo-h":      "var(--vf-brand-primary-hover)",
           "text-1":        "var(--vf-text-primary)",
           "text-2":        "var(--vf-text-secondary)",
           "text-m":        "var(--vf-text-muted)",
+        },
+        indigo: {
+          50:  "#EFF6FF",
+          100: "#DBEAFE",
+          200: "#BFDBFE",
+          300: "#93C5FD",
+          400: "#60A5FA",
+          500: "#3B82F6",
+          600: "#2563EB",
+          700: "#1D4ED8",
+          800: "#1E40AF",
+          900: "#1E3A8A",
+          950: "#172554",
         },
       },
       borderRadius: {
@@ -85,12 +99,24 @@ const config: Config = {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
       },
       boxShadow: {
-        card:      "0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3)",
-        elevated:  "0 4px 24px rgba(0,0,0,0.4)",
-        glow:      "0 0 20px rgba(99,102,241,0.15)",
-        "glow-lg": "0 0 40px rgba(99,102,241,0.25)",
-        "glow-btn":"inset 0 1px 0 rgba(255,255,255,0.1), 0 0 16px rgba(99,102,241,0.3)",
-        glass:     "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)",
+        card:      "0 1px 3px rgba(28,25,23,0.06), 0 1px 2px rgba(28,25,23,0.04)",
+        elevated:  "0 4px 16px rgba(28,25,23,0.08), 0 1px 3px rgba(28,25,23,0.05)",
+        glow:      "0 0 20px rgba(37,99,235,0.15)",
+        "glow-lg": "0 0 40px rgba(37,99,235,0.20)",
+        "glow-btn":"0 1px 2px rgba(28,25,23,0.06), 0 0 12px rgba(37,99,235,0.2)",
+        glass:     "0 8px 32px rgba(28,25,23,0.08), 0 1px 3px rgba(28,25,23,0.05)",
+      },
+      // Motion tokens — resolve to the CSS variables defined in globals.css so
+      // utilities (duration-base, ease-standard) and raw CSS share one source.
+      transitionDuration: {
+        fast: "var(--vf-dur-fast)",
+        base: "var(--vf-dur-base)",
+        slow: "var(--vf-dur-slow)",
+      },
+      transitionTimingFunction: {
+        standard:   "var(--vf-ease-standard)",
+        emphasized: "var(--vf-ease-emphasized)",
+        exit:       "var(--vf-ease-exit)",
       },
       keyframes: {
         "fade-in": {

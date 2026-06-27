@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,14 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-
-function getToken() {
-  return typeof window !== "undefined"
-    ? localStorage.getItem("auth_token") ?? ""
-    : "";
-}
+import styles from "./page.module.scss";
 
 type WalletProvider = "apple_pay" | "google_pay";
 type WalletStatus = "pending" | "completed" | "failed";
@@ -43,13 +36,17 @@ const statusClass: Record<WalletStatus, string> = {
   failed: "bg-red-100 text-red-800",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:   "statusPending",
+  completed: "statusCompleted",
+  failed:    "statusFailed",
+};
+
 function truncate(str: string, len = 12) {
   return str.length > len ? str.slice(0, len) + "…" : str;
 }
 
 export default function WalletPaymentsPage() {
-  const { locale } = useParams<{ locale: string }>();
-
   const [customerIdInput, setCustomerIdInput] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [items, setItems] = useState<WalletPayment[]>([]);
@@ -72,11 +69,7 @@ export default function WalletPaymentsPage() {
       const params = new URLSearchParams();
       if (customerIdInput.trim()) params.set("customer_id", customerIdInput.trim());
       if (statusFilter !== "all") params.set("status", statusFilter);
-      const res = await fetch(`${API}/api/wallet-payments?${params}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data = await res.json();
+      const data = await api.get<WalletPayment[]>(`/api/wallet-payments?${params}`);
       setItems(data);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load payments");
@@ -97,15 +90,7 @@ export default function WalletPaymentsPage() {
         provider: formProvider,
       };
       if (formInvoiceId.trim()) body.invoice_id = formInvoiceId.trim();
-      const res = await fetch(`${API}/api/wallet-payments`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post("/api/wallet-payments", body);
       setFormCustomerId("");
       setFormInvoiceId("");
       setFormAmount("");
@@ -122,14 +107,8 @@ export default function WalletPaymentsPage() {
   async function handleStatusChange(id: string, action: "complete" | "fail") {
     setError("");
     try {
-      const res = await fetch(
-        `${API}/api/wallet-payments/${id}/${action === "complete" ? "mark-complete" : "mark-failed"}`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }
-      );
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      const endpoint = action === "complete" ? "mark-complete" : "mark-failed";
+      await api.post(`/api/wallet-payments/${id}/${endpoint}`, {});
       await loadPayments();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : `Failed to mark ${action}`);
@@ -212,7 +191,7 @@ export default function WalletPaymentsPage() {
                       <TableCell>{item.currency}</TableCell>
                       <TableCell>
                         <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusClass[item.status]}`}
+                          className={styles[STATUS_MODULE[item.status] ?? "statusPending"]}
                         >
                           {item.status}
                         </span>

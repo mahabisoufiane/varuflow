@@ -13,13 +13,21 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(p: str) -> str:
-    return (_BACKEND_ROOT / p).read_text()
+    _p = _BACKEND_ROOT / p
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
 MIGRATION_SRC = _read("migrations/versions/c4d6e8f0a2b3_v73_pos_quick_buttons.py")
-MODEL_SRC = _read("app/models/pos_quick_button.py")
+MODEL_SRC = _read("app/features/pos/pos_quick_button.py")
 SERVICE_SRC = _read("app/services/pos_quick_button.py")
-ROUTER_SRC = _read("app/routers/pos_quick_buttons.py")
+ROUTER_SRC = _read("app/features/pos/pos_quick_buttons.py")
 MAIN_SRC = _read("app/main.py")
 
 
@@ -153,7 +161,10 @@ def test_model_matches_migration():
 
 def test_router_registered_on_api_pos_quick_buttons():
     assert 'prefix="/api/pos/quick-buttons"' in ROUTER_SRC
-    assert "app.include_router(pos_quick_buttons.router)" in MAIN_SRC
+    # pos_quick_buttons is registered via pos_router (vertical-slice architecture)
+    feat_src = _read("app/features/pos/router.py")
+    assert "pos_quick_buttons" in feat_src
+    assert "pos_router" in MAIN_SRC
 
 
 def test_router_has_five_endpoints():

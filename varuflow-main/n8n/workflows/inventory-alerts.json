@@ -1,0 +1,47 @@
+{
+  "name": "Varuflow — Inventory Alerts (Daily 08:00)",
+  "nodes": [
+    {
+      "id": "dd44ee55-ff66-0077-1188-990011223344",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "cronExpression", "expression": "0 8 * * *" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "dd44ee55-ff66-0077-1188-990011223345",
+      "name": "Check Inventory Alerts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [460, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.VARUFLOW_BACKEND_URL }}/api/jobs/inventory-alerts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Admin-Key", "value": "={{ $env.VARUFLOW_ADMIN_KEY }}" }
+          ]
+        },
+        "options": { "timeout": 60000 }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [{ "node": "Check Inventory Alerts", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "notes": "Logs products below their reorder point. The in-process scheduler sends email alerts; this endpoint is for external monitoring integrations."
+}

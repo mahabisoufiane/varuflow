@@ -1,4 +1,4 @@
-"""IP-based in-memory rate limiter middleware (Item 29 — hardened).
+"""IP-based rate limiter middleware (Item 29 / C-1 — hardened).
 
 Global limit: 100 requests / 60 seconds per IP address.
 Auth, billing, and AI endpoints have tighter per-path limits (see
@@ -20,9 +20,13 @@ The bucket is keyed on ``(bucket_name, org_id)`` so a single org cannot
 starve the quota of another org sharing an egress IP (SaaS-on-VPN
 scenario).
 
-Uses a sliding-window counter backed by a thread-safe defaultdict.
-Works for single-instance deployments; swap the counter for Redis
-(e.g. redis-py asyncio) when running multiple replicas.
+Backend selection (C-1):
+  When REDIS_URL is set, a shared Redis sorted-set sliding window is used.
+  This counter is shared across all Railway replicas so rate limits are
+  enforced correctly regardless of replica count.
+
+  When REDIS_URL is empty (local dev, CI), the implementation falls back
+  to the in-memory defaultdict counter — safe for single-process deployments.
 
 Usage (in main.py):
     from app.middleware.rate_limit import RateLimitMiddleware
@@ -47,6 +51,61 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
 from app.config import settings
+
+# ── Redis client (C-1) ────────────────────────────────────────────────────────
+# Initialised lazily on first use so the module can be imported before the
+# event loop exists.  None when REDIS_URL is not configured.
+_redis_client = None
+_redis_init_attempted = False
+
+# Atomic Lua sliding-window script.
+# KEYS[1]  = sorted-set key (namespaced bucket)
+# ARGV[1]  = window in seconds
+# ARGV[2]  = current wall-clock time in milliseconds (int)
+# ARGV[3]  = max requests per window
+#
+# Returns {remaining, retry_after_ms} where retry_after_ms is -1 on
+# admit or the milliseconds until the oldest request leaves the window.
+_LUA_SLIDING_WINDOW = """
+local key       = KEYS[1]
+local window_ms = tonumber(ARGV[1]) * 1000
+local now_ms    = tonumber(ARGV[2])
+local limit     = tonumber(ARGV[3])
+
+redis.call('ZREMRANGEBYSCORE', key, '-inf', now_ms - window_ms)
+local count = tonumber(redis.call('ZCARD', key))
+if count >= limit then
+    local oldest = redis.call('ZRANGE', key, 0, 0, 'WITHSCORES')
+    local oldest_ms = tonumber(oldest[2])
+    local retry_ms = (oldest_ms + window_ms) - now_ms
+    return {0, retry_ms}
+end
+local member = tostring(now_ms) .. ':' .. tostring(count)
+redis.call('ZADD', key, now_ms, member)
+redis.call('PEXPIRE', key, window_ms + 1000)
+return {limit - count - 1, -1}
+"""
+
+
+async def _get_redis():
+    """Return the Redis client, creating it on first call, or None if not configured."""
+    global _redis_client, _redis_init_attempted
+    if _redis_init_attempted:
+        return _redis_client
+    _redis_init_attempted = True
+    url = getattr(settings, "REDIS_URL", "")
+    if not url:
+        return None
+    try:
+        import redis.asyncio as aioredis
+        client = aioredis.from_url(url, decode_responses=False, socket_connect_timeout=2)
+        await client.ping()
+        _redis_client = client
+        log.info("Rate limiter: Redis backend active (%s)", url.split("@")[-1] if "@" in url else url)
+    except Exception:
+        log.warning("Rate limiter: Redis unavailable — falling back to in-memory counter", exc_info=True)
+        _redis_client = None
+    return _redis_client
 
 log = logging.getLogger(__name__)
 
@@ -79,6 +138,8 @@ _PATH_LIMITS: list[tuple[str, _Limit]] = [
     ("/api/auth/signup",          _Limit(max_requests=5,  window_seconds=60)),
     ("/api/local-auth/login",     _Limit(max_requests=5,  window_seconds=60)),
     ("/api/local-auth/signup",    _Limit(max_requests=5,  window_seconds=60)),
+    # POS PIN login — 6-digit numeric PINs are weak; tight burst cap + lockout
+    ("/api/pos/auth/pin",         _Limit(max_requests=5,  window_seconds=60)),
     # MFA — 10 attempts per minute
     ("/api/local-auth/mfa",       _Limit(max_requests=10, window_seconds=60)),
     # Refresh — cheap on the server but an open refresh endpoint is a gift
@@ -122,6 +183,10 @@ _PATH_LIMITS: list[tuple[str, _Limit]] = [
     # 5 per minute per IP still accommodates a small event-booth sign-up
     # queue while throttling automated spam.
     ("/api/waitlist",             _Limit(max_requests=5,  window_seconds=60)),
+    # Referral generation — daily cap is enforced by business logic, but an
+    # IP-level limit stops scripted link farming. 10 per hour is well above
+    # any legitimate usage (real users generate once and share).
+    ("/api/referrals/generate",   _Limit(max_requests=10, window_seconds=3600)),
 ]
 
 # Paths that must NEVER be rate-limited. These are external callers that
@@ -185,17 +250,11 @@ def _is_disabled() -> bool:
     return bool(getattr(settings, "RATE_LIMIT_DISABLED", False))
 
 
-async def _consume(
+async def _consume_memory(
     key: tuple,
     limit: _Limit,
 ) -> Tuple[int, Optional[float]]:
-    """Record a hit against ``key`` and return ``(remaining, retry_after)``.
-
-    ``retry_after`` is ``None`` when the request is admitted and a float
-    (seconds) when the cap is exceeded. The caller decides whether to
-    raise or return a 429 — this keeps the helper usable from both the
-    middleware and a FastAPI dep.
-    """
+    """In-memory sliding-window counter (single-replica fallback)."""
     now = time.monotonic()
     window_start = now - limit.window_seconds
     async with _lock:
@@ -208,9 +267,6 @@ async def _consume(
             return 0, retry_after
         kept.append(now)
         _counters[key] = kept
-        # Evict long-stale keys opportunistically (see middleware for the
-        # full rationale); share the cap so dep-callers don't starve the
-        # middleware's memory budget.
         if len(_counters) > 50_000:
             max_window = max(
                 (lim.window_seconds for _, lim in _PATH_LIMITS),
@@ -224,13 +280,58 @@ async def _consume(
         return limit.max_requests - count - 1, None
 
 
+async def _consume_redis(
+    r,
+    key: tuple,
+    limit: _Limit,
+) -> Tuple[int, Optional[float]]:
+    """Redis sliding-window counter (multi-replica safe, C-1)."""
+    redis_key = "rl:" + ":".join(str(k) for k in key)
+    now_ms = int(time.time() * 1000)
+    try:
+        result = await r.eval(
+            _LUA_SLIDING_WINDOW,
+            1,
+            redis_key,
+            str(limit.window_seconds),
+            str(now_ms),
+            str(limit.max_requests),
+        )
+        remaining, retry_ms = int(result[0]), int(result[1])
+        if retry_ms >= 0:
+            retry_after = retry_ms / 1000.0 + 1.0
+            return 0, retry_after
+        return remaining, None
+    except Exception:
+        log.warning("Redis consume error — falling back to in-memory for this request", exc_info=True)
+        return await _consume_memory(key, limit)
+
+
+async def _consume(
+    key: tuple,
+    limit: _Limit,
+) -> Tuple[int, Optional[float]]:
+    """Record a hit against ``key`` and return ``(remaining, retry_after)``.
+
+    ``retry_after`` is ``None`` when the request is admitted and a float
+    (seconds) when the cap is exceeded.
+    """
+    r = await _get_redis()
+    if r is not None:
+        return await _consume_redis(r, key, limit)
+    return await _consume_memory(key, limit)
+
+
 def _reset_for_tests() -> None:
-    """Wipe the in-memory counter.
+    """Wipe the in-memory counter and force Redis re-initialisation.
 
     Called from the rate-limit tests so each case starts from a clean
     state; production code must never call this.
     """
+    global _redis_client, _redis_init_attempted
     _counters.clear()
+    _redis_client = None
+    _redis_init_attempted = False
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):

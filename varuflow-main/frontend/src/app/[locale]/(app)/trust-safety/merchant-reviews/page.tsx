@@ -12,11 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
+import pageStyles from "./page.module.scss";
 
 const TAG_COLORS: Record<string, string> = {
   no_show: "bg-red-100 text-red-800",
@@ -24,8 +21,14 @@ const TAG_COLORS: Record<string, string> = {
   great_client: "bg-green-100 text-green-800",
 };
 
+const TAG_MODULE: Record<string, keyof typeof pageStyles> = {
+  no_show:     "tagNoShow",
+  late_payer:  "tagLatePayment",
+  great_client:"tagGreatClient",
+};
+
 function tagClass(tag: string) {
-  return TAG_COLORS[tag] ?? "bg-gray-100 text-gray-800";
+  return pageStyles[TAG_MODULE[tag] ?? "tagNoShow"];
 }
 
 interface MerchantReview {
@@ -64,13 +67,9 @@ export default function MerchantReviewsPage() {
       const params = new URLSearchParams();
       if (customerFilter) params.set("customer_id", customerFilter);
       const endpoint = networkMode
-        ? `${API}/api/merchant-reviews/network?${params}`
-        : `${API}/api/merchant-reviews?${params}`;
-      const res = await fetch(endpoint, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setReviews(await res.json());
+        ? `/api/merchant-reviews/network?${params}`
+        : `/api/merchant-reviews?${params}`;
+      setReviews(await api.get<MerchantReview[]>(endpoint));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load reviews");
     } finally {
@@ -100,15 +99,7 @@ export default function MerchantReviewsPage() {
         shared_with_network: fShared,
       };
       if (fBookingId) body.booking_id = fBookingId;
-      const res = await fetch(`${API}/api/merchant-reviews`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post<MerchantReview>("/api/merchant-reviews", body);
       setFCustomerId(""); setFBookingId(""); setFBody(""); setFTags(""); setFIsPrivate(false); setFShared(false); setFRating("5");
       fetchReviews();
     } catch (e: unknown) {
@@ -184,7 +175,7 @@ export default function MerchantReviewsPage() {
                         {r.tags.slice(0, 3).map((tag) => (
                           <span
                             key={tag}
-                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${tagClass(tag)}`}
+                            className={tagClass(tag)}
                           >
                             {tag}
                           </span>

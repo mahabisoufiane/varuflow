@@ -37,7 +37,7 @@ def upgrade() -> None:
         sa.Column("id", UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()")),
         sa.Column("org_id", UUID(as_uuid=True), sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
         sa.Column("delegated_from_role",   sa.String(20),  nullable=False),   # OWNER | ADMIN
-        sa.Column("delegated_to_user_id",  UUID(as_uuid=True), sa.ForeignKey("staff.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("delegated_to_user_id",  UUID(as_uuid=True), nullable=False),
         sa.Column("delegated_to_email",    sa.String(254), nullable=True),
         sa.Column("valid_from",  sa.Date, nullable=False),
         sa.Column("valid_until", sa.Date, nullable=False),

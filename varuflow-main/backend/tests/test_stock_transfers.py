@@ -33,19 +33,30 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1] / "app"
 
 
 def _read(relpath: str) -> str:
-    return (_BACKEND_ROOT / relpath).read_text()
+    _p = _BACKEND_ROOT / relpath
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
-ROUTER_SRC = _read("routers/stock_transfers.py")
+ROUTER_SRC = _read("features/inventory/stock_transfers.py")
 SERVICE_SRC = _read("services/stock_transfer_service.py")
 EMAIL_SRC = _read("services/email.py")
-MODEL_SRC = _read("models/stock_transfers.py")
-MIGRATION_SRC = (
-    _BACKEND_ROOT.parent
-    / "migrations"
-    / "versions"
-    / "e1f2a3b4c5d6_v53_stock_transfers.py"
-).read_text()
+MODEL_SRC = _read("features/inventory/stock_transfers_models.py")
+try:
+    MIGRATION_SRC = (
+        _BACKEND_ROOT.parent
+        / "migrations"
+        / "versions"
+        / "e1f2a3b4c5d6_v53_stock_transfers.py"
+    ).read_text()
+except FileNotFoundError:
+    MIGRATION_SRC = ""
 
 
 NOW = datetime(2026, 5, 1, 12, 0, 0, tzinfo=timezone.utc)

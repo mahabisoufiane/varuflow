@@ -14,7 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.trial_sequences import (
+from app.features.auth.trial_sequences import (
     TrialEmailSend,
     TrialEnrollment,
     TrialSequence,

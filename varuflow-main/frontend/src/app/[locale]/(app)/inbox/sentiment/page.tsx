@@ -1,10 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import styles from "./page.module.scss";
 import {
   Table,
   TableBody,
@@ -14,18 +16,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
-
-function sentimentClass(s: string) {
-  const map: Record<string, string> = {
-    positive: "bg-green-100 text-green-800",
-    neutral: "bg-gray-100 text-gray-800",
-    negative: "bg-red-100 text-red-800",
+function sentimentClass(s: string): keyof typeof styles {
+  const map: Record<string, keyof typeof styles> = {
+    positive: "sentimentPositive",
+    neutral:  "sentimentNeutral",
+    negative: "sentimentNegative",
   };
-  return map[s] ?? "bg-gray-100 text-gray-800";
+  return map[s] ?? "sentimentNeutral";
 }
 
 interface SentimentResult {
@@ -63,16 +60,10 @@ export default function SentimentPage() {
     setAnalyzeError("");
     setResult(null);
     try {
-      const res = await fetch(`${API}/api/inbox/sentiment/analyze`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message_id: analyzeId }),
+      const data = await api.post<SentimentResult>("/api/inbox/sentiment/analyze", {
+        message_id: analyzeId,
       });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setResult(await res.json());
+      setResult(data);
     } catch (e: unknown) {
       setAnalyzeError(e instanceof Error ? e.message : "Analysis failed");
     } finally {
@@ -84,11 +75,8 @@ export default function SentimentPage() {
     setFlaggedLoading(true);
     setFlaggedError("");
     try {
-      const res = await fetch(`${API}/api/inbox/sentiment/flagged`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setFlagged(await res.json());
+      const data = await api.get<FlaggedThread[]>("/api/inbox/sentiment/flagged");
+      setFlagged(data);
     } catch (e: unknown) {
       setFlaggedError(e instanceof Error ? e.message : "Failed to load flagged threads");
     } finally {
@@ -130,7 +118,7 @@ export default function SentimentPage() {
               <CardContent className="pt-4">
                 <div className="flex flex-wrap items-center gap-3">
                   <span
-                    className={`inline-flex items-center px-3 py-1 rounded text-sm font-medium ${sentimentClass(result.sentiment)}`}
+                    className={styles[sentimentClass(result.sentiment)]}
                   >
                     {result.sentiment}
                   </span>
@@ -184,7 +172,7 @@ export default function SentimentPage() {
                       <TableCell className="font-mono text-xs">{f.customer_id}</TableCell>
                       <TableCell>
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${sentimentClass(f.sentiment)}`}
+                          className={styles[sentimentClass(f.sentiment)]}
                         >
                           {f.sentiment}
                         </span>

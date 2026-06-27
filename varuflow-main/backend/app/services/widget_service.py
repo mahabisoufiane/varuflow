@@ -239,7 +239,7 @@ async def resolve_org_by_slug(db, *, slug: str):
     """
     from sqlalchemy import select as _select
 
-    from app.models.organization import Organization
+    from app.features.auth.organization import Organization
 
     if not isinstance(slug, str) or "-" not in slug:
         return None
@@ -267,7 +267,7 @@ async def resolve_brand_color(db, *, org_id: uuid.UUID) -> str:
     from sqlalchemy import select as _select
 
     try:
-        from app.models.invoice_templates import InvoiceTemplate
+        from app.features.invoicing.model_invoice_templates import InvoiceTemplate
     except Exception:  # pragma: no cover — safety net
         return DEFAULT_BRAND_COLOR
     row = await db.scalar(

@@ -25,7 +25,7 @@ from sqlalchemy import text
 from app.database import async_session, engine
 from app.main import app
 from app.middleware.auth import get_current_member
-from app.models.organization import (
+from app.features.auth.organization import (
     OrgIpAllowlistEntry,
     OrgPlan,
     OrgRole,

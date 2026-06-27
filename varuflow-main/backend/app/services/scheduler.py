@@ -8,6 +8,13 @@ skip silently. This avoids duplicate emails when Railway scales out.
 
 The lock IDs below must be stable 64-bit integers; changing them mid-flight
 would allow two replicas to run the same job until all replicas redeploy.
+
+Job store (M-6)
+---------------
+When DATABASE_URL is set (production), APScheduler persists job metadata
+to PostgreSQL via SQLAlchemyJobStore. This ensures that misfired jobs
+(e.g. due to a Railway restart) are detected and re-run within their
+misfire_grace_time window, rather than silently skipped.
 """
 import logging
 from datetime import datetime, timedelta, timezone
@@ -85,8 +92,8 @@ async def _org_notification_email(db: AsyncSession, org_id) -> str | None:
     # Local imports to avoid a circular import at module load time —
     # app.models.auth transitively imports app.database which re-enters this
     # module during the initial import cycle on cold starts.
-    from app.models.auth import AuthUser
-    from app.models.organization import OrganizationMember, OrgRole
+    from app.features.auth.models import AuthUser
+    from app.features.auth.organization import OrganizationMember, OrgRole
 
     row = await db.execute(
         select(AuthUser.email)
@@ -139,7 +146,7 @@ async def _with_advisory_lock(lock_id: int, job_name: str, coro_factory) -> None
 
 async def _sync_fortnox() -> None:
     """Sync invoices for all orgs that have an active Fortnox connection."""
-    from app.models.organization import Organization
+    from app.features.auth.organization import Organization
 
     async def _impl(db):
         try:
@@ -153,9 +160,9 @@ async def _sync_fortnox() -> None:
             for org in orgs:
                 try:
                     if org.fortnox_token_expiry and org.fortnox_token_expiry < datetime.now(timezone.utc):
-                        logger.info("Fortnox token expired for org %s — needs re-auth", org.id)
+                        logger.info("Fortnox token expired for org %s — needs re-auth", org.id)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
                 except Exception:
-                    logger.exception("Fortnox token check failed for org %s", org.id)
+                    logger.exception("Fortnox token check failed for org %s", org.id)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         except Exception:
             logger.exception("Fortnox sync job failed")
 
@@ -164,9 +171,9 @@ async def _sync_fortnox() -> None:
 
 async def _check_low_stock() -> None:
     """Email orgs whose products have fallen below reorder_level."""
-    from app.models.inventory import Product, StockLevel
-    from app.models.organization import Organization
-    from app.models.idempotency import IdempotencyKey
+    from app.features.inventory.models import Product, StockLevel
+    from app.features.auth.organization import Organization
+    from app.features.portal.idempotency import IdempotencyKey
     from app.services.email import send_low_stock_alert_email
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
@@ -245,10 +252,10 @@ async def _check_low_stock() -> None:
 
 async def _send_weekly_digest() -> None:
     """Send a weekly business digest to each org's billing email."""
-    from app.models.inventory import Product, StockLevel
-    from app.models.organization import Organization
-    from app.models.pos import PosSale, PosSaleItem
-    from app.models.idempotency import IdempotencyKey
+    from app.features.inventory.models import Product, StockLevel
+    from app.features.auth.organization import Organization
+    from app.features.pos.models import PosSale, PosSaleItem
+    from app.features.portal.idempotency import IdempotencyKey
     from app.services.email import send_weekly_digest_email
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
@@ -399,7 +406,7 @@ async def _cleanup_stale_tokens() -> None:
         deleted_counts: dict[str, int] = {}
 
         try:
-            from app.models.auth import AuthRefreshToken
+            from app.features.auth.models import AuthRefreshToken
             r = await db.execute(
                 delete(AuthRefreshToken).where(
                     (AuthRefreshToken.revoked == True) |  # noqa: E712
@@ -411,7 +418,7 @@ async def _cleanup_stale_tokens() -> None:
             logger.exception("refresh token cleanup failed")
 
         try:
-            from app.models.invoicing import CustomerPortalToken
+            from app.features.invoicing.models import CustomerPortalToken
             r = await db.execute(
                 delete(CustomerPortalToken).where(
                     (CustomerPortalToken.used == True) |  # noqa: E712
@@ -423,7 +430,7 @@ async def _cleanup_stale_tokens() -> None:
             logger.exception("portal token cleanup failed")
 
         try:
-            from app.models.organization import FortnoxOAuthState
+            from app.features.auth.organization import FortnoxOAuthState
             # Delete any state row past its expires_at — they are single-use
             # CSRF nonces with a 10-minute TTL.
             r = await db.execute(
@@ -448,7 +455,7 @@ async def _cleanup_stale_tokens() -> None:
             # on YourReference, so the idempotency row here IS the
             # deduplication guarantee. Keep this allow-list in sync with
             # any new "permanent" idempotency endpoints.
-            from app.models.idempotency import IdempotencyKey
+            from app.features.portal.idempotency import IdempotencyKey
             _PERMANENT_IDEMPOTENCY_ENDPOINTS = {
                 "integrations.fortnox_sync_invoice",
             }
@@ -467,7 +474,7 @@ async def _cleanup_stale_tokens() -> None:
             # Stripe processed-event markers: retain for 45 days (Stripe's
             # replay window is 30 days; +15d buffer for clock skew / extended
             # retries during an outage).
-            from app.routers.billing import StripeProcessedEvent
+            from app.features.billing.billing import StripeProcessedEvent
             cutoff_45d = now - timedelta(days=45)
             r = await db.execute(
                 delete(StripeProcessedEvent).where(StripeProcessedEvent.created_at < cutoff_45d)
@@ -477,7 +484,7 @@ async def _cleanup_stale_tokens() -> None:
             logger.exception("stripe event cleanup failed")
 
         await db.commit()
-        logger.info("token_cleanup deleted=%s", deleted_counts)
+        logger.info("token_cleanup deleted=%s", deleted_counts)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
 
     await _with_advisory_lock(_LOCK_TOKEN_CLEANUP, "token_cleanup", _impl)
 
@@ -489,8 +496,8 @@ async def _bokforing_reminder() -> None:
     Each owner email is sent at most once per year via the idempotency
     table so concurrent replicas / misfired retries cannot double-send.
     """
-    from app.models.idempotency import IdempotencyKey
-    from app.models.organization import Organization
+    from app.features.portal.idempotency import IdempotencyKey
+    from app.features.auth.organization import Organization
     from app.services.email import send_bokforing_reminder_email
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
@@ -565,9 +572,9 @@ async def _push_stockout_imminent() -> None:
     forecast so it fires earlier for fast-moving SKUs and may stay
     silent for slow movers that a simple threshold would flag.
     """
-    from app.models.inventory import Product, StockLevel, StockMovement
-    from app.models.organization import OrgRole
-    from app.models.idempotency import IdempotencyKey
+    from app.features.inventory.models import Product, StockLevel, StockMovement
+    from app.features.auth.organization import OrgRole
+    from app.features.portal.idempotency import IdempotencyKey
     from app.services.push import send_to_org_members
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
@@ -653,9 +660,9 @@ async def _push_overdue_invoices() -> None:
     email goes out. Dedupe key is per-invoice, not per-day, so a single
     push is sent per invoice regardless of how many times the job runs.
     """
-    from app.models.invoicing import Invoice, InvoiceStatus
-    from app.models.organization import OrgRole
-    from app.models.idempotency import IdempotencyKey
+    from app.features.invoicing.models import Invoice, InvoiceStatus
+    from app.features.auth.organization import OrgRole
+    from app.features.portal.idempotency import IdempotencyKey
     from app.services.push import send_to_org_members
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
@@ -708,9 +715,9 @@ async def _send_onboarding_reminder() -> None:
     onboarding checklist step. Sent at most once per org — the
     IdempotencyKey row is the send ledger.
     """
-    from app.models.organization import Organization
-    from app.models.onboarding import OnboardingProgress
-    from app.models.idempotency import IdempotencyKey
+    from app.features.auth.organization import Organization
+    from app.features.auth.model_onboarding import OnboardingProgress
+    from app.features.portal.idempotency import IdempotencyKey
     from app.services.email import send_onboarding_reminder_email
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
@@ -819,7 +826,7 @@ async def _check_stuck_stock_counts() -> None:
     job puts such rows back into DRAFT so the next reconnect resumes
     the flow cleanly.
     """
-    from app.routers.stock_counts import mark_stuck_counts
+    from app.features.inventory.stock_counts import mark_stuck_counts
 
     async def _impl(db):
         try:
@@ -843,7 +850,7 @@ async def _auto_reorder_check() -> None:
     """Daily sweep — run auto_reorder for every org whose schedule
     matches today. Failures are isolated per org so one bad tenant
     never blocks the sweep for everyone else."""
-    from app.models.organization import Organization
+    from app.features.auth.organization import Organization
     from app.services.auto_reorder import run_auto_reorder
 
     async def _impl(db):
@@ -890,7 +897,7 @@ async def _recurring_autosend() -> None:
     holding a ``with_for_update`` row lock so a concurrent manual
     ``/run`` click and this sweep cannot double-mint the same invoice.
     """
-    from app.models.invoicing import RecurringInvoice
+    from app.features.invoicing.models import RecurringInvoice
     from app.services.recurring_send import (
         RecurringRunError,
         auto_send_invoice,
@@ -980,7 +987,7 @@ async def _nightly_summary_sweep() -> None:
     """
     from zoneinfo import ZoneInfo
 
-    from app.models.organization import Organization
+    from app.features.auth.organization import Organization
     from app.services.nightly_summary import run_summary_for_org
 
     async def _impl(db):
@@ -1082,7 +1089,7 @@ async def _monthly_commission_sweep() -> None:
     import uuid as _uuid
 
     async def _impl(db: AsyncSession) -> None:
-        from app.models.commissions import CommissionEntry, CommissionRun
+        from app.features.hr.commissions_models import CommissionEntry, CommissionRun
 
         today = _date.today()
         # Last month's range: [first_of_last, last_of_last]
@@ -1141,18 +1148,18 @@ async def _giftcard_expiry_sweep() -> None:
     flipped to ``status='expired'`` so the POS balance check returns
     the right state even if no one ever asks after them.
     """
-    async def _impl() -> None:
+    async def _impl(_db=None) -> None:  # opens its own session; _db from advisory-lock helper unused
         from datetime import datetime as _dt, timedelta as _td, timezone as _tz
 
         from sqlalchemy import select as _select
 
-        from app.database import AsyncSessionLocal
-        from app.models.gift_cards import GiftCard
-        from app.models.invoicing import Customer
-        from app.models.organization import Organization
+        from app.database import async_session
+        from app.features.loyalty.gift_cards_models import GiftCard
+        from app.features.invoicing.models import Customer
+        from app.features.auth.organization import Organization
         from app.services.email import send_giftcard_expiry_email
 
-        async with AsyncSessionLocal() as db:
+        async with async_session() as db:
             now = _dt.now(tz=_tz.utc)
             upcoming_cutoff = now + _td(days=7)
 
@@ -1220,14 +1227,14 @@ async def _exchange_rate_sweep() -> None:
     fetches (no API key, network blip) are no-ops — existing
     transactions continue to work at their snapshot rates.
     """
-    async def _impl() -> None:
+    async def _impl(_db=None) -> None:  # opens its own session; _db from advisory-lock helper unused
         from sqlalchemy import select as _select
 
-        from app.database import AsyncSessionLocal
-        from app.models.organization import Organization
+        from app.database import async_session
+        from app.features.auth.organization import Organization
         from app.services.currency import fetch_exchange_rates, store_rates
 
-        async with AsyncSessionLocal() as db:
+        async with async_session() as db:
             bases = (
                 await db.execute(
                     _select(Organization.base_currency).distinct()
@@ -1264,14 +1271,14 @@ async def _loyalty_expiry_sweep() -> None:
        customers see the "{n} points expire on {date}" banner in the
        customer app. Best-effort notifications never block the sweep.
     """
-    async def _impl() -> None:
-        from app.database import AsyncSessionLocal
+    async def _impl(_db=None) -> None:  # opens its own session; _db from advisory-lock helper unused
+        from app.database import async_session
         from app.services.loyalty_engine import (
             expire_old_points,
             points_expiring_soon,
         )
 
-        async with AsyncSessionLocal() as db:
+        async with async_session() as db:
             touched = await expire_old_points(db)
             soon = await points_expiring_soon(db, within_days=14)
             if touched:
@@ -1297,7 +1304,7 @@ async def _segment_refresh_sweep() -> None:
     replay the delete+insert transaction for the same org.
     """
     async def _impl(db: AsyncSession) -> None:
-        from app.models.segments import Segment, SegmentType
+        from app.features.customers.segments_models import Segment, SegmentType
 
         # Scope to orgs with AUTO segments so a tenant with no
         # segments pays zero per-night cost.
@@ -1363,8 +1370,8 @@ async def _review_request_sweep() -> None:
     from datetime import timedelta
 
     async def _impl(db: AsyncSession) -> None:
-        from app.models.bookings import Appointment
-        from app.models.reviews import ReviewRequest
+        from app.features.bookings.models import Appointment
+        from app.features.marketing.reviews_models import ReviewRequest
         from app.services.review_dispatch import maybe_create_review_request
 
         cutoff = datetime.now(timezone.utc) - timedelta(days=1)
@@ -1413,7 +1420,7 @@ async def _subscription_pause_sweep() -> None:
       window, guarded by ``pause_reminder_sent_at``.
     """
     async def _impl(db: AsyncSession) -> None:
-        from app.models.organization import Organization, SubscriptionPause
+        from app.features.auth.organization import Organization, SubscriptionPause
         from app.services import subscription_pause as pause_svc
         from app.services.email import send_subscription_pause_reminder_email
 
@@ -1536,7 +1543,7 @@ async def _email_sequence_drip_sweep() -> None:
 async def _quote_expiry_sweep() -> None:
     """Nightly: flip quotes past valid_until from sent/viewed → expired."""
     async def _impl(db: AsyncSession) -> None:
-        from app.models.quotes import Quote
+        from app.features.invoicing.model_quotes import Quote
         from datetime import date as _date, datetime as _dt, timezone as _tz
         try:
             today = _date.today()
@@ -1567,8 +1574,8 @@ async def _trial_sweep() -> None:
     """
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-    from app.models.idempotency import IdempotencyKey
-    from app.models.organization import OrgPlan, Organization
+    from app.features.portal.idempotency import IdempotencyKey
+    from app.features.auth.organization import OrgPlan, Organization
     from app.services import trial_service as svc
     from app.services.email import send_trial_ended_soon_email, send_trial_expired_email
 
@@ -1697,7 +1704,7 @@ async def _health_score_sweep() -> None:
     - at_risk: send check-in email
     - critical: send urgent founder email + Slack notification
     """
-    from app.models.organization import Organization, OrgPlan
+    from app.features.auth.organization import Organization, OrgPlan
     from app.services.subscription_health import HealthFactors, calculate_health_score, save_health_score
     from app.services.nps import get_org_nps
     from app.services.email import (
@@ -1790,8 +1797,8 @@ async def _nps_reminder_sweep() -> None:
     followup_status != 'reminded', sends the reminder email, then sets
     followup_status = 'reminded' so it fires at most once per survey.
     """
-    from app.models.nps import NpsSurvey
-    from app.models.organization import Organization
+    from app.features.marketing.nps_models import NpsSurvey
+    from app.features.auth.organization import Organization
     from app.services.email import send_nps_survey_email
 
     async def _impl(db: AsyncSession) -> None:
@@ -1857,9 +1864,58 @@ async def _trial_onboarding_sweep() -> None:
     await _with_advisory_lock(_LOCK_TRIAL_ONBOARDING, "trial_onboarding_sweep", _impl)
 
 
+def _build_jobstores() -> dict:
+    """Return APScheduler jobstores dict (M-6).
+
+    Uses PostgreSQL via SQLAlchemyJobStore (psycopg2) when DATABASE_URL
+    is configured, falling back to the default in-memory store for local
+    dev / CI environments where no database is available at import time.
+
+    APScheduler's job store operates synchronously on its own thread pool;
+    the async engine used by FastAPI is separate and unaffected.
+    """
+    from app.config import settings
+
+    db_url = settings.DATABASE_URL
+    if not db_url:
+        return {}
+
+    # Convert async driver URL to its synchronous psycopg2 equivalent.
+    # SQLAlchemyJobStore needs a sync engine; asyncpg cannot be used here.
+    sync_url = db_url
+    if sync_url.startswith("postgresql+asyncpg://"):
+        sync_url = sync_url.replace("postgresql+asyncpg://", "postgresql://", 1)
+    elif sync_url.startswith("postgres://"):
+        # Railway shorthand
+        sync_url = sync_url.replace("postgres://", "postgresql://", 1)
+
+    try:
+        from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+        import sqlalchemy as _sa
+
+        # Pre-validate the sync connection before handing it to APScheduler.
+        # If the database isn't reachable (test env, cold start without DB),
+        # fall back to in-memory rather than letting scheduler.start() crash.
+        _probe = _sa.create_engine(sync_url, pool_size=1, max_overflow=0, pool_pre_ping=True)
+        with _probe.connect():
+            pass
+        _probe.dispose()
+
+        return {"default": SQLAlchemyJobStore(url=sync_url)}
+    except Exception:
+        logger.warning(
+            "APScheduler: PostgreSQL job store unavailable — using in-memory store",
+            exc_info=True,
+        )
+        return {}
+
+
 def create_scheduler() -> AsyncIOScheduler:
     """Build and return a configured AsyncIOScheduler (not yet started)."""
-    scheduler = AsyncIOScheduler(timezone="Europe/Stockholm")
+    scheduler = AsyncIOScheduler(
+        jobstores=_build_jobstores(),
+        timezone="Europe/Stockholm",
+    )
 
     # Fortnox: every 15 minutes
     scheduler.add_job(

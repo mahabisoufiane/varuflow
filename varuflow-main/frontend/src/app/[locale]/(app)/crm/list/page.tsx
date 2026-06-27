@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { List, Search, ChevronDown, Target } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api-client";
-
-const API = process.env.NEXT_PUBLIC_API_URL ?? "";
+import styles from "./page.module.scss";
 
 interface Deal {
   id: string; title: string; stage: string; value: number | null; currency: string;
@@ -24,6 +23,17 @@ const STAGE_COLORS: Record<string, string> = {
   lost: "bg-red-100 text-red-700",
   prospect: "bg-gray-100 text-gray-700",
   proposal: "bg-yellow-100 text-yellow-700",
+};
+
+const STAGE_MODULE: Record<string, keyof typeof styles> = {
+  lead:          "stageLead",
+  qualified:     "stageQualified",
+  proposal_sent: "stageProposalSent",
+  negotiation:   "stageNegotiation",
+  won:           "stageWon",
+  lost:          "stageLost",
+  prospect:      "stageProspect",
+  proposal:      "stageProposal",
 };
 
 function fmt(v: number | null, currency = "SEK") {
@@ -152,6 +162,7 @@ export default function CrmListPage() {
             ) : sorted.map(deal => {
               const si = stageMap[deal.stage];
               const color = STAGE_COLORS[deal.stage] ?? "bg-gray-100 text-gray-600";
+              const stageClass = STAGE_MODULE[deal.stage] ?? "stageLead";
               return (
                 <tr key={deal.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
@@ -160,7 +171,7 @@ export default function CrmListPage() {
                     </Link>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${color}`}>
+                    <span className={styles[stageClass]}>
                       {si?.name ?? deal.stage}
                     </span>
                   </td>

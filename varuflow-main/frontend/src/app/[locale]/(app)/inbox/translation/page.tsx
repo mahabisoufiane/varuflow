@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,11 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
 
 interface TranslationResult {
   id?: string;
@@ -44,16 +40,11 @@ export default function TranslationPage() {
     setError("");
     setTranslation(null);
     try {
-      const res = await fetch(`${API}/api/inbox/translate`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message_id: messageId, target_language: targetLang }),
+      const result = await api.post<TranslationResult>("/api/inbox/translate", {
+        message_id: messageId,
+        target_language: targetLang,
       });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setTranslation(await res.json());
+      setTranslation(result);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Translation failed");
     } finally {
@@ -67,11 +58,7 @@ export default function TranslationPage() {
     setHistoryError("");
     setHistory([]);
     try {
-      const res = await fetch(`${API}/api/inbox/translate/${lookupId}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data = await res.json();
+      const data = await api.get<TranslationResult | TranslationResult[]>(`/api/inbox/translate/${lookupId}`);
       setHistory(Array.isArray(data) ? data : [data]);
     } catch (e: unknown) {
       setHistoryError(e instanceof Error ? e.message : "Lookup failed");

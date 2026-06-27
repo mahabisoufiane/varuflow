@@ -66,9 +66,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 export const portalApi = {
-  get:  <T>(path: string)               => request<T>(path),
-  post: <T>(path: string, data: unknown) =>
+  get:   <T>(path: string)                => request<T>(path),
+  post:  <T>(path: string, data: unknown) =>
     request<T>(path, { method: "POST", body: JSON.stringify(data) }),
+  patch: <T>(path: string, data: unknown) =>
+    request<T>(path, { method: "PATCH", body: JSON.stringify(data) }),
   downloadUrl: (path: string) => `${BASE}${path}`,
   getWithToken: (path: string, token: string) =>
     fetch(`${BASE}${path}`, {

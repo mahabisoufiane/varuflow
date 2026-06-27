@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from app.models.grace_period import GracePeriodStatus, SubscriptionGracePeriod
+from app.features.billing.grace_period import GracePeriodStatus, SubscriptionGracePeriod
 from app.services.grace_period import (
     GRACE_PERIOD_DAYS,
     MAX_NOTIFICATIONS,
@@ -146,7 +146,7 @@ SERVICE_SRC = inspect.getsource(
     __import__("app.services.grace_period", fromlist=["_"])
 )
 BILLING_SRC = inspect.getsource(
-    __import__("app.routers.billing", fromlist=["_"])
+    __import__("app.features.billing.billing", fromlist=["_"])
 )
 
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
@@ -112,13 +113,12 @@ export default function CashflowPredictionPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex gap-1 rounded-xl border p-1 bg-background">
+          <div className={styles.rangeSelector}>
             {RANGES.map(r => (
               <button
                 key={r.days}
                 onClick={() => setDays(r.days)}
-                className={`px-3 py-1 text-sm rounded-lg transition-colors font-medium
-                  ${days === r.days ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground"}`}
+                className={`${styles.rangeBtn} ${days === r.days ? styles.rangeBtnActive : ""}`}
               >
                 {r.label}
               </button>
@@ -130,7 +130,7 @@ export default function CashflowPredictionPage() {
 
       {/* Alert banner */}
       {forecast?.alert && (
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800">
+        <div className={styles.alertBanner}>
           <AlertTriangle className="h-5 w-5 flex-shrink-0" />
           <p className="text-sm font-medium">
             Projected cash balance drops below {alertThreshold.toLocaleString()} on <strong>{forecast.alert.date}</strong>
@@ -140,13 +140,13 @@ export default function CashflowPredictionPage() {
       )}
 
       {/* Snapshot cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className={styles.snapshotGrid}>
         {[
           { label: "30-Day Forecast", snap: snapshots?.day_30 },
           { label: "60-Day Forecast", snap: snapshots?.day_60 },
           { label: "90-Day Forecast", snap: snapshots?.day_90 },
         ].map(({ label, snap }) => (
-          <div key={label} className="rounded-2xl border bg-card p-5 space-y-2">
+          <div key={label} className={styles.snapshotCard}>
             <p className="text-sm text-muted-foreground">{label}</p>
             {snap ? (
               <>
@@ -188,7 +188,7 @@ export default function CashflowPredictionPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={d => d.slice(5)} />
               <YAxis tick={{ fontSize: 11 }} tickFormatter={v => v.toLocaleString("sv-SE", { minimumFractionDigits: 0, maximumFractionDigits: 0 })} />
-              <Tooltip formatter={(v: number) => v.toLocaleString("sv-SE", { maximumFractionDigits: 0 })} />
+              <Tooltip formatter={(v) => (v as number).toLocaleString("sv-SE", { maximumFractionDigits: 0 })} />
               <Legend />
               <Area type="monotone" dataKey="best" name="Best Case" stroke="#22c55e" fill="url(#best)" strokeWidth={1.5} dot={false} />
               <Area type="monotone" dataKey="expected" name="Expected" stroke="#3b82f6" fill="url(#expected)" strokeWidth={2} dot={false} />

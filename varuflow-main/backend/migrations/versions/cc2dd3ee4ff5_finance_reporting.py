@@ -16,18 +16,18 @@ depends_on = None
 
 def upgrade() -> None:
     # -- ALTER expense_budgets: add owner + department --
-    op.add_column("expense_budgets", sa.Column("owner_staff_id", UUID(as_uuid=True), sa.ForeignKey("staff.id", ondelete="SET NULL"), nullable=True))
+    op.add_column("expense_budgets", sa.Column("owner_staff_id", UUID(as_uuid=True), nullable=True))
     op.add_column("expense_budgets", sa.Column("department", sa.String(100), nullable=True))
     op.create_index("ix_expense_budgets_owner", "expense_budgets", ["org_id", "owner_staff_id"])
 
     # -- ALTER mileage_logs: add approval --
     op.add_column("mileage_logs", sa.Column("approval_status", sa.String(10), nullable=False, server_default="pending"))
-    op.add_column("mileage_logs", sa.Column("approved_by", UUID(as_uuid=True), sa.ForeignKey("staff.id", ondelete="SET NULL"), nullable=True))
+    op.add_column("mileage_logs", sa.Column("approved_by", UUID(as_uuid=True), nullable=True))
     op.add_column("mileage_logs", sa.Column("approved_at", sa.DateTime(timezone=True), nullable=True))
 
     # -- ALTER project_time_entries: add approval --
     op.add_column("project_time_entries", sa.Column("approval_status", sa.String(10), nullable=False, server_default="pending"))
-    op.add_column("project_time_entries", sa.Column("approved_by", UUID(as_uuid=True), sa.ForeignKey("staff.id", ondelete="SET NULL"), nullable=True))
+    op.add_column("project_time_entries", sa.Column("approved_by", UUID(as_uuid=True), nullable=True))
     op.add_column("project_time_entries", sa.Column("approved_at", sa.DateTime(timezone=True), nullable=True))
 
     # -- purchase_requests --
@@ -35,14 +35,14 @@ def upgrade() -> None:
         "purchase_requests",
         sa.Column("id", UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()")),
         sa.Column("org_id", UUID(as_uuid=True), sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("requested_by", UUID(as_uuid=True), sa.ForeignKey("staff.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("requested_by", UUID(as_uuid=True), nullable=False),
         sa.Column("supplier_id", UUID(as_uuid=True), sa.ForeignKey("suppliers.id", ondelete="SET NULL"), nullable=True),
         sa.Column("title", sa.String(300), nullable=False),
         sa.Column("justification", sa.Text(), nullable=True),
         sa.Column("estimated_total", sa.Numeric(14, 2), nullable=False),
         sa.Column("currency", sa.String(3), nullable=False, server_default="SEK"),
         sa.Column("status", sa.String(10), nullable=False, server_default="pending"),
-        sa.Column("reviewed_by", UUID(as_uuid=True), sa.ForeignKey("staff.id", ondelete="SET NULL"), nullable=True),
+        sa.Column("reviewed_by", UUID(as_uuid=True), nullable=True),
         sa.Column("reviewed_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("review_note", sa.Text(), nullable=True),
         sa.Column("purchase_order_id", UUID(as_uuid=True), sa.ForeignKey("purchase_orders.id", ondelete="SET NULL"), nullable=True),

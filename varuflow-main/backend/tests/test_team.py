@@ -28,7 +28,7 @@ def _read(relpath: str) -> str:
 
 
 TEAM_SRC = _read("routers/team.py")
-PAYROLL_SRC = _read("routers/payroll.py")
+PAYROLL_SRC = _read("features/hr/payroll.py")
 
 
 # ═══════════════════════════════════════════════════════════════════

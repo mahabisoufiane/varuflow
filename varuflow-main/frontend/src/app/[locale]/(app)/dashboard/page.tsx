@@ -13,6 +13,9 @@ import OnboardingChecklist from "@/components/app/OnboardingChecklist";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { cn } from "@/lib/utils";
+import { Reveal } from "@/components/motion";
+import { EmptyInvoices } from "@/components/illustrations";
+import styles from "./page.module.scss";
 
 /* ── Types ──────────────────────────────────────────────────────────────────── */
 interface StockLevel {
@@ -54,7 +57,7 @@ function Sk({ className }: { className?: string }) {
 }
 
 /* ── Sparkline ───────────────────────────────────────────────────────────────── */
-function Sparkline({ data, color = "#6366f1", w = 72, h = 30 }: {
+function Sparkline({ data, color = "#2563EB", w = 72, h = 30 }: {
   data: number[]; color?: string; w?: number; h?: number;
 }) {
   const uid = useId().replace(/:/g, "");
@@ -236,6 +239,7 @@ export default function DashboardPage() {
       {/* ── KPI strip ──────────────────────────────────────────────────── */}
       {/* Item 12: mobile stacks vertically (grid-cols-1). Desktop grid
           (md:grid-cols-4) is unchanged — no layout regression. */}
+      <Reveal>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3" data-testid="kpi-strip">
         <KpiCard
           label="Outstanding"
@@ -246,7 +250,7 @@ export default function DashboardPage() {
           iconCls="text-indigo-400 bg-indigo-500/10"
           href="/invoices?status=SENT"
           spark={revData}
-          sparkColor="#6366f1"
+          sparkColor="#2563EB"
         />
         <KpiCard
           label="Invoiced this month"
@@ -279,6 +283,7 @@ export default function DashboardPage() {
           href="/pos"
         />
       </div>
+      </Reveal>
 
       {/* ── Hero + Quick actions ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -291,57 +296,83 @@ export default function DashboardPage() {
             <div className="absolute bottom-0 left-0 h-48 w-48 rounded-full bg-violet-600/8 blur-3xl" />
           </div>
           <div className="relative">
-            <div className="flex items-start justify-between mb-5">
-              <div>
-                <p className="text-[10px] vf-text-m font-semibold uppercase tracking-[0.14em]">
-                  Total receivables
-                </p>
-                <p className="mt-1.5 text-[42px] font-bold tracking-tight leading-none tabular-nums vf-text-1">
-                  {fmt(outstanding)}
-                  <span className="ml-2 text-lg font-normal vf-text-m">SEK</span>
-                </p>
-                <p className="mt-2 text-sm vf-text-m">
-                  {openInvoices.length} {openInvoices.length === 1 ? "invoice" : "invoices"} awaiting payment
-                </p>
-              </div>
-              {overdueCount > 0 && (
-                <div className="flex items-center gap-1.5 rounded-full px-3 py-1.5"
-                  style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)" }}>
-                  <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
-                  <span className="text-[11px] font-semibold text-red-400">{overdueCount} overdue</span>
+            {outstanding === 0 && revData.length === 0 ? (
+              /* First-run state — user has no invoices yet */
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 py-2">
+                <div className="flex flex-col items-start gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10">
+                    <FileText className="h-6 w-6 text-indigo-400" />
+                  </div>
+                  <div>
+                    <p className="text-base font-semibold vf-text-1">Ready to send your first invoice?</p>
+                    <p className="mt-1 text-sm vf-text-m">Create an invoice and it will appear here with payment tracking.</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Link href="/invoices/new" className="vf-btn text-xs px-3.5 h-8">
+                      <Plus className="h-3.5 w-3.5" />Create invoice
+                    </Link>
+                    <Link href="/customers/new" className="vf-btn-ghost text-xs px-3.5 h-8">
+                      Add customer first <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </div>
                 </div>
-              )}
-            </div>
-
-            {revData.length > 1 && (
-              <div className="mb-5">
-                <p className="text-[10px] vf-text-m uppercase tracking-[0.12em] mb-2.5">
-                  Monthly invoiced · last {revData.length} months
-                </p>
-                <MiniBar data={revData} />
+                <div className="hidden sm:block w-40 shrink-0 opacity-90">
+                  <EmptyInvoices />
+                </div>
               </div>
-            )}
+            ) : (
+              <>
+                <div className="flex items-start justify-between mb-5">
+                  <div>
+                    <p className="text-[10px] vf-text-m font-semibold uppercase tracking-[0.14em]">
+                      Total receivables
+                    </p>
+                    <p className="mt-1.5 text-[42px] font-bold tracking-tight leading-none tabular-nums vf-text-1">
+                      {fmt(outstanding)}
+                      <span className="ml-2 text-lg font-normal vf-text-m">SEK</span>
+                    </p>
+                    <p className="mt-2 text-sm vf-text-m">
+                      {openInvoices.length} {openInvoices.length === 1 ? "invoice" : "invoices"} awaiting payment
+                    </p>
+                  </div>
+                  {overdueCount > 0 && (
+                    <div className={styles.overdueBadge}>
+                      <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
+                      <span className="text-[11px] font-semibold text-red-400">{overdueCount} overdue</span>
+                    </div>
+                  )}
+                </div>
 
-            {collectedThisMonth > 0 && (
-              <div className="mb-5 inline-flex items-center gap-2 rounded-lg px-3 py-2"
-                style={{ background: "rgba(16,185,129,0.10)", border: "1px solid rgba(16,185,129,0.22)" }}>
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="text-[11px] text-emerald-500 font-medium">
-                  {fmt(collectedThisMonth)} kr collected this month
-                </span>
-              </div>
-            )}
+                {revData.length > 1 && (
+                  <div className="mb-5">
+                    <p className="text-[10px] vf-text-m uppercase tracking-[0.12em] mb-2.5">
+                      Monthly invoiced · last {revData.length} months
+                    </p>
+                    <MiniBar data={revData} />
+                  </div>
+                )}
 
-            <div className="flex items-center gap-2">
-              <Link href="/invoices?status=SENT"
-                className="vf-btn text-xs px-3.5 h-8">
-                View invoices <ArrowUpRight className="h-3 w-3" />
-              </Link>
-              <Link href="/analytics"
-                className="vf-btn-ghost text-xs px-3.5 h-8">
-                Analytics <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
+                {collectedThisMonth > 0 && (
+                  <div className={cn("mb-5", styles.collectedBadge)}>
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                    <span className="text-[11px] text-emerald-500 font-medium">
+                      {fmt(collectedThisMonth)} kr collected this month
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2">
+                  <Link href="/invoices?status=SENT"
+                    className="vf-btn text-xs px-3.5 h-8">
+                    View invoices <ArrowUpRight className="h-3 w-3" />
+                  </Link>
+                  <Link href="/analytics"
+                    className="vf-btn-ghost text-xs px-3.5 h-8">
+                    Analytics <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -473,17 +504,25 @@ export default function DashboardPage() {
       <AiActionCards />
 
       {/* ── Recent movements ─────────────────────────────────────────────── */}
-      {recentMovements.length > 0 && (
-        <div className="vf-section">
-          <div className="vf-section-header">
-            <h2 className="flex items-center gap-2 text-[13px] font-semibold vf-text-1">
-              <Activity className="h-4 w-4 vf-text-m" />Recent movements
-            </h2>
-            <Link href="/inventory/movements"
-              className="flex items-center gap-1 text-xs vf-text-m hover:vf-text-2 transition-colors">
-              All <ArrowRight className="h-3 w-3" />
+      <div className="vf-section">
+        <div className="vf-section-header">
+          <h2 className="flex items-center gap-2 text-[13px] font-semibold vf-text-1">
+            <Activity className="h-4 w-4 vf-text-m" />Recent movements
+          </h2>
+          <Link href="/inventory/movements"
+            className="flex items-center gap-1 text-xs vf-text-m hover:vf-text-2 transition-colors">
+            All <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+        {recentMovements.length === 0 ? (
+          <div className="py-10 text-center">
+            <p className="text-sm font-medium vf-text-2">No stock movements yet</p>
+            <p className="text-xs vf-text-m mt-0.5">Add products to inventory to start tracking stock.</p>
+            <Link href="/inventory/products/new" className="mt-3 inline-flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-500">
+              <Plus className="h-3 w-3" />Add first product
             </Link>
           </div>
+        ) : (
           <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
             {recentMovements.map((m) => (
               <div key={m.id} className="vf-stat-tile flex items-center gap-2.5">
@@ -500,8 +539,8 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* ── Recent activity feed (Item 12) — mobile-first but visible on both. */}
       <RecentActivity />
@@ -520,8 +559,7 @@ function KpiCard({ label, value, sub, trend, icon, iconCls, href, spark, sparkCo
 }) {
   return (
     <Link href={href}
-      className="group relative overflow-hidden vf-section p-4 hover:shadow-card transition-all duration-150"
-      style={{ borderRadius: 14 }}>
+      className="group relative overflow-hidden vf-section p-4 hover:shadow-card transition-all duration-150 rounded-[14px]">
       <div className="flex items-start justify-between mb-3">
         <span className={cn("inline-flex h-9 w-9 items-center justify-center rounded-xl", iconCls)}>{icon}</span>
         {spark && spark.length > 1 && sparkColor && (

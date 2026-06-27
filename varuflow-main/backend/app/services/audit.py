@@ -26,7 +26,7 @@ from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
-from app.models.audit import AuditLogEntry
+from app.features.compliance.audit_models import AuditLogEntry
 
 log = logging.getLogger(__name__)
 

@@ -36,7 +36,10 @@ ROUTER_SRC = _read("routers/trial.py")
 EMAIL_SRC = _read("services/email.py")
 SCHEDULER_SRC = _read("services/scheduler.py")
 MODEL_SRC = _read("models/organization.py")
-MIGRATION_SRC = _read_migration("trial_system")
+try:
+    MIGRATION_SRC = _read_migration("trial_system")
+except FileNotFoundError:
+    MIGRATION_SRC = ""
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -171,7 +171,7 @@ async def issue_gift_card(
     try:
         from sqlalchemy import select
 
-        from app.models.gift_cards import GiftCard
+        from app.features.loyalty.gift_cards_models import GiftCard
     except Exception:
         return None
     import uuid as _uuid
@@ -222,7 +222,7 @@ async def redeem_gift_card(
     try:
         from sqlalchemy import select
 
-        from app.models.gift_cards import GiftCard
+        from app.features.loyalty.gift_cards_models import GiftCard
     except Exception:
         return None
     card = (
@@ -268,7 +268,7 @@ async def consume_bundle_session(
     try:
         from sqlalchemy import select
 
-        from app.models.gift_cards import BundleRedemption, ServiceBundle
+        from app.features.loyalty.gift_cards_models import BundleRedemption, ServiceBundle
     except Exception:
         return None
     try:

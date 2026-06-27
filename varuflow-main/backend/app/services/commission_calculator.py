@@ -238,7 +238,7 @@ async def record_commission_for_source(
     if staff_id is None:
         return None
     try:
-        from app.models.commissions import CommissionEntry, CommissionRule
+        from app.features.hr.commissions_models import CommissionEntry, CommissionRule
 
         rules = (
             await db.execute(
@@ -284,7 +284,7 @@ def select_rules_for(staff_id, org_id):
     """
     from sqlalchemy import select
 
-    from app.models.commissions import CommissionRule
+    from app.features.hr.commissions_models import CommissionRule
 
     return select(CommissionRule).where(
         CommissionRule.org_id == org_id,

@@ -29,7 +29,6 @@ def upgrade() -> None:
         sa.Column("source", sa.String(50), nullable=True),
         sa.Column("status", sa.String(20), nullable=False, server_default="new"),
         sa.Column("assigned_to", UUID(as_uuid=True),
-                  sa.ForeignKey("staff.id", ondelete="SET NULL"),
                   nullable=True),
         sa.Column("score", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("notes", sa.Text(), nullable=True),

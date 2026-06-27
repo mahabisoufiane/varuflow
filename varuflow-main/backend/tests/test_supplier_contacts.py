@@ -12,13 +12,21 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(p: str) -> str:
-    return (_BACKEND_ROOT / p).read_text()
+    _p = _BACKEND_ROOT / p
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
 SERVICE_SRC   = _read("app/services/supplier_contact.py")
-ROUTER_SRC    = _read("app/routers/supplier_contacts.py")
+ROUTER_SRC    = _read("app/features/purchases/supplier_contacts.py")
 MIGRATION_SRC = _read("migrations/versions/a5b7c9d1e3f6_v83_supplier_contacts.py")
-MODEL_SRC     = _read("app/models/supplier_contact.py")
+MODEL_SRC     = _read("app/features/purchases/supplier_contact.py")
 MAIN_SRC      = _read("app/main.py")
 
 
@@ -290,9 +298,13 @@ def test_router_invariant_channel_on_update():
 
 
 def test_router_imports_supplier_from_inventory():
-    assert "from app.models.inventory import Supplier" in ROUTER_SRC
+    assert "from app.features.inventory.models import Supplier" in ROUTER_SRC
 
 
 def test_router_registered_in_main():
-    assert "supplier_contacts.router" in MAIN_SRC
-    assert "supplier_contacts," in MAIN_SRC
+
+    # Registered via purchases_router (vertical-slice architecture).
+    # The individual module is wired inside the feature router, not directly in main.py.
+    feat_src = _read("app/features/purchases/router.py")
+    assert "supplier_contacts" in feat_src
+    assert "purchases_router" in MAIN_SRC

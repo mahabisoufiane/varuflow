@@ -1,0 +1,21 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+.tableWrap {
+  border: 1px solid var(--vf-border);
+  border-radius: $vf-radius-xl;
+  overflow: hidden;
+}
+
+.tableHead tr {
+  border-bottom: 1px solid var(--vf-border);
+  background: var(--vf-bg-elevated);
+}
+
+.tableRow {
+  border-bottom: 1px solid var(--vf-divider);
+}
+
+.dividerTop {
+  border-top: 1px solid var(--vf-divider);
+}

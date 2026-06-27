@@ -24,7 +24,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
-from app.models.auth import AuthLoginAttempt, AuthRefreshToken, AuthUser
+from app.features.auth.models import AuthLoginAttempt, AuthRefreshToken, AuthUser
 
 log = logging.getLogger(__name__)
 

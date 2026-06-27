@@ -12,6 +12,7 @@ import {
   Hash, Globe, Clock, FileText, Plus, Edit2, ToggleLeft, ToggleRight,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import styles from "./page.module.scss";
 
 interface Customer {
   id: string;
@@ -40,6 +41,13 @@ const STATUS_COLORS: Record<string, string> = {
   SENT:    "bg-blue-100 text-blue-700",
   PAID:    "bg-emerald-100 text-emerald-700",
   OVERDUE: "bg-red-100 text-red-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  DRAFT:   "statusDraft",
+  SENT:    "statusSent",
+  PAID:    "statusPaid",
+  OVERDUE: "statusOverdue",
 };
 
 const AVATAR_COLORS = [
@@ -300,7 +308,7 @@ export default function CustomerDetailPage() {
 
       {/* ── Invoice history ─────────────────────────────────────────────── */}
       <div className="vf-section rounded-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "var(--vf-border)" }}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--vf-border)]">
           <h2 className="text-sm font-semibold vf-text-1 flex items-center gap-2">
             <FileText className="h-4 w-4" />Invoice history
           </h2>
@@ -317,7 +325,7 @@ export default function CustomerDetailPage() {
             <p className="text-sm vf-text-m">No invoices yet for this customer.</p>
           </div>
         ) : (
-          <div className="divide-y" style={{ borderColor: "var(--vf-border)" }}>
+          <div className="vf-divide">
             {invoices.map(inv => (
               <Link
                 key={inv.id}
@@ -325,7 +333,7 @@ export default function CustomerDetailPage() {
                 className="flex items-center justify-between px-5 py-3 hover:bg-[var(--vf-bg-elevated)] transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold", STATUS_COLORS[inv.status] ?? "bg-gray-100 text-gray-600")}>
+                  <span className={styles[STATUS_MODULE[inv.status] ?? "statusDraft"]}>
                     {inv.status}
                   </span>
                   <span className="text-sm font-medium vf-text-1">{inv.invoice_number}</span>
@@ -343,8 +351,7 @@ export default function CustomerDetailPage() {
       {/* ── Edit modal ─────────────────────────────────────────────────── */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent
-          className="sm:max-w-[480px]"
-          style={{ background: "var(--vf-bg-surface)", borderColor: "var(--vf-border)", borderRadius: 16 }}
+          className="sm:max-w-[480px] rounded-2xl border-[var(--vf-border)] bg-[var(--vf-bg-surface)]"
         >
           <DialogHeader>
             <DialogTitle className="vf-text-1 text-base font-semibold">

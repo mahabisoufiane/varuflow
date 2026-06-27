@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Clock, AlertTriangle } from "lucide-react";
+import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
+import styles from "./page.module.scss";
 
 interface OvertimeEntry { staff_id: string; staff_name: string; total_hours: number; is_overtime: boolean }
 
@@ -10,23 +13,29 @@ function addDays(d: Date, n: number) { const r = new Date(d); r.setDate(r.getDat
 function getMonday(d: Date) { const day = d.getDay(); return addDays(d, day === 0 ? -6 : 1 - day); }
 
 export default function OvertimePage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string) => fetch(`${apiBase}${url}`, { credentials: "include" });
-
   const [data, setData] = useState<OvertimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [weekStart, setWeekStart] = useState<Date>(getMonday(new Date()));
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   const weekStr = isoDate(weekStart);
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   useEffect(() => {
-    f(`/api/scheduling/overtime?week_start=${weekStr}`).then(r => r.ok ? r.json() : []).then(d => { setData(d); setLoading(false); });
+    api.get<OvertimeEntry[]>(`/api/scheduling/overtime?week_start=${weekStr}`)
+      .then(d => { setData(d); setLoading(false); })
+      .catch((err) => {
+        if (isPlanGateError(err)) {
+          setPlanBlocked({ module: (err as any).module ?? "hr", currentPlan: (err as any).currentPlan ?? "FREE" });
+        }
+        setLoading(false);
+      });
   }, [weekStr]);
 
   const overtimeCount = data.filter(d => d.is_overtime).length;
 
   if (loading) return <div className="animate-pulse space-y-4"><div className="h-10 rounded-lg bg-gray-100 w-64" /><div className="h-48 rounded-xl bg-gray-100" /></div>;
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Overtime" />;
 
   return (
     <div className="space-y-6">
@@ -71,7 +80,7 @@ export default function OvertimePage() {
               <span className={`text-sm font-semibold w-16 text-right ${entry.is_overtime ? "text-red-700" : "text-gray-700"}`}>
                 {entry.total_hours}h
               </span>
-              {entry.is_overtime && <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">Overtime</span>}
+              {entry.is_overtime && <span className={styles.overtimeBadge}>Overtime</span>}
             </div>
           </div>
         ))}

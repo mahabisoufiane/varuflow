@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
 import { Clock, Plus, Timer, StopCircle, CheckCircle, AlertCircle, BarChart2 } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface TimeEntry {
   id: string;
@@ -33,6 +34,12 @@ const APPROVAL_BADGE: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-700",
   approved: "bg-green-100 text-green-700",
   rejected: "bg-red-100 text-red-700",
+};
+
+const APPROVAL_MODULE: Record<string, keyof typeof styles> = {
+  pending:  "approvalPending",
+  approved: "approvalApproved",
+  rejected: "approvalRejected",
 };
 
 function today() {
@@ -362,7 +369,7 @@ export default function TimeTrackingPage() {
                 <span className="text-xs text-gray-400">{entry.entry_date}</span>
                 {entry.billable && <span className="text-xs px-1.5 py-0.5 rounded bg-green-50 text-green-700 border border-green-200">Billable</span>}
                 {entry.invoiced && <span className="text-xs px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">Invoiced</span>}
-                <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${APPROVAL_BADGE[entry.approval_status] ?? "bg-gray-100 text-gray-600"}`}>{entry.approval_status}</span>
+                <span className={styles[APPROVAL_MODULE[entry.approval_status] ?? "approvalPending"]}>{entry.approval_status}</span>
               </div>
               {entry.description && <p className="text-xs text-gray-500 mt-0.5 truncate">{entry.description}</p>}
               {entry.operator_name && <p className="text-xs text-gray-400">{entry.operator_name}</p>}

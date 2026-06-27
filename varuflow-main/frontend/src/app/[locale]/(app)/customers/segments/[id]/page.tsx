@@ -7,6 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, RefreshCw, Download, Trash2, Plus, Users } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Segment {
   id: string;
@@ -149,15 +150,11 @@ export default function SegmentDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge
-            className={
-              seg.type === "AUTO"
-                ? "bg-blue-100 text-blue-700"
-                : "bg-purple-100 text-purple-700"
-            }
+          <span
+            className={styles[seg.type === "AUTO" ? "typeAuto" : "typeManual"]}
           >
             {seg.type}
-          </Badge>
+          </span>
           {seg.type === "AUTO" && (
             <Button variant="outline" size="sm" onClick={refresh} disabled={busy}>
               <RefreshCw className="mr-1.5 h-3.5 w-3.5" />

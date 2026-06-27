@@ -12,7 +12,7 @@ from decimal import Decimal
 
 import pytest
 
-from app.models.inventory import (
+from app.features.inventory.models import (
     Product,
     PurchaseOrder,
     PurchaseOrderItem,
@@ -23,8 +23,8 @@ from app.models.inventory import (
     Supplier,
     Warehouse,
 )
-from app.models.organization import OrgPlan
-from app.models.ai_snooze import AiCardSnooze
+from app.features.auth.organization import OrgPlan
+from app.features.ai.ai_snooze import AiCardSnooze
 
 
 

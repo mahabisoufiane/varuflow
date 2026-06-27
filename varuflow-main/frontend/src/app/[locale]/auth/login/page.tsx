@@ -37,14 +37,14 @@ function AuthLeft() {
       style={{ background: "linear-gradient(135deg,#0F172A 0%,#1E293B 100%)" }}>
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full opacity-20 animate-orb-float"
-          style={{ background: "radial-gradient(circle,#6366F1 0%,transparent 70%)" }} />
+          style={{ background: "radial-gradient(circle,#2563EB 0%,transparent 70%)" }} />
         <div className="absolute top-1/2 -right-24 h-80 w-80 rounded-full opacity-15 animate-orb-float"
-          style={{ background: "radial-gradient(circle,#4F46E5 0%,transparent 70%)", animationDelay: "3s" }} />
+          style={{ background: "radial-gradient(circle,#1D4ED8 0%,transparent 70%)", animationDelay: "3s" }} />
         <div className="absolute -bottom-24 left-1/3 h-64 w-64 rounded-full opacity-10 animate-orb-float"
-          style={{ background: "radial-gradient(circle,#818CF8 0%,transparent 70%)", animationDelay: "6s" }} />
+          style={{ background: "radial-gradient(circle,#93C5FD 0%,transparent 70%)", animationDelay: "6s" }} />
       </div>
       <div className="relative flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#6366F1] to-[#4F46E5]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563EB] to-[#1D4ED8]">
           <Zap className="h-[18px] w-[18px] text-white" />
         </div>
         <span className="text-xl font-bold tracking-tight">Varuflow</span>
@@ -61,7 +61,7 @@ function AuthLeft() {
         <ul className="space-y-3">
           {["Real-time inventory across all warehouses","Invoicing with Stripe & Fortnox integration","AI advisor that flags risks before they cost you"].map((item) => (
             <li key={item} className="flex items-center gap-3 text-sm text-white/70">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6366F1]/20 border border-[#6366F1]/30 text-[#818CF8] text-xs font-bold">✓</span>
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#2563EB]/20 border border-[#2563EB]/30 text-[#93C5FD] text-xs font-bold">✓</span>
               {item}
             </li>
           ))}
@@ -227,7 +227,7 @@ export default function LoginPage() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-medium" style={{ color:"var(--vf-text-secondary)" }}>{t("auth.password")}</label>
-                <Link href="/auth/forgot-password" className="text-xs font-semibold text-[#6366F1] hover:text-[#4F46E5] transition-colors">
+                <Link href="/auth/forgot-password" className="text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors">
                   {t("auth.forgotPassword")}
                 </Link>
               </div>
@@ -253,10 +253,30 @@ export default function LoginPage() {
 
           <p className="text-center text-sm" style={{ color:"var(--vf-text-muted)" }}>
             {t("auth.noAccount")}{" "}
-            <Link href="/auth/signup" className="font-semibold text-[#6366F1] hover:text-[#4F46E5] transition-colors">
+            <Link href="/auth/signup" className="font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors">
               {t("auth.signup")}
             </Link>
           </p>
+
+          {/* Dev bypass — only visible when Supabase is not configured (local Docker dev) */}
+          {!process.env.NEXT_PUBLIC_SUPABASE_URL && (
+            <div className="rounded-xl p-3 space-y-2"
+              style={{ background: "rgba(37,99,235,0.06)", border: "1px dashed rgba(37,99,235,0.3)" }}>
+              <p className="text-[11px] font-semibold text-indigo-400 text-center uppercase tracking-wider">
+                Dev mode — Supabase not configured
+              </p>
+              <a
+                href="/dashboard"
+                className="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90"
+                style={{ background: "linear-gradient(135deg, #2563EB, #8b5cf6)" }}>
+                <Zap className="h-4 w-4" />
+                Enter as Dev Owner (no login required)
+              </a>
+              <p className="text-[10px] text-center" style={{ color: "var(--vf-text-muted)" }}>
+                Backend auto-authenticates via ALLOW_DEV_BYPASS=true
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

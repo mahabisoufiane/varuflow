@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -68,6 +69,12 @@ const STATUS_STYLE: Record<string, string> = {
   pending:  "bg-amber-500/15 text-amber-300 border border-amber-500/30",
   approved: "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30",
   rejected: "bg-rose-500/15 text-rose-300 border border-rose-500/30",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:  "statusPending",
+  approved: "statusApproved",
+  rejected: "statusRejected",
 };
 
 // ─── Review Panel (inline) ────────────────────────────────────────────────────
@@ -256,7 +263,7 @@ export default function ApprovalsPage() {
 
       {/* Summary cards */}
       {summary && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className={styles.summaryGrid}>
           <div className="vf-section p-4">
             <p className="text-xs vf-text-m">Pending</p>
             <p className="text-2xl font-bold text-amber-400 mt-1">{summary.pending}</p>
@@ -280,19 +287,17 @@ export default function ApprovalsPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-white/10 pb-0">
+      <div className={styles.tabBar}>
         {([
           { key: "queue",     label: "Queue",     icon: ClipboardCheck },
           { key: "rules",     label: "Rules",     icon: Settings },
           { key: "delegates", label: "Delegates", icon: Users2 },
         ] as const).map(({ key, label, icon: Icon }) => (
           <button key={key} onClick={() => setTab(key)}
-            className={`flex items-center gap-1.5 px-4 py-2 text-xs font-medium border-b-2 -mb-px transition-all ${
-              tab === key ? "border-indigo-500 text-indigo-300" : "border-transparent vf-text-m hover:vf-text-1"
-            }`}>
+            className={`${styles.tab} ${tab === key ? styles.tabActive : ""}`}>
             <Icon className="w-3.5 h-3.5" />{label}
             {key === "queue" && summary && summary.pending > 0 && (
-              <span className="bg-amber-500/20 text-amber-300 text-[10px] px-1.5 py-0.5 rounded-full ml-1">
+              <span className={styles.pendingCount}>
                 {summary.pending}
               </span>
             )}
@@ -311,9 +316,7 @@ export default function ApprovalsPage() {
             <div className="flex gap-1">
               {(["pending", "approved", "rejected"] as const).map(s => (
                 <button key={s} onClick={() => setFilterStatus(s)}
-                  className={`px-3 py-1.5 rounded text-xs font-medium capitalize transition-all ${
-                    filterStatus === s ? "bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/40" : "vf-btn-ghost"
-                  }`}>{s}</button>
+                  className={`${styles.filterBtn} ${filterStatus === s ? styles.filterBtnActive : "vf-btn-ghost"} capitalize`}>{s}</button>
               ))}
             </div>
             {filterStatus === "pending" && (
@@ -349,7 +352,7 @@ export default function ApprovalsPage() {
                         <p className="font-semibold vf-text-1 text-sm truncate">
                           {req.resource_label || req.resource_id}
                         </p>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_STYLE[req.status]}`}>
+                        <span className={`${styles[STATUS_MODULE[req.status] ?? "statusPending"]} capitalize`}>
                           {req.status}
                         </span>
                         {isEscalated && (

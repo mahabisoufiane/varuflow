@@ -198,7 +198,7 @@ async def lookup_active_key(db, *, prefix: str):
     """
     from sqlalchemy import select as _select
 
-    from app.models.developer import ApiKey
+    from app.features.integrations.developer_models import ApiKey
 
     row = await db.scalar(
         _select(ApiKey).where(ApiKey.key_prefix == prefix)
@@ -221,7 +221,7 @@ async def record_usage(
     :data:`USAGE_LOG_LIMIT` entries for this key."""
     from sqlalchemy import delete as _delete, select as _select
 
-    from app.models.developer import ApiKey, ApiKeyUsage
+    from app.features.integrations.developer_models import ApiKey, ApiKeyUsage
 
     db.add(
         ApiKeyUsage(
@@ -261,7 +261,7 @@ async def revoke_all_for_org(db, *, org_id: uuid.UUID) -> int:
     the offboarding script."""
     from sqlalchemy import update as _update
 
-    from app.models.developer import ApiKey
+    from app.features.integrations.developer_models import ApiKey
 
     result = await db.execute(
         _update(ApiKey)

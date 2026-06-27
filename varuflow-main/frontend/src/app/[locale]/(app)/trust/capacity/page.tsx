@@ -1,15 +1,10 @@
 "use client";
 import { useState } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
 
 interface CapacityResult {
   total_slots: number;
@@ -20,8 +15,6 @@ interface CapacityResult {
 }
 
 export default function CapacityPage() {
-  const params = useParams();
-
   // Check section
   const [checkServiceId, setCheckServiceId] = useState("");
   const [checkStaffId, setCheckStaffId] = useState("");
@@ -41,11 +34,6 @@ export default function CapacityPage() {
   const [configError, setConfigError] = useState("");
   const [configSuccess, setConfigSuccess] = useState(false);
 
-  const headers = {
-    Authorization: `Bearer ${getToken()}`,
-    "Content-Type": "application/json",
-  };
-
   async function handleCheck() {
     setCheckLoading(true);
     setCheckError("");
@@ -54,9 +42,7 @@ export default function CapacityPage() {
       const qs = new URLSearchParams();
       if (checkServiceId) qs.set("service_id", checkServiceId);
       if (checkStaffId) qs.set("staff_id", checkStaffId);
-      const res = await fetch(`${API}/api/booking-capacity?${qs}`, { headers });
-      if (!res.ok) throw new Error("Failed to fetch capacity");
-      setCapacityResult(await res.json());
+      setCapacityResult(await api.get<CapacityResult>(`/api/booking-capacity?${qs}`));
     } catch (e: unknown) {
       setCheckError(e instanceof Error ? e.message : "Failed to fetch capacity");
     } finally {
@@ -78,12 +64,7 @@ export default function CapacityPage() {
       if (configForm.show_urgency_below)
         body.show_urgency_below = Number(configForm.show_urgency_below);
 
-      const res = await fetch(`${API}/api/booking-capacity`, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error("Failed to save configuration");
+      await api.put<unknown>("/api/booking-capacity", body);
       setConfigSuccess(true);
     } catch (e: unknown) {
       setConfigError(e instanceof Error ? e.message : "Failed to save configuration");

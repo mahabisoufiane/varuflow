@@ -18,9 +18,9 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from sqlalchemy import select
 
-from app.models.audit import AuditLogEntry
-from app.models.dunning import DunningEvent
-from app.models.invoicing import Customer, Invoice, InvoiceStatus
+from app.features.compliance.audit_models import AuditLogEntry
+from app.features.invoicing.dunning import DunningEvent
+from app.features.invoicing.models import Customer, Invoice, InvoiceStatus
 from app.services.dunning import (
     STAGE_CHANNELS,
     dispatch_dunning_channels,

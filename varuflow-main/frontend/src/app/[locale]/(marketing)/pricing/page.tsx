@@ -8,8 +8,8 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
-  Check, Lock, X, ChevronDown, Star, Smartphone,
-  Zap, Mail, Building2,
+  Check, Lock, X, ChevronDown, Star,
+  Zap, Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PLAN_PRICES, type Plan } from "@/lib/plan";
@@ -175,13 +175,13 @@ interface PlanCardProps {
   plan: Plan;
   yearly: boolean;
   badge?: string;
-  badgeStyle?: "indigo" | "amber";
+  badgeStyle?: "indigo" | "amber" | "slate";
   highlight?: boolean;
   features: string[];
   lockedFeatures?: string[];
   stars?: string[];
   ctaLabel: string;
-  ctaStyle: "primary" | "secondary" | "amber";
+  ctaStyle: "primary" | "secondary" | "amber" | "slate";
   onCta: () => void;
 }
 
@@ -199,15 +199,17 @@ function PlanCard({
       className={cn(
         "relative flex flex-col rounded-2xl p-8 transition-all duration-200",
         highlight
-          ? "scale-[1.02] shadow-[0_0_40px_rgba(99,102,241,0.25)]"
+          ? "scale-[1.02] shadow-[0_0_40px_rgba(37,99,235,0.25)]"
           : "hover:scale-[1.01]"
       )}
       style={{
         background: highlight ? "var(--vf-bg-elevated)" : "var(--vf-bg-surface)",
         border: highlight
-          ? "1px solid rgba(99,102,241,0.5)"
+          ? "1px solid rgba(37,99,235,0.5)"
           : badgeStyle === "amber"
           ? "1px solid rgba(245,158,11,0.3)"
+          : badgeStyle === "slate"
+          ? "1px solid rgba(15,23,42,0.25)"
           : "1px solid var(--vf-border)",
       }}
     >
@@ -219,7 +221,9 @@ function PlanCard({
             style={{
               background: badgeStyle === "amber"
                 ? "linear-gradient(135deg, #F59E0B, #D97706)"
-                : "linear-gradient(135deg, #6366F1, #4F46E5)",
+                : badgeStyle === "slate"
+                ? "linear-gradient(135deg, #1E293B, #0F172A)"
+                : "linear-gradient(135deg, #2563EB, #1D4ED8)",
             }}
           >
             {badge}
@@ -230,7 +234,7 @@ function PlanCard({
       {/* Plan name */}
       <div className="mb-6">
         <p className="text-xs font-semibold uppercase tracking-widest mb-1"
-          style={{ color: highlight ? "#818CF8" : badgeStyle === "amber" ? "#F59E0B" : "var(--vf-text-muted)" }}>
+          style={{ color: highlight ? "#93C5FD" : badgeStyle === "amber" ? "#F59E0B" : badgeStyle === "slate" ? "var(--vf-text-secondary)" : "var(--vf-text-muted)" }}>
           {t(`${plan}.name` as "starter.name" | "professional.name" | "enterprise.name")}
         </p>
         <p className="text-sm" style={{ color: "var(--vf-text-secondary)" }}>
@@ -261,11 +265,19 @@ function PlanCard({
                 kr{t("perMonth")}
               </span>
             </div>
-            <p className="mt-1 text-xs" style={{ color: "var(--vf-text-muted)" }}>
-              {yearly && annualSek
-                ? t("billedYearly", { amount: fmt(annualSek) })
-                : `/ €${price.eur}`}
-            </p>
+            {yearly && annualSek ? (
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <p className="text-xs" style={{ color: "var(--vf-text-muted)" }}>
+                  {t("billedYearly", { amount: fmt(annualSek) })}
+                </p>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-bold text-emerald-400">
+                  <Check className="h-2.5 w-2.5" />
+                  Save {fmt((prices.monthly.sek - price.sek) * 12)} kr/yr
+                </span>
+              </div>
+            ) : (
+              <p className="mt-1 text-xs" style={{ color: "var(--vf-text-muted)" }}>/ €{price.eur}</p>
+            )}
           </>
         )}
       </div>
@@ -277,11 +289,13 @@ function PlanCard({
         className={cn(
           "mb-8 flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.01] active:scale-[0.98]",
           ctaStyle === "primary" &&
-            "bg-gradient-to-br from-[#6366F1] to-[#4F46E5] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_0_16px_rgba(99,102,241,0.4)]",
+            "bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_0_16px_rgba(37,99,235,0.4)]",
           ctaStyle === "secondary" &&
             "border text-sm font-semibold",
           ctaStyle === "amber" &&
-            "bg-gradient-to-br from-[#F59E0B] to-[#D97706] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_0_16px_rgba(245,158,11,0.4)]"
+            "bg-gradient-to-br from-[#F59E0B] to-[#D97706] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_0_16px_rgba(245,158,11,0.4)]",
+          ctaStyle === "slate" &&
+            "bg-gradient-to-br from-[#1E293B] to-[#0F172A] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:shadow-[0_0_16px_rgba(15,23,42,0.4)] hover:from-[#0F172A] hover:to-[#020617]"
         )}
         style={
           ctaStyle === "secondary"
@@ -331,34 +345,12 @@ function PlanCard({
   );
 }
 
-/* ── Store badge ─────────────────────────────────────────────────────────────── */
-function StoreBadge({ label, locked }: { label: string; locked: boolean }) {
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-2.5 rounded-xl border px-4 py-3 transition-all",
-        locked ? "opacity-40 grayscale" : "hover:scale-[1.02]"
-      )}
-      style={{ borderColor: "var(--vf-border)", background: "var(--vf-glass-bg)" }}
-    >
-      <Smartphone className="h-5 w-5 shrink-0 text-indigo-400" />
-      <div>
-        <p className="text-[10px] uppercase tracking-widest" style={{ color: "var(--vf-text-muted)" }}>
-          {locked ? "Coming soon" : "Download on"}
-        </p>
-        <p className="text-sm font-semibold" style={{ color: "var(--vf-text-primary)" }}>{label}</p>
-      </div>
-      {locked && <Lock className="ml-auto h-4 w-4 shrink-0" style={{ color: "var(--vf-text-muted)" }} />}
-    </div>
-  );
-}
-
 /* ══════════════════════════════════════════════════════════════════════════════
    PAGE
 ══════════════════════════════════════════════════════════════════════════════ */
 export default function PricingPage() {
   const t = useTranslations("pricing");
-  const [yearly, setYearly]           = useState(false);
+  const [yearly, setYearly]           = useState(true);
   const [contactOpen, setContactOpen] = useState(false);
 
   // Typed feature arrays from translations
@@ -383,7 +375,7 @@ export default function PricingPage() {
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium mb-2"
-            style={{ borderColor: "rgba(99,102,241,0.3)", background: "rgba(99,102,241,0.08)", color: "#818CF8" }}>
+            style={{ borderColor: "rgba(37,99,235,0.3)", background: "rgba(37,99,235,0.08)", color: "#93C5FD" }}>
             <Zap className="h-3 w-3" />
             Cancel anytime · No hidden fees
           </div>
@@ -403,7 +395,7 @@ export default function PricingPage() {
               className={cn(
                 "rounded-lg px-5 py-2 text-sm font-semibold transition-all duration-200",
                 !yearly
-                  ? "bg-gradient-to-br from-[#6366F1] to-[#4F46E5] text-white shadow-sm"
+                  ? "bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] text-white shadow-sm"
                   : "text-slate-500 hover:text-slate-300"
               )}
             >
@@ -415,7 +407,7 @@ export default function PricingPage() {
               className={cn(
                 "flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold transition-all duration-200",
                 yearly
-                  ? "bg-gradient-to-br from-[#6366F1] to-[#4F46E5] text-white shadow-sm"
+                  ? "bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] text-white shadow-sm"
                   : "text-slate-500 hover:text-slate-300"
               )}
             >
@@ -457,11 +449,11 @@ export default function PricingPage() {
             plan="enterprise"
             yearly={yearly}
             badge={t("fullAccess")}
-            badgeStyle="amber"
+            badgeStyle="slate"
             features={enterpriseFeatures}
             stars={enterpriseStars}
             ctaLabel={t("contactSales")}
-            ctaStyle="amber"
+            ctaStyle="slate"
             onCta={() => setContactOpen(true)}
           />
         </div>
@@ -470,55 +462,6 @@ export default function PricingPage() {
         <p className="text-center text-xs -mt-16" style={{ color: "var(--vf-text-muted)" }}>
           {t("trialNote")}
         </p>
-
-        {/* ── Mobile app teaser ───────────────────────────────────────────── */}
-        <div
-          className="relative overflow-hidden rounded-2xl p-10 text-center space-y-6"
-          style={{ background: "var(--vf-bg-elevated)", border: "1px solid var(--vf-border)" }}
-        >
-          {/* Background orbs */}
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full opacity-10 blur-3xl"
-              style={{ background: "radial-gradient(circle, #6366F1 0%, transparent 70%)" }} />
-            <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full opacity-10 blur-3xl"
-              style={{ background: "radial-gradient(circle, #F59E0B 0%, transparent 70%)" }} />
-          </div>
-
-          <div className="relative">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/15 border border-indigo-500/20">
-              <Smartphone className="h-7 w-7 text-indigo-400" />
-            </div>
-            <h2 className="text-2xl font-bold" style={{ color: "var(--vf-text-primary)" }}>
-              {t("mobileTeaser.title")}
-            </h2>
-            <p className="mx-auto mt-3 max-w-lg text-sm" style={{ color: "var(--vf-text-secondary)" }}>
-              {t("mobileTeaser.subtitle")}
-            </p>
-
-            {/* Store badges — locked for non-enterprise */}
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <StoreBadge label={t("mobileTeaser.android")} locked />
-              <StoreBadge label={t("mobileTeaser.ios")} locked />
-              <StoreBadge label={t("mobileTeaser.huawei")} locked />
-            </div>
-
-            <div className="mt-6 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold"
-              style={{ borderColor: "rgba(245,158,11,0.3)", background: "rgba(245,158,11,0.08)", color: "#F59E0B" }}>
-              <Lock className="h-3 w-3" />
-              {t("mobileTeaser.badge")}
-            </div>
-
-            <div className="mt-4">
-              <button
-                type="button"
-                onClick={() => setContactOpen(true)}
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#F59E0B] to-[#D97706] px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(245,158,11,0.3)]"
-              >
-                {t("mobileTeaser.cta")}
-              </button>
-            </div>
-          </div>
-        </div>
 
         {/* ── FAQ ─────────────────────────────────────────────────────────── */}
         <div className="mx-auto max-w-2xl">
@@ -539,8 +482,8 @@ export default function PricingPage() {
         <div
           className="rounded-2xl p-12 text-center space-y-5"
           style={{
-            background: "linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(79,70,229,0.06) 100%)",
-            border: "1px solid rgba(99,102,241,0.2)",
+            background: "linear-gradient(135deg, rgba(37,99,235,0.12) 0%, rgba(79,70,229,0.06) 100%)",
+            border: "1px solid rgba(37,99,235,0.2)",
           }}
         >
           <h2 className="text-2xl font-bold" style={{ color: "var(--vf-text-primary)" }}>
@@ -552,7 +495,7 @@ export default function PricingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/auth/signup?plan=professional"
-              className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#4F46E5] px-7 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(99,102,241,0.4)]"
+              className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] px-7 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(37,99,235,0.4)]"
             >
               Get started →
             </Link>

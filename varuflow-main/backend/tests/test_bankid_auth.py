@@ -17,8 +17,8 @@ from sqlalchemy import select, text
 
 from app.main import app
 from app.config import settings
-from app.models.audit import AuditLogEntry
-from app.models.auth import AuthRefreshToken, AuthUser
+from app.features.compliance.audit_models import AuditLogEntry
+from app.features.auth.models import AuthRefreshToken, AuthUser
 from app.services import bankid
 from app.services import auth_service
 

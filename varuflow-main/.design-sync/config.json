@@ -1,0 +1,33 @@
+{
+  "projectId": "d12fd9e1-b9d9-4e18-8c2b-8a30d7c022a3",
+  "shape": "package",
+  "pkg": "varuflow-ui",
+  "globalName": "VaruflowUI",
+  "srcDir": "src/components",
+  "tsconfig": "tsconfig.json",
+  "cssEntry": "ds-styles.css",
+  "buildCmd": "cd frontend && node_modules/.bin/tailwindcss -i src/app/globals.css -o ds-styles.css --content 'src/**/*.tsx,src/**/*.ts'",
+  "componentSrcMap": {
+    "DataTable": null,
+    "Section": null,
+    "AppShell": null,
+    "SectionBody": null,
+    "SectionFooter": null,
+    "SectionHeader": null
+  },
+  "libOverrides": {
+    "source-kit.mjs": "filter .module.scss-importing files from synth-entry barrel (esbuild has no SCSS loader)"
+  },
+  "overrides": {
+    "DevToolbar": {"cardMode": "single", "primaryStory": "Default"},
+    "Dialog": {"cardMode": "single", "primaryStory": "ConfirmDelete"},
+    "ScannerViewfinder": {"cardMode": "column"},
+    "FormField": {"cardMode": "column"},
+    "FormSection": {"cardMode": "column"},
+    "MobileFormActions": {"cardMode": "column"},
+    "PageSkeleton": {"cardMode": "column"},
+    "Textarea": {"cardMode": "column"},
+    "VFField": {"cardMode": "column"},
+    "UpsellBanner": {"cardMode": "column"}
+  }
+}

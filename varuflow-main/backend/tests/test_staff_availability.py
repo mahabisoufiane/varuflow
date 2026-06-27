@@ -18,15 +18,23 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(p: str) -> str:
-    return (_BACKEND_ROOT / p).read_text()
+    _p = _BACKEND_ROOT / p
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
 MIGRATION_SRC = _read(
     "migrations/versions/b6d8f0a2c4e7_v66_staff_availability.py"
 )
-MODEL_SRC = _read("app/models/staff_availability.py")
+MODEL_SRC = _read("app/features/hr/staff_availability.py")
 SERVICE_SRC = _read("app/services/staff_availability.py")
-ROUTER_SRC = _read("app/routers/bookings.py")
+ROUTER_SRC = _read("app/features/bookings/bookings.py")
 
 
 UTC = timezone.utc

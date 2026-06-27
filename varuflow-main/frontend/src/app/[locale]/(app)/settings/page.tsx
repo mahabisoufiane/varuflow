@@ -2,24 +2,27 @@
 
 import { api } from "@/lib/api-client";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Check, CreditCard, Link2, Link2Off, RefreshCw, UserPlus, Trash2, Bell, Smartphone, Shield } from "lucide-react";
+import { cx } from "@/lib/cx";
+import styles from "./page.module.scss";
+import { Check, CreditCard, Link2, Link2Off, LogOut, RefreshCw, UserPlus, Trash2, Bell, Smartphone, Shield, Settings2, ChevronDown } from "lucide-react";
 import Link from "next/link";
 
 interface Org    { id: string; name: string; org_number: string | null; vat_number: string | null; address: string | null; plan: string; }
-interface Me     { email: string; role: string; organization: Org; }
+interface Me     { email: string; role: string; organization: Org; allowed_modules: string[]; plan_modules: string[]; }
 interface Member { id: string; user_id: string; role: string; created_at: string; }
+interface MemberModules { member_id: string; access_mode: string; assigned_modules: string[]; plan_modules: string[]; }
 
 type Tab = "account" | "team" | "billing" | "integrations" | "notifications";
 
 function Card({ children, className, noPad }: { children: React.ReactNode; className?: string; noPad?: boolean }) {
   return (
     <div className={cn("vf-section", noPad ? "" : "p-6 space-y-4", className)}
-      style={{ borderRadius: 14 }}>
+      >
       {children}
     </div>
   );
@@ -43,6 +46,10 @@ export default function SettingsPage() {
   const params   = useParams<{ locale: string }>();
   const locale   = params?.locale ?? "en";
 
+  const [displayName,   setDisplayName]   = useState("");
+  const [nameSaving,    setNameSaving]    = useState(false);
+  const [nameOk,        setNameOk]        = useState(false);
+
   const [companyForm, setCompanyForm]     = useState({ company_name: "", org_number: "", vat_number: "", address: "" });
   const [companySaving, setCompanySaving] = useState(false);
   const [companyOk, setCompanyOk]         = useState(false);
@@ -58,6 +65,45 @@ export default function SettingsPage() {
   const [inviting, setInviting]       = useState(false);
   const [inviteOk, setInviteOk]       = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
+
+  // Module assignment UI state
+  const [modulePanel, setModulePanel]         = useState<string | null>(null); // member ID
+  const [memberModuleData, setMemberModuleData] = useState<Record<string, MemberModules>>({});
+  const [moduleEdits, setModuleEdits]         = useState<Record<string, string[]>>({}); // memberId → checked modules
+  const [moduleAccessMode, setModuleAccessMode] = useState<Record<string, string>>({}); // memberId → ALL|RESTRICTED
+  const [moduleSaving, setModuleSaving]       = useState(false);
+
+  async function fetchMemberModules(memberId: string) {
+    try {
+      const data = await api.get<MemberModules>(`/api/team/${memberId}/modules`);
+      setMemberModuleData(s => ({ ...s, [memberId]: data }));
+      setModuleEdits(s => ({ ...s, [memberId]: data.assigned_modules }));
+      setModuleAccessMode(s => ({ ...s, [memberId]: data.access_mode }));
+    } catch {}
+  }
+
+  async function handleSaveModules(memberId: string) {
+    setModuleSaving(true);
+    try {
+      const mode = moduleAccessMode[memberId] ?? "ALL";
+      await api.put(`/api/team/${memberId}/modules`, {
+        modules: mode === "ALL" ? [] : (moduleEdits[memberId] ?? []),
+        access_mode: mode,
+      });
+      toast.success("Module access saved");
+      setModulePanel(null);
+    } catch (e: unknown) {
+      toast.error((e as Error).message ?? "Failed to save modules");
+    } finally {
+      setModuleSaving(false);
+    }
+  }
+
+  function toggleModulePanel(memberId: string) {
+    if (modulePanel === memberId) { setModulePanel(null); return; }
+    setModulePanel(memberId);
+    if (!memberModuleData[memberId]) fetchMemberModules(memberId);
+  }
 
   async function loadMembers() {
     try { setMembers(await api.get<Member[]>("/api/team")); } catch {}
@@ -75,7 +121,31 @@ export default function SettingsPage() {
           address:      meData.organization.address ?? "",
         });
       }).catch(() => {}).finally(() => setLoading(false));
+    if (isSupabaseConfigured) {
+      supabase.auth.getUser().then(({ data }) => {
+        setDisplayName(data.user?.user_metadata?.full_name ?? "");
+      });
+    }
   }, []);
+
+  async function handleName(e: React.FormEvent) {
+    e.preventDefault(); setNameSaving(true); setNameOk(false);
+    try {
+      const { error } = await supabase.auth.updateUser({ data: { full_name: displayName } });
+      if (error) throw error;
+      setNameOk(true);
+      setTimeout(() => setNameOk(false), 3000);
+      toast.success("Name updated");
+    } catch (e: unknown) { toast.error((e as Error).message ?? "Failed to save"); }
+    finally { setNameSaving(false); }
+  }
+
+  async function handleSettingsSignOut() {
+    try {
+      if (isSupabaseConfigured) await supabase.auth.signOut();
+    } catch {}
+    window.location.href = `/${locale}/auth/login`;
+  }
 
   function setC(f: string, v: string) { setCompanyForm(s => ({ ...s, [f]: v })); }
 
@@ -162,15 +232,10 @@ export default function SettingsPage() {
       </div>
 
       {/* ── Tabs ───────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-0.5" style={{ borderBottom: "1px solid var(--vf-border)" }}>
+      <div className={styles.tabs}>
         {TABS.map(({ key, label }) => (
           <button key={key} onClick={() => setTab(key)}
-            className={cn(
-              "px-3 py-2.5 text-[13px] font-medium transition-all border-b-2 -mb-px",
-              tab === key
-                ? "border-indigo-500 text-indigo-500"
-                : "border-transparent vf-text-m hover:vf-text-2"
-            )}>
+            className={cx(styles.tab, tab === key && styles.tabActive)}>
             {label}
           </button>
         ))}
@@ -185,7 +250,7 @@ export default function SettingsPage() {
             <FieldRow label="Email" value={me?.email ?? ""} />
             <div className="grid grid-cols-2 gap-4">
               <FieldRow label="Role"  value={me?.role.toLowerCase() ?? ""} />
-              <FieldRow label="Plan"  value={`${me?.organization.plan.toLowerCase() ?? ""}${me?.organization.plan === "FREE" ? " — Early access" : ""}`} />
+              <FieldRow label="Plan"  value={me?.organization.plan === "ENTERPRISE" ? "Enterprise" : me?.organization.plan === "PRO" ? "Professional" : "Free"} />
             </div>
           </Card>
 
@@ -205,6 +270,30 @@ export default function SettingsPage() {
               </div>
             </Card>
           </Link>
+
+          {/* Personal info */}
+          <form onSubmit={handleName}>
+            <Card>
+              <h2 className="text-[13px] font-semibold vf-text-1">Personal info</h2>
+              <div className="space-y-1.5">
+                <Label htmlFor="display_name" className="text-xs font-medium vf-text-2">Display name</Label>
+                <input id="display_name" value={displayName}
+                  onChange={e => setDisplayName(e.target.value)}
+                  placeholder="Your name"
+                  className="vf-input w-full" />
+              </div>
+              <div className="flex items-center gap-3">
+                <button type="submit" disabled={nameSaving} className="vf-btn disabled:opacity-50">
+                  {nameSaving ? "Saving…" : "Save name"}
+                </button>
+                {nameOk && (
+                  <span className="flex items-center gap-1 text-sm text-emerald-400">
+                    <Check className="h-4 w-4" />Saved
+                  </span>
+                )}
+              </div>
+            </Card>
+          </form>
 
           {/* Company details */}
           <form onSubmit={handleCompany}>
@@ -227,8 +316,7 @@ export default function SettingsPage() {
                 </div>
               ))}
               {companyError && (
-                <p className="text-xs text-red-400 rounded-lg px-3 py-2"
-                  style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                <p className={cx("text-xs text-red-400 rounded-lg px-3 py-2", styles.errorMsg)}>
                   {companyError}
                 </p>
               )}
@@ -263,8 +351,7 @@ export default function SettingsPage() {
                 </div>
               ))}
               {pwError && (
-                <p className="text-xs text-red-400 rounded-lg px-3 py-2"
-                  style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                <p className={cx("text-xs text-red-400 rounded-lg px-3 py-2", styles.errorMsg)}>
                   {pwError}
                 </p>
               )}
@@ -304,6 +391,18 @@ export default function SettingsPage() {
               </div>
             </Card>
           )}
+
+          {/* Sign out */}
+          <Card>
+            <h2 className="text-[13px] font-semibold vf-text-1">Sign out</h2>
+            <p className="text-xs vf-text-m -mt-2">Sign out of your Varuflow account on this device.</p>
+            <button
+              onClick={handleSettingsSignOut}
+              className="vf-btn-ghost inline-flex w-fit items-center gap-2 text-red-400 hover:text-red-300"
+            >
+              <LogOut className="h-4 w-4" />Sign out
+            </button>
+          </Card>
         </>
       )}
 
@@ -311,45 +410,130 @@ export default function SettingsPage() {
       {tab === "team" && (
         <div className="space-y-6">
           <Card noPad>
-            <div className="px-6 py-4" style={{ borderBottom: "1px solid var(--vf-divider)" }}>
+            <div className={cx("px-6 py-4", styles.dividerBottom)}>
               <h2 className="text-[13px] font-semibold vf-text-1">Team members</h2>
               <p className="text-xs vf-text-m mt-0.5">{members.length} member{members.length !== 1 ? "s" : ""}</p>
             </div>
             <div>
-              {members.map((m, i) => (
-                <div key={m.id}
-                  className="flex items-center justify-between px-6 py-3.5"
-                  style={{ borderBottom: i < members.length - 1 ? "1px solid var(--vf-divider)" : undefined }}>
-                  <div>
-                    <p className="text-[13px] font-medium vf-text-1">User {m.user_id.slice(0, 8)}…</p>
-                    <p className="text-xs vf-text-m">Joined {new Date(m.created_at).toLocaleDateString("sv-SE")}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {isOwner ? (
-                      <select
-                        value={m.role}
-                        onChange={e => handleRoleChange(m.id, e.target.value)}
-                        className="vf-input text-xs h-8 py-0 w-auto pr-7">
-                        <option value="OWNER">Owner</option>
-                        <option value="ADMIN">Admin</option>
-                        <option value="MEMBER">Member</option>
-                      </select>
-                    ) : (
-                      <span className="rounded-full px-2.5 py-0.5 text-xs font-medium vf-text-m capitalize"
-                        style={{ background: "var(--vf-bg-elevated)", border: "1px solid var(--vf-border-strong)" }}>
-                        {m.role.toLowerCase()}
-                      </span>
+              {members.map((m, i) => {
+                const isPanelOpen = modulePanel === m.id;
+                const mdata = memberModuleData[m.id];
+                const mode  = moduleAccessMode[m.id] ?? "ALL";
+                const planMods = mdata?.plan_modules ?? [];
+                const checked  = moduleEdits[m.id] ?? [];
+
+                return (
+                  <div key={m.id}>
+                    <div
+                      className="flex items-center justify-between px-6 py-3.5"
+                      style={{ borderBottom: (i < members.length - 1 || isPanelOpen) ? "1px solid var(--vf-divider)" : undefined }}>
+                      <div>
+                        <p className="text-[13px] font-medium vf-text-1">User {m.user_id.slice(0, 8)}…</p>
+                        <p className="text-xs vf-text-m">Joined {new Date(m.created_at).toLocaleDateString("sv-SE")}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {isOwner ? (
+                          <select
+                            value={m.role}
+                            onChange={e => handleRoleChange(m.id, e.target.value)}
+                            className="vf-input text-xs h-8 py-0 w-auto pr-7">
+                            <option value="OWNER">Owner</option>
+                            <option value="ADMIN">Admin</option>
+                            <option value="MEMBER">Member</option>
+                          </select>
+                        ) : (
+                          <span className={cx("rounded-full px-2.5 py-0.5 text-xs font-medium vf-text-m capitalize", styles.roleBadge)}>
+                            {m.role.toLowerCase()}
+                          </span>
+                        )}
+                        {/* Module assignment button — only for MEMBERs, only for owners/admins */}
+                        {isOwner && m.role === "MEMBER" && (
+                          <button
+                            onClick={() => toggleModulePanel(m.id)}
+                            className={cx(cn(
+                              "h-7 flex items-center gap-1 px-2 rounded-lg text-[11px] font-medium transition-colors",
+                              isPanelOpen
+                                ? "bg-indigo-500/15 text-indigo-400"
+                                : "vf-text-m hover:vf-text-2",
+                            ), styles.iconBtn)}
+                            title="Assign modules">
+                            <Settings2 className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">Modules</span>
+                            <ChevronDown className={cn("h-3 w-3 transition-transform", isPanelOpen && "rotate-180")} />
+                          </button>
+                        )}
+                        {isOwner && (
+                          <button onClick={() => handleRemove(m.id)}
+                            className={cx("h-7 w-7 flex items-center justify-center rounded-lg vf-text-m hover:text-red-400 transition-colors", styles.iconBtn)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Module assignment panel */}
+                    {isPanelOpen && (
+                      <div className="px-6 py-4 space-y-3"
+                        style={{ background: "var(--vf-bg-elevated)", borderBottom: i < members.length - 1 ? "1px solid var(--vf-divider)" : undefined }}>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[12px] font-medium vf-text-2">Access mode</span>
+                          <div className={cx("flex rounded-lg overflow-hidden", styles.modeToggle)}>
+                            {(["ALL", "RESTRICTED"] as const).map((opt) => (
+                              <button key={opt}
+                                onClick={() => setModuleAccessMode(s => ({ ...s, [m.id]: opt }))}
+                                className={cn(
+                                  "px-3 py-1.5 text-[11px] font-semibold transition-colors",
+                                  mode === opt ? "bg-indigo-500 text-white" : "vf-text-m hover:vf-text-2"
+                                )}>
+                                {opt === "ALL" ? "Full access" : "Restricted"}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {mode === "RESTRICTED" && (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {planMods.length === 0 && !mdata && (
+                              <p className="text-xs vf-text-m col-span-3">Loading…</p>
+                            )}
+                            {planMods.map((mod) => (
+                              <label key={mod} className={cx(cn(
+                                "flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer select-none text-[12px] transition-colors",
+                                checked.includes(mod) ? "bg-indigo-500/10 text-indigo-400" : "vf-text-2 hover:bg-[var(--vf-hover)]"
+                              ), styles.iconBtn)}>
+                                <input type="checkbox"
+                                  checked={checked.includes(mod)}
+                                  onChange={() => setModuleEdits(s => ({
+                                    ...s,
+                                    [m.id]: checked.includes(mod)
+                                      ? checked.filter(x => x !== mod)
+                                      : [...checked, mod],
+                                  }))}
+                                  className="accent-indigo-500" />
+                                <span className="capitalize">{mod}</span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="flex items-center gap-3 pt-1">
+                          <button
+                            onClick={() => handleSaveModules(m.id)}
+                            disabled={moduleSaving}
+                            className="vf-btn text-xs h-8 disabled:opacity-50">
+                            {moduleSaving ? "Saving…" : "Save"}
+                          </button>
+                          <button
+                            onClick={() => setModulePanel(null)}
+                            className="text-xs vf-text-m hover:vf-text-2 transition-colors">
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
                     )}
-                    {isOwner && (
-                      <button onClick={() => handleRemove(m.id)}
-                        className="h-7 w-7 flex items-center justify-center rounded-lg vf-text-m hover:text-red-400 transition-colors"
-                        style={{ border: "1px solid var(--vf-border)" }}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </Card>
 
@@ -418,7 +602,7 @@ function BillingTab({ plan }: { plan: string }) {
 
   return (
     <div className="space-y-4">
-      <div className="vf-section p-6 space-y-5" style={{ borderRadius: 14 }}>
+      <div className="vf-section p-6 space-y-5" >
         <h2 className="text-[13px] font-semibold vf-text-1 flex items-center gap-2">
           <CreditCard className="h-4 w-4 text-indigo-400" />Subscription
         </h2>
@@ -426,34 +610,44 @@ function BillingTab({ plan }: { plan: string }) {
         <div className="flex items-center gap-3">
           <span className={cn(
             "rounded-full px-3 py-1 text-sm font-semibold",
-            plan === "PRO"
+            plan === "ENTERPRISE"
+              ? "text-white"
+              : plan === "PRO"
               ? "bg-indigo-600 text-white"
               : "vf-text-m"
           )}
-            style={plan !== "PRO" ? { background: "var(--vf-bg-elevated)", border: "1px solid var(--vf-border-strong)" } : {}}>
-            {plan === "PRO" ? "PRO" : "Free"}
+            style={
+              plan === "ENTERPRISE"
+                ? { background: "linear-gradient(135deg, #F59E0B, #D97706)" }
+                : plan !== "PRO"
+                ? { background: "var(--vf-bg-elevated)", border: "1px solid var(--vf-border-strong)" }
+                : {}
+            }>
+            {plan === "ENTERPRISE" ? "Enterprise" : plan === "PRO" ? "Professional" : "Starter — 14-day trial"}
           </span>
-          {plan === "PRO" && <span className="text-sm vf-text-m">All features unlocked</span>}
+          {(plan === "PRO" || plan === "ENTERPRISE") && (
+            <span className="text-sm vf-text-m">All features unlocked</span>
+          )}
         </div>
 
         {plan === "FREE" && (
-          <div className="rounded-xl p-4 space-y-3"
-            style={{ background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.2)" }}>
-            <p className="text-sm font-medium text-indigo-400">Upgrade to Varuflow PRO</p>
+          <div className={cx("rounded-xl p-4 space-y-3", styles.brandCard)}>
+            <p className="text-sm font-medium text-indigo-400">Your 14-day trial has ended</p>
+            <p className="text-xs vf-text-2">Upgrade to continue using all features.</p>
             <ul className="space-y-1.5">
-              {["Unlimited invoices", "Team members", "Peppol XML export", "Analytics", "Priority support"].map(f => (
+              {["Unlimited invoices & customers", "Up to 10,000 products", "Fortnox integration", "Advanced analytics", "Priority support"].map(f => (
                 <li key={f} className="flex items-center gap-2 text-sm vf-text-2">
                   <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0" />{f}
                 </li>
               ))}
             </ul>
             <button onClick={handleUpgrade} disabled={loading} className="vf-btn disabled:opacity-50">
-              {loading ? "Loading…" : "Upgrade now"}
+              {loading ? "Loading…" : "Upgrade to Starter — 499 kr/mo"}
             </button>
           </div>
         )}
 
-        {plan === "PRO" && (
+        {(plan === "PRO" || plan === "ENTERPRISE") && (
           <button onClick={handlePortal} disabled={loading} className="vf-btn-ghost disabled:opacity-50">
             {loading ? "Loading…" : "Manage subscription"}
           </button>
@@ -500,11 +694,10 @@ function IntegrationsTab() {
 
   return (
     <div className="space-y-4">
-      <div className="vf-section p-6 space-y-5" style={{ borderRadius: 14 }}>
+      <div className="vf-section p-6 space-y-5" >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl"
-              style={{ background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)" }}>
+            <div className={cx("flex h-10 w-10 items-center justify-center rounded-xl", styles.brandCard)}>
               <span className="text-lg font-bold text-indigo-400">F</span>
             </div>
             <div>
@@ -515,13 +708,11 @@ function IntegrationsTab() {
           {loading ? (
             <div className="h-8 w-24 skeleton rounded-lg" />
           ) : status?.connected ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-emerald-400"
-              style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}>
+            <span className={cx("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-emerald-400", styles.statusConnected)}>
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse-dot" />Connected
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium vf-text-m"
-              style={{ background: "var(--vf-bg-elevated)", border: "1px solid var(--vf-border-strong)" }}>
+            <span className={cx("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium vf-text-m", styles.roleBadge)}>
               Not connected
             </span>
           )}
@@ -545,8 +736,7 @@ function IntegrationsTab() {
                 {syncing === "customers" ? "Syncing…" : "Pull customers ← Fortnox"}
               </button>
               <button onClick={handleDisconnect}
-                className="ml-auto inline-flex items-center gap-1.5 rounded-lg px-3 h-9 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
-                style={{ border: "1px solid rgba(239,68,68,0.2)" }}>
+                className={cx("ml-auto inline-flex items-center gap-1.5 rounded-lg px-3 h-9 text-xs text-red-400 hover:bg-red-500/10 transition-colors", styles.disconnectBtn)}>
                 <Link2Off className="h-3.5 w-3.5" />Disconnect
               </button>
             </div>
@@ -625,10 +815,9 @@ function NotificationsTab() {
 
   return (
     <div className="space-y-4">
-      <div className="vf-section p-6 space-y-5" style={{ borderRadius: 14 }}>
+      <div className="vf-section p-6 space-y-5" >
         <div className="flex items-center gap-3 mb-1">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl"
-            style={{ background: "rgba(99,102,241,0.1)" }}>
+          <div className={cx("flex h-9 w-9 items-center justify-center rounded-xl", styles.brandIcon)}>
             <Bell className="h-4 w-4 text-indigo-400" />
           </div>
           <div>
@@ -638,16 +827,13 @@ function NotificationsTab() {
         </div>
 
         {permission === "unsupported" && (
-          <div className="rounded-xl px-4 py-3 text-sm text-amber-300"
-            style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)" }}>
+          <div className={cx("rounded-xl px-4 py-3 text-sm text-amber-300", styles.warningBanner)}>
             Your browser doesn&apos;t support push notifications.
           </div>
         )}
         {permission === "granted" && (
-          <div className="flex items-center gap-3 rounded-xl px-4 py-3"
-            style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)" }}>
-            <span className="flex h-8 w-8 items-center justify-center rounded-full"
-              style={{ background: "rgba(16,185,129,0.15)" }}>
+          <div className={cx("flex items-center gap-3 rounded-xl px-4 py-3", styles.successBanner)}>
+            <span className={cx("flex h-8 w-8 items-center justify-center rounded-full", styles.successIcon)}>
               <Check className="h-4 w-4 text-emerald-400" />
             </span>
             <div>
@@ -657,8 +843,7 @@ function NotificationsTab() {
           </div>
         )}
         {permission === "denied" && (
-          <div className="rounded-xl px-4 py-3 text-sm text-red-400"
-            style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+          <div className={cx("rounded-xl px-4 py-3 text-sm text-red-400", styles.errorMsg)}>
             Notifications are blocked. Click the lock icon in your browser&apos;s address bar to allow them.
           </div>
         )}
@@ -668,7 +853,7 @@ function NotificationsTab() {
           </button>
         )}
 
-        <div className="space-y-3 pt-2" style={{ borderTop: "1px solid var(--vf-divider)" }}>
+        <div className={cx("space-y-3 pt-2", styles.divider)}>
           <p className="text-[10px] font-semibold uppercase tracking-widest vf-text-m">
             Which events should trigger a push?
           </p>
@@ -711,10 +896,9 @@ function NotificationsTab() {
 
       <NightlySummaryCard />
 
-      <div className="vf-section p-6 space-y-3" style={{ borderRadius: 14 }}>
+      <div className="vf-section p-6 space-y-3" >
         <div className="flex items-center gap-3 mb-1">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl"
-            style={{ background: "rgba(99,102,241,0.1)" }}>
+          <div className={cx("flex h-9 w-9 items-center justify-center rounded-xl", styles.brandIcon)}>
             <Smartphone className="h-4 w-4 text-indigo-400" />
           </div>
           <h2 className="text-[13px] font-semibold vf-text-1">Install app</h2>
@@ -769,10 +953,9 @@ function NightlySummaryCard() {
   }
 
   return (
-    <div className="vf-section p-6 space-y-4" style={{ borderRadius: 14 }}>
+    <div className="vf-section p-6 space-y-4" >
       <div className="flex items-center gap-3 mb-1">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl"
-          style={{ background: "rgba(99,102,241,0.1)" }}>
+        <div className={cx("flex h-9 w-9 items-center justify-center rounded-xl", styles.brandIcon)}>
           <Bell className="h-4 w-4 text-indigo-400" />
         </div>
         <div>
@@ -813,8 +996,7 @@ function NightlySummaryCard() {
             </button>
           </label>
 
-          <div className="flex items-center gap-3 pt-3"
-            style={{ borderTop: "1px solid var(--vf-divider)" }}>
+          <div className={cx("flex items-center gap-3 pt-3", styles.divider)}>
             <Label htmlFor="nightly-summary-time" className="text-sm vf-text-1 flex-1">
               Send at (Europe/Stockholm)
             </Label>

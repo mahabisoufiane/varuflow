@@ -1,0 +1,95 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+.formCard {
+  border: 1px solid var(--vf-border);
+  border-radius: $vf-radius-lg;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  max-width: 42rem;
+  background: var(--vf-bg-surface);
+}
+
+.formInput {
+  border: 1px solid var(--vf-border);
+  border-radius: $vf-radius-sm;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  width: 100%;
+  margin-top: 0.25rem;
+  transition: border-color 120ms ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--vf-brand-primary, #1a2332);
+  }
+}
+
+.formLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--vf-text-muted);
+}
+
+.kanbanGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.columnHeader {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--vf-text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.projectCard {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--vf-border);
+  border-radius: $vf-radius-lg;
+  padding: 0.75rem;
+  background: var(--vf-bg-surface);
+  transition: background 120ms ease;
+
+  &:hover {
+    background: var(--vf-bg-elevated);
+  }
+}
+
+.typeBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: $vf-radius-sm;
+  font-size: 0.625rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+
+.badgeActive {
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+}
+
+.badgeOnHold {
+  background: rgba(234, 179, 8, 0.12);
+  color: #92400e;
+}
+
+.badgeCompleted {
+  background: rgba(59, 130, 246, 0.12);
+  color: #1e40af;
+}
+
+.badgeCancelled {
+  background: rgba(239, 68, 68, 0.10);
+  color: #991b1b;
+}

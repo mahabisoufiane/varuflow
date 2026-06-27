@@ -1,0 +1,107 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// Dark-theme category badges (opacity-based Tailwind equivalents)
+
+.categoryBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.categoryBuilding {
+  @extend .categoryBadge;
+  background: rgba(99, 102, 241, 0.2);   // indigo-500/20
+  color: #a5b4fc;                          // indigo-300
+}
+
+.categoryEquipment {
+  @extend .categoryBadge;
+  background: rgba(14, 165, 233, 0.2);   // sky-500/20
+  color: #7dd3fc;                          // sky-300
+}
+
+.categoryVehicle {
+  @extend .categoryBadge;
+  background: rgba(16, 185, 129, 0.2);   // emerald-500/20
+  color: #6ee7b7;                          // emerald-300
+}
+
+.categoryIP {
+  @extend .categoryBadge;
+  background: rgba(168, 85, 247, 0.2);   // purple-500/20
+  color: #d8b4fe;                          // purple-300
+}
+
+.categoryOther {
+  @extend .categoryBadge;
+  background: rgba(107, 114, 128, 0.2);  // gray-500/20
+  color: #d1d5db;                          // gray-300
+}
+
+// Depreciation progress bar
+
+.depBar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: $vf-radius-full;
+  overflow: hidden;
+}
+
+.depFill {
+  height: 100%;
+  background: var(--vf-brand-accent, #4a6cf7);
+  border-radius: $vf-radius-full;
+}
+
+// Asset list
+
+.assetList {
+  border: 1px solid var(--vf-border);
+  border-radius: $vf-radius-xl;
+  overflow: hidden;
+}
+
+.assetRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--vf-border);
+  cursor: pointer;
+  transition: background 100ms ease;
+
+  &:hover {
+    background: var(--vf-bg-elevated);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.assetRowSelected {
+  background: var(--vf-bg-elevated);
+}
+
+// KPI summary bar
+
+.kpiBar {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.kpiCard {
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  padding: 1rem;
+  background: var(--vf-bg-surface);
+}

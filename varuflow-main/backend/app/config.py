@@ -176,6 +176,13 @@ class Settings(BaseSettings):
     # and this flag is on.
     RATE_LIMIT_DISABLED: bool = False
 
+    # ── Redis ─────────────────────────────────────────────────────────────────
+    # When set, the rate limiter uses Redis for a shared sliding-window counter
+    # that works correctly across multiple Railway replicas.
+    # Format: redis://[:password@]host[:port][/db]  or  rediss:// for TLS.
+    # Leave empty to fall back to the in-memory counter (single-replica only).
+    REDIS_URL: str = ""
+
     # ── Country / i18n defaults ──────────────────────────────────────────────
     # Resolved country for a request falls back to this code when no header,
     # subdomain, or org-level country is available.

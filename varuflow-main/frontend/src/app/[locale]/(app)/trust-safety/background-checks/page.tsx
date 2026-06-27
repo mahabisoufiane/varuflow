@@ -12,23 +12,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
+import pageStyles from "./page.module.scss";
 
 const STATUS_TABS = ["all", "pending", "clear", "flagged", "expired"] as const;
 type Status = (typeof STATUS_TABS)[number];
 
 function statusClass(status: string) {
-  const map: Record<string, string> = {
-    pending: "bg-yellow-100 text-yellow-800",
-    clear: "bg-green-100 text-green-800",
-    flagged: "bg-red-100 text-red-800",
-    expired: "bg-gray-100 text-gray-800",
+  const map: Record<string, keyof typeof pageStyles> = {
+    pending: "statusPending",
+    clear:   "statusClear",
+    flagged: "statusFlagged",
+    expired: "statusExpired",
   };
-  return map[status] ?? "bg-gray-100 text-gray-800";
+  return pageStyles[map[status] ?? "statusExpired"];
 }
 
 interface BackgroundCheck {
@@ -67,11 +64,7 @@ export default function BackgroundChecksPage() {
       const params = new URLSearchParams();
       if (staffFilter) params.set("staff_id", staffFilter);
       if (statusFilter !== "all") params.set("status", statusFilter);
-      const res = await fetch(`${API}/api/background-checks?${params}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setChecks(await res.json());
+      setChecks(await api.get<BackgroundCheck[]>(`/api/background-checks?${params}`));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load checks");
     } finally {
@@ -86,11 +79,7 @@ export default function BackgroundChecksPage() {
 
   async function handleAction(id: string, action: "clear" | "flag") {
     try {
-      const res = await fetch(`${API}/api/background-checks/${id}/${action}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post(`/api/background-checks/${id}/${action}`, {});
       fetchChecks();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Action failed");
@@ -110,15 +99,7 @@ export default function BackgroundChecksPage() {
         expiry_date: fExpiry,
         reference_number: fRef,
       };
-      const res = await fetch(`${API}/api/background-checks`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post<BackgroundCheck>("/api/background-checks", body);
       setFStaffId("");
       setFProvider("");
       setFIssued("");
@@ -194,7 +175,7 @@ export default function BackgroundChecksPage() {
                     <TableCell>{c.provider}</TableCell>
                     <TableCell>
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusClass(c.status)}`}
+                        className={statusClass(c.status)}
                       >
                         {c.status}
                       </span>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Plus, Trash2, Target, CheckCircle2, AlertTriangle, TrendingUp } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 const METRIC_KEYS = [
   { key: "revenue_total", label: "Total Revenue (invoiced)" },
@@ -51,7 +52,6 @@ function ProgressRing({ pct, size = 80, onTrack }: { pct: number; size?: number;
 }
 
 export default function KpiGoalsPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [goals, setGoals] = useState<Goal[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
@@ -60,12 +60,11 @@ export default function KpiGoalsPage() {
     currency: "SEK", customPeriod: false,
   });
 
-  const f = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   async function load() {
-    const res = await f("/api/ceo/goals");
-    if (res.ok) setGoals((await res.json()).goals);
+    try {
+      const data = await api.get<{ goals: Goal[] }>("/api/ceo/goals");
+      setGoals(data.goals);
+    } catch {}
   }
   useEffect(() => { load(); }, []);
 
@@ -81,39 +80,34 @@ export default function KpiGoalsPage() {
   async function create() {
     if (!form.name.trim()) { toast.error("Enter a goal name"); return; }
     if (!form.target_value || isNaN(Number(form.target_value))) { toast.error("Enter a valid target"); return; }
-    const res = await f("/api/ceo/goals", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      await api.post("/api/ceo/goals", {
         name: form.name, metric_key: form.metric_key,
         target_value: Number(form.target_value),
         period_label: form.period_label, period_start: form.period_start, period_end: form.period_end,
         currency: form.currency,
-      }),
-    });
-    if (res.ok) {
+      });
       toast.success("Goal created");
       setShowForm(false);
       await load();
-    } else {
-      const e = await res.json();
-      toast.error(e.detail || "Failed");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed");
     }
   }
 
   async function del(id: string) {
-    await f(`/api/ceo/goals/${id}`, { method: "DELETE" });
+    try {
+      await api.delete(`/api/ceo/goals/${id}`);
+    } catch {}
     setGoals(g => g.filter(x => x.id !== id));
     toast.success("Goal deleted");
   }
 
   async function toggle(id: string, is_active: boolean) {
-    await f(`/api/ceo/goals/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ is_active: !is_active }),
-    });
-    await load();
+    try {
+      await api.patch(`/api/ceo/goals/${id}`, { is_active: !is_active });
+      await load();
+    } catch {}
   }
 
   const fmt = (v: number, key: string) =>

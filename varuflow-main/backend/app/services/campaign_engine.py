@@ -230,8 +230,8 @@ async def build_recipient_list(
     """
     from sqlalchemy import select
 
-    from app.models.invoicing import Customer
-    from app.models.segments import Segment, SegmentMember
+    from app.features.invoicing.models import Customer
+    from app.features.customers.segments_models import Segment, SegmentMember
 
     rows = await db.execute(
         select(Customer.id, Customer.email)
@@ -289,7 +289,7 @@ async def send_campaign(
     rows, and the caller transitions the campaign to SENT after the
     first success.
     """
-    from app.models.campaigns import CampaignSend, CampaignSendStatus, CampaignStatus
+    from app.features.marketing.models import CampaignSend, CampaignSendStatus, CampaignStatus
     from app.services.email import send_campaign_email
 
     if campaign.segment_id is None:
@@ -345,7 +345,7 @@ async def mark_unsubscribed(db, *, customer_id: uuid.UUID) -> bool:
     """Flip ``customers.email_opted_out``. Returns True if a change
     happened. Idempotent — a second call on the same customer is a
     no-op and still returns False."""
-    from app.models.invoicing import Customer
+    from app.features.invoicing.models import Customer
 
     cust = await db.get(Customer, customer_id)
     if cust is None:
@@ -368,8 +368,8 @@ async def process_due_campaigns(db) -> list[uuid.UUID]:
     from sqlalchemy import select
 
     from app.config import settings
-    from app.models.campaigns import Campaign, CampaignStatus
-    from app.models.organization import Organization
+    from app.features.marketing.models import Campaign, CampaignStatus
+    from app.features.auth.organization import Organization
 
     now = datetime.now(timezone.utc)
     rows = await db.execute(

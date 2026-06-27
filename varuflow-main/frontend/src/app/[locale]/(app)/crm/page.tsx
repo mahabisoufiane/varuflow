@@ -7,6 +7,8 @@ import {
 import { toast } from "sonner";
 import Link from "next/link";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
+import styles from "./page.module.scss";
 
 interface Stage {
   slug: string;
@@ -64,6 +66,7 @@ function fmt(v: number | null, currency = "SEK") {
 export default function CrmPipelinePage() {
   const [data, setData] = useState<PipelineData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<(Deal & { activities?: any[] }) | null>(null);
   const [showNew, setShowNew] = useState(false);
@@ -91,7 +94,14 @@ export default function CrmPipelinePage() {
       const res = await api.get<PipelineData>("/api/crm/pipeline");
       setData(res);
       if (res.stages?.[0]?.slug) setNewStage(res.stages[0].slug);
-    } catch { toast.error("Failed to load pipeline"); }
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        const e = err as any;
+        setPlanBlocked({ module: e.module ?? "crm", currentPlan: e.currentPlan ?? "FREE" });
+      } else {
+        toast.error("Failed to load pipeline");
+      }
+    }
     finally { setLoading(false); }
   }, []);
 
@@ -189,6 +199,10 @@ export default function CrmPipelinePage() {
       }, 0);
     }, 0);
 
+  if (planBlocked) {
+    return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="CRM Pipeline" />;
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
       {/* ── Header ─────────────────────────────────────────────────────── */}
@@ -267,13 +281,13 @@ export default function CrmPipelinePage() {
       </div>
 
       {/* ── Board ──────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-x-auto">
+      <div className={styles.board}>
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <Loader2 size={28} className="animate-spin text-gray-300" />
           </div>
         ) : (
-          <div className="flex gap-3 p-4 h-full min-w-max">
+          <div className={styles.boardInner}>
             {stages.map(stage => {
               const col = data?.pipeline[stage.slug];
               const deals = col?.deals ?? [];
@@ -282,7 +296,7 @@ export default function CrmPipelinePage() {
               return (
                 <div
                   key={stage.slug}
-                  className="flex flex-col w-64 shrink-0"
+                  className={styles.column}
                   onDragOver={e => e.preventDefault()}
                   onDrop={e => {
                     e.preventDefault();
@@ -290,7 +304,7 @@ export default function CrmPipelinePage() {
                   }}
                 >
                   {/* Column header */}
-                  <div className={`rounded-t-lg px-3 py-2 ${stage.color ?? "bg-gray-100"}`}>
+                  <div className={`${styles.columnHeader} ${stage.color ?? "bg-gray-100"}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         {stage.is_won && <CheckCircle2 size={13} className="text-green-700" />}
@@ -305,7 +319,7 @@ export default function CrmPipelinePage() {
                   </div>
 
                   {/* Cards */}
-                  <div className="flex-1 overflow-y-auto bg-gray-50 rounded-b-lg border border-t-0 p-2 space-y-2 min-h-20">
+                  <div className={styles.columnBody}>
                     {deals.map(deal => (
                       <div
                         key={deal.id}
@@ -313,7 +327,7 @@ export default function CrmPipelinePage() {
                         onDragStart={() => { dragDeal.current = deal; }}
                         onDragEnd={() => { dragDeal.current = null; }}
                         onClick={() => openDetail(deal)}
-                        className={`bg-white rounded-lg border p-3 cursor-pointer hover:shadow-sm transition-shadow space-y-1.5 ${selectedId === deal.id ? "ring-2 ring-[#1a2332]" : ""}`}
+                        className={`${styles.dealCard} ${selectedId === deal.id ? styles.dealCardSelected : ""}`}
                       >
                         <p className="text-xs font-semibold text-gray-900 leading-tight line-clamp-2">{deal.title}</p>
                         {deal.value !== null && (
@@ -330,9 +344,9 @@ export default function CrmPipelinePage() {
                         )}
                         {deal.probability !== null && (
                           <div className="flex items-center gap-1.5">
-                            <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
+                            <div className={styles.probBar}>
                               <div
-                                className="h-full bg-blue-400 rounded-full"
+                                className={styles.probFill}
                                 style={{ width: `${deal.probability}%` }}
                               />
                             </div>

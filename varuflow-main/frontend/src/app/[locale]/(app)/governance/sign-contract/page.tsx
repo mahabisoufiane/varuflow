@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { FileSignature, Check, Shield, AlertTriangle, CalendarDays } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 interface Contract {
   id: string; title: string; status: string;
@@ -17,10 +18,15 @@ interface SignatureRecord {
   verification_note?: string;
 }
 
-export default function SignContractPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string, init?: RequestInit) => fetch(`${apiBase}${url}`, { credentials: "include", ...init });
+interface SignResult {
+  signer_name: string;
+  signer_email: string;
+  signed_at: string;
+  signature_hash: string;
+  status: string;
+}
 
+export default function SignContractPage() {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -32,17 +38,18 @@ export default function SignContractPage() {
   const [filterStatus, setFilterStatus] = useState("ACTIVE");
 
   useEffect(() => {
-    f(`/api/contracts?status=${filterStatus}`).then(r => r.ok ? r.json() : []).then((data: Contract[]) => {
-      setContracts(data);
-      setLoading(false);
-    });
+    api.get<Contract[]>(`/api/contracts?status=${filterStatus}`)
+      .then(data => { setContracts(data); setLoading(false); })
+      .catch(() => setLoading(false));
   }, [filterStatus]);
 
   async function selectContract(id: string) {
     setSelectedId(id);
     setSigRecord(null);
-    const res = await f(`/api/contracts/${id}/signature`);
-    if (res.ok) setSigRecord(await res.json());
+    try {
+      const data = await api.get<SignatureRecord>(`/api/contracts/${id}/signature`);
+      setSigRecord(data);
+    } catch {}
   }
 
   async function sign() {
@@ -53,24 +60,18 @@ export default function SignContractPage() {
     if (!confirmed) { toast.error("Please confirm you agree to sign"); return; }
     setSigning(true);
     try {
-      const res = await f(`/api/contracts/${selectedId}/sign`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ signer_name: signerName, signer_email: signerEmail }),
+      const data = await api.post<SignResult>(`/api/contracts/${selectedId}/sign`, {
+        signer_name: signerName, signer_email: signerEmail,
       });
-      if (!res.ok) {
-        const e = await res.json();
-        toast.error(e.detail || "Signing failed");
-        return;
-      }
-      const data = await res.json();
       toast.success("Contract signed successfully");
       setSigRecord({
         signed: true, signer_name: data.signer_name, signer_email: data.signer_email,
         signed_at: data.signed_at, signature_hash: data.signature_hash,
       });
-      // Update contract in list
       setContracts(prev => prev.map(c => c.id === selectedId ? { ...c, status: data.status, signed_at: data.signed_at, signer_name: data.signer_name } : c));
       setSignerName(""); setSignerEmail(""); setConfirmed(false);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Signing failed");
     } finally {
       setSigning(false);
     }

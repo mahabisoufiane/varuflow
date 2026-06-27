@@ -14,7 +14,8 @@
  *        /api/expenses/analytics/by-category.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   Check,
@@ -28,6 +29,8 @@ import {
 } from "lucide-react";
 
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
+import styles from "./page.module.scss";
 
 interface Category {
   id: string;
@@ -64,21 +67,34 @@ interface CategoryTotal {
   count: number;
 }
 
+interface ExpenseListResponse {
+  items: Expense[];
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+}
+
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
-function statusBadge(status: Expense["status"]) {
-  if (status === "APPROVED") return "bg-green-100 text-green-800";
-  if (status === "REJECTED") return "bg-red-100 text-red-800";
-  return "bg-yellow-100 text-yellow-800";
+function statusBadgeClass(status: Expense["status"], s: typeof styles) {
+  if (status === "APPROVED") return s.badgeApproved;
+  if (status === "REJECTED") return s.badgeRejected;
+  return s.badgeDraft;
 }
 
 export default function ExpensesPage() {
   const t = useTranslations("expenses");
+  const router = useRouter();
+  const locale = useLocale();
   const [categories, setCategories] = useState<Category[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [totals, setTotals] = useState<CategoryTotal[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [planBlocked, setPlanBlocked] = useState<{module: string; plan: string} | null>(null);
   const [form, setForm] = useState({
     category_id: "",
     amount: "",
@@ -92,20 +108,25 @@ export default function ExpensesPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [cats, rows, agg] = await Promise.all([
+      const [cats, res, agg] = await Promise.all([
         api.get<Category[]>("/api/expenses/categories"),
-        api.get<Expense[]>("/api/expenses"),
+        api.get<ExpenseListResponse>("/api/expenses"),
         api.get<CategoryTotal[]>("/api/expenses/analytics/by-category"),
       ]);
       setCategories(cats);
-      setExpenses(rows);
+      setExpenses(res.items);
       setTotals(agg);
       if (cats.length > 0 && !form.category_id) {
         const preferred = cats.find((c) => c.is_default) ?? cats[0];
         setForm((f) => ({ ...f, category_id: preferred.id }));
       }
-    } catch {
-      toast.error(t("load_failed"));
+    } catch (e) {
+      if (isPlanGateError(e)) {
+        const err = e as Error & { module?: string; currentPlan?: string };
+        setPlanBlocked({ module: err.module ?? "finance", plan: err.currentPlan ?? "FREE" });
+      } else {
+        toast.error(t("load_failed"));
+      }
     } finally {
       setLoading(false);
     }
@@ -198,8 +219,12 @@ export default function ExpensesPage() {
     }
   };
 
-  const exportCsv = () => {
-    window.open("/api/expenses/export.csv", "_blank");
+  const exportCsv = async () => {
+    try {
+      await api.downloadBlob("/api/expenses/export.csv", "expenses.csv");
+    } catch {
+      // api.downloadBlob already shows a toast on error
+    }
   };
 
   // Mobile receipt capture — `capture="environment"` opens the rear
@@ -224,9 +249,20 @@ export default function ExpensesPage() {
     );
   }
 
+  if (planBlocked) {
+    return (
+      <PlanGateBlock
+        module={planBlocked.module}
+        currentPlan={planBlocked.plan}
+        featureName="Expense Tracking"
+        description="Log expenses, attach receipts, and manage approvals with the Finance module."
+      />
+    );
+  }
+
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className={styles.pageHeader}>
         <div className="flex items-center gap-2">
           <FileText className="h-6 w-6" />
           <h1 className="text-2xl font-semibold">{t("title")}</h1>
@@ -241,12 +277,12 @@ export default function ExpensesPage() {
       </div>
 
       {totals.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className={styles.kpiGrid}>
           {totals.slice(0, 4).map((t0) => (
-            <div key={t0.category_id ?? "none"} className="rounded-lg border p-3">
+            <div key={t0.category_id ?? "none"} className={styles.kpiCard}>
               <div className="flex items-center gap-2">
                 <span
-                  className="inline-block h-3 w-3 rounded-full"
+                  className={styles.categoryDot}
                   style={{ background: t0.category_color }}
                 />
                 <div className="text-xs text-muted-foreground truncate">
@@ -264,9 +300,9 @@ export default function ExpensesPage() {
         </div>
       )}
 
-      <div className="rounded-lg border p-4 space-y-3">
+      <div className={styles.formCard}>
         <h2 className="text-lg font-semibold">{t("log_new")}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div className={styles.formGrid}>
           <input
             className="border rounded px-2 py-1 text-sm"
             type="date"
@@ -329,7 +365,7 @@ export default function ExpensesPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border overflow-x-auto">
+      <div className={styles.tableCard}>
         <table className="w-full text-sm">
           <thead className="bg-muted">
             <tr>
@@ -352,7 +388,11 @@ export default function ExpensesPage() {
             {expenses.map((e) => {
               const cat = e.category_id ? categoryById[e.category_id] : null;
               return (
-                <tr key={e.id} className="border-t">
+                <tr
+                  key={e.id}
+                  className="border-t hover:bg-gray-50 cursor-pointer"
+                  onClick={() => router.push(`/${locale}/expenses/${e.id}`)}
+                >
                   <td className="p-2 whitespace-nowrap">{e.expense_date}</td>
                   <td className="p-2">
                     {cat ? (
@@ -372,7 +412,7 @@ export default function ExpensesPage() {
                     {e.amount} {e.currency}
                   </td>
                   <td className="p-2">
-                    <span className={`px-2 py-0.5 rounded text-xs ${statusBadge(e.status)}`}>
+                    <span className={statusBadgeClass(e.status, styles)}>
                       {t(`status_${e.status.toLowerCase()}`)}
                     </span>
                     {e.review_note && (
@@ -386,14 +426,14 @@ export default function ExpensesPage() {
                       {e.status === "DRAFT" && (
                         <>
                           <button
-                            onClick={() => approve(e.id)}
+                            onClick={(ev) => { ev.stopPropagation(); approve(e.id); }}
                             className="text-green-700 p-1"
                             title={t("approve")}
                           >
                             <Check className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => reject(e.id)}
+                            onClick={(ev) => { ev.stopPropagation(); reject(e.id); }}
                             className="text-red-700 p-1"
                             title={t("reject")}
                           >
@@ -403,7 +443,7 @@ export default function ExpensesPage() {
                       )}
                       {e.status === "REJECTED" && (
                         <button
-                          onClick={() => resubmit(e.id)}
+                          onClick={(ev) => { ev.stopPropagation(); resubmit(e.id); }}
                           className="text-blue-700 p-1"
                           title={t("resubmit")}
                         >
@@ -411,7 +451,7 @@ export default function ExpensesPage() {
                         </button>
                       )}
                       <button
-                        onClick={() => remove(e.id)}
+                        onClick={(ev) => { ev.stopPropagation(); remove(e.id); }}
                         className="text-red-600 p-1"
                         title={t("delete")}
                       >

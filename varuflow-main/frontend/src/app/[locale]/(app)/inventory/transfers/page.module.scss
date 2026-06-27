@@ -1,0 +1,19 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Inventory transfer status badges ────────────────────────────────────────
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statusDraft      { @extend .statusBadge; background: #f3f4f6; color: #374151; }
+.statusInTransit  { @extend .statusBadge; background: #dbeafe; color: #1d4ed8; }
+.statusPartial    { @extend .statusBadge; background: #fef3c7; color: #b45309; }
+.statusReceived   { @extend .statusBadge; background: #dcfce7; color: #15803d; }
+.statusCancelled  { @extend .statusBadge; background: #fee2e2; color: #dc2626; }

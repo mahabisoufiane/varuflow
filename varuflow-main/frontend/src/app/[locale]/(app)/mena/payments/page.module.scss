@@ -1,0 +1,16 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── MENA payment session status badges ────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusInitiated { @extend .statusBadge; background: #dbeafe; color: #1d4ed8; }
+.statusPaid      { @extend .statusBadge; background: #dcfce7; color: #166534; }
+.statusFailed    { @extend .statusBadge; background: #fee2e2; color: #b91c1c; }
+.statusExpired   { @extend .statusBadge; background: #f3f4f6; color: #6b7280; }

@@ -1,0 +1,42 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "backend/Dockerfile"
+
+[deploy]
+startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+# ── Required environment variables ────────────────────────────────────────────
+# Set all of these in Railway → Project → Variables before first deploy.
+# The app will refuse to boot in production if any marked REQUIRED are missing.
+#
+# DATABASE_URL            (REQUIRED) postgresql+asyncpg://user:pass@host:5432/db
+# SUPABASE_URL            (REQUIRED) https://<project>.supabase.co
+# SUPABASE_SERVICE_KEY    (REQUIRED) service_role key from Supabase dashboard
+# SUPABASE_JWT_SECRET     (REQUIRED) JWT secret from Supabase dashboard → Settings → API
+# AUTH_JWT_SECRET         (REQUIRED) python -c "import secrets; print(secrets.token_hex(64))"
+# PORTAL_JWT_SECRET       (REQUIRED) python -c "import secrets; print(secrets.token_hex(32))"
+# PII_ENCRYPTION_KEY      (REQUIRED) python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+# ADMIN_API_KEY           (REQUIRED) python -c "import secrets; print(secrets.token_hex(32))"
+# CORS_ORIGINS            (REQUIRED) https://yourdomain.com,https://www.yourdomain.com
+# STRIPE_SECRET_KEY       (REQUIRED) sk_live_... from Stripe dashboard
+# STRIPE_WEBHOOK_SECRET   (REQUIRED) whsec_... from Stripe → Webhooks
+# STRIPE_PRO_PRICE_ID     (REQUIRED) price_... from Stripe dashboard
+# STRIPE_STOREFRONT_WEBHOOK_SECRET  (REQUIRED) whsec_... for storefront webhooks
+# RESEND_API_KEY          (REQUIRED) re_... from resend.com
+# SENTRY_DSN              (recommended) https://...@sentry.io/...
+# REDIS_URL               (recommended) rediss://... — required before scaling past 1 replica
+# FORTNOX_ENCRYPTION_KEY  (required if Fortnox enabled) Fernet.generate_key()
+# FORTNOX_CLIENT_ID       (optional) from Fortnox developer portal
+# FORTNOX_CLIENT_SECRET   (optional) from Fortnox developer portal
+#
+# Always-set production flags:
+# ENV=production
+# DEBUG=false
+# ENFORCE_JWT_SIGNATURE=true
+# ENFORCE_SECRET_VALIDATION=true
+# ALLOW_DEV_BYPASS=false
+# TRUST_PROXY=true

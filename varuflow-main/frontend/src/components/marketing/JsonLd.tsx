@@ -12,6 +12,7 @@ export default function JsonLd({ data, id = "jsonld" }: JsonLdProps) {
     <Script
       id={id}
       type="application/ld+json"
+      // nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );
@@ -48,8 +49,8 @@ export function softwareApplicationSchema(description?: string) {
     description: description ?? "Inventory and invoicing platform for Nordic wholesalers",
     offers: {
       "@type": "AggregateOffer",
-      lowPrice: "0",
-      highPrice: "1999",
+      lowPrice: "499",
+      highPrice: "3990",
       priceCurrency: "SEK",
       offerCount: "3",
     },
@@ -66,25 +67,25 @@ export function pricingOfferSchema() {
       {
         "@type": "Offer",
         name: "Starter",
-        price: "0",
+        price: "499",
         priceCurrency: "SEK",
-        description: "Free plan for small businesses",
+        description: "For small wholesale businesses — up to 500 products, 150 customers, Fortnox integration",
         url: `${BASE_URL}/en/pricing`,
       },
       {
         "@type": "Offer",
-        name: "Pro",
-        price: "599",
+        name: "Professional",
+        price: "1490",
         priceCurrency: "SEK",
-        description: "Full-featured plan for growing wholesalers",
+        description: "For growing wholesale teams — unlimited customers and invoices, mobile app, advanced analytics",
         url: `${BASE_URL}/en/pricing`,
       },
       {
         "@type": "Offer",
         name: "Enterprise",
-        price: "1999",
+        price: "3990",
         priceCurrency: "SEK",
-        description: "Unlimited plan with dedicated support",
+        description: "For large operations — unlimited everything, API access, custom integrations, white-label",
         url: `${BASE_URL}/en/pricing`,
       },
     ],

@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Ticket, Plus, X } from "lucide-react";
+import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface Staff { id: string; name: string }
 interface Customer { id: string; name: string }
@@ -19,15 +21,25 @@ const STATUS_COLORS: Record<string, string> = {
   waiting: "bg-purple-100 text-purple-700", resolved: "bg-green-100 text-green-700",
   closed: "bg-gray-100 text-gray-600",
 };
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  open:        "statusOpen",
+  in_progress: "statusInProgress",
+  waiting:     "statusWaiting",
+  resolved:    "statusResolved",
+  closed:      "statusClosed",
+};
 const PRIORITY_COLORS: Record<string, string> = {
   low: "bg-gray-200 text-gray-600", medium: "bg-amber-100 text-amber-700",
   high: "bg-red-100 text-red-700", urgent: "bg-red-200 text-red-800",
 };
+const PRIORITY_MODULE: Record<string, keyof typeof styles> = {
+  low:    "priorityLow",
+  medium: "priorityMedium",
+  high:   "priorityHigh",
+  urgent: "priorityUrgent",
+};
 
 export default function TicketsPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string, init?: RequestInit) => fetch(`${apiBase}${url}`, { credentials: "include", ...init });
-
   const [tickets, setTickets] = useState<TicketItem[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -42,9 +54,9 @@ export default function TicketsPage() {
     if (filterStatus) params.set("status", filterStatus);
     if (filterPriority) params.set("priority", filterPriority);
     const [t, s, c] = await Promise.all([
-      f(`/api/work/tickets${params.toString() ? "?" + params : ""}`).then(r => r.ok ? r.json() : []),
-      f("/api/hr/employees").then(r => r.ok ? r.json() : []),
-      f("/api/invoicing/customers").then(r => r.ok ? r.json() : []),
+      api.get<TicketItem[]>(`/api/work/tickets${params.toString() ? "?" + params : ""}`).catch(() => [] as TicketItem[]),
+      api.get<Staff[]>("/api/hr/employees").catch(() => [] as Staff[]),
+      api.get<Customer[]>("/api/invoicing/customers").catch(() => [] as Customer[]),
     ]);
     setTickets(t); setStaff(s); setCustomers(c); setLoading(false);
   }
@@ -54,18 +66,19 @@ export default function TicketsPage() {
   async function create() {
     if (!form.title.trim()) { toast.error("Title required"); return; }
     const body = { ...form, customer_id: form.customer_id || null, assigned_staff_id: form.assigned_staff_id || null, due_date: form.due_date || null, category: form.category || null };
-    const res = await f("/api/work/tickets", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    if (!res.ok) { toast.error("Failed"); return; }
-    toast.success("Ticket created"); setShowForm(false); setForm({ title: "", description: "", customer_id: "", assigned_staff_id: "", category: "", priority: "medium", due_date: "" }); load();
+    try {
+      await api.post<TicketItem>("/api/work/tickets", body);
+      toast.success("Ticket created"); setShowForm(false); setForm({ title: "", description: "", customer_id: "", assigned_staff_id: "", category: "", priority: "medium", due_date: "" }); load();
+    } catch { toast.error("Failed"); }
   }
 
   async function updateStatus(id: string, status: string) {
-    await f(`/api/work/tickets/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
+    await api.patch<TicketItem>(`/api/work/tickets/${id}`, { status });
     load();
   }
 
   async function remove(id: string) {
-    await f(`/api/work/tickets/${id}`, { method: "DELETE" });
+    await api.delete(`/api/work/tickets/${id}`);
     setTickets(prev => prev.filter(t => t.id !== id)); toast.success("Deleted");
   }
 
@@ -130,8 +143,8 @@ export default function TicketsPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium text-gray-900">{t.title}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[t.status]}`}>{t.status.replace("_", " ")}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${PRIORITY_COLORS[t.priority]}`}>{t.priority}</span>
+                <span className={styles[STATUS_MODULE[t.status] ?? "statusOpen"]}>{t.status.replace("_", " ")}</span>
+                <span className={styles[PRIORITY_MODULE[t.priority] ?? "priorityMedium"]}>{t.priority}</span>
                 {t.category && <span className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600">{t.category}</span>}
               </div>
               <div className="flex gap-3 text-xs text-gray-500 mt-0.5">

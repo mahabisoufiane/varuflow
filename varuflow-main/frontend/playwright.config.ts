@@ -16,6 +16,11 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    extraHTTPHeaders: {
+      // Signals to the backend that this request originates from E2E tests;
+      // the backend rate-limiter checks RATE_LIMIT_DISABLED before applying throttles.
+      'X-E2E-Test': '1',
+    },
   },
   projects: [
     {

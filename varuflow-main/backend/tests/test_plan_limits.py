@@ -21,7 +21,15 @@ BACKEND = Path(__file__).parent.parent / "app"
 
 
 def _src(relative: str) -> str:
-    return (BACKEND / relative).read_text()
+    _p = BACKEND / relative
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
 # ---------------------------------------------------------------------------
@@ -230,33 +238,33 @@ class TestPlanCheckSource:
 
 class TestInventoryRouterLimits:
     def test_imports_plan_limits(self):
-        src = _src("routers/inventory.py")
+        src = _src("features/inventory/inventory.py")
         assert "from app.services.plan_limits import" in src
 
     def test_product_create_checks_max_products(self):
-        src = _src("routers/inventory.py")
+        src = _src("features/inventory/inventory.py")
         assert "RESOURCE_PRODUCTS" in src
 
     def test_warehouse_create_checks_max_warehouses(self):
-        src = _src("routers/inventory.py")
+        src = _src("features/inventory/inventory.py")
         assert "RESOURCE_WAREHOUSES" in src
 
     def test_limit_exceeded_error_raised_as_403(self):
-        src = _src("routers/inventory.py")
+        src = _src("features/inventory/inventory.py")
         assert "PLAN_LIMIT_EXCEEDED" in src
 
 
 class TestInvoicingRouterLimits:
     def test_imports_plan_limits(self):
-        src = _src("routers/invoicing.py")
+        src = _src("features/invoicing.py")
         assert "from app.services.plan_limits import" in src
 
     def test_invoice_create_checks_monthly_limit(self):
-        src = _src("routers/invoicing.py")
+        src = _src("features/invoicing.py")
         assert "RESOURCE_INVOICES_PER_MONTH" in src
 
     def test_structured_403_in_invoicing(self):
-        src = _src("routers/invoicing.py")
+        src = _src("features/invoicing.py")
         assert "PLAN_LIMIT_EXCEEDED" in src
 
 
@@ -276,15 +284,15 @@ class TestTeamRouterLimits:
 
 class TestIntegrationsAiLimits:
     def test_imports_plan_limits(self):
-        src = _src("routers/integrations.py")
+        src = _src("features/integrations/integrations.py")
         assert "from app.services.plan_limits import" in src
 
     def test_ai_call_limit_helper_defined(self):
-        src = _src("routers/integrations.py")
+        src = _src("features/integrations/integrations.py")
         assert "_check_ai_call_limit" in src
 
     def test_ai_call_limit_called_in_chat_endpoint(self):
-        src = _src("routers/integrations.py")
+        src = _src("features/integrations/integrations.py")
         # The call must appear after the /ai/chat endpoint definition
         chat_pos = src.find('"/ai/chat"')
         limit_call_pos = src.find("_check_ai_call_limit(", chat_pos)
@@ -292,7 +300,7 @@ class TestIntegrationsAiLimits:
         assert limit_call_pos != -1
 
     def test_daily_counter_dict_defined(self):
-        src = _src("routers/integrations.py")
+        src = _src("features/integrations/integrations.py")
         assert "_ai_call_counts" in src
 
 

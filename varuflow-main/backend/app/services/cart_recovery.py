@@ -17,7 +17,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.ecommerce import CartSession, Storefront
+from app.features.storefront.models import CartSession, Storefront
 
 log = logging.getLogger(__name__)
 

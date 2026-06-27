@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 import { Users, Plus, Handshake, Check, X, ChevronDown, ChevronUp, DollarSign } from "lucide-react";
 
 interface PartnerProgram { id: string; name: string; commission_type: string; commission_rate: number; currency: string; is_active: boolean }
@@ -15,15 +18,29 @@ const STATUS_COLORS: Record<string, string> = {
   terminated: "bg-red-100 text-red-700",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:    "statusPending",
+  active:     "statusActive",
+  suspended:  "statusSuspended",
+  terminated: "statusTerminated",
+};
+
 const DEAL_STAGE_COLORS: Record<string, string> = {
   registered: "bg-blue-100 text-blue-700",
   approved: "bg-green-100 text-green-700",
   paid: "bg-purple-100 text-purple-700",
 };
 
+const DEAL_STAGE_MODULE: Record<string, keyof typeof styles> = {
+  registered: "stageRegistered",
+  approved:   "stageApproved",
+  paid:       "stagePaid",
+};
+
 export default function PartnersPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string, init?: RequestInit) => fetch(`${apiBase}${url}`, { credentials: "include", ...init });
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
 
   const [programs, setPrograms] = useState<PartnerProgram[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
@@ -44,9 +61,9 @@ export default function PartnersPage() {
 
   useEffect(() => {
     Promise.all([
-      f("/api/growth/programs").then(r => r.ok ? r.json() : []).then(setPrograms),
-      f("/api/growth/partners").then(r => r.ok ? r.json() : []).then(setPartners),
-      f("/api/growth/deals").then(r => r.ok ? r.json() : []).then(setDeals),
+      api.get<PartnerProgram[]>("/api/growth/programs").then(setPrograms).catch(() => {}),
+      api.get<Partner[]>("/api/growth/partners").then(setPartners).catch(() => {}),
+      api.get<Deal[]>("/api/growth/deals").then(setDeals).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -55,48 +72,51 @@ export default function PartnersPage() {
       toast.error("Company name and email are required");
       return;
     }
-    const res = await f("/api/growth/partners", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...newPartner, program_id: newPartner.program_id || null }),
-    });
-    if (!res.ok) { toast.error("Failed to create partner"); return; }
-    const created = await res.json();
-    setPartners(prev => [created, ...prev]);
-    setShowPartnerForm(false);
-    setNewPartner({ company_name: "", contact_name: "", contact_email: "", program_id: "" });
-    toast.success("Partner added");
+    try {
+      const created = await api.post<Partner>("/api/growth/partners", {
+        ...newPartner,
+        program_id: newPartner.program_id || null,
+      });
+      setPartners(prev => [created, ...prev]);
+      setShowPartnerForm(false);
+      setNewPartner({ company_name: "", contact_name: "", contact_email: "", program_id: "" });
+      toast.success("Partner added");
+    } catch {
+      toast.error("Failed to create partner");
+    }
   }
 
   async function createProgram() {
     if (!newProgram.name) { toast.error("Name is required"); return; }
-    const res = await f("/api/growth/programs", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newProgram),
-    });
-    if (!res.ok) { toast.error("Failed to create program"); return; }
-    const created = await res.json();
-    setPrograms(prev => [created, ...prev]);
-    setShowProgramForm(false);
-    toast.success("Program created");
+    try {
+      const created = await api.post<PartnerProgram>("/api/growth/programs", newProgram);
+      setPrograms(prev => [created, ...prev]);
+      setShowProgramForm(false);
+      toast.success("Program created");
+    } catch {
+      toast.error("Failed to create program");
+    }
   }
 
   async function updateDealStage(dealId: string, stage: string) {
-    const res = await f(`/api/growth/deals/${dealId}/stage`, {
-      method: "PATCH", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ stage }),
-    });
-    if (!res.ok) { toast.error("Failed to update deal"); return; }
-    const updated = await res.json();
-    setDeals(prev => prev.map(d => d.id === dealId ? updated : d));
-    // Refresh partner totals
-    f("/api/growth/partners").then(r => r.ok ? r.json() : null).then(d => d && setPartners(d));
-    toast.success("Deal updated");
+    try {
+      const updated = await api.patch<Deal>(`/api/growth/deals/${dealId}/stage`, { stage });
+      setDeals(prev => prev.map(d => d.id === dealId ? updated : d));
+      api.get<Partner[]>("/api/growth/partners").then(setPartners).catch(() => {});
+      toast.success("Deal updated");
+    } catch {
+      toast.error("Failed to update deal");
+    }
   }
 
   async function deletePartner(id: string) {
-    await f(`/api/growth/partners/${id}`, { method: "DELETE" });
-    setPartners(prev => prev.filter(p => p.id !== id));
-    toast.success("Partner removed");
+    try {
+      await api.delete(`/api/growth/partners/${id}`);
+      setPartners(prev => prev.filter(p => p.id !== id));
+      toast.success("Partner removed");
+    } catch {
+      toast.error("Failed to remove partner");
+    }
   }
 
   const partnerDeals = (partnerId: string) => deals.filter(d => d.partner_id === partnerId);
@@ -208,7 +228,7 @@ export default function PartnersPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-gray-900">{partner.company_name}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[partner.status] || "bg-gray-100 text-gray-600"}`}>
+                      <span className={styles[STATUS_MODULE[partner.status] ?? "statusPending"]}>
                         {partner.status}
                       </span>
                       <span className="text-xs text-gray-400 font-mono">#{partner.referral_code}</span>
@@ -246,7 +266,7 @@ export default function PartnersPage() {
                         <div key={deal.id} className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-3 py-2">
                           <div>
                             <span className="text-sm font-medium text-gray-800">{deal.deal_name || "Unnamed deal"}</span>
-                            <span className={`ml-2 text-xs px-1.5 py-0.5 rounded font-medium ${DEAL_STAGE_COLORS[deal.stage] || ""}`}>{deal.stage}</span>
+                            <span className={styles[DEAL_STAGE_MODULE[deal.stage] ?? "stageRegistered"]}>{deal.stage}</span>
                           </div>
                           <div className="flex items-center gap-3">
                             <span className="text-sm text-gray-600">{fmt(deal.deal_value)}</span>

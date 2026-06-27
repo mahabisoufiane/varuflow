@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, Users, RefreshCw, ChevronDown, ChevronRight, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface Declaration {
   id: string;
@@ -27,12 +28,26 @@ const STATUS_COLORS: Record<string, string> = {
   rejected: "bg-red-100 text-red-700",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:  "statusPending",
+  approved: "statusApproved",
+  rejected: "statusRejected",
+};
+
 const TYPE_COLORS: Record<string, string> = {
   financial_interest: "bg-blue-100 text-blue-700",
   family_relationship: "bg-purple-100 text-purple-700",
   outside_employment: "bg-orange-100 text-orange-700",
   gift_hospitality: "bg-pink-100 text-pink-700",
   other: "bg-gray-100 text-gray-600",
+};
+
+const TYPE_MODULE: Record<string, keyof typeof styles> = {
+  financial_interest:  "typeFinancialInterest",
+  family_relationship: "typeFamilyRelationship",
+  outside_employment:  "typeOutsideEmployment",
+  gift_hospitality:    "typeGiftHospitality",
+  other:               "typeOther",
 };
 
 const EMPTY_FORM = {
@@ -246,10 +261,10 @@ export default function ConflictsPage() {
                       {dec.declared_value != null && ` · ${dec.declared_value.toLocaleString()} ${dec.currency ?? ""}`}
                     </p>
                   </div>
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0 capitalize ${TYPE_COLORS[dec.declaration_type] ?? "bg-gray-100 text-gray-600"}`}>
+                  <span className={styles[TYPE_MODULE[dec.declaration_type] ?? "typeOther"]}>
                     {dec.declaration_type.replace(/_/g, " ")}
                   </span>
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0 capitalize ${STATUS_COLORS[dec.status] ?? "bg-gray-100 text-gray-600"}`}>
+                  <span className={styles[STATUS_MODULE[dec.status] ?? "statusPending"]}>
                     {dec.status}
                   </span>
                 </div>

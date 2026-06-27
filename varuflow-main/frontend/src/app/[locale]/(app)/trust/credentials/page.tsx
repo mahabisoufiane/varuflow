@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
+import pageStyles from "./page.module.scss";
 
 type CredentialType = "certification" | "training" | "award" | "experience";
 
@@ -39,9 +35,14 @@ const TYPE_BADGE: Record<CredentialType, string> = {
   experience: "bg-gray-100 text-gray-700",
 };
 
-export default function CredentialsPage() {
-  const params = useParams();
+const TYPE_MODULE: Record<CredentialType, keyof typeof pageStyles> = {
+  certification: "typeCertification",
+  training:      "typeTraining",
+  award:         "typeAward",
+  experience:    "typeExperience",
+};
 
+export default function CredentialsPage() {
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [staffFilter, setStaffFilter] = useState("");
   const [loading, setLoading] = useState(false);
@@ -60,19 +61,12 @@ export default function CredentialsPage() {
   const [addError, setAddError] = useState("");
   const [addLoading, setAddLoading] = useState(false);
 
-  const headers = {
-    Authorization: `Bearer ${getToken()}`,
-    "Content-Type": "application/json",
-  };
-
   async function loadCredentials() {
     setLoading(true);
     setError("");
     try {
       const qs = staffFilter ? `?staff_id=${encodeURIComponent(staffFilter)}` : "";
-      const res = await fetch(`${API}/api/staff-credentials${qs}`, { headers });
-      if (!res.ok) throw new Error("Failed to load credentials");
-      const data = await res.json();
+      const data = await api.get<Credential[] | { items?: Credential[] }>(`/api/staff-credentials${qs}`);
       setCredentials(Array.isArray(data) ? data : data.items ?? []);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load credentials");
@@ -100,12 +94,7 @@ export default function CredentialsPage() {
       if (addForm.issued_date) body.issued_date = addForm.issued_date;
       if (addForm.expiry_date) body.expiry_date = addForm.expiry_date;
 
-      const res = await fetch(`${API}/api/staff-credentials`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error("Failed to add credential");
+      await api.post<Credential>("/api/staff-credentials", body);
       setAddOpen(false);
       setAddForm({
         staff_id: "",
@@ -254,7 +243,7 @@ export default function CredentialsPage() {
                     </TableCell>
                     <TableCell>
                       <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${TYPE_BADGE[c.credential_type] ?? ""}`}
+                        className={pageStyles[TYPE_MODULE[c.credential_type] ?? "typeExperience"]}
                       >
                         {c.credential_type}
                       </span>

@@ -12,23 +12,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import { api } from "@/lib/api-client";
+import pageStyles from "./page.module.scss";
 
 const STATUS_TABS = ["all", "pending", "submitted", "approved", "rejected"] as const;
 type Status = (typeof STATUS_TABS)[number];
 
 function statusBadgeVariant(status: string) {
-  const map: Record<string, string> = {
-    pending: "bg-yellow-100 text-yellow-800",
-    submitted: "bg-blue-100 text-blue-800",
-    approved: "bg-green-100 text-green-800",
-    rejected: "bg-red-100 text-red-800",
+  const map: Record<string, keyof typeof pageStyles> = {
+    pending:   "statusPending",
+    submitted: "statusSubmitted",
+    approved:  "statusApproved",
+    rejected:  "statusRejected",
   };
-  return map[status] ?? "bg-gray-100 text-gray-800";
+  return pageStyles[map[status] ?? "statusPending"];
 }
 
 interface Verification {
@@ -63,12 +60,7 @@ export default function IdentityVerificationPage() {
       const params = new URLSearchParams();
       if (customerFilter) params.set("customer_id", customerFilter);
       if (statusFilter !== "all") params.set("status", statusFilter);
-      const res = await fetch(`${API}/api/identity-verification?${params}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data = await res.json();
-      setVerifications(data);
+      setVerifications(await api.get<Verification[]>(`/api/identity-verification?${params}`));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load verifications");
     } finally {
@@ -83,11 +75,7 @@ export default function IdentityVerificationPage() {
 
   async function handleAction(id: string, action: "approve" | "reject") {
     try {
-      const res = await fetch(`${API}/api/identity-verification/${id}/${action}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post(`/api/identity-verification/${id}/${action}`, {});
       fetchVerifications();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Action failed");
@@ -105,15 +93,7 @@ export default function IdentityVerificationPage() {
         document_type: formDocType,
       };
       if (formBookingId) body.booking_id = formBookingId;
-      const res = await fetch(`${API}/api/identity-verification`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post<Verification>("/api/identity-verification", body);
       setFormCustomerId("");
       setFormBookingId("");
       setFormProvider("manual");
@@ -190,7 +170,7 @@ export default function IdentityVerificationPage() {
                     </TableCell>
                     <TableCell>
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadgeVariant(v.status)}`}
+                        className={statusBadgeVariant(v.status)}
                       >
                         {v.status}
                       </span>

@@ -1,14 +1,12 @@
 "use client";
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
 
 interface Streak {
   streak_type: string;
@@ -25,7 +23,6 @@ interface LeaderboardEntry {
 }
 
 export default function StreaksPage() {
-  const { locale } = useParams<{ locale: string }>();
   const [customerId, setCustomerId] = useState("");
   const [streaks, setStreaks] = useState<Streak[]>([]);
   const [streakLoading, setStreakLoading] = useState(false);
@@ -40,21 +37,15 @@ export default function StreaksPage() {
   const [lbLoading, setLbLoading] = useState(false);
   const [lbError, setLbError] = useState("");
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : "";
-
   async function loadStreaks() {
     if (!customerId.trim()) return;
     setStreakLoading(true);
     setStreakError("");
     try {
-      const res = await fetch(`${API}/api/streaks?customer_id=${customerId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { setStreakError("Unauthorized."); return; }
-      if (!res.ok) { setStreakError("Failed to load streaks."); return; }
-      setStreaks(await res.json());
-    } catch {
-      setStreakError("Network error.");
+      const data = await api.get<Streak[]>(`/api/streaks?customer_id=${customerId}`);
+      setStreaks(data);
+    } catch (e) {
+      setStreakError(e instanceof Error ? e.message : "Failed to load streaks.");
     } finally {
       setStreakLoading(false);
     }
@@ -64,20 +55,15 @@ export default function StreaksPage() {
     setUpdating(true);
     setStreakError("");
     try {
-      const res = await fetch(`${API}/api/streaks/${customerId}/${streakType}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          current_count: parseInt(editForm.current_count) || 0,
-          longest_count: parseInt(editForm.longest_count) || 0,
-          last_activity_date: editForm.last_activity_date || null,
-        }),
+      await api.put(`/api/streaks/${customerId}/${streakType}`, {
+        current_count: parseInt(editForm.current_count) || 0,
+        longest_count: parseInt(editForm.longest_count) || 0,
+        last_activity_date: editForm.last_activity_date || null,
       });
-      if (!res.ok) { setStreakError("Update failed."); return; }
       setEditingType(null);
       loadStreaks();
-    } catch {
-      setStreakError("Network error.");
+    } catch (e) {
+      setStreakError(e instanceof Error ? e.message : "Update failed.");
     } finally {
       setUpdating(false);
     }
@@ -87,14 +73,10 @@ export default function StreaksPage() {
     setLbLoading(true);
     setLbError("");
     try {
-      const res = await fetch(`${API}/api/streaks/leaderboard?streak_type=${leaderboardType}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { setLbError("Unauthorized."); return; }
-      if (!res.ok) { setLbError("Failed to load leaderboard."); return; }
-      setLeaderboard(await res.json());
-    } catch {
-      setLbError("Network error.");
+      const data = await api.get<LeaderboardEntry[]>(`/api/streaks/leaderboard?streak_type=${leaderboardType}`);
+      setLeaderboard(data);
+    } catch (e) {
+      setLbError(e instanceof Error ? e.message : "Failed to load leaderboard.");
     } finally {
       setLbLoading(false);
     }

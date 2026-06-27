@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, Calendar, RefreshCw, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface RegulatoryEvent {
   id: string;
@@ -22,6 +23,12 @@ const STATUS_COLORS: Record<string, string> = {
   upcoming: "bg-blue-100 text-blue-700",
   completed: "bg-green-100 text-green-700",
   overdue: "bg-red-100 text-red-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  upcoming:  "statusUpcoming",
+  completed: "statusCompleted",
+  overdue:   "statusOverdue",
 };
 
 const COUNTRY_FLAGS: Record<string, string> = {
@@ -278,7 +285,7 @@ export default function RegulatoryCalendarPage() {
                         {ev.recurrence && ` · ${ev.recurrence}`}
                       </p>
                     </div>
-                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0 capitalize ${STATUS_COLORS[ev.status] ?? "bg-gray-100 text-gray-600"}`}>
+                    <span className={styles[STATUS_MODULE[ev.status] ?? "statusUpcoming"]}>
                       {ev.status}
                     </span>
                     {(ev.status === "upcoming" || ev.status === "overdue") && (

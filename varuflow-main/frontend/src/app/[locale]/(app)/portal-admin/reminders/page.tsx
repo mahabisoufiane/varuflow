@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface Reminder { id: string; invoice_id: string; customer_id: string; reminder_type: string; scheduled_for: string; sent_at: string | null; email_subject: string; }
 
@@ -9,25 +11,27 @@ export default function PortalAdminRemindersPage() {
   const [form, setForm] = useState({ invoice_id: "", customer_id: "", reminder_type: "gentle", scheduled_for: "", email_subject: "", email_body: "" });
 
   const load = () => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/portal-admin/reminders`, { credentials: "include" })
-      .then(r => r.ok ? r.json() : []).then(setReminders);
+    api.get<Reminder[]>("/api/portal-admin/reminders").then(setReminders).catch(() => {});
   };
 
   useEffect(() => { load(); }, []);
 
   const create = async () => {
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/portal-admin/reminders`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      credentials: "include", body: JSON.stringify(form),
-    });
-    setShowCreate(false);
-    setForm({ invoice_id: "", customer_id: "", reminder_type: "gentle", scheduled_for: "", email_subject: "", email_body: "" });
-    load();
+    try {
+      await api.post("/api/portal-admin/reminders", form);
+      setShowCreate(false);
+      setForm({ invoice_id: "", customer_id: "", reminder_type: "gentle", scheduled_for: "", email_subject: "", email_body: "" });
+      load();
+    } catch { /* toast handled by api client */ }
   };
 
   const typeBadge = (t: string) => {
-    const colors: Record<string, string> = { gentle: "bg-green-100 text-green-800", followup: "bg-yellow-100 text-yellow-800", final: "bg-red-100 text-red-800" };
-    return <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[t] || "bg-gray-100"}`}>{t}</span>;
+    const TYPE_MODULE: Record<string, keyof typeof styles> = {
+      gentle:   "typeGentle",
+      followup: "typeFollowup",
+      final:    "typeFinal",
+    };
+    return <span className={styles[TYPE_MODULE[t] ?? "typeGentle"]}>{t}</span>;
   };
 
   return (

@@ -1,10 +1,9 @@
 "use client";
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -13,14 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-
-function getToken() {
-  return typeof window !== "undefined"
-    ? localStorage.getItem("auth_token") ?? ""
-    : "";
-}
+import styles from "./page.module.scss";
 
 type ExportTarget = "csv" | "splitwise" | "personal_capital" | "ynab";
 
@@ -39,13 +31,18 @@ const targetBadgeClass: Record<ExportTarget, string> = {
   ynab: "bg-purple-100 text-purple-800",
 };
 
+const TARGET_MODULE: Record<string, keyof typeof styles> = {
+  csv:              "targetCsv",
+  splitwise:        "targetSplitwise",
+  personal_capital: "targetPersonalCapital",
+  ynab:             "targetYnab",
+};
+
 function truncate(str: string, len = 8) {
   return str.length > len ? str.slice(0, len) + "…" : str;
 }
 
 export default function ReceiptExportsPage() {
-  const { locale } = useParams<{ locale: string }>();
-
   const [customerIdInput, setCustomerIdInput] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [exports, setExports] = useState<ReceiptExport[]>([]);
@@ -60,16 +57,12 @@ export default function ReceiptExportsPage() {
 
   async function loadExports() {
     if (!customerIdInput.trim()) return;
-    setCustomerId(customerIdInput.trim());
+    const cid = customerIdInput.trim();
+    setCustomerId(cid);
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(
-        `${API}/api/receipt-exports?customer_id=${encodeURIComponent(customerIdInput.trim())}`,
-        { headers: { Authorization: `Bearer ${getToken()}` } }
-      );
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data = await res.json();
+      const data = await api.get<ReceiptExport[]>(`/api/receipt-exports?customer_id=${encodeURIComponent(cid)}`);
       setExports(data);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load exports");
@@ -84,19 +77,11 @@ export default function ReceiptExportsPage() {
     setFormLoading(true);
     setFormError("");
     try {
-      const res = await fetch(`${API}/api/receipt-exports`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          customer_id: customerId,
-          invoice_id: invoiceId,
-          export_target: exportTarget,
-        }),
+      await api.post("/api/receipt-exports", {
+        customer_id: customerId,
+        invoice_id: invoiceId,
+        export_target: exportTarget,
       });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
       setInvoiceId("");
       setExportTarget("csv");
       await loadExports();
@@ -110,11 +95,7 @@ export default function ReceiptExportsPage() {
   async function handleDelete(id: string) {
     setError("");
     try {
-      const res = await fetch(`${API}/api/receipt-exports/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.delete(`/api/receipt-exports/${id}`);
       setExports((prev) => prev.filter((ex) => ex.id !== id));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to delete export");
@@ -176,7 +157,7 @@ export default function ReceiptExportsPage() {
                       </TableCell>
                       <TableCell>
                         <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${targetBadgeClass[ex.export_target]}`}
+                          className={styles[TARGET_MODULE[ex.export_target] ?? "targetCsv"]}
                         >
                           {ex.export_target}
                         </span>

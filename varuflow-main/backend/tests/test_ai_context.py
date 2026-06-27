@@ -26,16 +26,16 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.ai_usage import DailyAiUsage
-from app.models.inventory import Product, StockLevel, Warehouse
-from app.models.invoicing import (
+from app.features.ai.ai_usage import DailyAiUsage
+from app.features.inventory.models import Product, StockLevel, Warehouse
+from app.features.invoicing.models import (
     Customer,
     Invoice,
     InvoiceStatus,
     Payment,
     PaymentMethod,
 )
-from app.models.organization import OrgPlan
+from app.features.auth.organization import OrgPlan
 from app.services.ai_context import build_ai_context
 
 

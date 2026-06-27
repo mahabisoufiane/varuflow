@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, QrCode, Search } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface TodayBooking {
   id: string;
@@ -41,7 +42,7 @@ export default function CheckInPage() {
 
   async function handleCheckIn(id: string) {
     try {
-      await api.post(`/api/bookings/${id}/checkin`);
+      await api.post(`/api/bookings/${id}/checkin`, {});
       toast.success(t("checkedIn"));
       fetchBookings();
     } catch {
@@ -51,7 +52,7 @@ export default function CheckInPage() {
 
   async function handleNoShow(id: string) {
     try {
-      await api.post(`/api/bookings/${id}/noshow`);
+      await api.post(`/api/bookings/${id}/noshow`, {});
       toast.success(t("markedNoShow"));
       fetchBookings();
     } catch {
@@ -68,6 +69,13 @@ export default function CheckInPage() {
     checked_in: "bg-green-100 text-green-800",
     no_show: "bg-red-100 text-red-800",
     completed: "bg-gray-100 text-gray-800",
+  };
+
+  const STATUS_MODULE: Record<string, keyof typeof styles> = {
+    confirmed:  "statusConfirmed",
+    checked_in: "statusCheckedIn",
+    no_show:    "statusNoShow",
+    completed:  "statusCompleted",
   };
 
   if (loading) {
@@ -118,9 +126,7 @@ export default function CheckInPage() {
                   })}
                 </p>
                 <span
-                  className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-                    statusColors[booking.status] || ""
-                  }`}
+                  className={styles[STATUS_MODULE[booking.status] ?? "statusConfirmed"]}
                 >
                   {booking.status.replace("_", " ")}
                 </span>

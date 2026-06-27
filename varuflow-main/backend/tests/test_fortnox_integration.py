@@ -6,7 +6,7 @@ integrations router without requiring a live DB or external services.
 import inspect
 
 INTEGRATIONS_SRC = inspect.getsource(
-    __import__("app.routers.integrations", fromlist=["_"])
+    __import__("app.features.integrations.integrations", fromlist=["_"])
 )
 
 

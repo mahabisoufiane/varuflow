@@ -13,8 +13,8 @@ from decimal import Decimal
 
 import pytest
 
-from app.models.invoicing import Customer, Invoice, InvoiceStatus
-from app.models.organization import OrgRole
+from app.features.invoicing.models import Customer, Invoice, InvoiceStatus
+from app.features.auth.organization import OrgRole
 
 
 

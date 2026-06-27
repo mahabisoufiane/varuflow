@@ -1,0 +1,21 @@
+$vf-font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+$vf-font-arabic: 'Noto Sans Arabic', system-ui, sans-serif;
+$vf-font-mono: 'GeistMono', 'JetBrains Mono', 'Fira Code', monospace;
+
+$vf-font-sizes: (
+  'xs':   (size: 0.6875rem, line-height: 1rem),
+  'sm':   (size: 0.8125rem, line-height: 1.25rem),
+  'base': (size: 0.875rem,  line-height: 1.375rem),
+  'md':   (size: 0.9375rem, line-height: 1.5rem),
+  'lg':   (size: 1.0625rem, line-height: 1.625rem),
+  'xl':   (size: 1.25rem,   line-height: 1.75rem),
+  '2xl':  (size: 1.5rem,    line-height: 2rem),
+  '3xl':  (size: 1.875rem,  line-height: 2.375rem),
+);
+
+$vf-font-weights: (
+  'regular': 400,
+  'medium':  500,
+  'semibold': 600,
+  'bold':    700,
+);

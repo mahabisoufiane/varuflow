@@ -3,25 +3,26 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Globe, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { api } from "@/lib/api-client";
 
 interface Region { id: string; name: string; description: string; frameworks: string[]; countries: string[] }
 interface Residency { data_region: string; region_info: Region }
 
 export default function DataResidencyPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [current, setCurrent] = useState<Residency | null>(null);
   const [regions, setRegions] = useState<Region[]>([]);
   const [selected, setSelected] = useState("");
   const [acknowledged, setAcknowledged] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const fetch_ = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   useEffect(() => {
     Promise.all([
-      fetch_("/api/compliance/data-residency").then(r => r.ok ? r.json() : null).then(d => { if (d) { setCurrent(d); setSelected(d.data_region); } }),
-      fetch_("/api/compliance/data-residency/regions").then(r => r.ok ? r.json() : { regions: [] }).then(d => setRegions(d.regions)),
+      api.get<Residency>("/api/compliance/data-residency")
+        .then(d => { setCurrent(d); setSelected(d.data_region); })
+        .catch(() => {}),
+      api.get<{ regions: Region[] }>("/api/compliance/data-residency/regions")
+        .then(d => setRegions(d.regions))
+        .catch(() => {}),
     ]);
   }, []);
 
@@ -30,22 +31,12 @@ export default function DataResidencyPage() {
     if (!acknowledged) { toast.error("Please acknowledge the implications below"); return; }
     setSaving(true);
     try {
-      const res = await fetch_("/api/compliance/data-residency", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data_region: selected, acknowledged: true }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setCurrent(data);
-        toast.success("Data region updated");
-        toast.info(data.warning, { duration: 8000 });
-        setAcknowledged(false);
-      } else {
-        const err = await res.json();
-        toast.error(err.detail || "Update failed");
-      }
-    } catch { toast.error("Network error"); }
+      const data = await api.patch<Residency & { warning: string }>("/api/compliance/data-residency", { data_region: selected, acknowledged: true });
+      setCurrent(data);
+      toast.success("Data region updated");
+      toast.info(data.warning, { duration: 8000 });
+      setAcknowledged(false);
+    } catch { toast.error("Update failed"); }
     setSaving(false);
   }
 

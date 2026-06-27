@@ -1,0 +1,47 @@
+{
+  "name": "Varuflow — Overdue Invoices (Daily 07:00)",
+  "nodes": [
+    {
+      "id": "bb22cc33-dd44-ee55-ff66-778899001122",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "cronExpression", "expression": "0 7 * * *" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "bb22cc33-dd44-ee55-ff66-778899001123",
+      "name": "Mark Overdue Invoices",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [460, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.VARUFLOW_BACKEND_URL }}/api/jobs/overdue-invoices",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Admin-Key", "value": "={{ $env.VARUFLOW_ADMIN_KEY }}" }
+          ]
+        },
+        "options": { "timeout": 60000 }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [{ "node": "Mark Overdue Invoices", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "notes": "Marks SENT invoices past their due date as OVERDUE. The dunning sweep (09:00 Stockholm) handles email reminders separately."
+}

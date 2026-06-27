@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api-client";
 import { RefreshCw, UserPlus, ChevronDown, ChevronRight, PlusCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface GroupParticipant {
   id: string;
@@ -33,6 +33,12 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   cancelled: { label: "Cancelled", color: "bg-gray-100 text-gray-500" },
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:   "statusPending",
+  confirmed: "statusConfirmed",
+  cancelled: "statusCancelled",
+};
+
 type StatusFilter = "all" | "pending" | "confirmed" | "cancelled";
 
 interface ParticipantDraft {
@@ -42,11 +48,6 @@ interface ParticipantDraft {
 }
 
 export default function GroupBookingsPage() {
-  const router = useRouter();
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale ?? "en";
-  const supabase = createClient();
-
   const [bookings, setBookings] = useState<GroupBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<StatusFilter>("all");
@@ -65,22 +66,11 @@ export default function GroupBookingsPage() {
     { name: "", email: "", amount_due: "" },
   ]);
 
-  async function getToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }
-  function apiUrl(p: string) { return `${process.env.NEXT_PUBLIC_API_URL}${p}`; }
-
   async function load() {
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push(`/${locale}/auth/login`); return; }
-      const res = await fetch(apiUrl("/api/group-bookings"), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (res.ok) setBookings(await res.json());
+      const data = await api.get<GroupBooking[]>("/api/group-bookings");
+      setBookings(data);
     } catch {
       toast.error("Failed to load group bookings");
     } finally {
@@ -97,39 +87,28 @@ export default function GroupBookingsPage() {
     }
     setActionLoading("create");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl("/api/group-bookings"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          lead_customer_id: createForm.lead_customer_id,
-          service_id: createForm.service_id,
-          title: createForm.title || null,
-          party_size: parseInt(createForm.party_size),
-          split_payment: createForm.split_payment,
-          total_amount: createForm.total_amount ? parseFloat(createForm.total_amount) : null,
-          participants: participants
-            .filter((p) => p.name.trim())
-            .map((p) => ({
-              name: p.name,
-              email: p.email || null,
-              amount_due: p.amount_due ? parseFloat(p.amount_due) : 0,
-            })),
-        }),
+      await api.post("/api/group-bookings", {
+        lead_customer_id: createForm.lead_customer_id,
+        service_id: createForm.service_id,
+        title: createForm.title || null,
+        party_size: parseInt(createForm.party_size),
+        split_payment: createForm.split_payment,
+        total_amount: createForm.total_amount ? parseFloat(createForm.total_amount) : null,
+        participants: participants
+          .filter((p) => p.name.trim())
+          .map((p) => ({
+            name: p.name,
+            email: p.email || null,
+            amount_due: p.amount_due ? parseFloat(p.amount_due) : 0,
+          })),
       });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to create group booking");
-        return;
-      }
       toast.success("Group booking created");
       setShowCreateForm(false);
       setCreateForm({ lead_customer_id: "", service_id: "", title: "", party_size: "2", split_payment: false, total_amount: "" });
       setParticipants([{ name: "", email: "", amount_due: "" }]);
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -138,21 +117,11 @@ export default function GroupBookingsPage() {
   async function changeStatus(id: string, action: "confirm" | "cancel") {
     setActionLoading(id + "_" + action);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/group-bookings/${id}/${action}`), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? `Failed to ${action}`);
-        return;
-      }
+      await api.post(`/api/group-bookings/${id}/${action}`, {});
       toast.success(`Booking ${action}ed`);
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : `Failed to ${action}`);
     } finally {
       setActionLoading(null);
     }
@@ -161,22 +130,11 @@ export default function GroupBookingsPage() {
   async function markPaid(bookingId: string, participantId: string) {
     setActionLoading(participantId + "_paid");
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/group-bookings/${bookingId}/participants/${participantId}`), {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ paid: true }),
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to mark paid");
-        return;
-      }
+      await api.patch(`/api/group-bookings/${bookingId}/participants/${participantId}`, { paid: true });
       toast.success("Marked as paid");
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to mark paid");
     } finally {
       setActionLoading(null);
     }
@@ -352,7 +310,7 @@ export default function GroupBookingsPage() {
                       Split Payment
                     </span>
                   )}
-                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.color}`}>
+                  <span className={styles[STATUS_MODULE[b.status] ?? "statusPending"]}>
                     {cfg.label}
                   </span>
                   <div className="flex items-center gap-1.5 flex-shrink-0">

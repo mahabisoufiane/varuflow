@@ -72,13 +72,14 @@ export function buildCsp(env = {}) {
     CSP_ALLOW_STRIPE.connect,
   ].filter(Boolean).join(" ");
 
-  // Next.js App Router uses inline scripts for hydration bootstrap; we must
-  // allow 'unsafe-inline' + 'unsafe-eval' for scripts until Next ships
-  // strict-dynamic nonces. Matches Vercel's default template — see
-  // docs/operations/security-hardening.md for the migration plan.
+  // Next.js App Router uses inline scripts for hydration bootstrap.
+  // 'strict-dynamic' causes CSP3 browsers to ignore 'unsafe-inline' for
+  // scripts, trusting only nonce-propagated scripts. We keep 'unsafe-inline'
+  // as a CSP2 fallback for older browsers. 'unsafe-eval' is removed — Next.js
+  // 16 does not require it in production builds.
   return [
     "default-src 'self'",
-    `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${CSP_ALLOW_STRIPE.script} ${CSP_ALLOW_CRISP.script}`,
+    `script-src 'self' 'unsafe-inline' 'strict-dynamic' ${CSP_ALLOW_STRIPE.script} ${CSP_ALLOW_CRISP.script}`,
     `style-src 'self' 'unsafe-inline' ${CSP_ALLOW_FONTS.style} ${CSP_ALLOW_CRISP.style}`,
     `font-src 'self' data: ${CSP_ALLOW_FONTS.font} ${CSP_ALLOW_CRISP.font}`,
     "img-src 'self' data: blob: https:",

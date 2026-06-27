@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, Award, RefreshCw, Edit3, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface SupplierRating {
   id: string;
@@ -25,6 +26,13 @@ const RISK_COLORS: Record<string, string> = {
   medium:   "bg-amber-100 text-amber-700",
   high:     "bg-orange-100 text-orange-700",
   critical: "bg-red-100 text-red-700",
+};
+
+const RISK_MODULE: Record<string, keyof typeof styles> = {
+  low:      "riskLow",
+  medium:   "riskMedium",
+  high:     "riskHigh",
+  critical: "riskCritical",
 };
 
 function ScoreBar({ value }: { value: number }) {
@@ -257,7 +265,7 @@ export default function SupplierSustainabilityPage() {
                   </div>
                 )}
               </div>
-              <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0 capitalize ${RISK_COLORS[r.risk_level] ?? "bg-gray-100 text-gray-600"}`}>
+              <span className={styles[RISK_MODULE[r.risk_level] ?? "riskLow"]}>
                 {r.risk_level}
               </span>
               <div className="flex-shrink-0"><ScoreBar value={r.environmental_score} /></div>

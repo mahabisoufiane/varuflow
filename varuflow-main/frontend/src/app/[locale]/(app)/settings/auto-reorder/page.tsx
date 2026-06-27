@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { Repeat2, Loader2, Calendar, Clock, Mail, Eye, Play, History } from "lucide-react";
 
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface AutoReorderSettings {
   auto_reorder_enabled: boolean;
@@ -197,8 +198,7 @@ export default function AutoReorderSettingsPage() {
       {/* Enable */}
       <section
         data-testid="auto-reorder-enable-section"
-        className="rounded-xl border border-white/10 p-5 space-y-3"
-        style={{ background: "var(--vf-bg-surface)" }}
+        className={styles.sectionCard + " space-y-3"}
       >
         <label
           htmlFor="ar-enabled"
@@ -225,8 +225,7 @@ export default function AutoReorderSettingsPage() {
       {/* Schedule */}
       <section
         data-testid="auto-reorder-schedule-section"
-        className="rounded-xl border border-white/10 p-5 space-y-4"
-        style={{ background: "var(--vf-bg-surface)" }}
+        className={styles.sectionCard + " space-y-4"}
       >
         <div className="flex items-center gap-2 text-sm font-semibold">
           <Calendar className="h-4 w-4" />
@@ -272,8 +271,7 @@ export default function AutoReorderSettingsPage() {
       {/* Notification email */}
       <section
         data-testid="auto-reorder-email-section"
-        className="rounded-xl border border-white/10 p-5 space-y-3"
-        style={{ background: "var(--vf-bg-surface)" }}
+        className={styles.sectionCard + " space-y-3"}
       >
         <label className="flex items-center gap-2 text-sm font-semibold">
           <Mail className="h-4 w-4" />
@@ -294,8 +292,7 @@ export default function AutoReorderSettingsPage() {
       {/* Preview */}
       <section
         data-testid="auto-reorder-preview-section"
-        className="rounded-xl border border-white/10 p-5 space-y-4"
-        style={{ background: "var(--vf-bg-surface)" }}
+        className={styles.sectionCard + " space-y-4"}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm font-semibold">
@@ -371,8 +368,7 @@ export default function AutoReorderSettingsPage() {
       {/* Run now */}
       <section
         data-testid="auto-reorder-run-now-section"
-        className="rounded-xl border border-white/10 p-5 flex items-center justify-between"
-        style={{ background: "var(--vf-bg-surface)" }}
+        className={styles.sectionCard + " flex items-center justify-between"}
       >
         <div>
           <div className="font-semibold">{t("run_now_button")}</div>
@@ -399,8 +395,7 @@ export default function AutoReorderSettingsPage() {
       {/* Run history */}
       <section
         data-testid="auto-reorder-history-section"
-        className="rounded-xl border border-white/10 p-5 space-y-3"
-        style={{ background: "var(--vf-bg-surface)" }}
+        className={styles.sectionCard + " space-y-3"}
       >
         <div className="flex items-center gap-2 text-sm font-semibold">
           <History className="h-4 w-4" />

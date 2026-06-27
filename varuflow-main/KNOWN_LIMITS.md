@@ -5,42 +5,21 @@ documents what the limit is, when it becomes a problem, and the upgrade path.
 
 ---
 
-## 1. In-memory rate limiter — does not work with multiple Railway replicas
+## 1. ~~In-memory rate limiter — does not work with multiple Railway replicas~~ ✅ RESOLVED (Phase 5 / C-1)
 
-**What:** `app/middleware/rate_limit.py` uses a `defaultdict` in the Python
-process to count requests. Each Railway replica has its own counter.
-
-**When it's a problem:** When Railway auto-scales to 2+ replicas, each
-instance counts independently. Effective rate limit for one user becomes
-`N × configured_limit` (where N = replica count). An org can brute-force
-auth or hammer the AI endpoint at N times the allowed rate.
-
-**Current mitigation:** Pin Railway to 1 replica (`replicas = 1` in service
-settings). The in-process rate limiter works correctly at single-instance scale.
-
-**Upgrade path (Phase 5 / C-1):** Replace the in-memory counter with a
-Redis-backed implementation (`redis-py` `INCR` + `EXPIRE`). Add
-`REDIS_URL` to env vars and `MANUAL_CONFIG.md`. Ticket: C-1 in PROD_AUDIT.md.
+Redis sliding-window counter is now the default when `REDIS_URL` is set.
+Falls back to in-memory for single-replica and local-dev environments.
+Set `REDIS_URL` on Railway (add a Redis plugin) to enable multi-replica mode.
+See `MANUAL_CONFIG.md` for setup instructions.
 
 ---
 
-## 2. APScheduler uses in-memory job store — jobs lost on restart
+## 2. ~~APScheduler uses in-memory job store — jobs lost on restart~~ ✅ RESOLVED (Phase 5 / M-6)
 
-**What:** `app/services/scheduler.py` uses APScheduler's default in-memory
-job store. All 33 registered jobs are recurring (recreated at startup from
-`create_scheduler()`), so restarts don't lose the schedule itself.
-
-**When it's a problem:** If a one-off deferred job is ever added (e.g.,
-"send follow-up in 24 h" triggered by a user action), a Railway deploy or
-crash before the fire time silently drops it. No retry, no dead-letter queue.
-
-**Current mitigation:** Only recurring jobs are used. Any deferred work uses
-the `IdempotencyKey` table to record intent so a restart + re-run is
-idempotent.
-
-**Upgrade path (Phase 5 / M-6):** Configure `SQLAlchemyJobStore` using the
-existing `DATABASE_URL` so job state survives restarts. Alternative: migrate
-deferred work to Celery + Redis for a proper task queue.
+`SQLAlchemyJobStore` (psycopg2) is now the default job store when `DATABASE_URL`
+is set. Job metadata (next-run time, misfire state) is persisted in the
+`apscheduler_jobs` table. Misfired jobs fire within their `misfire_grace_time`
+window on the next restart. Falls back to in-memory for local dev / CI.
 
 ---
 

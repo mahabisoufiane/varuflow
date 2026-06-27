@@ -1,15 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
 
 interface Persona {
   id: string;
@@ -21,8 +16,6 @@ interface Persona {
 }
 
 export default function PersonasPage() {
-  const params = useParams();
-
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [loading, setLoading] = useState(false);
   const [computing, setComputing] = useState(false);
@@ -38,11 +31,7 @@ export default function PersonasPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${API}/api/ai/personas`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setPersonas(await res.json());
+      setPersonas(await api.get<Persona[]>("/api/ai/personas"));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load personas");
     } finally {
@@ -58,11 +47,7 @@ export default function PersonasPage() {
     setComputing(true);
     setError("");
     try {
-      const res = await fetch(`${API}/api/ai/personas/compute`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await api.post("/api/ai/personas/compute", {});
       await fetchPersonas();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Compute failed");
@@ -80,15 +65,7 @@ export default function PersonasPage() {
   async function saveEdit(id: string) {
     setSaving(true);
     try {
-      const res = await fetch(`${API}/api/ai/personas/${id}`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: editName, description: editDescription }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await api.patch(`/api/ai/personas/${id}`, { name: editName, description: editDescription });
       setEditingId(null);
       await fetchPersonas();
     } catch (e: unknown) {
@@ -100,11 +77,7 @@ export default function PersonasPage() {
 
   async function deletePersona(id: string) {
     try {
-      const res = await fetch(`${API}/api/ai/personas/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await api.delete(`/api/ai/personas/${id}`);
       await fetchPersonas();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Delete failed");

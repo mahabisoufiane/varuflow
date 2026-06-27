@@ -283,7 +283,7 @@ async def get_latest_rate_row(db, *, base: str, target: str):
     try:
         from sqlalchemy import select
 
-        from app.models.currencies import ExchangeRate
+        from app.features.settings.model_currencies import ExchangeRate
     except Exception:
         return None
     b = normalise_code(base)
@@ -320,7 +320,7 @@ async def resolve_rate(db, *, from_currency: str, to_currency: str) -> Decimal:
     try:
         from sqlalchemy import select
 
-        from app.models.currencies import ExchangeRate
+        from app.features.settings.model_currencies import ExchangeRate
     except Exception:
         return Decimal("1")
     rows = (
@@ -342,7 +342,7 @@ async def store_rates(db, *, rates: Iterable[tuple[str, str, Decimal]]) -> int:
     weird payload.
     """
     try:
-        from app.models.currencies import ExchangeRate
+        from app.features.settings.model_currencies import ExchangeRate
     except Exception:
         return 0
     import uuid as _uuid

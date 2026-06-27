@@ -6,6 +6,8 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -13,6 +15,7 @@ interface BankAccount { id: string; name: string; iban: string | null; currency:
 interface Tx {
   id: string; transaction_date: string; amount: string; description: string;
   reference: string | null; status: string; matched_type: string | null; matched_id: string | null;
+  matched_label?: string | null;
 }
 interface RecSummary {
   total_transactions: number; unmatched_count: number; matched_count: number;
@@ -65,7 +68,7 @@ function TxRow({
   const isCredit = amount >= 0;
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 border-b last:border-0 hover:bg-gray-50 group">
+    <div className={styles.txRow}>
       <div className={`w-1.5 h-10 rounded-full flex-shrink-0 ${isCredit ? "bg-green-400" : "bg-red-400"}`} />
       <div className="flex-1 min-w-0">
         <p className="text-sm text-gray-800 truncate">{tx.description}</p>
@@ -78,7 +81,7 @@ function TxRow({
           )}
         </p>
       </div>
-      <span className={`font-mono text-sm font-semibold w-28 text-right flex-shrink-0 ${isCredit ? "text-green-600" : "text-red-500"}`}>
+      <span className={`w-28 text-right flex-shrink-0 ${isCredit ? styles.amountCredit : styles.amountDebit}`}>
         {isCredit ? "+" : ""}{fmt(tx.amount)} SEK
       </span>
       {tx.status === "UNMATCHED" && (
@@ -357,13 +360,21 @@ export default function BankReconciliationPage() {
   const [expDesc, setExpDesc] = useState("");
   const [expSaving, setExpSaving] = useState(false);
 
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
+
   useEffect(() => {
     api.get<BankAccount[]>("/api/accounting/bank-accounts")
       .then((r) => {
         setAccounts(r);
         if (r.length > 0) setSelectedId(r[0].id);
       })
-      .catch(() => toast.error("Failed to load bank accounts"));
+      .catch((err) => {
+        if (isPlanGateError(err)) {
+          setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+          return;
+        }
+        toast.error("Failed to load bank accounts");
+      });
   }, []);
 
   const loadData = useCallback(async (id: string) => {
@@ -444,8 +455,10 @@ export default function BankReconciliationPage() {
   const filteredTxs = txs.filter((t) => t.status === tab);
   const balanced = summary ? summary.unmatched_count === 0 : false;
 
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Bank Reconciliation" />;
+
   return (
-    <div className="p-6 space-y-6 max-w-5xl">
+    <>
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
@@ -625,6 +638,6 @@ export default function BankReconciliationPage() {
           </p>
         </div>
       )}
-    </div>
+    </>
   );
 }

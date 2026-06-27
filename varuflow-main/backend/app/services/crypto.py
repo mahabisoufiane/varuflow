@@ -59,7 +59,7 @@ def _get_fernet() -> "Optional[Fernet]":
         _fernet = Fernet(key.encode("utf-8") if isinstance(key, str) else key)
         return _fernet
     except Exception as exc:  # invalid key format
-        log.error("FORTNOX_ENCRYPTION_KEY is invalid — storing tokens in plaintext: %s", exc)
+        log.error("FORTNOX_ENCRYPTION_KEY is invalid — storing tokens in plaintext: %s", exc)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         return None
 
 

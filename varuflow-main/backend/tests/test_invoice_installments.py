@@ -14,10 +14,19 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(relpath: str) -> str:
-    return (_BACKEND_ROOT / relpath).read_text()
+    # Dir-aware: a router/service split into a package (e.g. routers/invoicing/)
+    # is read by concatenating its modules, so source-string assertions still
+    # work after the feature-package refactor.
+    path = _BACKEND_ROOT / relpath
+    if path.is_file():
+        return path.read_text()
+    pkg = path.with_suffix("")
+    if pkg.is_dir():
+        return "".join(f.read_text() for f in sorted(pkg.rglob("*.py")))
+    return path.read_text()
 
 
-ROUTER_SRC = _read("app/routers/invoicing.py")
+ROUTER_SRC = _read("app/features/invoicing.py")
 MODEL_SRC = _read("app/models/invoice_installment.py")
 SERVICE_SRC = _read("app/services/invoice_installment.py")
 

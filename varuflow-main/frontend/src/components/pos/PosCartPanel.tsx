@@ -7,7 +7,9 @@
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { api } from "@/lib/api-client";
+import { DUR, EASE_STANDARD } from "@/components/motion/variants";
 import { computeTotals, usePos, type PaymentMethod, type PosCustomer } from "@/lib/pos-store";
 
 const METHODS: { key: PaymentMethod; emoji: string; labelKey: string }[] = [
@@ -100,6 +102,7 @@ function CustomerSearch() {
 
 export default function PosCartPanel() {
   const t = useTranslations("pos");
+  const reduce = useReducedMotion();
   const {
     cart, paymentMethod, cashTendered, discountType, discountValue,
     submitting, session,
@@ -108,6 +111,12 @@ export default function PosCartPanel() {
   } = usePos();
 
   const [expandedLine, setExpandedLine] = useState<string | null>(null);
+
+  const itemVariants = {
+    initial: reduce ? {} : { opacity: 0, y: -6 },
+    animate: { opacity: 1, y: 0, transition: { duration: DUR.fast, ease: EASE_STANDARD } },
+    exit:    reduce ? {} : { opacity: 0, x: 16, scale: 0.97, transition: { duration: DUR.fast, ease: EASE_STANDARD } },
+  };
 
   const totals = computeTotals(cart, discountType, discountValue);
   const changeDue =
@@ -129,14 +138,28 @@ export default function PosCartPanel() {
       <CustomerSearch />
 
       <ul className="flex-1 space-y-2 overflow-y-auto" data-testid="pos-cart-items">
-        {cart.length === 0 && (
-          <li className="py-6 text-center text-sm text-gray-400 dark:text-gray-500">{t("cart_empty")}</li>
-        )}
-        {cart.map((it) => (
-          <li
-            key={it.product.id}
-            className="rounded-lg bg-gray-50 p-2 dark:bg-gray-700"
-          >
+        <AnimatePresence initial={false}>
+          {cart.length === 0 && (
+            <motion.li
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: DUR.fast }}
+              className="py-6 text-center text-sm text-gray-400 dark:text-gray-500"
+            >
+              {t("cart_empty")}
+            </motion.li>
+          )}
+          {cart.map((it) => (
+            <motion.li
+              key={it.product.id}
+              variants={itemVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="rounded-lg bg-gray-50 p-2 dark:bg-gray-700 overflow-hidden"
+            >
             <div className="grid grid-cols-[1fr_auto] gap-2">
               <div>
                 <p className="text-sm font-medium dark:text-gray-100">{it.product.name}</p>
@@ -200,8 +223,9 @@ export default function PosCartPanel() {
                 />
               </div>
             )}
-          </li>
+          </motion.li>
         ))}
+      </AnimatePresence>
       </ul>
 
       <div className="space-y-2 border-t border-gray-100 pt-3 text-sm dark:border-gray-700">

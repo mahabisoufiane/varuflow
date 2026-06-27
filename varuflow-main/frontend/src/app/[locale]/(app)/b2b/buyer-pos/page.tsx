@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,14 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-
-function getToken() {
-  return typeof window !== "undefined"
-    ? localStorage.getItem("auth_token") ?? ""
-    : "";
-}
+import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 type POStatus = "draft" | "submitted" | "confirmed" | "rejected" | "fulfilled";
 
@@ -42,16 +35,23 @@ const statusClass: Record<POStatus, string> = {
   rejected: "bg-red-100 text-red-800",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft:     "statusDraft",
+  submitted: "statusSubmitted",
+  confirmed: "statusConfirmed",
+  fulfilled: "statusFulfilled",
+  rejected:  "statusRejected",
+};
+
 const ALL_STATUSES: POStatus[] = ["draft", "submitted", "confirmed", "rejected", "fulfilled"];
 
 export default function BuyerPOsPage() {
-  const { locale } = useParams<{ locale: string }>();
-
   const [customerIdFilter, setCustomerIdFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [items, setItems] = useState<BuyerPO[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showDeprecation, setShowDeprecation] = useState(true);
 
   // New PO form
   const [showForm, setShowForm] = useState(false);
@@ -69,11 +69,7 @@ export default function BuyerPOsPage() {
       const params = new URLSearchParams();
       if (customerIdFilter.trim()) params.set("customer_id", customerIdFilter.trim());
       if (statusFilter !== "all") params.set("status", statusFilter);
-      const res = await fetch(`${API}/api/buyer-pos?${params}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data = await res.json();
+      const data = await api.get<BuyerPO[]>(`/api/buyer-pos?${params}`);
       setItems(data);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load POs");
@@ -85,11 +81,7 @@ export default function BuyerPOsPage() {
   async function handleAction(id: string, action: "confirm" | "reject" | "fulfill") {
     setError("");
     try {
-      const res = await fetch(`${API}/api/buyer-pos/${id}/${action}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post(`/api/buyer-pos/${id}/${action}`, {});
       await loadPOs();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : `Failed to ${action} PO`);
@@ -107,15 +99,7 @@ export default function BuyerPOsPage() {
         buyer_org_name: newOrgName,
       };
       if (newDeliveryDate) body.requested_delivery_date = newDeliveryDate;
-      const res = await fetch(`${API}/api/buyer-pos`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      await api.post("/api/buyer-pos", body);
       setNewCustomerId("");
       setNewPONumber("");
       setNewOrgName("");
@@ -131,6 +115,19 @@ export default function BuyerPOsPage() {
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
+      {showDeprecation && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm">
+          <div className="flex-1">
+            <p className="font-medium text-amber-800">This module is being replaced</p>
+            <p className="text-amber-700 mt-0.5">
+              Customer ordering now happens through the{" "}
+              <a href="/portal/catalogue" className="underline font-medium">Customer Portal</a>.
+              Customers receive a magic link to browse products and place orders directly.
+            </p>
+          </div>
+          <button onClick={() => setShowDeprecation(false)} className="text-amber-400 hover:text-amber-600 text-lg leading-none">×</button>
+        </div>
+      )}
       <h1 className="text-2xl font-bold">Buyer Purchase Orders</h1>
 
       {/* Filters */}
@@ -206,7 +203,7 @@ export default function BuyerPOsPage() {
                       <TableCell>{po.buyer_org_name}</TableCell>
                       <TableCell>
                         <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusClass[po.status]}`}
+                          className={styles[STATUS_MODULE[po.status] ?? "statusDraft"]}
                         >
                           {po.status}
                         </span>

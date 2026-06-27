@@ -257,7 +257,7 @@ async def create_default_categories(
     """
     from sqlalchemy import select
 
-    from app.models.expenses import ExpenseCategory
+    from app.features.expenses.models import ExpenseCategory
 
     existing = (
         await db.execute(

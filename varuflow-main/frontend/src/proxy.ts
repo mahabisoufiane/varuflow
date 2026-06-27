@@ -11,7 +11,10 @@ const supabaseKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
   "";
 
-// Paths under (app) that require authentication
+// Paths under (app) that require authentication.
+// Every directory under src/app/[locale]/(app)/ must appear here so that
+// unauthenticated requests are redirected to /auth/login rather than
+// rendering a blank page. Verified against the filesystem in Phase 6 (M-11).
 const PROTECTED_SEGMENTS = [
   "dashboard",
   "inventory",
@@ -75,16 +78,26 @@ const PROTECTED_SEGMENTS = [
   "inbox",
   "reporting",
   "ai-tools",
-  "integrations",
-  "mobile",
+  // M-11 additions — routes present in (app) but missing from this list:
+  "accounting",
+  "admin",
+  "bookings",
+  "budget",
+  "campaigns",
+  "documents",
+  "expenses",
+  "gift-cards",
+  "partner",
+  "referrals",
+  "reviews",
 ];
 
 function stripLocale(pathname: string): string {
-  return pathname.replace(/^\/(sv|en|ar)(\/|$)/, "/");
+  return pathname.replace(/^\/(sv|en|no|da|ar)(\/|$)/, "/");
 }
 
 function getLocalePrefix(pathname: string): string {
-  const match = pathname.match(/^\/(en|sv|ar)(\/|$)/);
+  const match = pathname.match(/^\/(sv|en|no|da|ar)(\/|$)/);
   return match ? `/${match[1]}` : "";
 }
 

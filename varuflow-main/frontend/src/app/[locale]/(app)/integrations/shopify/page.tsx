@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { api } from "@/lib/api-client";
 
 type TabId = "shopify" | "woocommerce";
 type Status = { connected: boolean; store_url?: string; last_sync_at?: string; last_sync_status?: string };
 
 export default function ShopifyIntegrationPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [tab, setTab] = useState<TabId>("shopify");
   const [status, setStatus] = useState<Status>({ connected: false });
   const [loading, setLoading] = useState(false);
@@ -21,14 +21,11 @@ export default function ShopifyIntegrationPage() {
   const [wooKey, setWooKey] = useState("");
   const [wooSecret, setWooSecret] = useState("");
 
-  const fetch_ = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   async function loadStatus(provider: TabId) {
     setLoading(true);
     try {
-      const res = await fetch_(`/api/integrations/${provider}/status`);
-      if (res.ok) setStatus(await res.json());
+      const data = await api.get<Status>(`/api/integrations/${provider}/status`);
+      setStatus(data);
     } catch {}
     setLoading(false);
   }
@@ -41,43 +38,29 @@ export default function ShopifyIntegrationPage() {
       const body = tab === "shopify"
         ? { store_url: shopStore, access_token: shopToken }
         : { store_url: wooStore, consumer_key: wooKey, consumer_secret: wooSecret };
-      const res = await fetch_(`/api/integrations/${tab}/connect`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        toast.success(`${tab === "shopify" ? "Shopify" : "WooCommerce"} connected`);
-        await loadStatus(tab);
-      } else {
-        const err = await res.json();
-        toast.error(err.detail || "Connection failed");
-      }
-    } catch {
-      toast.error("Network error");
+      await api.post(`/api/integrations/${tab}/connect`, body);
+      toast.success(`${tab === "shopify" ? "Shopify" : "WooCommerce"} connected`);
+      await loadStatus(tab);
+    } catch (err: any) {
+      toast.error(err.message || "Connection failed");
     }
     setLoading(false);
   }
 
   async function disconnect() {
-    const res = await fetch_(`/api/integrations/${tab}/disconnect`, { method: "DELETE" });
-    if (res.ok) { toast.success("Disconnected"); await loadStatus(tab); }
+    await api.delete(`/api/integrations/${tab}/disconnect`).catch(() => {});
+    toast.success("Disconnected");
+    await loadStatus(tab);
   }
 
   async function sync(action: "sync-orders" | "sync-inventory") {
     setSyncing(action);
     try {
-      const res = await fetch_(`/api/integrations/${tab}/${action}`, { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        toast.success(data.message || "Sync complete");
-        await loadStatus(tab);
-      } else {
-        const err = await res.json();
-        toast.error(err.detail || "Sync failed");
-      }
-    } catch {
-      toast.error("Sync error");
+      const data = await api.post<{ message?: string }>(`/api/integrations/${tab}/${action}`, {});
+      toast.success(data.message || "Sync complete");
+      await loadStatus(tab);
+    } catch (err: any) {
+      toast.error(err.message || "Sync failed");
     }
     setSyncing(null);
   }

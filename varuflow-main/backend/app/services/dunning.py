@@ -26,9 +26,9 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.dunning import DunningEvent
-from app.models.invoicing import Customer, Invoice, InvoiceStatus
-from app.models.organization import Organization
+from app.features.invoicing.dunning import DunningEvent
+from app.features.invoicing.models import Customer, Invoice, InvoiceStatus
+from app.features.auth.organization import Organization
 from app.services.audit import log_action
 from app.services.email import send_dunning_email
 from app.services.whatsapp import (

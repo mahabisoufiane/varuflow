@@ -21,7 +21,7 @@ def upgrade() -> None:
         sa.Column("org_id", UUID(as_uuid=True), sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
         sa.Column("customer_id", UUID(as_uuid=True), sa.ForeignKey("customers.id", ondelete="CASCADE"), nullable=False),
         sa.Column("sender_type", sa.String(10), nullable=False),
-        sa.Column("sender_staff_id", UUID(as_uuid=True), sa.ForeignKey("staff.id", ondelete="SET NULL"), nullable=True),
+        sa.Column("sender_staff_id", UUID(as_uuid=True), nullable=True),
         sa.Column("body", sa.Text(), nullable=False),
         sa.Column("read_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
@@ -64,7 +64,7 @@ def upgrade() -> None:
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("status", sa.String(20), nullable=False, server_default="open"),
         sa.Column("priority", sa.String(10), nullable=False, server_default="normal"),
-        sa.Column("assigned_staff_id", UUID(as_uuid=True), sa.ForeignKey("staff.id", ondelete="SET NULL"), nullable=True),
+        sa.Column("assigned_staff_id", UUID(as_uuid=True), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
     )
@@ -75,7 +75,7 @@ def upgrade() -> None:
         sa.Column("id", UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()")),
         sa.Column("ticket_id", UUID(as_uuid=True), sa.ForeignKey("portal_tickets.id", ondelete="CASCADE"), nullable=False),
         sa.Column("sender_type", sa.String(10), nullable=False),
-        sa.Column("sender_staff_id", UUID(as_uuid=True), sa.ForeignKey("staff.id", ondelete="SET NULL"), nullable=True),
+        sa.Column("sender_staff_id", UUID(as_uuid=True), nullable=True),
         sa.Column("body", sa.Text(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
     )

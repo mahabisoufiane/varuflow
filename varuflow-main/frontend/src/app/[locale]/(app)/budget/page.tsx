@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { RoleGuard } from "@/components/app/RoleContext";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -10,6 +11,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 interface Budget {
   id: string;
@@ -31,7 +34,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; Icon: React.
   APPROVED:           { label: "Approved",          color: "bg-green-100 text-green-700",  Icon: CheckCircle2  },
 };
 
-export default function BudgetPage() {
+function BudgetPageInner() {
   const router = useRouter();
   const params = useParams<{ locale: string }>();
   const locale = params?.locale ?? "en";
@@ -52,6 +55,8 @@ export default function BudgetPage() {
   // Review note modal
   const [reviewModal, setReviewModal] = useState<{ id: string; notes: string } | null>(null);
 
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
+
   async function getToken() {
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token ?? null;
@@ -71,7 +76,11 @@ export default function BudgetPage() {
       if (myRes.status === 401) { router.push(`/${locale}/auth/login`); return; }
       if (myRes.ok) setBudgets(await myRes.json());
       if (subRes.ok) setSubmissions(await subRes.json());
-    } catch {
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
       toast.error("Failed to load budgets");
     } finally {
       setLoading(false);
@@ -186,8 +195,10 @@ export default function BudgetPage() {
 
   const pendingReviewCount = submissions.filter((b) => b.status === "SUBMITTED").length;
 
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Budget" />;
+
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-6">
+    <>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -202,19 +213,15 @@ export default function BudgetPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b">
+      <div className={styles.tabBar}>
         {(["my", "review"] as const).map((t) => (
           <button key={t} type="button" onClick={() => setTab(t)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-              tab === t ? "border-[#1a2332] text-[#1a2332]" : "border-transparent text-muted-foreground hover:text-gray-700"
-            }`}>
+            className={`${styles.tab} ${tab === t ? styles.tabActive : ""}`}>
             {t === "my" ? "My Budgets" : (
               <span className="flex items-center gap-2">
                 Review Queue
                 {pendingReviewCount > 0 && (
-                  <span className="inline-flex items-center justify-center h-5 min-w-5 rounded-full bg-blue-600 text-white text-xs px-1">
-                    {pendingReviewCount}
-                  </span>
+                  <span className={styles.reviewCount}>{pendingReviewCount}</span>
                 )}
               </span>
             )}
@@ -224,27 +231,27 @@ export default function BudgetPage() {
 
       {/* New budget form */}
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className={`${styles.formCard} space-y-3`}>
           <h3 className="text-sm font-semibold text-gray-900">Create Budget</h3>
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2 space-y-1">
-              <label className="text-xs font-medium text-gray-700">Budget Name *</label>
+              <label className={styles.formLabel}>Budget Name *</label>
               <input value={newForm.name} onChange={(e) => setNewForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="Sales Dept FY 2026"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className={styles.formInput} />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-700">Fiscal Year</label>
+              <label className={styles.formLabel}>Fiscal Year</label>
               <input type="number" value={newForm.fiscal_year}
                 onChange={(e) => setNewForm((f) => ({ ...f, fiscal_year: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className={styles.formInput} />
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-700">Department (optional)</label>
+            <label className={styles.formLabel}>Department (optional)</label>
             <input value={newForm.department} onChange={(e) => setNewForm((f) => ({ ...f, department: e.target.value }))}
               placeholder="Sales, Finance, Operations…"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+              className={styles.formInput} />
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
@@ -260,9 +267,9 @@ export default function BudgetPage() {
       {loading && budgets.length === 0 ? (
         <div className="text-center py-12"><RefreshCw className="h-6 w-6 animate-spin mx-auto text-muted-foreground" /></div>
       ) : (
-        <div className="rounded-xl border bg-white shadow-sm">
+        <div className={styles.budgetList}>
           {(tab === "my" ? budgets : submissions).length === 0 ? (
-            <div className="py-12 text-center">
+            <div className={styles.emptyState}>
               <FileText className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
               <p className="text-gray-600 font-medium">
                 {tab === "my" ? "No budgets yet" : "No submissions pending review"}
@@ -274,12 +281,12 @@ export default function BudgetPage() {
                 const cfg = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.DRAFT;
                 const Icon = cfg.Icon;
                 return (
-                  <div key={b.id} className="flex items-center gap-4 px-5 py-4">
+                  <div key={b.id} className={styles.budgetRow}>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <p className="text-sm font-medium text-gray-900">{b.name}</p>
                         {b.department && (
-                          <span className="rounded-full bg-purple-100 text-purple-700 px-2 py-0.5 text-xs">{b.department}</span>
+                          <span className={styles.deptBadge}>{b.department}</span>
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground">
@@ -288,14 +295,14 @@ export default function BudgetPage() {
                         {b.approved_at && ` · Approved ${new Date(b.approved_at).toLocaleDateString()}`}
                       </p>
                       {b.review_notes && b.status === "CHANGES_REQUESTED" && (
-                        <div className="mt-1.5 flex items-start gap-1.5 rounded-md bg-amber-50 border border-amber-200 px-2.5 py-1.5">
+                        <div className={styles.warningBox}>
                           <AlertCircle className="h-3.5 w-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
                           <p className="text-xs text-amber-800">{b.review_notes}</p>
                         </div>
                       )}
                     </div>
 
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.color}`}>
+                    <span className={`${styles.statusBadge} ${cfg.color}`}>
                       <Icon className="h-3 w-3" />
                       {cfg.label}
                     </span>
@@ -374,6 +381,14 @@ export default function BudgetPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
+  );
+}
+
+export default function BudgetPage() {
+  return (
+    <RoleGuard minRole="ADMIN">
+      <BudgetPageInner />
+    </RoleGuard>
   );
 }

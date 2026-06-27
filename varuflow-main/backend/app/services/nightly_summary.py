@@ -39,11 +39,11 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
-from app.models.audit import AuditLogEntry
-from app.models.inventory import Product, StockLevel
-from app.models.invoicing import Invoice, InvoiceStatus
-from app.models.organization import Organization
-from app.models.pos import PosSale
+from app.features.compliance.audit_models import AuditLogEntry
+from app.features.inventory.models import Product, StockLevel
+from app.features.invoicing.models import Invoice, InvoiceStatus
+from app.features.auth.organization import Organization
+from app.features.pos.models import PosSale
 from app.services.audit import log_action
 
 if TYPE_CHECKING:

@@ -7,7 +7,7 @@ from decimal import Decimal
 
 import pytest
 
-from app.models.inventory import (
+from app.features.inventory.models import (
     Product,
     PurchaseOrder,
     PurchaseOrderItem,
@@ -16,8 +16,8 @@ from app.models.inventory import (
     Supplier,
     Warehouse,
 )
-from app.models.organization import OrgPlan
-from app.models.supplier_lead_time import SupplierLeadTime
+from app.features.auth.organization import OrgPlan
+from app.features.purchases.supplier_lead_time import SupplierLeadTime
 
 
 

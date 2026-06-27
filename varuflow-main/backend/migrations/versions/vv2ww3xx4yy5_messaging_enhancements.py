@@ -25,7 +25,7 @@ def upgrade() -> None:
     op.create_table(
         "staff_dnd_hours",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()")),
-        sa.Column("staff_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("staff.id", ondelete="CASCADE"), nullable=False, unique=True),
+        sa.Column("staff_id", postgresql.UUID(as_uuid=True), nullable=False, unique=True),
         sa.Column("dnd_start", sa.String(5), nullable=False, server_default="22:00"),
         sa.Column("dnd_end", sa.String(5), nullable=False, server_default="08:00"),
         sa.Column("dnd_enabled", sa.Boolean, nullable=False, server_default="true"),

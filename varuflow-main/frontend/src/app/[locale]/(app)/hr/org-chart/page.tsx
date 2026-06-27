@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { RoleGuard } from "@/components/app/RoleContext";
 import { GitFork, Loader2, ChevronRight, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
@@ -51,7 +52,7 @@ function Node({ node, depth = 0 }: { node: OrgNode; depth?: number }) {
   );
 }
 
-export default function OrgChartPage() {
+function OrgChartPageInner() {
   const [tree, setTree] = useState<OrgNode[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -83,5 +84,13 @@ export default function OrgChartPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function OrgChartPage() {
+  return (
+    <RoleGuard minRole="ADMIN">
+      <OrgChartPageInner />
+    </RoleGuard>
   );
 }

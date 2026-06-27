@@ -1,0 +1,29 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Policy / claim status badges ──────────────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusActive {
+  @extend .statusBadge;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusExpired {
+  @extend .statusBadge;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.statusCancelled {
+  @extend .statusBadge;
+  background: #f3f4f6;
+  color: #6b7280;
+}

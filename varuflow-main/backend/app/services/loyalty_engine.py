@@ -216,7 +216,7 @@ def bucket_expiring_rows(
 
 async def active_program(db: AsyncSession, org_id: uuid.UUID) -> "LoyaltyProgram | None":
     """Return the org's currently active program, or ``None``."""
-    from app.models.loyalty import LoyaltyProgram
+    from app.features.loyalty.models import LoyaltyProgram
 
     stmt = (
         select(LoyaltyProgram)
@@ -232,7 +232,7 @@ async def ensure_account(
     db: AsyncSession, *, org_id: uuid.UUID, customer_id: uuid.UUID
 ) -> "LoyaltyAccount":
     """Return the customer's loyalty account, creating it if missing."""
-    from app.models.loyalty import LoyaltyAccount
+    from app.features.loyalty.models import LoyaltyAccount
 
     stmt = select(LoyaltyAccount).where(
         LoyaltyAccount.org_id == org_id,
@@ -275,7 +275,7 @@ async def _write_ledger(
     reason: str | None,
     expires_at: datetime | None,
 ) -> "LoyaltyTransaction":
-    from app.models.loyalty import LoyaltyTransaction
+    from app.features.loyalty.models import LoyaltyTransaction
 
     if tx_type not in ALLOWED_TX_TYPES:
         raise ValueError(f"invalid loyalty transaction type: {tx_type!r}")
@@ -427,7 +427,7 @@ async def expire_old_points(
     Returns the number of accounts touched — used by the scheduler to
     log a summary line.
     """
-    from app.models.loyalty import LoyaltyAccount, LoyaltyTransaction
+    from app.features.loyalty.models import LoyaltyAccount, LoyaltyTransaction
 
     when = now or datetime.now(timezone.utc)
     # Pull all unexpired rows whose expires_at has passed AND that have
@@ -502,7 +502,7 @@ async def points_expiring_soon(
     now: datetime | None = None,
 ) -> "list[tuple[LoyaltyAccount, int, datetime]]":
     """Return (account, expiring_points, earliest_expiry) per affected account."""
-    from app.models.loyalty import LoyaltyAccount, LoyaltyTransaction
+    from app.features.loyalty.models import LoyaltyAccount, LoyaltyTransaction
 
     when = now or datetime.now(timezone.utc)
     cutoff = when + timedelta(days=max(1, int(within_days)))

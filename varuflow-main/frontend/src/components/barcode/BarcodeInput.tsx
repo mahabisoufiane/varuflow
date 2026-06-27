@@ -28,6 +28,7 @@ import {
 } from "react";
 import { useZxing } from "react-zxing";
 import { useBarcodeListener } from "./useBarcodeListener";
+import { ScannerViewfinder } from "./ScannerViewfinder";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -238,20 +239,10 @@ function CameraScanner({
             )}
 
             {/* Viewfinder corners + animated scan line */}
+            <ScannerViewfinder scanning={!lastCode} innerClassName="relative h-52 w-72 sm:h-64 sm:w-96" />
+            {/* Dimmed overlay outside the target box */}
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
               <div className="relative h-52 w-72 sm:h-64 sm:w-96">
-                {/* Corner brackets */}
-                {(["tl", "tr", "bl", "br"] as const).map((c) => (
-                  <CornerBracket key={c} corner={c} />
-                ))}
-                {/* Animated scan line */}
-                {!lastCode && (
-                  <div
-                    className="absolute left-2 right-2 h-0.5 rounded-full bg-emerald-400 shadow-[0_0_8px_2px_rgba(52,211,153,0.8)]"
-                    style={{ animation: "scanLine 2s ease-in-out infinite" }}
-                  />
-                )}
-                {/* Dimmed overlay outside viewport */}
                 <div className="absolute -inset-[9999px] -z-10 bg-black/50" />
               </div>
             </div>
@@ -275,11 +266,6 @@ function CameraScanner({
       )}
 
       <style>{`
-        @keyframes scanLine {
-          0%   { top: 8px;  opacity: 0.9; }
-          50%  { top: calc(100% - 8px); opacity: 0.9; }
-          100% { top: 8px;  opacity: 0.9; }
-        }
         @keyframes flashGreen {
           0%   { opacity: 0.7; }
           100% { opacity: 0; }
@@ -289,20 +275,6 @@ function CameraScanner({
   );
 }
 
-// Corner bracket helper
-function CornerBracket({ corner }: { corner: "tl" | "tr" | "bl" | "br" }) {
-  const pos: Record<typeof corner, string> = {
-    tl: "top-0 left-0 border-t-2 border-l-2",
-    tr: "top-0 right-0 border-t-2 border-r-2",
-    bl: "bottom-0 left-0 border-b-2 border-l-2",
-    br: "bottom-0 right-0 border-b-2 border-r-2",
-  };
-  return (
-    <div
-      className={`absolute h-6 w-6 rounded-[2px] border-emerald-400 ${pos[corner]}`}
-    />
-  );
-}
 
 // ── OpenFoodFacts panel ───────────────────────────────────────────────────────
 

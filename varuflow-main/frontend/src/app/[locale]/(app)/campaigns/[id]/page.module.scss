@@ -1,0 +1,17 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Campaign status badges ────────────────────────────────────────────────────
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statusSent      { @extend .statusBadge; background: #dcfce7; color: #15803d; }
+.statusScheduled { @extend .statusBadge; background: #dbeafe; color: #1d4ed8; }
+.statusDefault   { @extend .statusBadge; background: #f3f4f6; color: #4b5563; }

@@ -1,0 +1,75 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+.rangeSelector {
+  display: flex;
+  gap: 0.25rem;
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  padding: 0.25rem;
+  background: var(--vf-bg-surface);
+}
+
+.rangeBtn {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: $vf-radius-lg;
+  transition: background 100ms ease, color 100ms ease;
+  color: var(--vf-text-muted);
+
+  &:hover {
+    background: var(--vf-bg-elevated);
+  }
+}
+
+.rangeBtnActive {
+  background: var(--vf-brand-primary, #1a2332);
+  color: white;
+
+  &:hover {
+    background: var(--vf-brand-primary, #1a2332);
+  }
+}
+
+.alertBanner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: $vf-radius-2xl;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.snapshotGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.snapshotCard {
+  border-radius: $vf-radius-2xl;
+  border: 1px solid var(--vf-border);
+  background: var(--vf-bg-surface);
+  padding: 1.25rem;
+}
+
+.chartCard {
+  border-radius: $vf-radius-2xl;
+  border: 1px solid var(--vf-border);
+  background: var(--vf-bg-surface);
+  padding: 1.5rem;
+}
+
+.tableCard {
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  background: var(--vf-bg-surface);
+  overflow: hidden;
+}

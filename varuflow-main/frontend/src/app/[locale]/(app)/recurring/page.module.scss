@@ -1,0 +1,93 @@
+@use '../../../../styles/mixins' as *;
+@use '../../../../styles/radii' as *;
+
+.kpiCard {
+  padding: 1rem;
+  border-radius: $vf-radius-xl;
+}
+
+.errorBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  border-radius: $vf-radius-xl;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: var(--vf-danger);
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.15);
+}
+
+.emptyState {
+  border-radius: $vf-radius-xl;
+  padding: 1.5rem 5rem;
+  text-align: center;
+  border: 1px dashed var(--vf-border-strong);
+  background: var(--vf-bg-surface);
+}
+
+.emptyIcon {
+  margin: 0 auto 0.75rem;
+  display: flex;
+  height: 3rem;
+  width: 3rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: $vf-radius-2xl;
+  background: var(--vf-bg-elevated);
+}
+
+.statusActive {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--vf-success);
+  background: rgba(5, 150, 105, 0.08);
+  border: 1px solid rgba(5, 150, 105, 0.18);
+}
+
+.statusPaused {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--vf-text-muted);
+  background: var(--vf-bg-elevated);
+  border: 1px solid var(--vf-border-strong);
+}
+
+.autoSendBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.5rem;
+  margin-top: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--vf-brand-primary);
+  background: var(--vf-brand-primary-subtle);
+  border: 1px solid rgba(74, 108, 247, 0.18);
+}
+
+.customerIcon {
+  display: flex;
+  height: 1.75rem;
+  width: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: $vf-radius-lg;
+  flex-shrink: 0;
+  background: var(--vf-bg-elevated);
+}
+
+.divider {
+  border-top: 1px solid var(--vf-divider);
+}

@@ -82,7 +82,7 @@ class PauseWriteGuardMiddleware(BaseHTTPMiddleware):
         try:
             from app.database import async_session
             from app.middleware.auth import _decode_jwt
-            from app.models.organization import Organization, OrganizationMember
+            from app.features.auth.organization import Organization, OrganizationMember
             from sqlalchemy import select
         except Exception:
             # If the app is mid-boot or the auth helper isn't

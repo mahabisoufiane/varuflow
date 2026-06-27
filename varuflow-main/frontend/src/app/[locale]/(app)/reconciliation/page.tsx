@@ -1,8 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
+import { RoleGuard } from "@/components/app/RoleContext";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { CheckCircle, Clock, AlertCircle, ArrowUpCircle, BarChart3, Filter } from "lucide-react";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
+import styles from "./page.module.scss";
 
 interface PaymentRow {
   id: string;
@@ -50,7 +53,13 @@ const MATCH_BADGE = {
   unmatched: "bg-red-100 text-red-700",
 };
 
-export default function ReconciliationPage() {
+const MATCH_MODULE: Record<string, keyof typeof styles> = {
+  matched:   "matchMatched",
+  partial:   "matchPartial",
+  unmatched: "matchUnmatched",
+};
+
+function ReconciliationPageInner() {
   const [tab, setTab] = useState<"overview" | "unmatched" | "partial" | "overpaid">("overview");
   const [period, setPeriod] = useState("month");
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -59,6 +68,7 @@ export default function ReconciliationPage() {
   const [partial, setPartial] = useState<Invoice[]>([]);
   const [overpaid, setOverpaid] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   useEffect(() => { loadSummary(); loadOverview(); }, [period]);
   useEffect(() => {
@@ -79,7 +89,13 @@ export default function ReconciliationPage() {
     try {
       const data = await api.get("/api/reconciliation?limit=100");
       setPayments(Array.isArray(data) ? data : []);
-    } catch { toast.error("Failed to load payments"); }
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error("Failed to load payments");
+    }
     finally { setLoading(false); }
   }
 
@@ -103,6 +119,8 @@ export default function ReconciliationPage() {
       setOverpaid(Array.isArray(data) ? data : []);
     } catch { toast.error("Failed to load"); }
   }
+
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Payment Reconciliation" />;
 
   return (
     <div className="p-6 space-y-6">
@@ -191,7 +209,7 @@ export default function ReconciliationPage() {
                   <tr key={p.id} className="border-b hover:bg-gray-50">
                     <td className="px-3 py-2 font-medium">{p.invoice_number}</td>
                     <td className="px-3 py-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${MATCH_BADGE[p.match_status]}`}>
+                      <span className={styles[MATCH_MODULE[p.match_status] ?? "matchUnmatched"]}>
                         {p.match_status.charAt(0).toUpperCase() + p.match_status.slice(1)}
                       </span>
                     </td>
@@ -322,5 +340,13 @@ export default function ReconciliationPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ReconciliationPage() {
+  return (
+    <RoleGuard minRole="ADMIN">
+      <ReconciliationPageInner />
+    </RoleGuard>
   );
 }

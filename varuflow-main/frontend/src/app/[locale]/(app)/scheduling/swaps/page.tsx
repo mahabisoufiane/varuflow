@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ArrowLeftRight, Check, X } from "lucide-react";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
+import styles from "./page.module.scss";
 
 interface SwapRequest {
   id: string; requester_shift_id: string; requester_staff_id: string;
@@ -18,19 +20,34 @@ const STATUS_COLORS: Record<string, string> = {
   rejected: "bg-red-100 text-red-700",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  pending:  "statusPending",
+  approved: "statusApproved",
+  rejected: "statusRejected",
+};
+
 export default function SwapsPage() {
   const [swaps, setSwaps] = useState<SwapRequest[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("");
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   async function load() {
     const params = filterStatus ? `?status=${filterStatus}` : "";
-    const [s, st] = await Promise.all([
-      api.get<SwapRequest[]>(`/api/scheduling/swap-requests${params}`).catch(() => [] as SwapRequest[]),
-      api.get<Staff[]>("/api/hr/employees").catch(() => [] as Staff[]),
-    ]);
-    setSwaps(s); setStaff(st); setLoading(false);
+    try {
+      const [s, st] = await Promise.all([
+        api.get<SwapRequest[]>(`/api/scheduling/swap-requests${params}`),
+        api.get<Staff[]>("/api/hr/employees").catch(() => [] as Staff[]),
+      ]);
+      setSwaps(s); setStaff(st);
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "hr", currentPlan: (err as any).currentPlan ?? "FREE" });
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { load(); }, [filterStatus]);
@@ -48,6 +65,7 @@ export default function SwapsPage() {
   const staffMap = Object.fromEntries(staff.map(s => [s.id, s.name]));
 
   if (loading) return <div className="animate-pulse space-y-4">{[1,2,3].map(i => <div key={i} className="h-16 rounded-xl bg-gray-100" />)}</div>;
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Shift Swaps" />;
 
   return (
     <div className="space-y-6">
@@ -78,7 +96,7 @@ export default function SwapsPage() {
                 <span className="font-medium text-gray-900">{staffMap[swap.requester_staff_id] || "Requester"}</span>
                 <span className="text-gray-400">→</span>
                 <span className="font-medium text-gray-900">{staffMap[swap.target_staff_id] || "Target"}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[swap.status]}`}>{swap.status}</span>
+                <span className={styles[STATUS_MODULE[swap.status] ?? "statusPending"]}>{swap.status}</span>
               </div>
               <div className="flex gap-3 text-xs text-gray-500 mt-0.5">
                 {swap.created_at && <span>Requested: {new Date(swap.created_at).toLocaleDateString("sv-SE")}</span>}

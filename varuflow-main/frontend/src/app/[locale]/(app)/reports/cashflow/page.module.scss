@@ -1,0 +1,93 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.kpiCard {
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  padding: 1rem;
+  background: var(--vf-bg-surface);
+}
+
+.chartCard {
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  padding: 1.25rem;
+  background: var(--vf-bg-surface);
+}
+
+.tableCard {
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  background: var(--vf-bg-surface);
+  overflow: hidden;
+}
+
+.tableRow {
+  display: grid;
+  align-items: center;
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--vf-border);
+  font-size: 0.8125rem;
+  transition: background 100ms ease;
+
+  &:hover {
+    background: var(--vf-bg-elevated);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.positiveAmount {
+  color: #059669;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-weight: 600;
+}
+
+.negativeAmount {
+  color: #dc2626;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-weight: 600;
+}
+
+.periodSelector {
+  display: flex;
+  gap: 0.25rem;
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  padding: 0.25rem;
+  background: var(--vf-bg-surface);
+}
+
+.periodBtn {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: $vf-radius-lg;
+  color: var(--vf-text-muted);
+  transition: background 100ms ease, color 100ms ease;
+
+  &:hover {
+    background: var(--vf-bg-elevated);
+  }
+}
+
+.periodBtnActive {
+  background: var(--vf-brand-primary, #1a2332);
+  color: white;
+
+  &:hover {
+    background: var(--vf-brand-primary, #1a2332);
+  }
+}

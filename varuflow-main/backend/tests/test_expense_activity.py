@@ -14,11 +14,19 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(p: str) -> str:
-    return (_BACKEND_ROOT / p).read_text()
+    _p = _BACKEND_ROOT / p
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
 SERVICE_SRC = _read("app/services/expense_activity.py")
-ROUTER_SRC  = _read("app/routers/expense_activity.py")
+ROUTER_SRC  = _read("app/features/expenses/expense_activity.py")
 MAIN_SRC    = _read("app/main.py")
 
 
@@ -336,9 +344,13 @@ def test_router_has_bounded_sql_limit():
 
 
 def test_router_imports_expense_from_expenses_module():
-    assert "from app.models.expenses import Expense" in ROUTER_SRC
+    assert "from app.features.expenses.models import Expense" in ROUTER_SRC
 
 
 def test_router_registered_in_main():
-    assert "expense_activity.router" in MAIN_SRC
-    assert "expense_activity," in MAIN_SRC
+
+    # Registered via expenses_router (vertical-slice architecture).
+    # The individual module is wired inside the feature router, not directly in main.py.
+    feat_src = _read("app/features/expenses/router.py")
+    assert "expense_activity" in feat_src
+    assert "expenses_router" in MAIN_SRC

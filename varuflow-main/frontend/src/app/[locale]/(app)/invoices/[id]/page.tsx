@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowLeft, Mail, Link2, CheckCircle2, Clock } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface LineItem { id: string; description: string; quantity: string; unit_price: string; tax_rate: string; line_total: string; }
 interface Payment { id: string; amount: string; payment_date: string; method: string; reference: string | null; }
@@ -30,6 +31,13 @@ const STATUS_COLORS: Record<string, string> = {
   SENT: "bg-blue-100 text-blue-700",
   PAID: "bg-green-100 text-green-700",
   OVERDUE: "bg-red-100 text-red-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  DRAFT:   "statusDraft",
+  SENT:    "statusSent",
+  PAID:    "statusPaid",
+  OVERDUE: "statusOverdue",
 };
 
 const NEXT_STATUS: Record<string, string | null> = { DRAFT: "SENT", SENT: "PAID", OVERDUE: "PAID", PAID: null };
@@ -138,7 +146,7 @@ export default function InvoiceDetailPage() {
   async function handleDelete() {
     if (!confirm("Delete this draft invoice?")) return;
     try {
-      await api.delete(`/api/invoicing/invoices/${invoice.id}`);
+      await api.delete(`/api/invoicing/invoices/${invoice!.id}`);
       router.push("/invoices");
     } catch (e: any) { setError(e.message); }
   }
@@ -164,7 +172,7 @@ export default function InvoiceDetailPage() {
           <div>
             <h1 className="text-2xl font-bold text-[#1a2332]">{invoice.invoice_number}</h1>
             <div className="flex items-center gap-2 mt-1">
-              <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[invoice.status]}`}>{invoice.status}</span>
+              <span className={styles[STATUS_MODULE[invoice.status] ?? "statusDraft"]}>{invoice.status}</span>
               {invoice.invoice_type !== "standard" && (
                 <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${invoice.invoice_type === "deposit" ? "bg-purple-100 text-purple-700" : "bg-teal-100 text-teal-700"}`}>
                   {invoice.invoice_type === "deposit" ? "Deposit" : "Final Invoice"}

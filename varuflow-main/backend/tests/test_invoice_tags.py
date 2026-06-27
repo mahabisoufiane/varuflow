@@ -12,7 +12,15 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(p: str) -> str:
-    return (_BACKEND_ROOT / p).read_text()
+    _p = _BACKEND_ROOT / p
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
 SERVICE_SRC   = _read("app/services/invoice_tag.py")
@@ -254,9 +262,13 @@ def test_router_404s_on_cross_tenant():
 
 
 def test_router_imports_invoice_from_invoicing():
-    assert "from app.models.invoicing import Invoice" in ROUTER_SRC
+    assert "from app.features.invoicing.models import Invoice" in ROUTER_SRC
 
 
 def test_router_registered_in_main():
-    assert "invoice_tags.router" in MAIN_SRC
-    assert "invoice_tags," in MAIN_SRC
+
+    # Registered via invoicing_router (vertical-slice architecture).
+    # The individual module is wired inside the feature router, not directly in main.py.
+    feat_src = _read("app/features/invoicing/router.py")
+    assert "invoice_tags" in feat_src
+    assert "invoicing_router" in MAIN_SRC

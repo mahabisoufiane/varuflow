@@ -1,0 +1,127 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+.tabBar {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--vf-border);
+}
+
+.tab {
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 100ms ease, border-color 100ms ease;
+  color: var(--vf-text-muted);
+
+  &:hover {
+    color: #374151;
+  }
+}
+
+.tabActive {
+  border-bottom-color: var(--vf-brand-primary, #1a2332);
+  color: var(--vf-brand-primary, #1a2332);
+}
+
+// ── Frequency badges ──────────────────────────────────────────────────────────
+
+.freqBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.freqDaily {
+  @extend .freqBadge;
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.freqWeekly {
+  @extend .freqBadge;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.freqMonthly {
+  @extend .freqBadge;
+  background: #f3e8ff;
+  color: #7e22ce;
+}
+
+.freqManual {
+  @extend .freqBadge;
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+// ── Form card ─────────────────────────────────────────────────────────────────
+
+.formCard {
+  border-radius: $vf-radius-xl;
+  border: 1px solid rgba(26, 35, 50, 0.2);
+  background: #fff;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.formInput {
+  display: block;
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+
+  &:focus {
+    box-shadow: 0 0 0 1px var(--vf-brand-primary, #1a2332);
+    border-color: var(--vf-brand-primary, #1a2332);
+  }
+}
+
+// ── Template list ─────────────────────────────────────────────────────────────
+
+.templateList {
+  border-radius: $vf-radius-xl;
+  border: 1px solid var(--vf-border);
+  background: #fff;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.templateRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f3f4f6;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+// ── Run item ──────────────────────────────────────────────────────────────────
+
+.runItem {
+  border: 1px solid var(--vf-border);
+  border-radius: $vf-radius-lg;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.runItemChecked {
+  background: #f0fdf4;
+  border-color: #86efac;
+}

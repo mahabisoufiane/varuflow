@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PlusCircle, RefreshCw, ChevronDown, ChevronUp, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import styles from "./page.module.scss";
 
 interface InvestorUpdate {
   id: string;
@@ -29,6 +30,11 @@ interface Dashboard {
 const STATUS_COLOR: Record<string, string> = {
   draft: "bg-gray-100 text-gray-600",
   sent: "bg-green-100 text-green-700",
+};
+
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  draft: "statusDraft",
+  sent:  "statusSent",
 };
 
 function fmtMonth(val: string | null | undefined) {
@@ -244,7 +250,7 @@ export default function InvestorUpdatesPage() {
                     {u.revenue_snapshot != null && (
                       <span className="text-xs text-gray-500">Rev: {fmtNum(u.revenue_snapshot)}</span>
                     )}
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLOR[u.status] ?? "bg-gray-100 text-gray-600"}`}>
+                    <span className={styles[STATUS_MODULE[u.status] ?? "statusDraft"]}>
                       {u.status}
                     </span>
                     {u.status === "draft" && (

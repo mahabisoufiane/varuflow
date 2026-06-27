@@ -23,7 +23,7 @@ a future item without breaking the owner-only API below).
 """
 from __future__ import annotations
 
-from app.models.organization import OrgPlan
+from app.features.auth.organization import OrgPlan
 
 # A FREE org with five or more members is treated as "enough people to
 # care about" — an attacker phishing the owner of such a team can exfil

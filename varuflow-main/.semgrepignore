@@ -1,0 +1,12 @@
+# Semgrep ignore file
+# Nested copy of the project (git submodule artifact)
+varuflow-main/
+
+# Generated reports (may contain finding examples)
+semgrep-report.*
+
+# Node modules
+node_modules/
+
+# Android manifest — exported=true is required for LAUNCHER activity (API 31+)
+mobile/android/app/src/main/AndroidManifest.xml

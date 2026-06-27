@@ -8,10 +8,10 @@ Uses inspect.getsource() to verify structural contracts:
 import inspect
 
 INTEGRATIONS_SRC = inspect.getsource(
-    __import__("app.routers.integrations", fromlist=["_"])
+    __import__("app.features.integrations.integrations", fromlist=["_"])
 )
 AI_ENGINE_SRC = inspect.getsource(
-    __import__("app.routers.ai_engine", fromlist=["_"])
+    __import__("app.features.ai.ai_engine", fromlist=["_"])
 )
 
 

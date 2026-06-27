@@ -3,9 +3,9 @@
 import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 
 interface Customer { id: string; company_name: string; payment_terms_days: number; }

@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Plus, Trash2, Mail, Check, X, Clock } from "lucide-react";
+import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface ScheduledReport {
   id: string; name: string; report_type: string; cron_expr: string; timezone: string;
@@ -30,7 +32,6 @@ function parseCron(expr: string): string {
 }
 
 export default function ScheduledReportsPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
   const [scheduled, setScheduled] = useState<ScheduledReport[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
@@ -39,12 +40,11 @@ export default function ScheduledReportsPage() {
   });
   const [cronMode, setCronMode] = useState<"preset" | "custom">("preset");
 
-  const f = (url: string, opts?: RequestInit) =>
-    fetch(`${apiBase}${url}`, { credentials: "include", ...opts });
-
   async function load() {
-    const res = await f("/api/bi/scheduled");
-    if (res.ok) setScheduled((await res.json()).scheduled);
+    try {
+      const data = await api.get<{scheduled: ScheduledReport[]}>("/api/bi/scheduled");
+      setScheduled(data.scheduled);
+    } catch {}
   }
   useEffect(() => { load(); }, []);
 
@@ -60,37 +60,30 @@ export default function ScheduledReportsPage() {
     if (form.recipients.length === 0) { toast.error("Add at least one recipient"); return; }
     const cron = cronMode === "custom" ? form.customCron : form.cron_expr;
     if (!cron) { toast.error("Set a schedule"); return; }
-    const res = await f("/api/bi/scheduled", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      await api.post("/api/bi/scheduled", {
         name: form.name, report_type: form.report_type,
         cron_expr: cron, timezone: form.timezone,
         recipients: form.recipients, config: {},
-      }),
-    });
-    if (res.ok) {
+      });
       toast.success("Scheduled report created");
       setShowForm(false);
       setForm({ name: "", report_type: "analytics_overview", cron_expr: "0 8 * * 1", customCron: "", timezone: "Europe/Stockholm", recipientEmail: "", recipients: [] });
       await load();
-    } else {
-      const e = await res.json();
-      toast.error(e.detail || "Failed");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed");
     }
   }
 
   async function toggle(id: string, is_active: boolean) {
-    await f(`/api/bi/scheduled/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ is_active: !is_active }),
-    });
+    await api.patch(`/api/bi/scheduled/${id}`, { is_active: !is_active });
     await load();
   }
 
   async function del(id: string) {
-    await f(`/api/bi/scheduled/${id}`, { method: "DELETE" });
+    try {
+      await api.delete(`/api/bi/scheduled/${id}`);
+    } catch {}
     setScheduled(s => s.filter(x => x.id !== id));
     toast.success("Deleted");
   }
@@ -199,7 +192,7 @@ export default function ScheduledReportsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${s.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                  <span className={styles[s.is_active ? "statusActive" : "statusInactive"]}>
                     {s.is_active ? "Active" : "Paused"}
                   </span>
                   <button onClick={() => toggle(s.id, s.is_active)} className="btn-sm-outline" title={s.is_active ? "Pause" : "Resume"}>

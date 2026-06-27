@@ -10,8 +10,6 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { api } from "@/lib/api-client";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "";
-
 interface Stage { slug: string; name: string; color: string; is_won: boolean; is_lost: boolean; }
 interface Activity {
   id: string; activity_type: string; note: string | null;

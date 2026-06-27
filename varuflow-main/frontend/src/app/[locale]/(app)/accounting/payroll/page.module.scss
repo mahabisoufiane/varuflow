@@ -1,0 +1,29 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Payroll run status badges (dark glass) ────────────────────────────────────
+
+.statusBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.statusDraft {
+  @extend .statusBadge;
+  background: rgba(251, 191, 36, 0.10);
+  color: #fbbf24;
+}
+
+.statusApproved {
+  @extend .statusBadge;
+  background: rgba(52, 211, 153, 0.10);
+  color: #34d399;
+}
+
+.statusPaid {
+  @extend .statusBadge;
+  background: rgba(129, 140, 248, 0.10);
+  color: #818cf8;
+}

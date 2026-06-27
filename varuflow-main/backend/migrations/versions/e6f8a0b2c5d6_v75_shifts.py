@@ -39,7 +39,6 @@ def upgrade() -> None:
         sa.Column(
             "staff_id",
             postgresql.UUID(as_uuid=True),
-            sa.ForeignKey("staff.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column("start_at", sa.DateTime(timezone=True), nullable=False),
@@ -79,7 +78,6 @@ def upgrade() -> None:
         sa.Column(
             "staff_id",
             postgresql.UUID(as_uuid=True),
-            sa.ForeignKey("staff.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column("clock_in_at",  sa.DateTime(timezone=True), nullable=False),

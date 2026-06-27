@@ -12,13 +12,21 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(p: str) -> str:
-    return (_BACKEND_ROOT / p).read_text()
+    _p = _BACKEND_ROOT / p
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
 MIGRATION_SRC = _read("migrations/versions/b3c5d7e9f1a4_v72_campaign_blocks.py")
-MODEL_SRC = _read("app/models/campaigns.py")
+MODEL_SRC = _read("app/features/marketing/campaigns.py")
 SERVICE_SRC = _read("app/services/email_blocks.py")
-ROUTER_SRC = _read("app/routers/campaigns.py")
+ROUTER_SRC = _read("app/features/marketing/campaigns.py")
 
 
 # ── Pure service: validate_block ──────────────────────────────────────────

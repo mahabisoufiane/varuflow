@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 import { Bell, RefreshCw, Trash2, CheckCircle2, Clock, XCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -27,6 +27,15 @@ const ALERT_TYPE_CONFIG: Record<string, { label: string; color: string; Icon: Re
   custom:       { label: "Custom",        color: "bg-purple-100 text-purple-700",Icon: Bell        },
 };
 
+const ALERT_TYPE_MODULE: Record<string, keyof typeof styles> = {
+  running_late: "alertRunningLate",
+  ready:        "alertReady",
+  cancelled:    "alertCancelled",
+  rescheduled:  "alertRescheduled",
+  completed:    "alertCompleted",
+  custom:       "alertCustom",
+};
+
 const MESSAGE_TEMPLATES: Record<string, string> = {
   running_late: "Your appointment is running {delay} minutes late. We apologize for the inconvenience.",
   ready:        "Your service is ready! Please head over when convenient.",
@@ -44,11 +53,6 @@ const QUICK_BUTTONS = [
 ];
 
 export default function StatusAlertsPage() {
-  const router = useRouter();
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale ?? "en";
-  const supabase = createClient();
-
   const [alerts, setAlerts] = useState<StatusAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -61,22 +65,11 @@ export default function StatusAlertsPage() {
     message: MESSAGE_TEMPLATES.running_late,
   });
 
-  async function getToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }
-  function apiUrl(p: string) { return `${process.env.NEXT_PUBLIC_API_URL}${p}`; }
-
   async function load() {
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) { router.push(`/${locale}/auth/login`); return; }
-      const res = await fetch(apiUrl("/api/service-status/alerts"), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) { router.push(`/${locale}/auth/login`); return; }
-      if (res.ok) setAlerts(await res.json());
+      const data = await api.get<StatusAlert[]>("/api/service-status/alerts");
+      setAlerts(data);
     } catch {
       toast.error("Failed to load alerts");
     } finally {
@@ -115,8 +108,6 @@ export default function StatusAlertsPage() {
     if (!form.message.trim()) { toast.error("Message is required"); return; }
     setActionLoading("send");
     try {
-      const token = await getToken();
-      if (!token) return;
       const body: Record<string, unknown> = {
         alert_type: form.alert_type,
         message: form.message,
@@ -126,21 +117,12 @@ export default function StatusAlertsPage() {
       if (form.alert_type === "running_late") {
         body.delay_minutes = parseInt(form.delay_minutes) || null;
       }
-      const res = await fetch(apiUrl("/api/service-status/alerts"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to send alert");
-        return;
-      }
+      await api.post("/api/service-status/alerts", body);
       toast.success("Alert sent");
       setForm({ alert_type: "running_late", appointment_id: "", customer_id: "", delay_minutes: "15", message: MESSAGE_TEMPLATES.running_late });
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -149,21 +131,11 @@ export default function StatusAlertsPage() {
   async function deleteAlert(id: string) {
     setActionLoading("del_" + id);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const res = await fetch(apiUrl(`/api/service-status/alerts/${id}`), {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        toast.error(b.detail ?? "Failed to delete");
-        return;
-      }
+      await api.delete(`/api/service-status/alerts/${id}`);
       toast.success("Alert deleted");
       await load();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setActionLoading(null);
     }
@@ -289,7 +261,7 @@ export default function StatusAlertsPage() {
                 <div key={alert.id} className="flex items-center gap-4 px-5 py-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.color}`}>
+                      <span className={styles[ALERT_TYPE_MODULE[alert.alert_type] ?? "alertCustom"]}>
                         <Icon className="h-3 w-3" />
                         {cfg.label}
                       </span>

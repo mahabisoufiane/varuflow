@@ -7,7 +7,7 @@ import pytest
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.status import HealthCheck, StatusIncident
+from app.features.portal.status import HealthCheck, StatusIncident
 from app.services.status_page import build_status_rollup
 
 

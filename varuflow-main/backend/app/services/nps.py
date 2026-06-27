@@ -24,7 +24,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.nps import NpsSurvey
+from app.features.marketing.nps_models import NpsSurvey
 from app.services.audit import log_action
 
 logger = logging.getLogger(__name__)

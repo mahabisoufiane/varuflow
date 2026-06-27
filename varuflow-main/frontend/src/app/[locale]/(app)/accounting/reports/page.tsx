@@ -14,6 +14,7 @@ import { useCallback, useState } from "react";
 import { BarChart3, Download, Loader2, TrendingDown, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -82,14 +83,19 @@ export default function ReportsPage() {
   const [balance,  setBalance]  = useState<BalanceSheetReport | null>(null);
   const [cashFlow, setCashFlow] = useState<CashFlowReport | null>(null);
   const [loading,  setLoading]  = useState(false);
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   const loadPnL = useCallback(async () => {
     setLoading(true);
     try {
       const data = await api.get<PnLReport>(`/api/accounting/reports/pnl?from=${fromDate}&to=${toDate}`);
       setPnl(data);
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to load P&L");
+    } catch (err) {
+      if (isPlanGateError(err)) {
+        setPlanBlocked({ module: (err as any).module ?? "finance", currentPlan: (err as any).currentPlan ?? "FREE" });
+        return;
+      }
+      toast.error(err instanceof Error ? err.message : "Failed to load P&L");
     } finally { setLoading(false); }
   }, [fromDate, toDate]);
 
@@ -119,8 +125,10 @@ export default function ReportsPage() {
     { id: "cashflow" as const, label: "Cash Flow" },
   ];
 
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Financial Reports" />;
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+    <>
       <div className="flex items-center gap-3">
         <BarChart3 className="w-6 h-6 text-indigo-400" />
         <div>
@@ -370,6 +378,6 @@ export default function ReportsPage() {
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }

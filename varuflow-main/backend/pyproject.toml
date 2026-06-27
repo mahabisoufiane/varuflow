@@ -27,6 +27,7 @@ stripe = ">=12.0"
 openai = ">=1.78"
 email-validator = ">=2.2"
 apscheduler = {version = ">=3.11", extras = ["asyncio"]}
+redis = {version = ">=4.6", extras = ["asyncio"]}
 sentry-sdk = {version = ">=2.25", extras = ["fastapi"]}
 # ── Standalone local auth ──────────────────────────────────────────────────
 bcrypt = ">=4.0.0"
@@ -53,6 +54,18 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+# Not strict yet — 590 pre-existing errors across 145 files as of the
+# 2026-06 audit (M3). CI runs this non-blocking (continue-on-error) so
+# the count is visible on every PR without gating merges. Tighten
+# incrementally: fix files, then flip this job to required once the
+# count reaches zero, or add per-module overrides below as files are
+# cleaned up.
+warn_redundant_casts = true
+warn_unused_ignores = true
 
 [build-system]
 requires = ["poetry-core"]

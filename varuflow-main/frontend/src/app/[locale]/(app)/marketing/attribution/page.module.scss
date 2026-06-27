@@ -1,0 +1,18 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Attribution channel badges ─────────────────────────────────────────────────
+
+.channelBadge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: $vf-radius-full;
+  font-weight: 500;
+}
+
+.channelGoogleAds { @extend .channelBadge; background: #fef9c3; color: #a16207; }
+.channelReferral  { @extend .channelBadge; background: #f3e8ff; color: #7e22ce; }
+.channelOrganic   { @extend .channelBadge; background: #dcfce7; color: #166534; }
+.channelSocial    { @extend .channelBadge; background: #dbeafe; color: #1d4ed8; }
+.channelEmail     { @extend .channelBadge; background: #ffedd5; color: #c2410c; }
+.channelOther     { @extend .channelBadge; background: #f3f4f6; color: #4b5563; }

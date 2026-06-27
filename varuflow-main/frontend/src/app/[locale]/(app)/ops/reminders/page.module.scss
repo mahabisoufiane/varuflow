@@ -1,0 +1,22 @@
+@use '../../../../../styles/mixins' as *;
+@use '../../../../../styles/radii' as *;
+
+// ── Reminder frequency and occurrence status badges ──────────────────────────
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $vf-radius-full;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.freqDaily   { @extend .badge; background: #dbeafe; color: #1d4ed8; }
+.freqWeekly  { @extend .badge; background: #f3e8ff; color: #7e22ce; }
+.freqMonthly { @extend .badge; background: #dcfce7; color: #15803d; }
+
+.occPending   { @extend .badge; background: #fef9c3; color: #a16207; }
+.occCompleted { @extend .badge; background: #dcfce7; color: #15803d; }
+.occDismissed { @extend .badge; background: #f3f4f6; color: #6b7280; }
+.occSnoozed   { @extend .badge; background: #dbeafe; color: #1d4ed8; }

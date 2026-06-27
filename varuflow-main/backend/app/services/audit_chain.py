@@ -32,7 +32,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.audit import AuditLogEntry
+from app.features.compliance.audit_models import AuditLogEntry
 
 log = logging.getLogger(__name__)
 

@@ -13,13 +13,21 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(p: str) -> str:
-    return (_BACKEND_ROOT / p).read_text()
+    _p = _BACKEND_ROOT / p
+    if _p.is_file():
+        return _p.read_text()
+    # Path was split into a feature package (e.g. routers/invoicing/);
+    # concatenate its modules so source-string assertions still hold.
+    _pkg = _p.with_suffix("")
+    if _pkg.is_dir():
+        return "".join(_f.read_text() for _f in sorted(_pkg.rglob("*.py")))
+    return _p.read_text()
 
 
 SERVICE_SRC   = _read("app/services/expense_report.py")
-ROUTER_SRC    = _read("app/routers/expense_reports.py")
+ROUTER_SRC    = _read("app/features/expenses/expense_reports.py")
 MIGRATION_SRC = _read("migrations/versions/d0e2f4a9b2c5_v98_expense_reports.py")
-MODEL_SRC     = _read("app/models/expense_report.py")
+MODEL_SRC     = _read("app/features/expenses/expense_report.py")
 MAIN_SRC      = _read("app/main.py")
 
 
@@ -422,8 +430,10 @@ def test_router_uses_status_validators():
 
 
 def test_main_imports_router():
-    assert "expense_reports" in MAIN_SRC
+    # expense_reports is registered via expenses_router (vertical-slice architecture)
+    feat_src = _read("app/features/expenses/router.py")
+    assert "expense_reports" in feat_src
 
 
 def test_main_includes_router():
-    assert "app.include_router(expense_reports.router)" in MAIN_SRC
+    assert "expenses_router" in MAIN_SRC

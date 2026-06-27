@@ -12,7 +12,7 @@ from decimal import Decimal
 import pytest
 from sqlalchemy import text
 
-from app.models.inventory import Product
+from app.features.inventory.models import Product
 
 
 

@@ -1,60 +1,273 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { api } from "@/lib/api-client";
+import { toast } from "sonner";
+import { Plus, Trash2, ArrowLeft } from "lucide-react";
+
+interface Customer { id: string; company_name: string; }
 interface LineItem { description: string; quantity: string; unit_price: string; }
+
+const inputCls =
+  "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]";
+
+const labelCls = "block text-xs font-medium text-gray-600 mb-1";
 
 export default function NewQuotePage() {
   const router = useRouter();
-  const [form, setForm] = useState({ customer_id: "", title: "", quote_number: "", cover_text: "", scope: "", terms: "", valid_until: "", currency: "SEK" });
-  const [items, setItems] = useState<LineItem[]>([{ description: "", quantity: "1", unit_price: "" }]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  const addItem = () => setItems([...items, { description: "", quantity: "1", unit_price: "" }]);
-  const updateItem = (i: number, field: string, val: string) => { const n = [...items]; (n[i] as any)[field] = val; setItems(n); };
-  const removeItem = (i: number) => setItems(items.filter((_, idx) => idx !== i));
+  const [form, setForm] = useState({
+    customer_id: "",
+    title: "",
+    quote_number: "",
+    cover_text: "",
+    scope: "",
+    terms: "",
+    valid_until: "",
+    currency: "SEK",
+  });
 
-  const submit = async () => {
-    const body = {
-      ...form,
-      valid_until: form.valid_until || null,
-      items: items.filter(i => i.description).map(i => ({ description: i.description, quantity: parseFloat(i.quantity) || 1, unit_price: parseFloat(i.unit_price) || 0 })),
-    };
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quotes`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      credentials: "include", body: JSON.stringify(body),
-    });
-    if (res.ok) { const data = await res.json(); router.push(`/quotes/${data.id}`); }
-  };
+  const [items, setItems] = useState<LineItem[]>([
+    { description: "", quantity: "1", unit_price: "" },
+  ]);
+
+  useEffect(() => {
+    api.get<Customer[]>("/api/invoicing/customers?is_active=true&limit=500")
+      .then(setCustomers)
+      .catch(() => toast.error("Failed to load customers"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  function addItem() {
+    setItems((prev) => [...prev, { description: "", quantity: "1", unit_price: "" }]);
+  }
+
+  function removeItem(i: number) {
+    setItems((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  function updateItem(i: number, field: keyof LineItem, val: string) {
+    setItems((prev) => prev.map((item, idx) => idx === i ? { ...item, [field]: val } : item));
+  }
+
+  function lineTotal(item: LineItem) {
+    return (parseFloat(item.quantity) || 0) * (parseFloat(item.unit_price) || 0);
+  }
+
+  const grandTotal = items.reduce((sum, i) => sum + lineTotal(i), 0);
+
+  async function submit() {
+    if (!form.customer_id) { toast.error("Select a customer"); return; }
+    if (!form.title.trim()) { toast.error("Enter a title"); return; }
+    const validItems = items.filter((i) => i.description.trim());
+    if (validItems.length === 0) { toast.error("Add at least one line item"); return; }
+
+    setSubmitting(true);
+    try {
+      const data = await api.post<{ id: string }>("/api/quotes", {
+        ...form,
+        valid_until: form.valid_until || null,
+        quote_number: form.quote_number || null,
+        items: validItems.map((i) => ({
+          description: i.description,
+          quantity: parseFloat(i.quantity) || 1,
+          unit_price: parseFloat(i.unit_price) || 0,
+        })),
+      });
+      toast.success("Quote created");
+      router.push(`/quotes/${data.id}`);
+    } catch {
+      // api client shows toast
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
-    <div className="p-6 max-w-3xl space-y-4">
-      <h1 className="text-2xl font-bold">Create Quote</h1>
-      <div className="space-y-3 bg-white border rounded p-4">
-        <input placeholder="Customer ID" value={form.customer_id} onChange={e => setForm({ ...form, customer_id: e.target.value })} className="w-full border rounded px-3 py-2" />
-        <input placeholder="Title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full border rounded px-3 py-2" />
-        <div className="grid grid-cols-2 gap-3">
-          <input placeholder="Quote Number (optional)" value={form.quote_number} onChange={e => setForm({ ...form, quote_number: e.target.value })} className="border rounded px-3 py-2" />
-          <input type="date" placeholder="Valid until" value={form.valid_until} onChange={e => setForm({ ...form, valid_until: e.target.value })} className="border rounded px-3 py-2" />
-        </div>
-        <textarea placeholder="Cover text (intro for client)" value={form.cover_text} onChange={e => setForm({ ...form, cover_text: e.target.value })} className="w-full border rounded px-3 py-2 h-20" />
-        <textarea placeholder="Scope of work" value={form.scope} onChange={e => setForm({ ...form, scope: e.target.value })} className="w-full border rounded px-3 py-2 h-20" />
-        <textarea placeholder="Terms & conditions" value={form.terms} onChange={e => setForm({ ...form, terms: e.target.value })} className="w-full border rounded px-3 py-2 h-20" />
+    <div className="max-w-3xl space-y-6 pb-12">
+      <div className="flex items-center gap-3">
+        <Link href="/quotes" className="text-gray-400 hover:text-gray-700 transition-colors">
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
+        <h1 className="text-xl font-bold text-[#1a2332]">New Quote</h1>
       </div>
 
-      <div className="bg-white border rounded p-4 space-y-2">
-        <h2 className="font-bold">Line Items</h2>
+      {/* Header */}
+      <div className="rounded-xl border bg-white p-5 space-y-4">
+        <h2 className="text-sm font-semibold text-gray-700">Quote details</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className={labelCls}>Customer *</label>
+            <select
+              required
+              disabled={loading}
+              value={form.customer_id}
+              onChange={(e) => setForm({ ...form, customer_id: e.target.value })}
+              className={inputCls}
+            >
+              <option value="">{loading ? "Loading…" : "Select customer…"}</option>
+              {customers.map((c) => (
+                <option key={c.id} value={c.id}>{c.company_name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Title *</label>
+            <input
+              placeholder="e.g. Web design project"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Quote number (optional)</label>
+            <input
+              placeholder="Auto-generated if blank"
+              value={form.quote_number}
+              onChange={(e) => setForm({ ...form, quote_number: e.target.value })}
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Valid until</label>
+            <input
+              type="date"
+              value={form.valid_until}
+              onChange={(e) => setForm({ ...form, valid_until: e.target.value })}
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Currency</label>
+            <select
+              value={form.currency}
+              onChange={(e) => setForm({ ...form, currency: e.target.value })}
+              className={inputCls}
+            >
+              <option value="SEK">SEK</option>
+              <option value="NOK">NOK</option>
+              <option value="DKK">DKK</option>
+              <option value="EUR">EUR</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className={labelCls}>Cover text</label>
+          <textarea
+            placeholder="Introduction for the client…"
+            value={form.cover_text}
+            onChange={(e) => setForm({ ...form, cover_text: e.target.value })}
+            rows={3}
+            className={inputCls}
+          />
+        </div>
+        <div>
+          <label className={labelCls}>Scope of work</label>
+          <textarea
+            placeholder="What is included…"
+            value={form.scope}
+            onChange={(e) => setForm({ ...form, scope: e.target.value })}
+            rows={3}
+            className={inputCls}
+          />
+        </div>
+        <div>
+          <label className={labelCls}>Terms & conditions</label>
+          <textarea
+            placeholder="Payment terms, deadlines, exclusions…"
+            value={form.terms}
+            onChange={(e) => setForm({ ...form, terms: e.target.value })}
+            rows={3}
+            className={inputCls}
+          />
+        </div>
+      </div>
+
+      {/* Line items */}
+      <div className="rounded-xl border bg-white p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-gray-700">Line items</h2>
+
+        <div className="hidden sm:grid grid-cols-[1fr_80px_110px_32px] gap-2 text-xs font-medium text-gray-500 px-1">
+          <span>Description</span>
+          <span>Qty</span>
+          <span>Unit price ({form.currency})</span>
+          <span />
+        </div>
+
         {items.map((item, i) => (
-          <div key={i} className="flex gap-2">
-            <input placeholder="Description" value={item.description} onChange={e => updateItem(i, "description", e.target.value)} className="flex-1 border rounded px-3 py-2" />
-            <input placeholder="Qty" value={item.quantity} onChange={e => updateItem(i, "quantity", e.target.value)} className="w-20 border rounded px-3 py-2" />
-            <input placeholder="Price" value={item.unit_price} onChange={e => updateItem(i, "unit_price", e.target.value)} className="w-28 border rounded px-3 py-2" />
-            <button onClick={() => removeItem(i)} className="text-red-500 px-2">×</button>
+          <div key={i} className="grid grid-cols-[1fr_80px_110px_32px] gap-2 items-center">
+            <input
+              placeholder="Description"
+              value={item.description}
+              onChange={(e) => updateItem(i, "description", e.target.value)}
+              className={inputCls}
+            />
+            <input
+              type="number"
+              min="0"
+              placeholder="1"
+              value={item.quantity}
+              onChange={(e) => updateItem(i, "quantity", e.target.value)}
+              className={inputCls}
+            />
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              value={item.unit_price}
+              onChange={(e) => updateItem(i, "unit_price", e.target.value)}
+              className={inputCls}
+            />
+            <button
+              onClick={() => removeItem(i)}
+              disabled={items.length === 1}
+              className="flex items-center justify-center h-9 w-8 rounded-md text-gray-400 hover:text-red-500 disabled:opacity-30 transition-colors"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
           </div>
         ))}
-        <button onClick={addItem} className="text-blue-600 text-sm">+ Add line</button>
+
+        <button
+          onClick={addItem}
+          className="flex items-center gap-1.5 text-sm text-[#1a2332] hover:text-blue-700 font-medium"
+        >
+          <Plus className="h-4 w-4" />
+          Add line
+        </button>
+
+        <div className="border-t pt-3 text-right">
+          <p className="text-xs text-gray-500">Total (ex. VAT)</p>
+          <p className="text-lg font-bold text-[#1a2332]">
+            {grandTotal.toLocaleString("sv-SE", { minimumFractionDigits: 2 })} {form.currency}
+          </p>
+        </div>
       </div>
 
-      <button onClick={submit} className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Create Quote</button>
+      {/* Actions */}
+      <div className="flex gap-3">
+        <button
+          onClick={submit}
+          disabled={submitting}
+          className="rounded-md bg-[#1a2332] px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60 hover:bg-[#243249] transition-colors"
+        >
+          {submitting ? "Creating…" : "Create Quote"}
+        </button>
+        <Link
+          href="/quotes"
+          className="rounded-md border px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          Cancel
+        </Link>
+      </div>
     </div>
   );
 }

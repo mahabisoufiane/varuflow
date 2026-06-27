@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Timer, Plus, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface TimeEntry {
   id: string;
@@ -194,7 +195,7 @@ export default function TimePage() {
                   <td className="py-2 pr-4 text-muted-foreground max-w-xs truncate">{e.description ?? "—"}</td>
                   <td className="py-2 pr-4 font-medium">{parseFloat(e.hours).toFixed(2)}</td>
                   <td className="py-2 pr-4">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${e.billable ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-600"}`}>{e.billable ? "Yes" : "No"}</span>
+                    <span className={styles[e.billable ? "billableYes" : "billableNo"]}>{e.billable ? "Yes" : "No"}</span>
                   </td>
                   <td className="py-2">
                     <button onClick={() => remove(e.id)} className="text-destructive hover:opacity-70">

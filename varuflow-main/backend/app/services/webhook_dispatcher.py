@@ -29,7 +29,7 @@ import httpx
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.webhook import (
+from app.features.integrations.webhook import (
     SUPPORTED_EVENTS,
     WebhookDelivery,
     WebhookEndpoint,

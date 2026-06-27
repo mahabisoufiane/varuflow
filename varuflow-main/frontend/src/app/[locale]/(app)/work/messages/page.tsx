@@ -1,14 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { MessageCircle, Send, Users, Hash, Plus, X } from "lucide-react";
-
-const API = process.env.NEXT_PUBLIC_API_URL ?? "";
-
-async function f(path: string, opts?: RequestInit) {
-  const r = await fetch(`${API}${path}`, { credentials: "include", ...opts });
-  if (!r.ok) throw new Error(await r.text());
-  return r.json();
-}
+import { api } from "@/lib/api-client";
 
 type ConvType = "dm" | "channel";
 interface DmThread { type: "dm"; staff_id: string; last_message: string; last_at: string; unread: number; }
@@ -33,15 +26,15 @@ export default function MessagesPage() {
   // Load sidebar on mount
   useEffect(() => {
     loadConversations();
-    f("/api/work/messages/unread").then(setUnread).catch(() => {});
-    f("/api/hr/employees").then((data: { staff_id: string; name: string }[]) =>
+    api.get<{ dm: number; channels: Record<string, number> }>("/api/work/messages/unread").then(setUnread).catch(() => {});
+    api.get<{ staff_id: string; name: string }[]>("/api/hr/employees").then((data) =>
       setAllStaff(data.map(e => ({ id: e.staff_id, name: e.name })))
     ).catch(() => {});
   }, []);
 
   const loadConversations = () =>
-    f("/api/work/messages/conversations")
-      .then((c: { dms: DmThread[]; channels: Channel[] }) => {
+    api.get<{ dms: DmThread[]; channels: Channel[] }>("/api/work/messages/conversations")
+      .then((c) => {
         setDms(c.dms);
         setChannels(c.channels);
       })
@@ -62,10 +55,10 @@ export default function MessagesPage() {
       active.type === "dm"
         ? `/api/work/messages/dm/${active.id}`
         : `/api/work/messages/channel/${active.id}`;
-    f(url).then((msgs: Msg[]) => {
+    api.get<Msg[]>(url).then((msgs) => {
       setMessages(msgs);
       // Refresh unread counts after reading
-      f("/api/work/messages/unread").then(setUnread).catch(() => {});
+      api.get<{ dm: number; channels: Record<string, number> }>("/api/work/messages/unread").then(setUnread).catch(() => {});
     }).catch(() => {});
   };
 
@@ -78,17 +71,9 @@ export default function MessagesPage() {
     setSending(true);
     try {
       if (active.type === "dm") {
-        await f("/api/work/messages/dm", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ recipient_id: active.id, body: draft.trim() }),
-        });
+        await api.post("/api/work/messages/dm", { recipient_id: active.id, body: draft.trim() });
       } else {
-        await f("/api/work/messages/channel", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slug: active.id, body: draft.trim() }),
-        });
+        await api.post("/api/work/messages/channel", { slug: active.id, body: draft.trim() });
       }
       setDraft("");
       loadThread();

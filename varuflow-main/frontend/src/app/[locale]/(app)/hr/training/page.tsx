@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { GraduationCap, Plus, AlertTriangle, Check, X, Filter, Award, Clock } from "lucide-react";
+import { api } from "@/lib/api-client";
+import { GraduationCap, Plus, AlertTriangle, Check, X, Award, Clock } from "lucide-react";
+import styles from "./page.module.scss";
 
 interface Staff { id: string; name: string }
 interface TrainingRecord {
@@ -26,6 +28,13 @@ const STATUS_COLORS: Record<string, string> = {
   expired: "bg-red-100 text-red-700",
 };
 
+const STATUS_MODULE: Record<string, keyof typeof styles> = {
+  not_started: "statusNotStarted",
+  in_progress: "statusInProgress",
+  completed:   "statusCompleted",
+  expired:     "statusExpired",
+};
+
 const CAT_COLORS: Record<string, string> = {
   safety: "bg-red-50 text-red-700", compliance: "bg-orange-50 text-orange-700",
   technical: "bg-blue-50 text-blue-700", soft_skills: "bg-purple-50 text-purple-700",
@@ -33,13 +42,20 @@ const CAT_COLORS: Record<string, string> = {
   other: "bg-gray-100 text-gray-600",
 };
 
+const CAT_MODULE: Record<string, keyof typeof styles> = {
+  safety:     "catSafety",
+  compliance: "catCompliance",
+  technical:  "catTechnical",
+  soft_skills: "catSoftSkills",
+  product:    "catProduct",
+  language:   "catLanguage",
+  other:      "catOther",
+};
+
 const CATEGORIES = ["safety", "compliance", "technical", "soft_skills", "product", "language", "other"];
 const STATUSES = ["not_started", "in_progress", "completed", "expired"];
 
 export default function TrainingPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string, init?: RequestInit) => fetch(`${apiBase}${url}`, { credentials: "include", ...init });
-
   const [staff, setStaff] = useState<Staff[]>([]);
   const [records, setRecords] = useState<TrainingRecord[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -66,15 +82,15 @@ export default function TrainingPage() {
     if (filterCat) params.set("category", filterCat);
     if (filterStatus) params.set("status", filterStatus);
     const [recs, als, sums, emps, reqs, treqs] = await Promise.all([
-      f(`/api/hr/training${params.toString() ? "?" + params : ""}`).then(r => r.ok ? r.json() : []),
-      f("/api/hr/training/alerts").then(r => r.ok ? r.json() : []),
-      f("/api/hr/training/summary").then(r => r.ok ? r.json() : []),
-      f("/api/hr/employees").then(r => r.ok ? r.json() : []),
-      f("/api/hr/training/requirements").then(r => r.ok ? r.json() : []),
-      f("/api/hr/training/requests").then(r => r.ok ? r.json() : []),
+      api.get<TrainingRecord[]>(`/api/hr/training${params.toString() ? "?" + params : ""}`).catch(() => []),
+      api.get<Alert[]>("/api/hr/training/alerts").catch(() => []),
+      api.get<StaffSummary[]>("/api/hr/training/summary").catch(() => []),
+      api.get<Staff[]>("/api/hr/employees").catch(() => []),
+      api.get<any[]>("/api/hr/training/requirements").catch(() => []),
+      api.get<any[]>("/api/hr/training/requests").catch(() => []),
     ]);
-    setRecords(recs); setAlerts(als); setSummaries(sums); setStaff(emps);
-    setRequirements(reqs); setTrainingRequests(treqs);
+    setRecords(recs as TrainingRecord[]); setAlerts(als as Alert[]); setSummaries(sums as StaffSummary[]); setStaff(emps as Staff[]);
+    setRequirements(reqs as any[]); setTrainingRequests(treqs as any[]);
     setLoading(false);
   }
 
@@ -90,31 +106,26 @@ export default function TrainingPage() {
       required_by_date: newRec.required_by_date || null,
       notes: newRec.notes || null,
     };
-    const res = await f("/api/hr/training", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) { toast.error("Failed to create"); return; }
-    toast.success("Training record added");
-    setShowForm(false);
-    setNewRec({ staff_id: "", training_name: "", provider: "", category: "other", status: "not_started", is_required: false, completed_at: "", expiry_date: "", required_by_date: "", notes: "" });
-    load();
+    try {
+      await api.post("/api/hr/training", body);
+      toast.success("Training record added");
+      setShowForm(false);
+      setNewRec({ staff_id: "", training_name: "", provider: "", category: "other", status: "not_started", is_required: false, completed_at: "", expiry_date: "", required_by_date: "", notes: "" });
+      load();
+    } catch { toast.error("Failed to create"); }
   }
 
   async function updateStatus(id: string, status: string) {
-    const res = await f(`/api/hr/training/${id}`, {
-      method: "PATCH", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    if (!res.ok) { toast.error("Failed"); return; }
-    const updated = await res.json();
-    setRecords(prev => prev.map(r => r.id === id ? updated : r));
-    load();
-    toast.success("Status updated");
+    try {
+      const updated = await api.patch<TrainingRecord>(`/api/hr/training/${id}`, { status });
+      setRecords(prev => prev.map(r => r.id === id ? updated : r));
+      load();
+      toast.success("Status updated");
+    } catch { toast.error("Failed"); }
   }
 
   async function deleteRecord(id: string) {
-    await f(`/api/hr/training/${id}`, { method: "DELETE" });
+    await api.delete(`/api/hr/training/${id}`).catch(() => {});
     setRecords(prev => prev.filter(r => r.id !== id));
     load();
     toast.success("Record deleted");
@@ -259,8 +270,8 @@ export default function TrainingPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-gray-900">{rec.training_name}</span>
                     {rec.is_required && <span className="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">Required</span>}
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[rec.status]}`}>{rec.status.replace("_", " ")}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded ${CAT_COLORS[rec.category] || CAT_COLORS.other}`}>{rec.category.replace("_", " ")}</span>
+                    <span className={styles[STATUS_MODULE[rec.status] ?? "statusNotStarted"]}>{rec.status.replace("_", " ")}</span>
+                    <span className={styles[CAT_MODULE[rec.category] ?? "catOther"]}>{rec.category.replace("_", " ")}</span>
                     {rec.is_expired && <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded flex items-center gap-1"><AlertTriangle className="h-3 w-3" />Expired</span>}
                     {rec.expiring_soon && !rec.is_expired && <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded flex items-center gap-1"><Clock className="h-3 w-3" />Expiring soon</span>}
                   </div>
@@ -371,9 +382,12 @@ export default function TrainingPage() {
               <input className="border rounded-lg px-3 py-2 text-sm flex-1" placeholder="Description (optional)" value={newReq.description} onChange={e => setNewReq({ ...newReq, description: e.target.value })} />
               <button onClick={async () => {
                 if (!newReq.job_role || !newReq.training_name) { toast.error("Role and training name required"); return; }
-                const res = await f("/api/hr/training/requirements", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(newReq) });
-                if (res.ok) { toast.success("Requirement added"); setNewReq({ job_role: "", training_name: "", category: "other", description: "" }); load(); }
-                else toast.error("Failed to add");
+                try {
+                  await api.post("/api/hr/training/requirements", newReq);
+                  toast.success("Requirement added");
+                  setNewReq({ job_role: "", training_name: "", category: "other", description: "" });
+                  load();
+                } catch { toast.error("Failed to add"); }
               }} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">Add</button>
             </div>
           </div>
@@ -393,7 +407,7 @@ export default function TrainingPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-400">{r.category}</span>
                       <button onClick={async () => {
-                        await f(`/api/hr/training/requirements/${r.id}`, { method: "DELETE" });
+                        await api.delete(`/api/hr/training/requirements/${r.id}`).catch(() => {});
                         setRequirements(prev => prev.filter((x: any) => x.id !== r.id));
                       }} className="text-red-400 hover:text-red-600 text-xs">Remove</button>
                     </div>
@@ -425,9 +439,12 @@ export default function TrainingPage() {
             <button onClick={async () => {
               if (!newTrReq.staff_id || !newTrReq.training_name) { toast.error("Staff and training name required"); return; }
               const body = { ...newTrReq, estimated_cost: newTrReq.estimated_cost ? Number(newTrReq.estimated_cost) : null, provider: newTrReq.provider || null, justification: newTrReq.justification || null };
-              const res = await f("/api/hr/training/requests", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-              if (res.ok) { toast.success("Request submitted"); setNewTrReq({ staff_id: "", training_name: "", provider: "", estimated_cost: "", justification: "" }); load(); }
-              else toast.error("Failed to submit request");
+              try {
+                await api.post("/api/hr/training/requests", body);
+                toast.success("Request submitted");
+                setNewTrReq({ staff_id: "", training_name: "", provider: "", estimated_cost: "", justification: "" });
+                load();
+              } catch { toast.error("Failed to submit request"); }
             }} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">Submit Request</button>
           </div>
           {/* Requests list */}
@@ -450,14 +467,18 @@ export default function TrainingPage() {
                   {r.status === "pending" && (
                     <>
                       <button onClick={async () => {
-                        const res = await f(`/api/hr/training/requests/${r.id}/approve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
-                        if (res.ok) { toast.success("Approved"); load(); } else toast.error("Failed");
+                        try {
+                          await api.post(`/api/hr/training/requests/${r.id}/approve`, {});
+                          toast.success("Approved"); load();
+                        } catch { toast.error("Failed"); }
                       }} className="text-xs text-green-600 hover:underline">Approve</button>
                       <button onClick={async () => {
                         const notes = prompt("Reason for rejection:");
                         if (notes === null) return;
-                        const res = await f(`/api/hr/training/requests/${r.id}/reject`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ manager_notes: notes }) });
-                        if (res.ok) { toast.success("Rejected"); load(); } else toast.error("Failed");
+                        try {
+                          await api.post(`/api/hr/training/requests/${r.id}/reject`, { manager_notes: notes });
+                          toast.success("Rejected"); load();
+                        } catch { toast.error("Failed"); }
                       }} className="text-xs text-red-600 hover:underline">Reject</button>
                     </>
                   )}

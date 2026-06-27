@@ -52,7 +52,6 @@ async def health_check(
     body: dict = {
         "status":   overall,
         "version":  "0.1.0",
-        "env":      settings.ENV,
         "database": db_status,
         "readonly": bool(settings.READONLY_MODE),
         "config":   _config_status(),
@@ -149,7 +148,7 @@ async def create_incident(
     db: AsyncSession = Depends(get_db),
     x_admin_token: str | None = Header(default=None, alias="X-Admin-Token"),
 ):
-    from app.models.status import StatusIncident
+    from app.features.portal.status import StatusIncident
 
     _require_admin_token(x_admin_token)
     inc = StatusIncident(
@@ -172,7 +171,7 @@ async def resolve_incident(
     import uuid as _uuid
     from datetime import datetime as _dt, timezone as _tz
     from fastapi import HTTPException
-    from app.models.status import StatusIncident
+    from app.features.portal.status import StatusIncident
 
     _require_admin_token(x_admin_token)
     try:

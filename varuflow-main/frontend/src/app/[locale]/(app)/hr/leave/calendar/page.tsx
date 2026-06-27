@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Calendar, Users } from "lucide-react";
+import { api } from "@/lib/api-client";
+import styles from "./page.module.scss";
 
 interface LeaveRequest {
   id: string; staff_id: string; staff_name?: string;
@@ -15,6 +17,14 @@ const LEAVE_TYPE_COLORS: Record<string, string> = {
   parental: "bg-purple-100 text-purple-700 border-purple-200",
   unpaid:   "bg-gray-100 text-gray-600 border-gray-200",
   other:    "bg-amber-100 text-amber-700 border-amber-200",
+};
+
+const LEAVE_TYPE_MODULE: Record<string, keyof typeof styles> = {
+  annual:   "leaveAnnual",
+  sick:     "leaveSick",
+  parental: "leaveParental",
+  unpaid:   "leaveUnpaid",
+  other:    "leaveOther",
 };
 
 const LEAVE_TYPE_BG: Record<string, string> = {
@@ -45,9 +55,6 @@ function overlapsDays(leave: LeaveRequest, days: string[]) {
 }
 
 export default function LeaveCalendarPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string) => fetch(`${apiBase}${url}`, { credentials: "include" });
-
   const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
   const [staff, setStaff] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,14 +67,13 @@ export default function LeaveCalendarPage() {
 
   useEffect(() => {
     // Load approved leaves for a 3-month window
-    const from = isoDate(addDays(weekStart, -30));
-    const to = isoDate(addDays(weekStart, 90));
     Promise.all([
-      f(`/api/hr/leave?status=approved`).then(r => r.ok ? r.json() : []),
-      f("/api/hr/employees").then(r => r.ok ? r.json() : []),
+      api.get<LeaveRequest[] | { leaves?: LeaveRequest[] }>("/api/hr/leave?status=approved").catch(() => []),
+      api.get<any[]>("/api/hr/employees").catch(() => []),
     ]).then(([lvs, emps]) => {
-      setLeaves(lvs);
-      setStaff(emps.map((e: any) => ({ id: e.id, name: e.name })));
+      const leaveArr = Array.isArray(lvs) ? lvs : (lvs as any).leaves ?? [];
+      setLeaves(leaveArr);
+      setStaff((emps as any[]).map((e: any) => ({ id: e.id, name: e.name })));
       setLoading(false);
     });
   }, []);
@@ -180,7 +186,7 @@ export default function LeaveCalendarPage() {
                 return (
                   <div key={ds} className={`p-1.5 border-r border-gray-100 last:border-r-0 min-h-[52px] ${isWeekend ? "bg-gray-50" : ""}`}>
                     {dayLeave && (
-                      <div className={`rounded px-1.5 py-1 text-xs font-medium border ${LEAVE_TYPE_COLORS[dayLeave.leave_type] || LEAVE_TYPE_COLORS.other}`}>
+                      <div className={styles[LEAVE_TYPE_MODULE[dayLeave.leave_type] ?? "leaveOther"]}>
                         {dayLeave.leave_type.charAt(0).toUpperCase() + dayLeave.leave_type.slice(1)}
                       </div>
                     )}
@@ -216,7 +222,7 @@ export default function LeaveCalendarPage() {
                 <div className="flex items-center gap-3">
                   <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${LEAVE_TYPE_BG[l.leave_type]}`} />
                   <span className="font-medium text-sm text-gray-800">{s?.name || "Staff"}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full border ${LEAVE_TYPE_COLORS[l.leave_type] || ""}`}>
+                  <span className={styles[LEAVE_TYPE_MODULE[l.leave_type] ?? "leaveOther"]}>
                     {l.leave_type}
                   </span>
                 </div>

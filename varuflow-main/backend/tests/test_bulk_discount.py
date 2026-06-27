@@ -13,11 +13,20 @@ _BACKEND_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 def _read(p: str) -> str:
-    return (_BACKEND_ROOT / p).read_text()
+    # Dir-aware: a router/service split into a package (e.g. routers/invoicing/)
+    # is read by concatenating its modules, so source-string assertions still
+    # work after the feature-package refactor.
+    path = _BACKEND_ROOT / p
+    if path.is_file():
+        return path.read_text()
+    pkg = path.with_suffix("")
+    if pkg.is_dir():
+        return "".join(f.read_text() for f in sorted(pkg.rglob("*.py")))
+    return path.read_text()
 
 
 SERVICE_SRC = _read("app/services/bulk_discount.py")
-ROUTER_SRC = _read("app/routers/invoicing.py")
+ROUTER_SRC = _read("app/features/invoicing.py")
 
 
 def _line(
@@ -190,29 +199,24 @@ def test_compute_totals_requires_aligned_ids():
 # ── Router source-contract ────────────────────────────────────────────────
 
 
-@pytest.mark.xfail(reason="bulk-discount endpoint not yet added to invoicing router")
 def test_router_has_bulk_discount_endpoint():
     assert '@router.post(\n    "/invoices/{invoice_id}/bulk-discount"' in ROUTER_SRC
 
 
-@pytest.mark.xfail(reason="bulk-discount endpoint not yet added to invoicing router")
 def test_router_rejects_non_draft_invoices():
     assert '"can only discount DRAFT invoices"' in ROUTER_SRC
     assert "status_code=409" in ROUTER_SRC
 
 
-@pytest.mark.xfail(reason="bulk-discount endpoint not yet added to invoicing router")
 def test_router_rejects_empty_invoice():
     assert '"invoice has no lines"' in ROUTER_SRC
 
 
-@pytest.mark.xfail(reason="bulk-discount endpoint not yet added to invoicing router")
 def test_router_writes_back_unit_price_and_line_total():
     assert "row.unit_price = o.unit_price" in ROUTER_SRC
     assert "row.line_total = o.line_total" in ROUTER_SRC
 
 
-@pytest.mark.xfail(reason="bulk-discount endpoint not yet added to invoicing router")
 def test_router_recomputes_invoice_totals():
     assert "inv.subtotal = totals.subtotal" in ROUTER_SRC
     assert "inv.vat_amount = totals.vat_amount" in ROUTER_SRC
@@ -223,6 +227,5 @@ def test_router_is_tenant_scoped():
     assert "Invoice.org_id == org_id" in ROUTER_SRC
 
 
-@pytest.mark.xfail(reason="bulk-discount endpoint not yet added to invoicing router")
 def test_router_logs_audit_action():
     assert '"invoice.bulk_discount_applied"' in ROUTER_SRC

@@ -1,0 +1,30 @@
+"""Customers feature package."""
+from fastapi import APIRouter
+from . import crm, crm_sync, customer_activity, customer_contacts, customer_notes, customer_statements, customer_tags, customer_history, customer_addresses, customer_org_members, customer_preferences, customer_chat, customer_app_config, customer_api_keys, customer_webhooks_config, leads, lead_forms, tags, custom_fields, important_dates, segments
+
+router = APIRouter()
+router.include_router(crm.router)
+router.include_router(crm_sync.router)
+router.include_router(customer_activity.router)
+router.include_router(customer_contacts.router)
+router.include_router(customer_notes.router)
+router.include_router(customer_statements.router)
+router.include_router(customer_tags.router)
+router.include_router(customer_history.router)
+router.include_router(customer_addresses.router)
+router.include_router(customer_org_members.router)
+router.include_router(customer_preferences.router)
+router.include_router(customer_chat.router)
+router.include_router(customer_app_config.router)
+router.include_router(customer_api_keys.router)
+router.include_router(customer_webhooks_config.router)
+router.include_router(leads.router)
+router.include_router(lead_forms.router)
+router.include_router(tags.router)
+router.include_router(custom_fields.router)
+router.include_router(important_dates.router)
+router.include_router(segments.router)
+from . import family_accounts, negotiated_pricing, portfolio_photos
+router.include_router(family_accounts.router)
+router.include_router(negotiated_pricing.router)
+router.include_router(portfolio_photos.router)

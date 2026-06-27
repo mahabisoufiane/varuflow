@@ -18,9 +18,31 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column("products", sa.Column("slug", sa.String(120), nullable=True))
-    op.add_column("products", sa.Column("image_url", sa.Text(), nullable=True))
-    op.create_index("ix_products_slug", "products", ["slug"], unique=True)
+    conn = op.get_bind()
+    cols = {
+        r[0]
+        for r in conn.execute(
+            sa.text(
+                "SELECT column_name FROM information_schema.columns "
+                "WHERE table_name='products'"
+            )
+        )
+    }
+    if "slug" not in cols:
+        op.add_column("products", sa.Column("slug", sa.String(120), nullable=True))
+    if "image_url" not in cols:
+        op.add_column("products", sa.Column("image_url", sa.Text(), nullable=True))
+    idxs = {
+        r[0]
+        for r in conn.execute(
+            sa.text(
+                "SELECT indexname FROM pg_indexes "
+                "WHERE tablename='products' AND indexname='ix_products_slug'"
+            )
+        )
+    }
+    if "ix_products_slug" not in idxs:
+        op.create_index("ix_products_slug", "products", ["slug"], unique=True)
 
 
 def downgrade() -> None:

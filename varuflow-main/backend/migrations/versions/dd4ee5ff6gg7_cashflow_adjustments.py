@@ -25,7 +25,7 @@ def upgrade() -> None:
         sa.Column("label", sa.String(200), nullable=False),
         sa.Column("amount", sa.Numeric(14, 2), nullable=False),
         sa.Column("note", sa.Text, nullable=True),
-        sa.Column("created_by_staff_id", UUID(as_uuid=True), sa.ForeignKey("staff.id", ondelete="SET NULL"), nullable=True),
+        sa.Column("created_by_staff_id", UUID(as_uuid=True), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
     )

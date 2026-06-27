@@ -1,15 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
-function getToken() {
-  return typeof window !== "undefined" ? localStorage.getItem("auth_token") ?? "" : "";
-}
+import styles from "./page.module.scss";
 
 const CHANNELS = ["all", "email", "whatsapp", "sms", "in_app", "contact_form"] as const;
 type Channel = (typeof CHANNELS)[number];
@@ -26,17 +23,17 @@ function channelLabel(c: Channel) {
   return map[c];
 }
 
-function sentimentClass(s: string) {
-  const map: Record<string, string> = {
-    positive: "bg-green-100 text-green-800",
-    neutral: "bg-gray-100 text-gray-800",
-    negative: "bg-red-100 text-red-800",
+function sentimentClass(s: string): keyof typeof styles {
+  const map: Record<string, keyof typeof styles> = {
+    positive: "sentimentPositive",
+    neutral:  "sentimentNeutral",
+    negative: "sentimentNegative",
   };
-  return map[s] ?? "bg-gray-100 text-gray-800";
+  return map[s] ?? "sentimentNeutral";
 }
 
-function directionClass(d: string) {
-  return d === "inbound" ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800";
+function directionClass(d: string): keyof typeof styles {
+  return d === "inbound" ? "directionInbound" : "directionOutbound";
 }
 
 interface Thread {
@@ -78,11 +75,8 @@ export default function InboxPage() {
     try {
       const qp = new URLSearchParams({ limit: "50" });
       if (channelFilter !== "all") qp.set("channel", channelFilter);
-      const res = await fetch(`${API}/api/inbox/threads?${qp}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setThreads(await res.json());
+      const data = await api.get<Thread[]>(`/api/inbox/threads?${qp}`);
+      setThreads(data);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load threads");
     } finally {
@@ -92,13 +86,8 @@ export default function InboxPage() {
 
   async function fetchUnreadCount() {
     try {
-      const res = await fetch(`${API}/api/inbox/unread-count`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUnreadCount(data.count ?? data);
-      }
+      const data = await api.get<{ count?: number } | number>("/api/inbox/unread-count");
+      setUnreadCount((data as any).count ?? data);
     } catch {
       // non-fatal
     }
@@ -107,11 +96,8 @@ export default function InboxPage() {
   async function loadMessages(thread: Thread) {
     setSelectedThread(thread);
     try {
-      const res = await fetch(`${API}/api/inbox/threads/${thread.id}/messages`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      setMessages(await res.json());
+      const data = await api.get<Message[]>(`/api/inbox/threads/${thread.id}/messages`);
+      setMessages(data);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load messages");
     }
@@ -128,15 +114,10 @@ export default function InboxPage() {
     if (!selectedThread) return;
     setReplyLoading(true);
     try {
-      const res = await fetch(`${API}/api/inbox/threads/${selectedThread.id}/messages`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ body: replyBody, direction: "outbound" }),
+      await api.post(`/api/inbox/threads/${selectedThread.id}/messages`, {
+        body: replyBody,
+        direction: "outbound",
       });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
       setReplyBody("");
       loadMessages(selectedThread);
     } catch (e: unknown) {
@@ -148,10 +129,7 @@ export default function InboxPage() {
 
   async function markRead(msgId: string) {
     try {
-      await fetch(`${API}/api/inbox/messages/${msgId}/read`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      await api.post(`/api/inbox/messages/${msgId}/read`, {});
       if (selectedThread) loadMessages(selectedThread);
       fetchUnreadCount();
     } catch {
@@ -162,10 +140,7 @@ export default function InboxPage() {
   async function archiveThread() {
     if (!selectedThread) return;
     try {
-      await fetch(`${API}/api/inbox/threads/${selectedThread.id}/archive`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      await api.post(`/api/inbox/threads/${selectedThread.id}/archive`, {});
       setSelectedThread(null);
       setMessages([]);
       fetchThreads();
@@ -231,7 +206,7 @@ export default function InboxPage() {
                     <Badge variant="outline" className="text-xs">{t.channel}</Badge>
                     {t.sentiment && (
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${sentimentClass(t.sentiment)}`}
+                        className={styles[sentimentClass(t.sentiment)]}
                       >
                         {t.sentiment}
                       </span>
@@ -281,7 +256,7 @@ export default function InboxPage() {
                   <div key={m.id} className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${directionClass(m.direction)}`}
+                        className={styles[directionClass(m.direction)]}
                       >
                         {m.direction}
                       </span>

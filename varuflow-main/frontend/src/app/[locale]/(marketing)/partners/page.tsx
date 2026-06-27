@@ -143,7 +143,7 @@ export default function PartnersPage() {
         className="relative overflow-hidden px-4 pb-16 pt-20 text-center"
         style={{
           background:
-            "radial-gradient(ellipse 100% 70% at 50% -10%, rgba(99,102,241,0.18) 0%, transparent 65%)",
+            "radial-gradient(ellipse 100% 70% at 50% -10%, rgba(37,99,235,0.18) 0%, transparent 65%)",
         }}
       >
         {/* Glow blob */}
@@ -210,7 +210,7 @@ export default function PartnersPage() {
         className="px-4 py-16"
         style={{
           background:
-            "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(99,102,241,0.06) 0%, transparent 70%)",
+            "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(37,99,235,0.06) 0%, transparent 70%)",
         }}
       >
         <div className="mx-auto max-w-4xl">

@@ -1,10 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { RoleGuard } from "@/components/app/RoleContext";
 import { ChevronLeft, ChevronRight, Calendar, AlertTriangle } from "lucide-react";
+import { api } from "@/lib/api-client";
+import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
+import styles from "./page.module.scss";
 
 interface ShiftEntry { id: string; start_at: string; end_at: string; notes: string | null }
 interface StaffRoster { staff_id: string; staff_name: string; shifts: ShiftEntry[] }
+interface OvertimeEntry { staff_id: string; total_hours: number; is_overtime: boolean }
 
 function isoDate(d: Date) { return d.toISOString().slice(0, 10); }
 function addDays(d: Date, n: number) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
@@ -12,29 +17,34 @@ function getMonday(d: Date) { const day = d.getDay(); return addDays(d, day === 
 
 const DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export default function RosterPage() {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL!;
-  const f = (url: string) => fetch(`${apiBase}${url}`, { credentials: "include" });
-
+function RosterPageInner() {
   const [roster, setRoster] = useState<StaffRoster[]>([]);
-  const [overtime, setOvertime] = useState<{ staff_id: string; total_hours: number; is_overtime: boolean }[]>([]);
+  const [overtime, setOvertime] = useState<OvertimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [weekStart, setWeekStart] = useState<Date>(getMonday(new Date()));
+  const [planBlocked, setPlanBlocked] = useState<{ module: string; currentPlan: string } | null>(null);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const weekStr = isoDate(weekStart);
 
   useEffect(() => {
     Promise.all([
-      f(`/api/scheduling/roster?week_start=${weekStr}`).then(r => r.ok ? r.json() : []),
-      f(`/api/scheduling/overtime?week_start=${weekStr}`).then(r => r.ok ? r.json() : []),
-    ]).then(([r, o]) => { setRoster(r); setOvertime(o); setLoading(false); });
+      api.get<StaffRoster[]>(`/api/scheduling/roster?week_start=${weekStr}`),
+      api.get<OvertimeEntry[]>(`/api/scheduling/overtime?week_start=${weekStr}`).catch(() => [] as OvertimeEntry[]),
+    ]).then(([r, o]) => { setRoster(r); setOvertime(o); setLoading(false); })
+      .catch((err) => {
+        if (isPlanGateError(err)) {
+          setPlanBlocked({ module: (err as any).module ?? "hr", currentPlan: (err as any).currentPlan ?? "FREE" });
+        }
+        setLoading(false);
+      });
   }, [weekStr]);
 
   const today = isoDate(new Date());
   const otMap = Object.fromEntries(overtime.map(o => [o.staff_id, o]));
 
   if (loading) return <div className="animate-pulse space-y-4"><div className="h-10 rounded-lg bg-gray-100 w-64" /><div className="h-64 rounded-xl bg-gray-100" /></div>;
+  if (planBlocked) return <PlanGateBlock module={planBlocked.module} currentPlan={planBlocked.currentPlan} featureName="Scheduling" />;
 
   return (
     <div className="space-y-6">
@@ -87,7 +97,7 @@ export default function RosterPage() {
             <div key={staff.staff_id} className={`grid grid-cols-8 border-b border-gray-50 last:border-b-0 ${si % 2 === 0 ? "bg-white" : "bg-gray-50/30"}`}>
               <div className="p-3 border-r border-gray-100 flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-800 truncate">{staff.staff_name}</span>
-                {ot?.is_overtime && <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">{ot.total_hours}h</span>}
+                {ot?.is_overtime && <span className={styles.overtimeBadge}>{ot.total_hours}h</span>}
               </div>
               {weekDays.map((day, i) => {
                 const ds = isoDate(day);
@@ -111,5 +121,13 @@ export default function RosterPage() {
         })}
       </div>
     </div>
+  );
+}
+
+export default function RosterPage() {
+  return (
+    <RoleGuard minRole="ADMIN">
+      <RosterPageInner />
+    </RoleGuard>
   );
 }

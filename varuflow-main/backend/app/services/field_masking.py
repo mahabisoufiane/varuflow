@@ -18,7 +18,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.compliance import FieldMaskingRule
+from app.features.compliance.models import FieldMaskingRule
 
 # ── Masking implementations ───────────────────────────────────────────────────
 

@@ -6,8 +6,12 @@ import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   Package, Plus, RefreshCw, ChevronRight, ArrowUp, ArrowDown,
-  CheckCircle, AlertTriangle, TrendingUp, Layers
+  CheckCircle, AlertTriangle, TrendingUp, Layers, X,
 } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import { VFField, VFInput } from "@/components/ui/vf-field";
 
 interface KitComponent {
   component_product_id: string;
@@ -343,73 +347,160 @@ export default function KittingPage() {
       </div>
 
       {/* Create Kit modal */}
-      {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-background rounded-2xl shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold">Create Kit Definition</h2>
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Kit Name</label>
-                <input required className="input mt-1 w-full" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Kit Product ID (finished SKU)</label>
-                <input required className="input mt-1 w-full font-mono text-sm" placeholder="UUID of the kit product" value={form.product_id} onChange={e => setForm(f => ({ ...f, product_id: e.target.value }))} />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm font-medium">Description (optional)</label>
-                  <input className="input mt-1 w-full" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Custom Price (optional)</label>
-                  <input type="number" step="0.01" className="input mt-1 w-full" placeholder="Leave blank = sum of components" value={form.custom_price} onChange={e => setForm(f => ({ ...f, custom_price: e.target.value }))} />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Components</label>
-                  <button type="button" className="text-xs text-primary hover:underline" onClick={() => setForm(f => ({ ...f, components: [...f.components, { component_product_id: "", quantity: "1" }] }))}>
-                    + Add component
-                  </button>
-                </div>
-                {form.components.map((comp, i) => (
-                  <div key={i} className="flex gap-2 items-center">
-                    <input
-                      className="input flex-1 font-mono text-xs"
-                      placeholder="Component product ID"
-                      value={comp.component_product_id}
-                      onChange={e => setForm(f => ({
-                        ...f,
-                        components: f.components.map((c, j) => j === i ? { ...c, component_product_id: e.target.value } : c)
-                      }))}
-                    />
-                    <input
-                      type="number" step="0.01" min="0.01"
-                      className="input w-20"
-                      placeholder="Qty"
-                      value={comp.quantity}
-                      onChange={e => setForm(f => ({
-                        ...f,
-                        components: f.components.map((c, j) => j === i ? { ...c, quantity: e.target.value } : c)
-                      }))}
-                    />
-                    {form.components.length > 1 && (
-                      <button type="button" className="text-red-500 text-xs" onClick={() => setForm(f => ({ ...f, components: f.components.filter((_, j) => j !== i) }))}>✕</button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" className="btn-secondary flex-1" onClick={() => setShowCreate(false)}>Cancel</button>
-                <button type="submit" className="btn-primary flex-1" disabled={submitting}>
-                  {submitting ? <RefreshCw className="h-4 w-4 animate-spin mx-auto" /> : "Create Kit"}
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent className="rounded-[16px] max-w-lg shadow-xl p-0 max-h-[90vh] overflow-y-auto gap-0">
+          <DialogHeader className="px-6 pt-6 pb-2">
+            <DialogTitle className="text-lg font-semibold text-slate-900">
+              Create Kit Definition
+            </DialogTitle>
+          </DialogHeader>
+
+          <form
+            onSubmit={handleCreate}
+            className="px-6 pb-6 space-y-5"
+            style={{ fontFamily: "Inter, system-ui, sans-serif" }}
+          >
+            {/* Kit Name */}
+            <VFField label="Kit Name" htmlFor="kit-name">
+              <VFInput
+                id="kit-name"
+                required
+                value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="e.g. Starter Bundle"
+              />
+            </VFField>
+
+            {/* Kit Product ID */}
+            <VFField
+              label="Kit Product ID"
+              htmlFor="kit-product-id"
+              hint="UUID of the finished kit product (SKU)"
+            >
+              <VFInput
+                id="kit-product-id"
+                required
+                className="font-mono text-sm"
+                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                value={form.product_id}
+                onChange={e => setForm(f => ({ ...f, product_id: e.target.value }))}
+              />
+            </VFField>
+
+            {/* Description + Custom Price — stacks on mobile, side-by-side on sm+ */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <VFField label="Description" htmlFor="kit-description" optional>
+                <VFInput
+                  id="kit-description"
+                  value={form.description}
+                  onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                  placeholder="Short description…"
+                />
+              </VFField>
+              <VFField
+                label="Custom Price"
+                htmlFor="kit-price"
+                optional
+                hint="Leave blank to sum component costs"
+              >
+                <VFInput
+                  id="kit-price"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.custom_price}
+                  onChange={e => setForm(f => ({ ...f, custom_price: e.target.value }))}
+                  placeholder="0.00"
+                />
+              </VFField>
+            </div>
+
+            {/* Components repeater */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  Components
+                </span>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50 transition-colors"
+                  onClick={() => setForm(f => ({
+                    ...f,
+                    components: [...f.components, { component_product_id: "", quantity: "1" }],
+                  }))}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Add component
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+
+              {form.components.map((comp, i) => (
+                <div key={i} className="flex gap-2 items-center bg-slate-50 rounded-lg px-3 py-2">
+                  <VFInput
+                    className="flex-1 font-mono text-xs"
+                    placeholder="Component product ID (UUID)"
+                    value={comp.component_product_id}
+                    onChange={e => setForm(f => ({
+                      ...f,
+                      components: f.components.map((c, j) =>
+                        j === i ? { ...c, component_product_id: e.target.value } : c
+                      ),
+                    }))}
+                  />
+                  <VFInput
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    className="w-20 text-center"
+                    placeholder="Qty"
+                    value={comp.quantity}
+                    onChange={e => setForm(f => ({
+                      ...f,
+                      components: f.components.map((c, j) =>
+                        j === i ? { ...c, quantity: e.target.value } : c
+                      ),
+                    }))}
+                  />
+                  {form.components.length > 1 && (
+                    <button
+                      type="button"
+                      className="ml-1 flex-shrink-0 h-7 w-7 rounded-full flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                      onClick={() => setForm(f => ({
+                        ...f,
+                        components: f.components.filter((_, j) => j !== i),
+                      }))}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Footer actions */}
+            <DialogFooter className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
+              <button
+                type="button"
+                className="text-sm text-slate-500 hover:text-slate-700 px-4 py-2 transition-colors"
+                onClick={() => setShowCreate(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-[8px] px-5 py-2.5 min-w-[120px] transition-colors disabled:opacity-60"
+              >
+                {submitting ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Create Kit"
+                )}
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
