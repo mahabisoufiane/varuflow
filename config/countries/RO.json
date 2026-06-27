@@ -1,0 +1,24 @@
+{
+  "iso_alpha2": "RO",
+  "display_name": "Romania",
+  "region": "europe",
+  "default_locale": "ro-RO",
+  "currency": "RON",
+  "vat": {
+    "standard_rate_pct": 19.0,
+    "reduced_rates_pct": [
+      9.0,
+      5.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": true,
+    "tax_id_regex": "RO\\d{2,10}",
+    "einvoicing_status": "RO e-Factura mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/RO/README.md"
+}

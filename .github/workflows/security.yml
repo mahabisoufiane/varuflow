@@ -1,0 +1,208 @@
+name: Security
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly re-scan so new CVEs in pinned deps surface without code changes
+    - cron: "17 6 * * 1"
+
+jobs:
+  backend-security:
+    name: Backend — bandit + pip-audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Install security tools
+        run: pip install bandit pip-audit
+
+      - name: Bandit (static analysis)
+        # Medium/high severity findings only — low-severity findings are
+        # almost entirely style nits (e.g. "used assert") that we accept.
+        # Non-blocking: bandit is advisory; the CVE gate below is the
+        # real blocker because it has an objective fail condition.
+        run: bandit -r app -ll -q
+        continue-on-error: true
+
+      - name: pip-audit — export Poetry lock and scan resolved deps
+        # `poetry export` emits the fully resolved dep set including every
+        # transitive; feeding that to pip-audit guarantees we scan what the
+        # container will actually install, not just the top-level spec in
+        # pyproject.toml. The `--strict` flag means an error in resolution
+        # fails the job rather than being silently downgraded to empty.
+        # Any waived CVE must be added below with an inline rationale
+        # (`--ignore-vuln GHSA-xxxx-xxxx-xxxx  # why accepted`).
+        run: |
+          poetry export --without-hashes --with dev -f requirements.txt -o /tmp/reqs.txt
+          pip-audit --strict --requirement /tmp/reqs.txt \
+            --vulnerability-service osv
+
+  frontend-security:
+    name: Frontend — npm audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install (no scripts — we only want the lockfile resolved)
+        run: npm ci --ignore-scripts
+      - name: npm audit — fail on high+ severity
+        # `--audit-level=high` fails the job on high or critical findings
+        # and treats moderate/low as advisory. `--omit=dev` scans only the
+        # runtime dep tree: a CVE in eslint or a test runner cannot reach
+        # production and would otherwise block a PR with nothing to fix
+        # other than bumping a devDep.
+        run: npm audit --audit-level=high --omit=dev
+
+  mobile-security:
+    name: Mobile — npm audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Install (no scripts)
+        run: npm ci --ignore-scripts
+      - name: npm audit — fail on high+ severity
+        # Same posture as frontend — mobile ships through Expo which
+        # bundles every runtime dep into the app binary, so a vulnerable
+        # runtime dep here reaches end-user devices. Dev deps are scoped
+        # out because Expo CLI / Metro tooling cannot be reached by the
+        # shipped app at runtime.
+        run: npm audit --audit-level=high --omit=dev
+
+  frontend-headers:
+    name: Frontend — security-headers policy tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - name: Run security-headers unit tests (node --test)
+        # Pure-function tests over src/lib/security-headers.mjs — no install
+        # step needed because node:test is stdlib. Non-regressable directives
+        # (frame-ancestors 'none', object-src 'none') and every third-party
+        # allow-list are asserted here; a careless edit to next.config.mjs
+        # that drops a directive fails this job before it merges.
+        run: node --test src/tests/test_security_headers.mjs
+      - name: Grep-guard — next.config.mjs still delegates to the shared lib
+        working-directory: .
+        run: |
+          if ! grep -q "buildSecurityHeaders" frontend/next.config.mjs; then
+            echo "::error::next.config.mjs must import buildSecurityHeaders from src/lib/security-headers.mjs"; exit 1
+          fi
+          if ! grep -q "frame-ancestors 'none'" frontend/src/lib/security-headers.mjs; then
+            echo "::error::frame-ancestors 'none' is non-regressable"; exit 1
+          fi
+          if ! grep -q "object-src 'none'" frontend/src/lib/security-headers.mjs; then
+            echo "::error::object-src 'none' is non-regressable"; exit 1
+          fi
+
+  secret-scan-gitleaks:
+    name: Repo — gitleaks (fail on high-risk secrets)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history is required so gitleaks can inspect every commit,
+          # not just the PR head — a secret introduced in an earlier commit
+          # on the branch would otherwise slip through if the PR's final
+          # diff already removed it.
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Point the action at the repo-local config so our allowlist for
+          # known false positives (lockfiles, test keys, playbook examples)
+          # applies. See .gitleaks.toml for the rationale of each entry.
+          GITLEAKS_CONFIG: .gitleaks.toml
+          # Exit non-zero on any finding that is NOT in the allowlist. This
+          # is the "fail on high-risk secrets" behaviour Item 26 requires —
+          # the default behaviour of gitleaks-action is already to fail on
+          # findings, but we set it explicitly so a future action upgrade
+          # that flips the default cannot silently downgrade this gate.
+          GITLEAKS_EXIT_CODE: "1"
+
+  secret-scan-trufflehog:
+    name: Repo — trufflehog (verified secrets only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          # For push events, scan the full commit range that was pushed.
+          # For pull_request events, scan the PR diff only — trufflehog is
+          # expensive on the full history and the gitleaks job above already
+          # covers the historical sweep.
+          base: ${{ github.event.pull_request.base.sha || github.event.before }}
+          head: ${{ github.event.pull_request.head.sha || github.sha }}
+          # --only-verified means trufflehog will hit the relevant provider
+          # API (AWS STS, GitHub, Stripe, etc.) to confirm the secret is
+          # live before failing the job. This dramatically reduces false
+          # positives compared to pattern-only scanning — a matched-but-not-
+          # live string (rotated key, test fixture) passes; a live secret
+          # that actually unlocks a real account fails the job. Combined
+          # with gitleaks (pattern-based, catches unverifiable secrets like
+          # private keys), we get both recall and precision.
+          extra_args: --only-verified --fail
+
+  claude-rules:
+    name: Repo — CLAUDE.md compliance greps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No hardcoded prod URL in frontend/src
+        run: |
+          if grep -rn "varuflow-production.up.railway.app" frontend/src; then
+            echo "::error::Hardcoded production Railway URL found in frontend/src"; exit 1
+          fi
+      - name: No wildcard CORS in backend
+        run: |
+          if grep -rn 'allow_origins=\["\*"\]' backend/; then
+            echo "::error::Wildcard CORS is forbidden"; exit 1
+          fi
+      - name: No OpenAI import in ai_engine.py
+        run: |
+          if grep -n "openai" backend/app/routers/ai_engine.py; then
+            echo "::error::ai_engine.py must not import openai (GPT-4o lives in integrations.py)"; exit 1
+          fi
+      - name: No secrets in source
+        run: |
+          if grep -rnE "sk_live_[A-Za-z0-9]{16,}|sk_test_[A-Za-z0-9]{16,}|whsec_[A-Za-z0-9]{16,}" backend/app frontend/src; then
+            echo "::error::Possible committed secret"; exit 1
+          fi

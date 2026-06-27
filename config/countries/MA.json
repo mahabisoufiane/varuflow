@@ -1,0 +1,25 @@
+{
+  "iso_alpha2": "MA",
+  "display_name": "Morocco",
+  "region": "africa",
+  "default_locale": "fr-MA",
+  "currency": "MAD",
+  "vat": {
+    "standard_rate_pct": 20.0,
+    "reduced_rates_pct": [
+      14.0,
+      10.0,
+      7.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d{8}",
+    "einvoicing_status": "voluntary"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/MA/README.md"
+}

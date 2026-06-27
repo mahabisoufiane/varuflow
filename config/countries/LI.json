@@ -1,0 +1,50 @@
+{
+  "code": "LI",
+  "code3": "LIE",
+  "name": { "en": "Liechtenstein", "local": "Liechtenstein", "sv": "Liechtenstein" },
+  "region": "europe",
+  "subregion": "western-europe",
+  "is_eu_member": false,
+  "is_eea_member": true,
+  "is_efta_member": true,
+  "is_schengen": true,
+  "is_eurozone": false,
+  "currency": { "code": "CHF", "symbol": "CHF", "name": "Swiss Franc", "decimal_places": 2, "format": "CHF #'##0.00" },
+  "vat": {
+    "applicable": true,
+    "name_local": "MWST (Mehrwertsteuer)",
+    "standard_rate_pct": 8.1,
+    "reduced_rates_pct": [2.6, 3.8],
+    "registration_threshold_eur": 93000,
+    "vat_id_format": "^\\d{5}$",
+    "vat_id_example": "12345"
+  },
+  "invoice_rules": {
+    "language_required": ["de"],
+    "sequential_numbering_required": true,
+    "retention_years": 10,
+    "e_invoice_required": false
+  },
+  "compliance": {
+    "data_protection_law": "Datenschutzgesetz (DSG)",
+    "company_registry_name": "Handelsregister",
+    "tax_authority_name": "Steuerverwaltung"
+  },
+  "locale": {
+    "default_language": "de",
+    "date_format": "DD.MM.YYYY",
+    "timezone": "Europe/Vaduz",
+    "number_format": { "decimal_separator": ".", "thousands_separator": "'", "currency_position": "before" }
+  },
+  "address_format": {
+    "postal_code_regex": "^\\d{4}$",
+    "postal_code_example": "9490"
+  },
+  "payment": {
+    "supported_methods": ["bank_transfer", "card"],
+    "open_banking_supported": true
+  },
+  "varuflow_localization_status": {
+    "ready_for_market": false
+  }
+}
