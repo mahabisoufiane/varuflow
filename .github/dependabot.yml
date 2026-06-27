@@ -1,0 +1,138 @@
+# ---------------------------------------------------------------------------
+# Varuflow — Dependabot configuration
+#
+# Dependabot opens PRs for vulnerable/outdated deps across all ecosystems
+# we ship. Two rhythms per ecosystem:
+#
+#   • patch-only group  — safe, mechanical bumps (1.2.3 → 1.2.4).
+#     Eligible for auto-merge via .github/workflows/dependabot-auto-merge.yml
+#     once CI is green (pip-audit, npm audit, tests). Saves review bandwidth
+#     for real work.
+#
+#   • minor group       — 1.2.x → 1.3.0. Human review required (minor
+#     releases occasionally ship behaviour changes).
+#
+# Major bumps land as INDIVIDUAL PRs (not grouped) so each changelog gets
+# a dedicated review.
+#
+# `applies-to: security-updates` carves off Dependabot's vulnerability PRs
+# into a dedicated group per ecosystem so a real CVE is never hidden inside
+# a weekly mega-PR.
+# ---------------------------------------------------------------------------
+
+version: 2
+updates:
+  # Backend — Python / Poetry
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Stockholm"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "backend"
+    groups:
+      backend-patch:
+        applies-to: version-updates
+        update-types: ["patch"]
+      backend-minor:
+        applies-to: version-updates
+        update-types: ["minor"]
+      backend-security:
+        applies-to: security-updates
+        patterns: ["*"]
+
+  # Frontend — npm
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Stockholm"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "frontend"
+    groups:
+      frontend-patch:
+        applies-to: version-updates
+        update-types: ["patch"]
+      frontend-minor:
+        applies-to: version-updates
+        update-types: ["minor"]
+      frontend-security:
+        applies-to: security-updates
+        patterns: ["*"]
+
+  # Mobile — npm (Expo / React Native)
+  - package-ecosystem: "npm"
+    directory: "/mobile"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Stockholm"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "mobile"
+    groups:
+      mobile-patch:
+        applies-to: version-updates
+        update-types: ["patch"]
+      mobile-minor:
+        applies-to: version-updates
+        update-types: ["minor"]
+      mobile-security:
+        applies-to: security-updates
+        patterns: ["*"]
+
+  # GitHub Actions — keep the security pipeline itself current
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Stockholm"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "ci"
+    groups:
+      actions-patch:
+        applies-to: version-updates
+        update-types: ["patch"]
+      actions-minor:
+        applies-to: version-updates
+        update-types: ["minor"]
+
+  # Container images — backend Dockerfile
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Stockholm"
+    open-pull-requests-limit: 2
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # Container images — frontend Dockerfile
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Stockholm"
+    open-pull-requests-limit: 2
+    labels:
+      - "dependencies"
+      - "docker"

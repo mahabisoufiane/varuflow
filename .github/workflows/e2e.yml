@@ -1,0 +1,135 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * *'   # Daily at 06:00 UTC
+
+env:
+  PLAYWRIGHT_BASE_URL: ${{ vars.STAGING_URL || 'https://varuflow.vercel.app' }}
+  PLAYWRIGHT_API_URL:  ${{ vars.STAGING_API_URL || 'https://varuflow-production.up.railway.app' }}
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────
+  # Fast smoke tests — run on every push / PR
+  # ──────────────────────────────────────────────────────────────────────
+  smoke-tests:
+    name: Smoke Tests (Chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci --legacy-peer-deps
+
+      - name: Install Playwright Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run smoke tests
+        working-directory: frontend
+        run: npx playwright test e2e/smoke.spec.ts --project=chromium
+        env:
+          PLAYWRIGHT_BASE_URL:  ${{ env.PLAYWRIGHT_BASE_URL }}
+          PLAYWRIGHT_API_URL:   ${{ env.PLAYWRIGHT_API_URL }}
+
+      - name: Upload smoke test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-report-${{ github.run_id }}
+          path: frontend/playwright-report/
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Full E2E suite — run only on pushes to main (after merge)
+  # ──────────────────────────────────────────────────────────────────────
+  full-e2e:
+    name: Full E2E Suite (Multi-browser)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci --legacy-peer-deps
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps ${{ matrix.project }}
+
+      - name: Run E2E tests
+        working-directory: frontend
+        run: npx playwright test --project=${{ matrix.project }}
+        env:
+          CI: true
+          PLAYWRIGHT_BASE_URL: ${{ env.PLAYWRIGHT_BASE_URL }}
+          PLAYWRIGHT_API_URL:  ${{ env.PLAYWRIGHT_API_URL }}
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-results-${{ matrix.project }}-${{ github.run_id }}
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 14
+
+  # ──────────────────────────────────────────────────────────────────────
+  # Auth spec only — run on PRs that touch auth/ or middleware
+  # ──────────────────────────────────────────────────────────────────────
+  auth-tests:
+    name: Auth Spec
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci --legacy-peer-deps
+
+      - name: Install Playwright Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run auth tests
+        working-directory: frontend
+        run: npx playwright test e2e/auth.spec.ts --project=chromium
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ env.PLAYWRIGHT_BASE_URL }}

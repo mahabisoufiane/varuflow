@@ -1,0 +1,23 @@
+{
+  "iso_alpha2": "DO",
+  "display_name": "Dominican Rep.",
+  "region": "americas",
+  "default_locale": "es-DO",
+  "currency": "DOP",
+  "vat": {
+    "standard_rate_pct": 18.0,
+    "reduced_rates_pct": [
+      16.0
+    ],
+    "registration_required": true,
+    "reverse_charge_b2b": false,
+    "tax_id_regex": "\\d{9}|\\d{11}",
+    "einvoicing_status": "e-CF mandatory"
+  },
+  "invoice": {
+    "sequence_format": "INV-{YYYY}-{NNNN}",
+    "due_days_default": 30,
+    "late_fee_pct": 0.0
+  },
+  "legal_doc_path": "docs/legal/DO/README.md"
+}
