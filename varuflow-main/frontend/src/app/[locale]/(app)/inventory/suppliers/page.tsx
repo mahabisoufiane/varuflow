@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { Plus, Truck } from "lucide-react";
+import ContentPanel from "@/components/console/ContentPanel";
 
 interface Supplier { id: string; name: string; email: string | null; phone: string | null; address: string | null; country: string; create_invoice_on_receipt?: boolean; }
 
@@ -13,7 +14,8 @@ const EMPTY = { name: "", email: "", phone: "", address: "", country: "Sweden", 
 
 export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Supplier | null>(null);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Supplier | null>(null);
   const [form, setForm] = useState({ ...EMPTY });
@@ -66,9 +68,7 @@ export default function SuppliersPage() {
 
       {error && !open && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
 
-      {loading ? (
-        <div className="space-y-2 animate-pulse">{[1, 2, 3].map((i) => <div key={i} className="h-16 rounded-xl bg-gray-100" />)}</div>
-      ) : suppliers.length === 0 ? (
+      {!loading && suppliers.length === 0 ? (
         <div className="rounded-xl border bg-white px-6 py-12 text-center">
           <Truck className="mx-auto h-10 w-10 text-gray-300" />
           <h3 className="mt-3 font-medium text-gray-900">No suppliers yet</h3>
@@ -78,18 +78,42 @@ export default function SuppliersPage() {
           </Button>
         </div>
       ) : (
-        <div className="rounded-xl border bg-white overflow-hidden divide-y">
-          {suppliers.map((s) => (
-            <div key={s.id} className="flex items-center justify-between px-5 py-4">
-              <div>
-                <p className="font-medium text-gray-900">{s.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {[s.email, s.phone, s.country].filter(Boolean).join(" · ")}
-                </p>
+        <div className="overflow-hidden rounded-xl border bg-white">
+          <ContentPanel<Supplier>
+            hideHeader
+            title="Suppliers"
+            rows={suppliers}
+            loading={loading}
+            getRowId={(s) => s.id}
+            columns={[
+              { key: "name", header: "Name", render: (s) => <span className="font-medium text-foreground">{s.name}</span> },
+              { key: "email", header: "Email", render: (s) => s.email ?? "—" },
+              { key: "phone", header: "Phone", render: (s) => s.phone ?? "—" },
+              { key: "country", header: "Country", render: (s) => s.country },
+            ]}
+            selected={selected}
+            onSelect={setSelected}
+            detailTitle={(s) => s.name}
+            renderDetail={(s) => (
+              <div className="space-y-4">
+                <dl className="divide-y">
+                  {([
+                    ["Email", s.email],
+                    ["Phone", s.phone],
+                    ["Address", s.address],
+                    ["Country", s.country],
+                    ["Auto-invoice on receipt", s.create_invoice_on_receipt ? "Yes" : "No"],
+                  ] as [string, string | null][]).map(([label, val]) => (
+                    <div key={label} className="grid grid-cols-3 gap-2 py-2.5">
+                      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+                      <dd className="col-span-2 text-sm text-foreground">{val || "—"}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <Button variant="outline" size="sm" onClick={() => { setSelected(null); openEdit(s); }}>Edit</Button>
               </div>
-              <Button variant="outline" size="sm" onClick={() => openEdit(s)}>Edit</Button>
-            </div>
-          ))}
+            )}
+          />
         </div>
       )}
 

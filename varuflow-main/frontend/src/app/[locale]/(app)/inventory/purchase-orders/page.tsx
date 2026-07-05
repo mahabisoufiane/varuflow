@@ -7,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { FileText, Plus } from "lucide-react";
 import styles from "./page.module.scss";
+import ContentPanel from "@/components/console/ContentPanel";
 
 interface PurchaseOrder {
   id: string; status: "DRAFT" | "SENT" | "RECEIVED"; total: string; notes: string | null;
@@ -28,7 +29,8 @@ const STATUS_MODULE: Record<string, keyof typeof styles> = {
 
 export default function PurchaseOrdersPage() {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<PurchaseOrder | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
 
@@ -70,9 +72,7 @@ export default function PurchaseOrdersPage() {
 
       {error && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
 
-      {loading ? (
-        <div className="space-y-2 animate-pulse">{[1, 2, 3].map((i) => <div key={i} className="h-16 rounded-xl bg-gray-100" />)}</div>
-      ) : orders.length === 0 ? (
+      {!loading && orders.length === 0 ? (
         <div className="rounded-xl border bg-white px-6 py-12 text-center">
           <FileText className="mx-auto h-10 w-10 text-gray-300" />
           <h3 className="mt-3 font-medium text-gray-900">No purchase orders yet</h3>
@@ -82,42 +82,54 @@ export default function PurchaseOrdersPage() {
           </Button>
         </div>
       ) : (
-        <div className="rounded-xl border bg-white overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
-              <tr>
-                <th className="px-4 py-3 text-left">PO #</th>
-                <th className="px-4 py-3 text-left">Supplier</th>
-                <th className="px-4 py-3 text-center">Status</th>
-                <th className="px-4 py-3 text-right">Total (SEK)</th>
-                <th className="px-4 py-3 text-left">Date</th>
-                <th className="px-4 py-3 text-right" />
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {orders.map((po) => (
-                <tr key={po.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-mono text-xs">{po.id.slice(0, 8).toUpperCase()}</td>
-                  <td className="px-4 py-3 font-medium">{po.supplier.name}</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className={styles[STATUS_MODULE[po.status] ?? "statusDraft"]}>{po.status}</span>
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono">{Number(po.total).toLocaleString("sv-SE", { minimumFractionDigits: 2 })}</td>
-                  <td className="px-4 py-3 text-muted-foreground text-xs">{new Date(po.created_at).toLocaleDateString("sv-SE")}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => downloadPDF(po.id)}>PDF</Button>
-                      {po.status !== "RECEIVED" && (
-                        <Button variant="outline" size="sm" className="h-7 text-xs" disabled={updating === po.id} onClick={() => advanceStatus(po)}>
-                          {po.status === "DRAFT" ? "Mark Sent" : "Mark Received"}
-                        </Button>
-                      )}
+        <div className="overflow-hidden rounded-xl border bg-white">
+          <ContentPanel<PurchaseOrder>
+            hideHeader
+            title="Purchase Orders"
+            rows={orders}
+            loading={loading}
+            getRowId={(po) => po.id}
+            columns={[
+              { key: "id", header: "PO #", render: (po) => <span className="font-mono text-xs">{po.id.slice(0, 8).toUpperCase()}</span> },
+              { key: "supplier", header: "Supplier", render: (po) => <span className="font-medium text-foreground">{po.supplier.name}</span> },
+              { key: "status", header: "Status", render: (po) => <span className={styles[STATUS_MODULE[po.status] ?? "statusDraft"]}>{po.status}</span> },
+              { key: "total", header: "Total (SEK)", className: "text-right", render: (po) => <span className="font-mono">{Number(po.total).toLocaleString("sv-SE", { minimumFractionDigits: 2 })}</span> },
+              { key: "created_at", header: "Date", render: (po) => new Date(po.created_at).toLocaleDateString("sv-SE") },
+            ]}
+            selected={selected}
+            onSelect={setSelected}
+            detailTitle={(po) => `PO ${po.id.slice(0, 8).toUpperCase()}`}
+            detailDescription={(po) => po.supplier.name}
+            renderDetail={(po) => (
+              <div className="space-y-4">
+                <dl className="divide-y">
+                  <div className="grid grid-cols-3 gap-2 py-2.5">
+                    <dt className="text-xs font-medium text-muted-foreground">Status</dt>
+                    <dd className="col-span-2"><span className={styles[STATUS_MODULE[po.status] ?? "statusDraft"]}>{po.status}</span></dd>
+                  </div>
+                  {([
+                    ["Supplier", po.supplier.name],
+                    ["Total", `${Number(po.total).toLocaleString("sv-SE", { minimumFractionDigits: 2 })} SEK`],
+                    ["Line items", String(po.items.length)],
+                    ["Created", new Date(po.created_at).toLocaleDateString("sv-SE")],
+                  ] as [string, string][]).map(([label, val]) => (
+                    <div key={label} className="grid grid-cols-3 gap-2 py-2.5">
+                      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+                      <dd className="col-span-2 text-sm text-foreground">{val}</dd>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  ))}
+                </dl>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => downloadPDF(po.id)}>PDF</Button>
+                  {po.status !== "RECEIVED" && (
+                    <Button variant="outline" size="sm" disabled={updating === po.id} onClick={() => { setSelected(null); advanceStatus(po); }}>
+                      {po.status === "DRAFT" ? "Mark Sent" : "Mark Received"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          />
         </div>
       )}
     </div>
