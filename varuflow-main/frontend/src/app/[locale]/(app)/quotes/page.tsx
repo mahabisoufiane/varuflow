@@ -1,18 +1,24 @@
 "use client";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+// next-intl Link (not next/link): keeps the locale prefix so /quotes/new resolves
+// to the app page (/en/quotes/new) instead of the public /quotes/[token] route.
+import { Link } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import styles from "./page.module.scss";
+import ContentPanel from "@/components/console/ContentPanel";
 
 interface QuoteSummary { id: string; quote_number: string | null; revision: number; title: string; status: string; total: number; currency: string; customer_id: string; valid_until: string | null; created_at: string | null; }
 
 export default function QuotesPage() {
   const [quotes, setQuotes] = useState<QuoteSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<QuoteSummary | null>(null);
   const [filter, setFilter] = useState("");
 
   const load = () => {
     const params = filter ? `?status=${filter}` : "";
-    api.get<QuoteSummary[]>(`/api/quotes${params}`).then(setQuotes).catch(() => {});
+    setLoading(true);
+    api.get<QuoteSummary[]>(`/api/quotes${params}`).then(setQuotes).catch(() => {}).finally(() => setLoading(false));
   };
 
   useEffect(() => { load(); }, [filter]);
@@ -43,28 +49,49 @@ export default function QuotesPage() {
           <button key={s} onClick={() => setFilter(s)} className={`px-3 py-1 rounded text-sm ${filter === s ? "bg-blue-600 text-white" : "bg-gray-100"}`}>{s || "All"}</button>
         ))}
       </div>
-      <table className="w-full text-sm border">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-4 py-2 text-left">Title</th>
-            <th className="px-4 py-2 text-left">#</th>
-            <th className="px-4 py-2 text-right">Total</th>
-            <th className="px-4 py-2 text-left">Status</th>
-            <th className="px-4 py-2 text-left">Valid Until</th>
-          </tr>
-        </thead>
-        <tbody>
-          {quotes.map(q => (
-            <tr key={q.id} className="border-t hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = `/quotes/${q.id}`}>
-              <td className="px-4 py-2">{q.title}</td>
-              <td className="px-4 py-2 text-xs">{q.quote_number || "—"} v{q.revision}</td>
-              <td className="px-4 py-2 text-right">{q.total.toLocaleString()} {q.currency}</td>
-              <td className="px-4 py-2">{badge(q.status)}</td>
-              <td className="px-4 py-2">{q.valid_until || "—"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="overflow-hidden rounded border">
+        <ContentPanel<QuoteSummary>
+          hideHeader
+          title="Quotes"
+          rows={quotes}
+          loading={loading}
+          getRowId={(q) => q.id}
+          columns={[
+            { key: "title", header: "Title", render: (q) => q.title },
+            { key: "quote_number", header: "#", render: (q) => `${q.quote_number || "—"} v${q.revision}` },
+            { key: "total", header: "Total", className: "text-right", render: (q) => `${q.total.toLocaleString()} ${q.currency}` },
+            { key: "status", header: "Status", render: (q) => badge(q.status) },
+            { key: "valid_until", header: "Valid Until", render: (q) => q.valid_until || "—" },
+          ]}
+          selected={selected}
+          onSelect={setSelected}
+          detailTitle={(q) => q.title}
+          detailDescription={(q) => `${q.quote_number || "—"} v${q.revision}`}
+          renderDetail={(q) => (
+            <div className="space-y-4">
+              <dl className="divide-y">
+                <div className="grid grid-cols-3 gap-2 py-2.5">
+                  <dt className="text-xs font-medium text-muted-foreground">Status</dt>
+                  <dd className="col-span-2">{badge(q.status)}</dd>
+                </div>
+                {([
+                  ["Total", `${q.total.toLocaleString()} ${q.currency}`],
+                  ["Valid until", q.valid_until || "—"],
+                ] as [string, string][]).map(([label, val]) => (
+                  <div key={label} className="grid grid-cols-3 gap-2 py-2.5">
+                    <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+                    <dd className="col-span-2 text-sm text-foreground">{val}</dd>
+                  </div>
+                ))}
+              </dl>
+              {/* next-intl Link → /sv/quotes/{id} (app), not the public /quotes/[token] */}
+              <Link href={`/quotes/${q.id}`} className="inline-flex px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                Open quote
+              </Link>
+            </div>
+          )}
+        />
+      </div>
     </div>
   );
 }

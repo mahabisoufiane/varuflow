@@ -4,9 +4,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import AppShell from "@/components/app/AppShell";
-import MobileQuickActions from "@/components/MobileQuickActions";
-import MobileBottomNav from "@/components/MobileBottomNav";
+import ConsoleShell from "@/components/console/ConsoleShell";
 
 // Auth is enforced whenever Supabase is configured with a real hosted project.
 // In local dev without env vars the gate is skipped so the UI is explorable.
@@ -41,13 +39,9 @@ export default async function AppLayout({
     }
   }
 
-  // AiChat, CommandPalette, PwaInstallBanner are rendered inside AppShell
-  // (a client component) gated by isClient, so they never run during SSR.
-  return (
-    <AppShell>
-      {children}
-      <MobileQuickActions />
-      <MobileBottomNav />
-    </AppShell>
-  );
+  // The four-region operator console. Region 3 renders {children} (the real
+  // route page), so all routing, i18n and permission guards are preserved.
+  // Overlays (CommandPalette, AiChat, PwaInstallBanner, …) are mounted inside
+  // ConsoleShell, gated to the client so they never run during SSR.
+  return <ConsoleShell>{children}</ConsoleShell>;
 }

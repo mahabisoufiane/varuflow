@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { BookOpen, CheckSquare, Bell, ClipboardList } from "lucide-react";
 
 const CARDS = [

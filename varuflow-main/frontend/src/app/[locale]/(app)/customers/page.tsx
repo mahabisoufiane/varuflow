@@ -12,8 +12,8 @@ import {
   Hash, Globe, MapPin, Clock, AlertCircle, Users,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { Reveal } from "@/components/motion";
 import { EmptyState } from "@/components/ui/EmptyState";
+import ContentPanel from "@/components/console/ContentPanel";
 import { EmptyCustomers } from "@/components/illustrations";
 
 interface Customer {
@@ -78,6 +78,7 @@ export default function CustomersPage() {
   const [saving, setSaving]       = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [selected, setSelected]   = useState<Customer | null>(null);
 
   async function load() {
     try { setCustomers(await api.get<Customer[]>("/api/invoicing/customers?is_active=true")); }
@@ -196,12 +197,8 @@ export default function CustomersPage() {
         )}
       </div>
 
-      {/* ── Customer grid ──────────────────────────────────────────── */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {[1, 2, 3, 4].map(i => <div key={i} className="h-28 skeleton rounded-xl" />)}
-        </div>
-      ) : filtered.length === 0 ? (
+      {/* ── Customer list — ContentPanel (shadcn Table + detail Sheet) ── */}
+      {!loading && filtered.length === 0 ? (
         <EmptyState
           illustration={<EmptyCustomers />}
           title={search ? "No customers match your search" : "No customers yet"}
@@ -213,64 +210,73 @@ export default function CustomersPage() {
           ) : undefined}
         />
       ) : (
-        <Reveal className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {filtered.map(c => (
-            <div
-              key={c.id}
-              className={cx("group vf-section flex items-start gap-4 p-5 hover:shadow-card", styles.card)}
-            >
-              <Avatar name={c.company_name} />
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <p className="font-semibold vf-text-1 leading-tight truncate">{c.company_name}</p>
-                  <span className={styles.badge}>
-                    Net {c.payment_terms_days}d
-                  </span>
-                </div>
-
-                <div className="mt-2 space-y-1">
-                  {c.email && (
-                    <div className="flex items-center gap-1.5 text-xs vf-text-m">
-                      <Mail className="h-3 w-3 shrink-0" />{c.email}
+        <div className="vf-section overflow-hidden rounded-xl p-0">
+          <ContentPanel<Customer>
+            hideHeader
+            title="Customers"
+            rows={filtered}
+            loading={loading}
+            getRowId={(c) => c.id}
+            columns={[
+              {
+                key: "company_name",
+                header: "Company",
+                render: (c) => (
+                  <div className="flex items-center gap-2.5">
+                    <Avatar name={c.company_name} />
+                    <span className="font-medium text-foreground">{c.company_name}</span>
+                  </div>
+                ),
+              },
+              { key: "email", header: "Email", render: (c) => c.email ?? "—" },
+              { key: "phone", header: "Phone", render: (c) => c.phone ?? "—" },
+              { key: "org_number", header: "Org number", render: (c) => c.org_number ?? "—" },
+              { key: "payment_terms_days", header: "Terms", render: (c) => `Net ${c.payment_terms_days}d` },
+            ]}
+            selected={selected}
+            onSelect={setSelected}
+            detailTitle={(c) => c.company_name}
+            renderDetail={(c) => (
+              <div className="space-y-4">
+                <dl className="divide-y">
+                  {([
+                    ["Email", c.email],
+                    ["Phone", c.phone],
+                    ["Org number", c.org_number],
+                    ["VAT", c.vat_number],
+                    ["Address", c.address],
+                    ["Payment terms", `Net ${c.payment_terms_days}d`],
+                  ] as [string, string | null][]).map(([label, val]) => (
+                    <div key={label} className="grid grid-cols-3 gap-2 py-2.5">
+                      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+                      <dd className="col-span-2 text-sm text-foreground">{val || "—"}</dd>
                     </div>
-                  )}
-                  {c.phone && (
-                    <div className="flex items-center gap-1.5 text-xs vf-text-m">
-                      <Phone className="h-3 w-3 shrink-0" />{c.phone}
-                    </div>
-                  )}
-                  {c.org_number && (
-                    <div className="flex items-center gap-1.5 text-xs vf-text-m">
-                      <Building2 className="h-3 w-3 shrink-0" />Org {c.org_number}
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-3 flex items-center gap-2">
+                  ))}
+                </dl>
+                <div className="flex flex-wrap gap-2">
                   <button
-                    onClick={() => openEdit(c)}
-                    className="vf-btn-ghost h-7 px-2.5 text-[11px] font-semibold"
+                    onClick={() => { setSelected(null); openEdit(c); }}
+                    className="vf-btn-secondary text-xs"
                   >
                     Edit
                   </button>
                   <Link
                     href={`/invoices/new?customer=${c.id}` as Parameters<typeof Link>[0]["href"]}
-                    className={styles.invoiceBtn}
+                    className="vf-btn text-xs"
                   >
-                    <FileText className="h-3 w-3" />Invoice
+                    <FileText className="h-3 w-3" />New invoice
                   </Link>
                   <Link
                     href={`/invoices?customer=${c.id}` as Parameters<typeof Link>[0]["href"]}
-                    className="ml-auto inline-flex items-center gap-1 text-[11px] vf-text-m hover:text-indigo-500 transition-colors"
+                    className="vf-btn-ghost text-xs"
                   >
                     History <ArrowRight className="h-3 w-3" />
                   </Link>
                 </div>
               </div>
-            </div>
-          ))}
-        </Reveal>
+            )}
+          />
+        </div>
       )}
 
       {/* ── Create / Edit modal ────────────────────────────────────── */}

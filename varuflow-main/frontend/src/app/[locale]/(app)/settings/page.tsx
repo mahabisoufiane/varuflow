@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { cx } from "@/lib/cx";
 import styles from "./page.module.scss";
 import { Check, CreditCard, Link2, Link2Off, LogOut, RefreshCw, UserPlus, Trash2, Bell, Smartphone, Shield, Settings2, ChevronDown } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 interface Org    { id: string; name: string; org_number: string | null; vat_number: string | null; address: string | null; plan: string; }
 interface Me     { email: string; role: string; organization: Org; allowed_modules: string[]; plan_modules: string[]; }

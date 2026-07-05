@@ -3,7 +3,7 @@
 import { api } from "@/lib/api-client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { Truck, Plus, ArrowRight } from "lucide-react";
 import styles from "./page.module.scss";

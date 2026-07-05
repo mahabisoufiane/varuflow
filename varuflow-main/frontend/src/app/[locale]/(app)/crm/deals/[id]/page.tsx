@@ -7,7 +7,7 @@ import {
   Loader2, Plus,
 } from "lucide-react";
 import { toast } from "sonner";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 
 interface Stage { slug: string; name: string; color: string; is_won: boolean; is_lost: boolean; }

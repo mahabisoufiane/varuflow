@@ -1,4 +1,94 @@
 {
+  "console": {
+    "search": {
+      "placeholder": "Søg kunder, fakturaer, produkter…"
+    },
+    "header": {
+      "quickCreate": "Ny",
+      "notifications": "Notifikationer",
+      "account": "Konto",
+      "signOut": "Log ud",
+      "openTree": "Åbn navigation"
+    },
+    "tree": {
+      "title": "Navigation",
+      "searchPlaceholder": "Filtrér…",
+      "noResults": "Ingen resultater",
+      "expand": "Udvid navigation",
+      "collapse": "Skjul navigation",
+      "dashboard": "Overblik",
+      "customers": "Kunder",
+      "customersAll": "Alle kunder",
+      "leads": "Leads",
+      "b2bHub": "B2B-hub",
+      "quotes": "Tilbud",
+      "orders": "Ordrer",
+      "b2bOrders": "B2B-ordrer",
+      "shopOrders": "Webshop-ordrer",
+      "pos": "Kasse",
+      "invoices": "Fakturaer",
+      "invoicesAll": "Alle fakturaer",
+      "recurring": "Tilbagevendende",
+      "reconciliation": "Afstemning",
+      "inventory": "Lager",
+      "products": "Produkter",
+      "kitting": "Kitting",
+      "landedCosts": "Landede omkostninger",
+      "warehouses": "Lagre",
+      "purchaseOrders": "Indkøbsordrer",
+      "purchaseRequests": "Indkøbsanmodninger",
+      "suppliers": "Leverandører",
+      "payments": "Betalinger",
+      "paymentOptions": "Betalingsmuligheder",
+      "localPayments": "Lokale betalinger",
+      "deposits": "Depositum",
+      "cashFlow": "Pengestrøm",
+      "cashForecast": "Likviditetsprognose",
+      "cashPrediction": "Likviditetsprognose (AI)",
+      "analytics": "Analyse",
+      "analyticsOverview": "Overblik",
+      "biDashboards": "Dashboards",
+      "biReports": "Rapporter",
+      "pnl": "Resultat",
+      "automation": "Automatisering",
+      "automationRuns": "Automatiseringskørsler",
+      "workflows": "Arbejdsgange",
+      "aiAdvisor": "AI-rådgiver",
+      "compliance": "Overholdelse",
+      "complianceOverview": "Overblik",
+      "governance": "Styring",
+      "gdpr": "GDPR",
+      "settings": "Indstillinger",
+      "settingsGeneral": "Generelt",
+      "integrations": "Integrationer",
+      "multiEntity": "Flere selskaber"
+    },
+    "panel": {
+      "empty": "Intet her endnu",
+      "detailTitle": "Detaljer",
+      "rowsLabel": "rækker"
+    },
+    "tasks": {
+      "title": "Aktivitet",
+      "empty": "Ingen nylig aktivitet",
+      "clear": "Ryd afsluttede",
+      "status": {
+        "pending": "Afventer",
+        "running": "Kører",
+        "success": "Udført",
+        "failed": "Mislykkedes"
+      },
+      "event": {
+        "invoiceCreated": "Faktura oprettet",
+        "invoicePaid": "Faktura betalt",
+        "stockMovement": "Lagerbevægelse",
+        "poReceived": "Indkøbsordre modtaget",
+        "newCustomer": "Ny kunde",
+        "generic": "Aktivitet"
+      }
+    }
+  },
+
   "common": {
     "appName": "Varuflow",
     "loading": "Indlæser...",

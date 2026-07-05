@@ -42,7 +42,7 @@ export default function ContractsPage() {
       .then((d: unknown) => setCustomers((d as { customers: Customer[] }).customers ?? []))
       .catch((e: unknown) => {
         const err = e as { status?: number };
-        if (err.status === 401) router.push(`/${locale}/auth/login`);
+        if (err.status === 401) router.push("/auth/login");
       });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -59,7 +59,7 @@ export default function ContractsPage() {
       setDraft(d as DraftResponse);
     } catch (e: unknown) {
       const err = e as { status?: number; detail?: string };
-      if (err.status === 401) router.push(`/${locale}/auth/login`);
+      if (err.status === 401) router.push("/auth/login");
       else if (err.status === 403) toast.error("Contract drafting requires a Pro plan.");
       else toast.error("Failed to generate contract.");
     } finally {

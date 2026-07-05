@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Pencil, Loader2, Target, Star, CheckCircle2, ArrowRight, UserCheck } from "lucide-react";
 import { toast } from "sonner";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import styles from "./page.module.scss";
 

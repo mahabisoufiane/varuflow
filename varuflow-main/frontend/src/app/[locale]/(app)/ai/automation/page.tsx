@@ -88,7 +88,7 @@ export default function AutomationPage() {
       }
     } catch (e: unknown) {
       const err = e as { status?: number };
-      if (err.status === 401) router.push(`/${locale}/auth/login`);
+      if (err.status === 401) router.push("/auth/login");
       else toast.error("Failed to load data.");
     } finally {
       setLoading(false);

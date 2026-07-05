@@ -68,7 +68,7 @@ export default function GccPaymentsPage() {
       setSessions((sData as { sessions: PaymentSession[] }).sessions);
     } catch (e: unknown) {
       const err = e as { status?: number };
-      if (err.status === 401) router.push(`/${locale}/auth/login`);
+      if (err.status === 401) router.push("/auth/login");
       else toast.error("Failed to load payment data.");
     } finally {
       setLoadingProviders(false);

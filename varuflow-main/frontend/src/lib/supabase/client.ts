@@ -17,7 +17,15 @@ const SUPABASE_ANON_KEY =
  * environments where Supabase is not configured (e.g. local dev without .env.local).
  */
 export const isSupabaseConfigured =
-  Boolean(SUPABASE_URL) && Boolean(SUPABASE_ANON_KEY);
+  Boolean(SUPABASE_URL) &&
+  Boolean(SUPABASE_ANON_KEY) &&
+  // Treat placeholder/localhost URLs as "not configured" so local dev bypasses
+  // auth consistently everywhere (client guards like SessionTimeoutModal), matching
+  // ENFORCE_AUTH in (app)/layout.tsx and the proxy.ts middleware. A real production
+  // URL → configured → auth stays fully enabled.
+  !SUPABASE_URL.includes("placeholder.supabase.co") &&
+  !SUPABASE_URL.includes("localhost") &&
+  !SUPABASE_URL.includes("127.0.0.1");
 
 /**
  * Returns a browser-side Supabase client.

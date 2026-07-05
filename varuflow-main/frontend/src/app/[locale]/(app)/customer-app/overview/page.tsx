@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Smartphone, CreditCard, Users, Repeat2, UserPlus, Clock } from "lucide-react";
 
 const NAV_CARDS = [

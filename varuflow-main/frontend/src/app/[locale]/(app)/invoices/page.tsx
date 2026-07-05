@@ -14,6 +14,7 @@ import {
 import { Stagger, StaggerItem } from "@/components/motion";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { EmptyInvoices } from "@/components/illustrations";
+import ContentPanel from "@/components/console/ContentPanel";
 
 interface Invoice {
   id: string;
@@ -48,6 +49,8 @@ type Filter = "ALL" | "DRAFT" | "SENT" | "OVERDUE" | "PAID";
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [selected, setSelected] = useState<Invoice | null>(null);
   const [filter, setFilter] = useState<Filter>("ALL");
   const [updating, setUpdating] = useState<string | null>(null);
   const [markingOverdue, setMarkingOverdue] = useState(false);
@@ -56,6 +59,7 @@ export default function InvoicesPage() {
   async function load() {
     try { setInvoices(await api.get<Invoice[]>("/api/invoicing/invoices")); }
     catch (e: unknown) { toast.error((e as Error).message); }
+    finally { setLoading(false); }
   }
 
   useEffect(() => { load(); }, []);
@@ -188,8 +192,8 @@ export default function InvoicesPage() {
         ))}
       </div>
 
-      {/* ── Invoice list ─────────────────────────────────────────────────── */}
-      {visible.length === 0 ? (
+      {/* ── Invoice list — ContentPanel (shadcn Table + detail Sheet) ─────── */}
+      {!loading && visible.length === 0 ? (
         <EmptyState
           illustration={<EmptyInvoices />}
           title={filter === "ALL" ? "No invoices yet" : `No ${filter.toLowerCase()} invoices`}
@@ -201,96 +205,71 @@ export default function InvoicesPage() {
           ) : undefined}
         />
       ) : (
-        <div className="space-y-[3px]">
-          {visible.map((inv) => {
-            const isOverdue = inv.status === "OVERDUE";
-            const isPaid    = inv.status === "PAID";
-            const isDraft   = inv.status === "DRAFT";
-            const nextStatus = NEXT_STATUS[inv.status];
-
-            return (
-              <div
-                key={inv.id}
-                className={cx(
-                  styles.invoiceRow,
-                  isOverdue && styles.invoiceRowOverdue,
-                  "group"
-                )}
-              >
-                {/* Accent bar */}
-                <div className={cn(
-                  "h-10 w-[3px] shrink-0 rounded-full",
-                  isOverdue ? "bg-red-500" : isPaid ? "bg-emerald-500" : isDraft ? "bg-slate-400" : "bg-indigo-500"
-                )} />
-
-                {/* Invoice # + date */}
-                <div className="w-28 shrink-0">
-                  <Link href={`/invoices/${inv.id}`}
-                    className="font-mono text-[13px] font-bold vf-text-1 hover:text-indigo-500 transition-colors">
-                    {inv.invoice_number}
-                  </Link>
-                  <p className="text-[11px] vf-text-m mt-0.5">{inv.issue_date}</p>
-                </div>
-
-                {/* Customer */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold vf-text-1 truncate">{inv.customer.company_name}</p>
-                  <p className="text-xs vf-text-m">Due {inv.due_date}</p>
-                </div>
-
-                {/* Status */}
-                <div className="shrink-0 hidden sm:block">
-                  <StatusBadge status={inv.status} />
-                </div>
-
-                {/* Amount */}
-                <div className="w-28 shrink-0 text-right">
-                  <p className={cn(
-                    "tabular-nums text-[15px] font-bold",
-                    isOverdue ? "text-red-400" : isPaid ? "text-emerald-500" : "vf-text-1"
-                  )}>
-                    {fmt(Number(inv.total_sek))}
-                  </p>
-                  <p className="text-[11px] vf-text-m">SEK</p>
-                </div>
-
-                {/* Actions */}
-                <div className="flex shrink-0 items-center gap-1.5">
-                  <button
-                    onClick={() => window.open(api.downloadUrl(`/api/invoicing/invoices/${inv.id}/pdf`), "_blank")}
-                    className="vf-btn-ghost h-8 px-2.5 text-[11px] font-semibold"
-                  >
-                    PDF
-                  </button>
-                  {nextStatus && (
+        <div className="vf-section overflow-hidden rounded-xl p-0">
+          <ContentPanel<Invoice>
+            hideHeader
+            title="Invoices"
+            rows={visible}
+            loading={loading}
+            getRowId={(i) => i.id}
+            columns={[
+              { key: "invoice_number", header: "Invoice #", render: (i) => <span className="font-mono font-semibold text-foreground">{i.invoice_number}</span> },
+              { key: "customer", header: "Customer", render: (i) => i.customer.company_name },
+              { key: "due_date", header: "Due", render: (i) => i.due_date },
+              { key: "status", header: "Status", render: (i) => <StatusBadge status={i.status} /> },
+              { key: "total_sek", header: "Amount", className: "text-right", render: (i) => <span className="tabular-nums font-semibold">{fmt(Number(i.total_sek))} kr</span> },
+            ]}
+            selected={selected}
+            onSelect={setSelected}
+            detailTitle={(i) => i.invoice_number}
+            detailDescription={(i) => i.customer.company_name}
+            renderDetail={(i) => {
+              const nextStatus = NEXT_STATUS[i.status];
+              const isDraft = i.status === "DRAFT";
+              return (
+                <div className="space-y-4">
+                  <dl className="divide-y">
+                    {([
+                      ["Customer", i.customer.company_name],
+                      ["Issue date", i.issue_date],
+                      ["Due date", i.due_date],
+                      ["Amount", `${fmt(Number(i.total_sek))} SEK`],
+                    ] as [string, string][]).map(([label, val]) => (
+                      <div key={label} className="grid grid-cols-3 gap-2 py-2.5">
+                        <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+                        <dd className="col-span-2 text-sm text-foreground">{val}</dd>
+                      </div>
+                    ))}
+                    <div className="grid grid-cols-3 gap-2 py-2.5">
+                      <dt className="text-xs font-medium text-muted-foreground">Status</dt>
+                      <dd className="col-span-2"><StatusBadge status={i.status} /></dd>
+                    </div>
+                  </dl>
+                  <div className="flex flex-wrap gap-2">
+                    {nextStatus && (
+                      <button
+                        onClick={() => { setSelected(null); advanceStatus(i); }}
+                        disabled={updating === i.id}
+                        className="vf-btn text-xs disabled:opacity-50"
+                      >
+                        {isDraft ? <Send className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
+                        {isDraft ? "Send" : "Mark paid"}
+                      </button>
+                    )}
                     <button
-                      onClick={() => advanceStatus(inv)}
-                      disabled={updating === inv.id}
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-lg px-2.5 text-[11px] font-semibold transition-colors disabled:opacity-50 h-8",
-                        isOverdue
-                          ? "bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20"
-                          : isDraft
-                          ? "bg-indigo-600 text-white hover:bg-indigo-500"
-                          : "bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20 border border-indigo-500/20"
-                      )}
+                      onClick={() => window.open(api.downloadUrl(`/api/invoicing/invoices/${i.id}/pdf`), "_blank")}
+                      className="vf-btn-secondary text-xs"
                     >
-                      {updating === inv.id ? "…" : (
-                        <>
-                          {isDraft ? <Send className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
-                          {isDraft ? "Send" : "Mark paid"}
-                        </>
-                      )}
+                      <FileText className="h-3 w-3" />PDF
                     </button>
-                  )}
-                  <Link href={`/invoices/${inv.id}`}
-                    className="vf-btn-ghost h-8 w-8 p-0 flex items-center justify-center">
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
+                    <Link href={`/invoices/${i.id}`} className="vf-btn-ghost text-xs">
+                      Open invoice <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            }}
+          />
         </div>
       )}
     </div>

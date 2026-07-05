@@ -43,7 +43,7 @@ export default function SessionTimeoutModal() {
     clearInterval(countdownRef.current ?? undefined);
     clearInterval(pollRef.current ?? undefined);
     if (isSupabaseConfigured) await supabase.auth.signOut();
-    router.push(`/${locale}/auth/login`);
+    router.push("/auth/login");
   }, [locale, router, supabase.auth]);
 
   // ── Show modal + start 30s countdown ─────────────────────────────────────

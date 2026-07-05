@@ -39,7 +39,7 @@ export default function UaeVatPage() {
       setResult(d as VatReturn);
     } catch (e: unknown) {
       const err = e as { status?: number };
-      if (err.status === 401) router.push(`/${locale}/auth/login`);
+      if (err.status === 401) router.push("/auth/login");
       else toast.error("Failed to compute VAT return.");
     } finally {
       setLoading(false);

@@ -1,4 +1,94 @@
 {
+  "console": {
+    "search": {
+      "placeholder": "ابحث عن العملاء والفواتير والمنتجات…"
+    },
+    "header": {
+      "quickCreate": "جديد",
+      "notifications": "الإشعارات",
+      "account": "الحساب",
+      "signOut": "تسجيل الخروج",
+      "openTree": "فتح التنقل"
+    },
+    "tree": {
+      "title": "التنقل",
+      "searchPlaceholder": "تصفية…",
+      "noResults": "لا توجد نتائج",
+      "expand": "توسيع التنقل",
+      "collapse": "طي التنقل",
+      "dashboard": "لوحة التحكم",
+      "customers": "العملاء",
+      "customersAll": "جميع العملاء",
+      "leads": "العملاء المحتملون",
+      "b2bHub": "مركز B2B",
+      "quotes": "عروض الأسعار",
+      "orders": "الطلبات",
+      "b2bOrders": "طلبات B2B",
+      "shopOrders": "طلبات المتجر",
+      "pos": "نقطة البيع",
+      "invoices": "الفواتير",
+      "invoicesAll": "جميع الفواتير",
+      "recurring": "المتكررة",
+      "reconciliation": "التسوية",
+      "inventory": "المخزون",
+      "products": "المنتجات",
+      "kitting": "التجميع",
+      "landedCosts": "التكاليف الإجمالية",
+      "warehouses": "المستودعات",
+      "purchaseOrders": "أوامر الشراء",
+      "purchaseRequests": "طلبات الشراء",
+      "suppliers": "الموردون",
+      "payments": "المدفوعات",
+      "paymentOptions": "خيارات الدفع",
+      "localPayments": "المدفوعات المحلية",
+      "deposits": "الودائع",
+      "cashFlow": "التدفق النقدي",
+      "cashForecast": "توقعات التدفق النقدي",
+      "cashPrediction": "التنبؤ النقدي (ذكاء اصطناعي)",
+      "analytics": "التحليلات",
+      "analyticsOverview": "نظرة عامة",
+      "biDashboards": "لوحات المعلومات",
+      "biReports": "التقارير",
+      "pnl": "الأرباح والخسائر",
+      "automation": "الأتمتة",
+      "automationRuns": "عمليات الأتمتة",
+      "workflows": "سير العمل",
+      "aiAdvisor": "مستشار الذكاء الاصطناعي",
+      "compliance": "الامتثال",
+      "complianceOverview": "نظرة عامة",
+      "governance": "الحوكمة",
+      "gdpr": "اللائحة العامة لحماية البيانات",
+      "settings": "الإعدادات",
+      "settingsGeneral": "عام",
+      "integrations": "التكاملات",
+      "multiEntity": "كيانات متعددة"
+    },
+    "panel": {
+      "empty": "لا شيء هنا بعد",
+      "detailTitle": "التفاصيل",
+      "rowsLabel": "صفوف"
+    },
+    "tasks": {
+      "title": "النشاط",
+      "empty": "لا يوجد نشاط حديث",
+      "clear": "مسح المكتملة",
+      "status": {
+        "pending": "قيد الانتظار",
+        "running": "قيد التشغيل",
+        "success": "تم",
+        "failed": "فشل"
+      },
+      "event": {
+        "invoiceCreated": "تم إنشاء فاتورة",
+        "invoicePaid": "تم دفع الفاتورة",
+        "stockMovement": "حركة مخزون",
+        "poReceived": "تم استلام أمر الشراء",
+        "newCustomer": "عميل جديد",
+        "generic": "نشاط"
+      }
+    }
+  },
+
   "common": {
     "appName": "Varuflow",
     "loading": "جارٍ التحميل...",

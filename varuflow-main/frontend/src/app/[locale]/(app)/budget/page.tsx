@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { RoleGuard } from "@/components/app/RoleContext";
 import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
   PlusCircle, FileText, CheckCircle2, Clock, RotateCcw,

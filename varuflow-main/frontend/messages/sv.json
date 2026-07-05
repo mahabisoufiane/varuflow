@@ -1,4 +1,94 @@
 {
+  "console": {
+    "search": {
+      "placeholder": "Sök kunder, fakturor, produkter…"
+    },
+    "header": {
+      "quickCreate": "Ny",
+      "notifications": "Aviseringar",
+      "account": "Konto",
+      "signOut": "Logga ut",
+      "openTree": "Öppna navigering"
+    },
+    "tree": {
+      "title": "Navigering",
+      "searchPlaceholder": "Filtrera…",
+      "noResults": "Inga träffar",
+      "expand": "Expandera navigering",
+      "collapse": "Fäll ihop navigering",
+      "dashboard": "Översikt",
+      "customers": "Kunder",
+      "customersAll": "Alla kunder",
+      "leads": "Leads",
+      "b2bHub": "B2B-hubb",
+      "quotes": "Offerter",
+      "orders": "Ordrar",
+      "b2bOrders": "B2B-ordrar",
+      "shopOrders": "Butiksordrar",
+      "pos": "Kassa",
+      "invoices": "Fakturor",
+      "invoicesAll": "Alla fakturor",
+      "recurring": "Återkommande",
+      "reconciliation": "Avstämning",
+      "inventory": "Lager",
+      "products": "Produkter",
+      "kitting": "Kitting",
+      "landedCosts": "Landningskostnader",
+      "warehouses": "Lagerplatser",
+      "purchaseOrders": "Inköpsordrar",
+      "purchaseRequests": "Inköpsförfrågningar",
+      "suppliers": "Leverantörer",
+      "payments": "Betalningar",
+      "paymentOptions": "Betalningsalternativ",
+      "localPayments": "Lokala betalningar",
+      "deposits": "Handpenningar",
+      "cashFlow": "Kassaflöde",
+      "cashForecast": "Kassaprognos",
+      "cashPrediction": "Kassaprognos (AI)",
+      "analytics": "Analys",
+      "analyticsOverview": "Översikt",
+      "biDashboards": "Instrumentpaneler",
+      "biReports": "Rapporter",
+      "pnl": "Resultaträkning",
+      "automation": "Automatisering",
+      "automationRuns": "Automatiseringskörningar",
+      "workflows": "Arbetsflöden",
+      "aiAdvisor": "AI-rådgivare",
+      "compliance": "Efterlevnad",
+      "complianceOverview": "Översikt",
+      "governance": "Styrning",
+      "gdpr": "GDPR",
+      "settings": "Inställningar",
+      "settingsGeneral": "Allmänt",
+      "integrations": "Integrationer",
+      "multiEntity": "Flera bolag"
+    },
+    "panel": {
+      "empty": "Inget här ännu",
+      "detailTitle": "Detaljer",
+      "rowsLabel": "rader"
+    },
+    "tasks": {
+      "title": "Aktivitet",
+      "empty": "Ingen aktivitet nyligen",
+      "clear": "Rensa klara",
+      "status": {
+        "pending": "Väntar",
+        "running": "Pågår",
+        "success": "Klar",
+        "failed": "Misslyckades"
+      },
+      "event": {
+        "invoiceCreated": "Faktura skapad",
+        "invoicePaid": "Faktura betald",
+        "stockMovement": "Lagerrörelse",
+        "poReceived": "Inköpsorder mottagen",
+        "newCustomer": "Ny kund",
+        "generic": "Aktivitet"
+      }
+    }
+  },
+
   "common": {
     "appName": "Varuflow",
     "loading": "Laddar...",

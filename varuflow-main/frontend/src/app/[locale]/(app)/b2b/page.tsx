@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 export default function B2BHubPage() {
   const { locale } = useParams<{ locale: string }>();

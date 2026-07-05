@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+// next-intl navigation (not next/navigation + next/link): keeps the locale prefix
+// so /quotes/{id} resolves to the app route, not the public /quotes/[token] page.
+import { Link, useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Plus, Trash2, ArrowLeft } from "lucide-react";

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ArrowLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import BarcodeInput, { type OFFResult } from "@/components/barcode/BarcodeInput";

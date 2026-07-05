@@ -132,8 +132,17 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Skip Supabase session refresh if not configured (local dev without auth)
-  if (!supabaseUrl || !supabaseKey) {
+  // Skip Supabase session refresh if not configured (local dev without auth).
+  // Also treat placeholder/localhost Supabase URLs as "unconfigured" so the app
+  // is explorable in local dev — mirrors ENFORCE_AUTH in (app)/layout.tsx. In
+  // production NEXT_PUBLIC_SUPABASE_URL is a real host, so auth stays enforced.
+  const authDisabled =
+    !supabaseUrl ||
+    !supabaseKey ||
+    supabaseUrl.includes("placeholder.supabase.co") ||
+    supabaseUrl.includes("localhost") ||
+    supabaseUrl.includes("127.0.0.1");
+  if (authDisabled) {
     return handleI18nRouting(request);
   }
 

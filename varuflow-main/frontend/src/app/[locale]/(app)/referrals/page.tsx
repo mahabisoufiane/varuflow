@@ -168,12 +168,12 @@ export default function ReferralsPage() {
     try {
       const supabase = createClient();
       if (!supabase) {
-        router.push(`/${locale}/auth/login`);
+        router.push("/auth/login");
         return;
       }
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) {
-        router.push(`/${locale}/auth/login`);
+        router.push("/auth/login");
         return;
       }
 
@@ -188,7 +188,7 @@ export default function ReferralsPage() {
     } catch (err: unknown) {
       const status = (err as { status?: number })?.status;
       if (status === 401) {
-        router.push(`/${locale}/auth/login`);
+        router.push("/auth/login");
       } else if (status !== 404) {
         toast.error("Failed to load referrals");
       }

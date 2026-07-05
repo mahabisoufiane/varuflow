@@ -1,4 +1,94 @@
 {
+  "console": {
+    "search": {
+      "placeholder": "Search customers, invoices, products…"
+    },
+    "header": {
+      "quickCreate": "New",
+      "notifications": "Notifications",
+      "account": "Account",
+      "signOut": "Sign out",
+      "openTree": "Open navigation"
+    },
+    "tree": {
+      "title": "Navigation",
+      "searchPlaceholder": "Filter…",
+      "noResults": "No matches",
+      "expand": "Expand navigation",
+      "collapse": "Collapse navigation",
+      "dashboard": "Dashboard",
+      "customers": "Customers",
+      "customersAll": "All customers",
+      "leads": "Leads",
+      "b2bHub": "B2B hub",
+      "quotes": "Quotes",
+      "orders": "Orders",
+      "b2bOrders": "B2B orders",
+      "shopOrders": "Shop orders",
+      "pos": "Point of sale",
+      "invoices": "Invoices",
+      "invoicesAll": "All invoices",
+      "recurring": "Recurring",
+      "reconciliation": "Reconciliation",
+      "inventory": "Inventory",
+      "products": "Products",
+      "kitting": "Kitting",
+      "landedCosts": "Landed costs",
+      "warehouses": "Warehouses",
+      "purchaseOrders": "Purchase orders",
+      "purchaseRequests": "Purchase requests",
+      "suppliers": "Suppliers",
+      "payments": "Payments",
+      "paymentOptions": "Payment options",
+      "localPayments": "Local payments",
+      "deposits": "Deposits",
+      "cashFlow": "Cash flow",
+      "cashForecast": "Cash forecast",
+      "cashPrediction": "Cash prediction",
+      "analytics": "Analytics",
+      "analyticsOverview": "Overview",
+      "biDashboards": "Dashboards",
+      "biReports": "Reports",
+      "pnl": "Profit & loss",
+      "automation": "Automation",
+      "automationRuns": "Automation runs",
+      "workflows": "Workflows",
+      "aiAdvisor": "AI advisor",
+      "compliance": "Compliance",
+      "complianceOverview": "Overview",
+      "governance": "Governance",
+      "gdpr": "GDPR",
+      "settings": "Settings",
+      "settingsGeneral": "General",
+      "integrations": "Integrations",
+      "multiEntity": "Multi-entity"
+    },
+    "panel": {
+      "empty": "Nothing here yet",
+      "detailTitle": "Details",
+      "rowsLabel": "rows"
+    },
+    "tasks": {
+      "title": "Activity",
+      "empty": "No recent activity",
+      "clear": "Clear finished",
+      "status": {
+        "pending": "Pending",
+        "running": "Running",
+        "success": "Done",
+        "failed": "Failed"
+      },
+      "event": {
+        "invoiceCreated": "Invoice created",
+        "invoicePaid": "Invoice paid",
+        "stockMovement": "Stock movement",
+        "poReceived": "Purchase order received",
+        "newCustomer": "New customer",
+        "generic": "Activity"
+      }
+    }
+  },
+
   "common": {
     "appName": "Varuflow",
     "loading": "Loading...",

@@ -1,4 +1,94 @@
 {
+  "console": {
+    "search": {
+      "placeholder": "Søk kunder, fakturaer, produkter…"
+    },
+    "header": {
+      "quickCreate": "Ny",
+      "notifications": "Varsler",
+      "account": "Konto",
+      "signOut": "Logg ut",
+      "openTree": "Åpne navigasjon"
+    },
+    "tree": {
+      "title": "Navigasjon",
+      "searchPlaceholder": "Filtrer…",
+      "noResults": "Ingen treff",
+      "expand": "Utvid navigasjon",
+      "collapse": "Skjul navigasjon",
+      "dashboard": "Oversikt",
+      "customers": "Kunder",
+      "customersAll": "Alle kunder",
+      "leads": "Leads",
+      "b2bHub": "B2B-hub",
+      "quotes": "Tilbud",
+      "orders": "Ordrer",
+      "b2bOrders": "B2B-ordrer",
+      "shopOrders": "Nettbutikkordrer",
+      "pos": "Kasse",
+      "invoices": "Fakturaer",
+      "invoicesAll": "Alle fakturaer",
+      "recurring": "Gjentakende",
+      "reconciliation": "Avstemming",
+      "inventory": "Lager",
+      "products": "Produkter",
+      "kitting": "Kitting",
+      "landedCosts": "Innkjøpskostnader",
+      "warehouses": "Lagre",
+      "purchaseOrders": "Innkjøpsordrer",
+      "purchaseRequests": "Innkjøpsforespørsler",
+      "suppliers": "Leverandører",
+      "payments": "Betalinger",
+      "paymentOptions": "Betalingsalternativer",
+      "localPayments": "Lokale betalinger",
+      "deposits": "Depositum",
+      "cashFlow": "Kontantstrøm",
+      "cashForecast": "Kontantstrømprognose",
+      "cashPrediction": "Kontantprognose (AI)",
+      "analytics": "Analyse",
+      "analyticsOverview": "Oversikt",
+      "biDashboards": "Dashbord",
+      "biReports": "Rapporter",
+      "pnl": "Resultat",
+      "automation": "Automatisering",
+      "automationRuns": "Automatiseringskjøringer",
+      "workflows": "Arbeidsflyter",
+      "aiAdvisor": "AI-rådgiver",
+      "compliance": "Etterlevelse",
+      "complianceOverview": "Oversikt",
+      "governance": "Styring",
+      "gdpr": "GDPR",
+      "settings": "Innstillinger",
+      "settingsGeneral": "Generelt",
+      "integrations": "Integrasjoner",
+      "multiEntity": "Flere selskaper"
+    },
+    "panel": {
+      "empty": "Ingenting her ennå",
+      "detailTitle": "Detaljer",
+      "rowsLabel": "rader"
+    },
+    "tasks": {
+      "title": "Aktivitet",
+      "empty": "Ingen nylig aktivitet",
+      "clear": "Tøm fullførte",
+      "status": {
+        "pending": "Venter",
+        "running": "Pågår",
+        "success": "Fullført",
+        "failed": "Mislyktes"
+      },
+      "event": {
+        "invoiceCreated": "Faktura opprettet",
+        "invoicePaid": "Faktura betalt",
+        "stockMovement": "Lagerbevegelse",
+        "poReceived": "Innkjøpsordre mottatt",
+        "newCustomer": "Ny kunde",
+        "generic": "Aktivitet"
+      }
+    }
+  },
+
   "common": {
     "appName": "Varuflow",
     "loading": "Laster...",

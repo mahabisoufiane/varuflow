@@ -5,7 +5,7 @@ import {
   XCircle, Phone, Mail, Users, Calendar, DollarSign, Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import { isPlanGateError, PlanGateBlock } from "@/components/ui/PlanGate";
 import styles from "./page.module.scss";

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { List, Search, ChevronDown, Target } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import styles from "./page.module.scss";
 
