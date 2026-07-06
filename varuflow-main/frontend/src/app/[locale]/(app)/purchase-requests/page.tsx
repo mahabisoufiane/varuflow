@@ -68,7 +68,7 @@ const STATUS_MODULE: Record<string, keyof typeof styles> = {
 };
 
 const URGENCY_BADGE: Record<string, string> = {
-  low: "bg-gray-100 text-gray-600",
+  low: "bg-gray-100 vf-text-2",
   normal: "bg-blue-50 text-blue-600",
   high: "bg-orange-100 text-orange-700",
   urgent: "bg-red-100 text-red-700",
@@ -208,16 +208,16 @@ export default function PurchaseRequestsPage() {
     <div className="p-6 space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Purchase Requests</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Submit and approve internal purchase requests</p>
+          <h1 className="text-xl font-bold vf-text-1">Purchase Requests</h1>
+          <p className="text-sm vf-text-m mt-0.5">Submit and approve internal purchase requests</p>
         </div>
-        <button onClick={() => setShowForm(v => !v)} className="btn-primary flex items-center gap-1 text-sm">
+        <button onClick={() => setShowForm(v => !v)} className="vf-btn text-sm">
           <Plus className="w-4 h-4" /> New Request
         </button>
       </div>
 
       {error && (
-        <div className="rounded bg-red-50 border border-red-200 text-red-700 text-sm p-3 flex gap-2">
+        <div className="rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 flex gap-2">
           <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />{error}
         </div>
       )}
@@ -228,7 +228,7 @@ export default function PurchaseRequestsPage() {
           <button
             key={t}
             onClick={() => { setTab(t); setSelected(null); }}
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === t ? "border-indigo-600 text-indigo-700" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === t ? "border-indigo-600 text-indigo-700" : "border-transparent vf-text-m hover:text-[var(--vf-text-primary)]"}`}
           >
             {t === "requests" ? "Requests" : t === "templates" ? "Templates" : "Spending Report"}
           </button>
@@ -237,46 +237,46 @@ export default function PurchaseRequestsPage() {
 
       {/* Create form */}
       {showForm && (
-        <div className="rounded-xl border bg-white shadow-sm p-5 space-y-4">
-          <h2 className="font-semibold text-gray-800">{form.is_template ? "New Request Template" : "New Purchase Request"}</h2>
+        <div className="rounded-xl border bg-[var(--vf-bg-surface)] shadow-sm p-5 space-y-4">
+          <h2 className="font-semibold vf-text-1">{form.is_template ? "New Request Template" : "New Purchase Request"}</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="text-xs text-gray-500 mb-1 block">Title *</label>
-              <input className="input w-full" placeholder="e.g. Laptop for new hire" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+              <label className="text-xs vf-text-m mb-1 block">Title *</label>
+              <input className="vf-input w-full" placeholder="e.g. Laptop for new hire" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
             </div>
             <div className="col-span-2">
-              <label className="text-xs text-gray-500 mb-1 block">Justification</label>
-              <textarea className="input w-full" rows={2} placeholder="Why is this purchase needed?" value={form.justification} onChange={e => setForm(f => ({ ...f, justification: e.target.value }))} />
+              <label className="text-xs vf-text-m mb-1 block">Justification</label>
+              <textarea className="vf-input w-full" rows={2} placeholder="Why is this purchase needed?" value={form.justification} onChange={e => setForm(f => ({ ...f, justification: e.target.value }))} />
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Urgency</label>
-              <select className="input w-full" value={form.urgency} onChange={e => setForm(f => ({ ...f, urgency: e.target.value }))}>
+              <label className="text-xs vf-text-m mb-1 block">Urgency</label>
+              <select className="vf-input w-full" value={form.urgency} onChange={e => setForm(f => ({ ...f, urgency: e.target.value }))}>
                 {URGENCY_OPTS.map(u => <option key={u} value={u}>{u.charAt(0).toUpperCase() + u.slice(1)}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Budget category</label>
-              <select className="input w-full" value={form.budget_category} onChange={e => setForm(f => ({ ...f, budget_category: e.target.value }))}>
+              <label className="text-xs vf-text-m mb-1 block">Budget category</label>
+              <select className="vf-input w-full" value={form.budget_category} onChange={e => setForm(f => ({ ...f, budget_category: e.target.value }))}>
                 <option value="">— Select —</option>
                 {CATEGORIES.map(c => <option key={c}>{c}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Currency</label>
-              <select className="input w-full" value={form.currency} onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}>
+              <label className="text-xs vf-text-m mb-1 block">Currency</label>
+              <select className="vf-input w-full" value={form.currency} onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}>
                 {["SEK", "NOK", "DKK", "EUR", "USD"].map(c => <option key={c}>{c}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Manual estimated total (if no line items)</label>
-              <input type="number" className="input w-full" placeholder="0.00" value={form.estimated_total} onChange={e => setForm(f => ({ ...f, estimated_total: e.target.value }))} />
+              <label className="text-xs vf-text-m mb-1 block">Manual estimated total (if no line items)</label>
+              <input type="number" className="vf-input w-full" placeholder="0.00" value={form.estimated_total} onChange={e => setForm(f => ({ ...f, estimated_total: e.target.value }))} />
             </div>
           </div>
 
           {/* Line items */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-gray-500 font-medium">Line items</label>
+              <label className="text-xs vf-text-m font-medium">Line items</label>
               <button
                 onClick={() => setLineItems(prev => [...prev, { description: "", quantity: "1", unit_price: "" }])}
                 className="text-xs text-indigo-600 hover:underline"
@@ -288,35 +288,35 @@ export default function PurchaseRequestsPage() {
               {lineItems.map((row, i) => (
                 <div key={i} className="grid grid-cols-[1fr_80px_100px_32px] gap-2 items-center">
                   <input
-                    className="input text-sm"
+                    className="vf-input text-sm"
                     placeholder="Description"
                     value={row.description}
                     onChange={e => setLineItems(prev => prev.map((r, j) => j === i ? { ...r, description: e.target.value } : r))}
                   />
                   <input
                     type="number"
-                    className="input text-sm"
+                    className="vf-input text-sm"
                     placeholder="Qty"
                     value={row.quantity}
                     onChange={e => setLineItems(prev => prev.map((r, j) => j === i ? { ...r, quantity: e.target.value } : r))}
                   />
                   <input
                     type="number"
-                    className="input text-sm"
+                    className="vf-input text-sm"
                     placeholder="Unit price"
                     value={row.unit_price}
                     onChange={e => setLineItems(prev => prev.map((r, j) => j === i ? { ...r, unit_price: e.target.value } : r))}
                   />
                   <button
                     onClick={() => setLineItems(prev => prev.filter((_, j) => j !== i))}
-                    className="text-gray-300 hover:text-red-400 text-lg leading-none"
+                    className="vf-text-m hover:text-red-400 text-lg leading-none"
                     disabled={lineItems.length === 1}
                   >×</button>
                 </div>
               ))}
             </div>
             {lineItems.some(l => l.unit_price) && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs vf-text-m mt-1">
                 Calculated total: <strong>{parseFloat(calcTotal()).toLocaleString()} {form.currency}</strong>
               </p>
             )}
@@ -330,7 +330,7 @@ export default function PurchaseRequestsPage() {
             </label>
             {form.is_template && (
               <input
-                className="input text-sm flex-1"
+                className="vf-input text-sm flex-1"
                 placeholder="Template name"
                 value={form.template_name}
                 onChange={e => setForm(f => ({ ...f, template_name: e.target.value }))}
@@ -339,10 +339,10 @@ export default function PurchaseRequestsPage() {
           </div>
 
           <div className="flex gap-3">
-            <button onClick={create} disabled={saving} className="btn-primary text-sm">
+            <button onClick={create} disabled={saving} className="vf-btn text-sm">
               {saving ? "Submitting…" : form.is_template ? "Save template" : "Submit request"}
             </button>
-            <button onClick={() => setShowForm(false)} className="btn-secondary text-sm">Cancel</button>
+            <button onClick={() => setShowForm(false)} className="vf-btn-secondary text-sm">Cancel</button>
           </div>
         </div>
       )}
@@ -350,49 +350,49 @@ export default function PurchaseRequestsPage() {
       {/* Spending Report */}
       {tab === "report" && (
         <div className="space-y-5">
-          {reportLoading && <div className="text-center text-gray-400 py-12">Loading report…</div>}
+          {reportLoading && <div className="text-center vf-text-m py-12">Loading report…</div>}
           {!reportLoading && report && (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {[
-                  { label: "Total submitted", value: report.total_submitted, icon: FileText, color: "text-gray-700" },
+                  { label: "Total submitted", value: report.total_submitted, icon: FileText, color: "vf-text-2" },
                   { label: "Approved", value: report.total_approved, icon: CheckCircle, color: "text-green-600" },
                   { label: "Rejected", value: report.total_rejected, icon: XCircle, color: "text-red-500" },
                   { label: "Pending", value: report.total_pending, icon: Clock, color: "text-yellow-600" },
                 ].map(card => (
-                  <div key={card.label} className="rounded-xl border bg-white p-4 flex items-start gap-3 shadow-sm">
+                  <div key={card.label} className="rounded-xl border bg-[var(--vf-bg-surface)] p-4 flex items-start gap-3 shadow-sm">
                     <card.icon className={`w-5 h-5 mt-0.5 shrink-0 ${card.color}`} />
                     <div>
-                      <p className="text-2xl font-bold text-gray-900">{card.value}</p>
-                      <p className="text-xs text-gray-500">{card.label}</p>
+                      <p className="text-2xl font-bold vf-text-1">{card.value}</p>
+                      <p className="text-xs vf-text-m">{card.label}</p>
                     </div>
                   </div>
                 ))}
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-xl border bg-white p-4 shadow-sm">
-                  <p className="text-xs text-gray-500 mb-1">Approved value</p>
+                <div className="rounded-xl border bg-[var(--vf-bg-surface)] p-4 shadow-sm">
+                  <p className="text-xs vf-text-m mb-1">Approved value</p>
                   <p className="text-xl font-bold text-green-700">{report.value_approved.toLocaleString()} SEK</p>
                 </div>
-                <div className="rounded-xl border bg-white p-4 shadow-sm">
-                  <p className="text-xs text-gray-500 mb-1">Pending value</p>
+                <div className="rounded-xl border bg-[var(--vf-bg-surface)] p-4 shadow-sm">
+                  <p className="text-xs vf-text-m mb-1">Pending value</p>
                   <p className="text-xl font-bold text-yellow-700">{report.value_pending.toLocaleString()} SEK</p>
                 </div>
               </div>
-              <div className="rounded-xl border bg-white p-4 shadow-sm">
-                <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2"><BarChart2 className="w-4 h-4" /> By category</h3>
+              <div className="rounded-xl border bg-[var(--vf-bg-surface)] p-4 shadow-sm">
+                <h3 className="font-semibold vf-text-1 mb-3 flex items-center gap-2"><BarChart2 className="w-4 h-4" /> By category</h3>
                 <div className="space-y-2">
                   {Object.entries(report.by_category).map(([cat, d]) => (
                     <div key={cat} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-700">{cat}</span>
-                      <div className="flex gap-4 text-gray-500 text-xs">
+                      <span className="vf-text-2">{cat}</span>
+                      <div className="flex gap-4 vf-text-m text-xs">
                         <span>{d.count} request{d.count !== 1 ? "s" : ""}</span>
-                        <span className="font-semibold text-gray-700">{d.value.toLocaleString()} SEK</span>
+                        <span className="font-semibold vf-text-2">{d.value.toLocaleString()} SEK</span>
                       </div>
                     </div>
                   ))}
                   {Object.keys(report.by_category).length === 0 && (
-                    <p className="text-gray-400 text-sm">No data yet.</p>
+                    <p className="vf-text-m text-sm">No data yet.</p>
                   )}
                 </div>
               </div>
@@ -413,7 +413,7 @@ export default function PurchaseRequestsPage() {
                   <button
                     key={s || "all"}
                     onClick={() => setStatusFilter(s)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${statusFilter === s ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"}`}
+                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${statusFilter === s ? "bg-indigo-600 text-white border-indigo-600" : "bg-[var(--vf-bg-surface)] vf-text-2 border-[var(--vf-border)] hover:border-[var(--vf-text-muted)]"}`}
                   >
                     {s ? s.charAt(0).toUpperCase() + s.slice(1) : "All"}
                   </button>
@@ -421,10 +421,10 @@ export default function PurchaseRequestsPage() {
               </div>
             )}
 
-            {loading && <div className="text-center text-gray-400 py-12">Loading…</div>}
+            {loading && <div className="text-center vf-text-m py-12">Loading…</div>}
 
             {!loading && displayed.length === 0 && (
-              <div className="text-center py-16 text-gray-400">
+              <div className="text-center py-16 vf-text-m">
                 {tab === "templates" ? "No templates saved yet." : "No purchase requests found."}
               </div>
             )}
@@ -433,12 +433,12 @@ export default function PurchaseRequestsPage() {
               <div
                 key={req.id}
                 onClick={() => { setSelected(req); setReviewNote(""); }}
-                className={`rounded-xl border bg-white shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow ${selected?.id === req.id ? "ring-2 ring-indigo-400" : ""}`}
+                className={`rounded-xl border bg-[var(--vf-bg-surface)] shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow ${selected?.id === req.id ? "ring-2 ring-indigo-400" : ""}`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-gray-900 truncate">{req.title}</span>
+                      <span className="font-semibold vf-text-1 truncate">{req.title}</span>
                       {!req.is_template && (
                         <span className={styles[STATUS_MODULE[req.status] ?? "statusPending"]}>
                           {req.status}
@@ -451,19 +451,19 @@ export default function PurchaseRequestsPage() {
                         <span className={styles.urgencyCritical}>Budget exceeded</span>
                       )}
                       {req.budget_category && (
-                        <span className="text-xs text-gray-400">{req.budget_category}</span>
+                        <span className="text-xs vf-text-m">{req.budget_category}</span>
                       )}
                     </div>
                     {req.justification && (
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">{req.justification}</p>
+                      <p className="text-xs vf-text-m mt-1 line-clamp-2">{req.justification}</p>
                     )}
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs vf-text-m mt-1">
                       {req.created_at ? new Date(req.created_at).toLocaleDateString() : ""}
                       {req.items.length > 0 ? ` · ${req.items.length} line item${req.items.length !== 1 ? "s" : ""}` : ""}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-semibold text-gray-900">{req.estimated_total.toLocaleString()} {req.currency}</p>
+                    <p className="font-semibold vf-text-1">{req.estimated_total.toLocaleString()} {req.currency}</p>
                     {req.purchase_order_id && (
                       <p className="text-xs text-indigo-600 mt-0.5">PO created</p>
                     )}
@@ -475,24 +475,24 @@ export default function PurchaseRequestsPage() {
 
           {/* Detail panel */}
           {selected && (
-            <div className="w-80 shrink-0 rounded-xl border bg-white shadow-sm p-5 space-y-4 self-start sticky top-20">
+            <div className="w-80 shrink-0 rounded-xl border bg-[var(--vf-bg-surface)] shadow-sm p-5 space-y-4 self-start sticky top-20">
               <div className="flex items-start justify-between">
-                <h2 className="font-semibold text-gray-900 leading-tight">{selected.title}</h2>
-                <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+                <h2 className="font-semibold vf-text-1 leading-tight">{selected.title}</h2>
+                <button onClick={() => setSelected(null)} className="vf-text-m hover:text-[var(--vf-text-primary)] text-xl leading-none">×</button>
               </div>
 
               {selected.justification && (
-                <p className="text-sm text-gray-600">{selected.justification}</p>
+                <p className="text-sm vf-text-2">{selected.justification}</p>
               )}
 
-              <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
-                <div><span className="font-medium text-gray-700">Status:</span> {selected.status}</div>
-                <div><span className="font-medium text-gray-700">Urgency:</span> {selected.urgency}</div>
-                <div><span className="font-medium text-gray-700">Category:</span> {selected.budget_category ?? "—"}</div>
-                <div><span className="font-medium text-gray-700">Currency:</span> {selected.currency}</div>
-                <div className="col-span-2"><span className="font-medium text-gray-700">Total:</span> {selected.estimated_total.toLocaleString()} {selected.currency}</div>
+              <div className="grid grid-cols-2 gap-2 text-xs vf-text-m">
+                <div><span className="font-medium vf-text-2">Status:</span> {selected.status}</div>
+                <div><span className="font-medium vf-text-2">Urgency:</span> {selected.urgency}</div>
+                <div><span className="font-medium vf-text-2">Category:</span> {selected.budget_category ?? "—"}</div>
+                <div><span className="font-medium vf-text-2">Currency:</span> {selected.currency}</div>
+                <div className="col-span-2"><span className="font-medium vf-text-2">Total:</span> {selected.estimated_total.toLocaleString()} {selected.currency}</div>
                 {selected.review_note && (
-                  <div className="col-span-2"><span className="font-medium text-gray-700">Review note:</span> {selected.review_note}</div>
+                  <div className="col-span-2"><span className="font-medium vf-text-2">Review note:</span> {selected.review_note}</div>
                 )}
                 {selected.purchase_order_id && (
                   <div className="col-span-2 text-indigo-600">PO: {selected.purchase_order_id.slice(0, 8)}…</div>
@@ -502,12 +502,12 @@ export default function PurchaseRequestsPage() {
               {/* Line items */}
               {selected.items.length > 0 && (
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-gray-500">Line items</p>
+                  <p className="text-xs font-medium vf-text-m">Line items</p>
                   <div className="text-xs divide-y border rounded overflow-hidden">
                     {selected.items.map(item => (
                       <div key={item.id} className="flex justify-between px-3 py-1.5">
-                        <span className="text-gray-700">{item.description} × {item.quantity}</span>
-                        <span className="text-gray-500">{(item.quantity * item.unit_price).toLocaleString()}</span>
+                        <span className="vf-text-2">{item.description} × {item.quantity}</span>
+                        <span className="vf-text-m">{(item.quantity * item.unit_price).toLocaleString()}</span>
                       </div>
                     ))}
                   </div>
@@ -518,7 +518,7 @@ export default function PurchaseRequestsPage() {
               {selected.status === "pending" && (
                 <div className="space-y-2 pt-2 border-t">
                   <textarea
-                    className="input w-full text-sm"
+                    className="vf-input w-full text-sm"
                     rows={2}
                     placeholder="Review note (optional)"
                     value={reviewNote}
