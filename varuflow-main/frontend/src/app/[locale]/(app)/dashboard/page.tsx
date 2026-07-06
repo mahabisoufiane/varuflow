@@ -108,6 +108,31 @@ function MiniBar({ data }: { data: number[] }) {
   );
 }
 
+/* ── Widget error state ─────────────────────────────────────────────────────
+   Deliberately styled UNLIKE any empty state: danger-tinted dashed panel with
+   a warning icon and a retry action. Empty = calm/neutral ("All clear" with an
+   emerald check); failed = alarmed and actionable. The two must never be
+   confusable — that distinction is the point. */
+function WidgetError({ onRetry, compact = false }: { onRetry: () => void; compact?: boolean }) {
+  return (
+    <div className={cn(
+      "m-4 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed",
+      "border-[var(--vf-danger)]/40 bg-[var(--vf-danger-bg)]",
+      compact ? "py-4" : "py-8"
+    )}>
+      <AlertTriangle className="h-4 w-4 text-[var(--vf-danger)]" />
+      <p className="text-xs font-medium text-[var(--vf-danger)]">Couldn&apos;t load</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--vf-danger)] underline underline-offset-2 hover:opacity-80"
+      >
+        <RefreshCw className="h-3 w-3" />Retry
+      </button>
+    </div>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════════════════════ */
 export default function DashboardPage() {
   const [lowStock, setLowStock] = useState<StockLevel[]>([]);
@@ -115,28 +140,65 @@ export default function DashboardPage() {
   const [recentMovements, setRecentMovements] = useState<Movement[]>([]);
   const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
   const [loading, setLoading] = useState(true);
+  // Per-source failure flags (P0): a failed fetch must NEVER render as a zero —
+  // "0 kr outstanding" and "the API is down" are different facts. Each source
+  // fails independently: the other widgets keep their data, the failed one
+  // shows an explicit error with its own retry.
+  const [errs, setErrs] = useState({ stock: false, invoices: false, movements: false, overview: false });
 
   const [now, setNow] = useState<Date | null>(null);
   const [todayLabel, setTodayLabel] = useState("");
   const [movementDates, setMovementDates] = useState<Record<string, string>>({});
 
-  const loadDashboard = useCallback(async () => {
-    const [stock, invoices, movements, ov] = await Promise.all([
-      api.get<StockLevel[]>("/api/inventory/stock?low_stock_only=true").catch(() => [] as StockLevel[]),
-      api.get<Invoice[]>("/api/invoicing/invoices?status=SENT").catch(() => [] as Invoice[]),
-      api.get<Movement[]>("/api/inventory/movements?limit=8").catch(() => [] as Movement[]),
-      api.get<AnalyticsOverview>("/api/analytics/overview").catch(() => null),
-    ]);
-    setLowStock(stock.slice(0, 6));
-    setOpenInvoices(invoices.slice(0, 6));
-    setRecentMovements(movements);
-    setOverview(ov);
-    const dates: Record<string, string> = {};
-    for (const m of movements) {
-      dates[m.id] = new Date(m.created_at).toLocaleDateString("sv-SE");
+  const loadStock = useCallback(async () => {
+    try {
+      const stock = await api.get<StockLevel[]>("/api/inventory/stock?low_stock_only=true");
+      setLowStock(stock.slice(0, 6));
+      setErrs((e) => ({ ...e, stock: false }));
+    } catch {
+      setErrs((e) => ({ ...e, stock: true }));
     }
-    setMovementDates(dates);
   }, []);
+
+  const loadInvoices = useCallback(async () => {
+    try {
+      const invoices = await api.get<Invoice[]>("/api/invoicing/invoices?status=SENT");
+      setOpenInvoices(invoices.slice(0, 6));
+      setErrs((e) => ({ ...e, invoices: false }));
+    } catch {
+      setErrs((e) => ({ ...e, invoices: true }));
+    }
+  }, []);
+
+  const loadMovements = useCallback(async () => {
+    try {
+      const movements = await api.get<Movement[]>("/api/inventory/movements?limit=8");
+      setRecentMovements(movements);
+      const dates: Record<string, string> = {};
+      for (const m of movements) {
+        dates[m.id] = new Date(m.created_at).toLocaleDateString("sv-SE");
+      }
+      setMovementDates(dates);
+      setErrs((e) => ({ ...e, movements: false }));
+    } catch {
+      setErrs((e) => ({ ...e, movements: true }));
+    }
+  }, []);
+
+  const loadOverview = useCallback(async () => {
+    try {
+      const ov = await api.get<AnalyticsOverview>("/api/analytics/overview");
+      setOverview(ov);
+      setErrs((e) => ({ ...e, overview: false }));
+    } catch {
+      setErrs((e) => ({ ...e, overview: true }));
+    }
+  }, []);
+
+  const loadDashboard = useCallback(async () => {
+    // Each loader self-catches, so one failing source never blocks the rest.
+    await Promise.all([loadStock(), loadInvoices(), loadMovements(), loadOverview()]);
+  }, [loadStock, loadInvoices, loadMovements, loadOverview]);
 
   useEffect(() => {
     const d = new Date();
@@ -243,9 +305,9 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3" data-testid="kpi-strip">
         <KpiCard
           label="Outstanding"
-          value={`${fmt(outstanding)} kr`}
-          sub={`${openInvoices.length} open invoice${openInvoices.length !== 1 ? "s" : ""}`}
-          trend={overdueCount > 0 ? { label: `${overdueCount} overdue`, up: false } : undefined}
+          value={errs.invoices ? "—" : `${fmt(outstanding)} kr`}
+          sub={errs.invoices ? "couldn't load" : `${openInvoices.length} open invoice${openInvoices.length !== 1 ? "s" : ""}`}
+          trend={!errs.invoices && overdueCount > 0 ? { label: `${overdueCount} overdue`, up: false } : undefined}
           icon={<FileText className="h-4 w-4" />}
           iconCls="text-[var(--vf-brand-primary)] bg-[var(--vf-brand-primary-subtle)]"
           href="/invoices?status=SENT"
@@ -254,9 +316,9 @@ export default function DashboardPage() {
         />
         <KpiCard
           label="Invoiced this month"
-          value={`${fmt(thisMonth)} kr`}
-          sub="revenue"
-          trend={lastMonth > 0 ? { label: `${revDelta > 0 ? "+" : ""}${revDelta}% vs last month`, up: revDelta >= 0 } : undefined}
+          value={errs.overview ? "—" : `${fmt(thisMonth)} kr`}
+          sub={errs.overview ? "couldn't load" : "revenue"}
+          trend={!errs.overview && lastMonth > 0 ? { label: `${revDelta > 0 ? "+" : ""}${revDelta}% vs last month`, up: revDelta >= 0 } : undefined}
           icon={<TrendingUp className="h-4 w-4" />}
           iconCls="text-emerald-400 bg-emerald-500/10"
           href="/analytics"
@@ -265,9 +327,9 @@ export default function DashboardPage() {
         />
         <KpiCard
           label="Low stock"
-          value={String(lowStock.length)}
-          sub="items need reorder"
-          trend={lowStock.length > 0
+          value={errs.stock ? "—" : String(lowStock.length)}
+          sub={errs.stock ? "couldn't load" : "items need reorder"}
+          trend={errs.stock ? undefined : lowStock.length > 0
             ? { label: "Action needed", up: false }
             : { label: "All stocked", up: true }}
           icon={<Package className="h-4 w-4" />}
@@ -296,7 +358,11 @@ export default function DashboardPage() {
             <div className="absolute bottom-0 left-0 h-48 w-48 rounded-full bg-violet-600/8 blur-3xl" />
           </div>
           <div className="relative">
-            {outstanding === 0 && revData.length === 0 ? (
+            {errs.invoices || errs.overview ? (
+              /* Failed fetch must not fall through to the first-run empty state
+                 below — "no invoices yet" and "API down" are different facts. */
+              <WidgetError onRetry={() => { loadInvoices(); loadOverview(); }} />
+            ) : outstanding === 0 && revData.length === 0 ? (
               /* First-run state — user has no invoices yet */
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 py-2">
                 <div className="flex flex-col items-start gap-4">
@@ -415,7 +481,9 @@ export default function DashboardPage() {
               All <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
-          {openInvoices.length === 0 ? (
+          {errs.invoices ? (
+            <WidgetError onRetry={loadInvoices} />
+          ) : openInvoices.length === 0 ? (
             <div className="py-12 text-center">
               <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10">
                 <CheckCircle2 className="h-6 w-6 text-emerald-400" />
@@ -461,7 +529,9 @@ export default function DashboardPage() {
               All <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
-          {lowStock.length === 0 ? (
+          {errs.stock ? (
+            <WidgetError onRetry={loadStock} />
+          ) : lowStock.length === 0 ? (
             <div className="py-12 text-center">
               <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10">
                 <CheckCircle2 className="h-6 w-6 text-emerald-400" />
@@ -514,7 +584,9 @@ export default function DashboardPage() {
             All <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
-        {recentMovements.length === 0 ? (
+        {errs.movements ? (
+          <WidgetError onRetry={loadMovements} compact />
+        ) : recentMovements.length === 0 ? (
           <div className="py-10 text-center">
             <p className="text-sm font-medium vf-text-2">No stock movements yet</p>
             <p className="text-xs vf-text-m mt-0.5">Add products to inventory to start tracking stock.</p>
