@@ -254,10 +254,10 @@ async def customers_pool(
     try:
         org_id = member["org_id"]
         rows = await db.execute(text("""
-            SELECT id, name, COALESCE(email,'') AS email
+            SELECT id, company_name AS name, COALESCE(email,'') AS email
             FROM customers
             WHERE org_id = :org_id
-            ORDER BY name
+            ORDER BY company_name
             LIMIT 500
         """), {"org_id": org_id})
         return [{"id": str(r.id), "name": r.name, "email": r.email} for r in rows.fetchall()]

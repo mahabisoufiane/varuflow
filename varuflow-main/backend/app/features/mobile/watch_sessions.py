@@ -212,13 +212,12 @@ async def get_today_bookings(
         today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
         rows = await db.execute(
             text(
-                "SELECT b.id, c.name AS customer_name, b.start_time, b.status "
-                "FROM bookings b "
+                "SELECT b.id, c.company_name AS customer_name, b.start_time, b.status "
+                "FROM appointments b "
                 "LEFT JOIN customers c ON c.id = b.customer_id "
                 "WHERE b.org_id = :org_id "
                 "AND b.start_time >= :start "
-                "AND b.deleted_at IS NULL "
-                "ORDER BY b.start_time ASC "
+                                "ORDER BY b.start_time ASC "
                 "LIMIT 50"
             ),
             {"org_id": str(org_id), "start": today_start},

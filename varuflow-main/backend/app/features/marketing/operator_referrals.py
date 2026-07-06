@@ -98,8 +98,8 @@ async def generate_referral(
     Rate-limited to 50 new referrals per org per calendar day (UTC).
     """
     try:
-        org_id = uuid.UUID(member["org_id"])
-        user_id = uuid.UUID(member["user_id"])
+        org_id = member["org_id"]
+        user_id = uuid.UUID(str(member["user_id"]))
         org_name: str = member.get("org_name", "ORG")
 
         # Idempotency: return if an active (non-expired) referral already exists
@@ -189,7 +189,7 @@ async def list_my_referrals(
 ) -> dict[str, Any]:
     """List all referrals for the caller's org plus an earnings summary."""
     try:
-        org_id = uuid.UUID(member["org_id"])
+        org_id = member["org_id"]
         result = await db.execute(
             select(OperatorReferral)
             .where(OperatorReferral.referrer_org_id == org_id)

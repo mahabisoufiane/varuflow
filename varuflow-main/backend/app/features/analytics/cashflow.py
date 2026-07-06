@@ -131,7 +131,7 @@ async def _invoice_items(
     from app.features.invoicing.models import Invoice, Customer
     rows = (await db.execute(
         select(Invoice.id, Invoice.invoice_number, Invoice.due_date, Invoice.total_sek,
-               Customer.name.label("customer_name"))
+               Customer.company_name.label("customer_name"))
         .join(Customer, Invoice.customer_id == Customer.id, isouter=True)
         .where(
             Invoice.org_id == org_id,

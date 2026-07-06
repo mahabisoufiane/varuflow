@@ -28,7 +28,8 @@ router = APIRouter(prefix="/api/trial", tags=["trial"])
 
 def _ids(ctx: tuple) -> tuple[uuid.UUID, uuid.UUID]:
     user_info, member = ctx
-    return member.org_id, uuid.UUID(user_info["sub"])
+    uid = user_info.get("user_id") or user_info.get("sub")
+    return member.org_id, uid if isinstance(uid, uuid.UUID) else uuid.UUID(str(uid))
 
 
 async def _get_org(org_id: uuid.UUID, db: AsyncSession) -> Organization:

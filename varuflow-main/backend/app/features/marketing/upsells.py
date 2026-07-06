@@ -45,7 +45,8 @@ router = APIRouter(prefix="/api/upsells", tags=["upsells"])
 
 def _ids(ctx: tuple) -> tuple[uuid.UUID, uuid.UUID]:
     user_info, member = ctx
-    return member.org_id, uuid.UUID(user_info["sub"])
+    uid = user_info.get("user_id") or user_info.get("sub")
+    return member.org_id, uid if isinstance(uid, uuid.UUID) else uuid.UUID(str(uid))
 
 
 def _member_role(ctx: tuple) -> str:
@@ -97,7 +98,7 @@ async def _build_context(
     r_invoices_paid = await db.execute(
         select(func.count()).select_from(Invoice).where(
             Invoice.org_id == org_id,
-            Invoice.status == "paid",
+            Invoice.status == "PAID",
             Invoice.deleted_at.is_(None),
         )
     )
@@ -134,12 +135,12 @@ async def _build_context(
 
     # Days since subscription started
     days_since_sub = 0
-    if org.subscription_started_at:
-        days_since_sub = (now - org.subscription_started_at.replace(tzinfo=timezone.utc)).days
+    if org.trial_converted_at:
+        days_since_sub = (now - org.trial_converted_at.replace(tzinfo=timezone.utc)).days
 
     # Trial days remaining
     trial_days_remaining = 0
-    if org.is_on_trial and org.trial_ends_at:
+    if org.trial_ends_at and not org.trial_converted_at:
         delta = org.trial_ends_at.replace(tzinfo=timezone.utc) - now
         trial_days_remaining = max(0, delta.days)
 

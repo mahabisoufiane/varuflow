@@ -352,6 +352,33 @@ async def _log_requests(request: Request, call_next):
 
 # Catch all unhandled exceptions so they stay inside the middleware stack
 # (not handled by ServerErrorMiddleware which is outside CORSMiddleware).
+# Routers across the app catch exceptions and re-raise a bare
+# HTTPException(500) — which FastAPI serves WITHOUT logging, so root causes
+# were invisible (the 2026-07-06 audit found ~15 endpoints silently broken this
+# way). This handler logs every 5xx HTTPException including the swallowed
+# original exception (available as __context__ from the except block), then
+# delegates to the default handler. One choke point instead of touching every
+# router's except block.
+from fastapi.exception_handlers import http_exception_handler as _default_http_handler  # noqa: E402
+from starlette.exceptions import HTTPException as _StarletteHTTPException  # noqa: E402
+
+
+@app.exception_handler(_StarletteHTTPException)
+async def _logged_http_exception_handler(request: Request, exc: _StarletteHTTPException):
+    if exc.status_code >= 500:
+        origin = exc.__cause__ or exc.__context__
+        log.error(
+            "HTTP %s | method=%s path=%s request_id=%s swallowed=%r",
+            exc.status_code,
+            request.method,
+            request.url.path,
+            getattr(request.state, "request_id", "-"),
+            origin,
+            exc_info=origin if origin is not None else None,
+        )
+    return await _default_http_handler(request, exc)
+
+
 # Without this, 500s reach the browser without Access-Control-Allow-Origin.
 @app.exception_handler(Exception)
 async def _global_exception_handler(request: Request, exc: Exception) -> JSONResponse:

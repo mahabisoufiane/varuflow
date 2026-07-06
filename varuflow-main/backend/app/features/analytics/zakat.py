@@ -78,7 +78,7 @@ async def estimate_zakat(
         inv_rows = await db.execute(
             select(
                 func.coalesce(
-                    func.sum(StockLevel.quantity * Product.price), 0
+                    func.sum(StockLevel.quantity * Product.sell_price), 0
                 ).label("total")
             )
             .join(Product, StockLevel.product_id == Product.id)

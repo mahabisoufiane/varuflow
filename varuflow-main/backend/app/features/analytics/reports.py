@@ -48,7 +48,7 @@ async def manager_dashboard(
         # This month invoices total
         month_start = date.today().replace(day=1)
         invoices_total = (await db.execute(
-            select(func.coalesce(func.sum(Invoice.total_amount), 0))
+            select(func.coalesce(func.sum(Invoice.total_sek), 0))
             .where(Invoice.org_id == org_id, Invoice.issue_date >= month_start)
         )).scalar()
 

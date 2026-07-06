@@ -222,9 +222,9 @@ def _retainer(r: ProjectRetainer) -> dict:
 # ── Projects list + create (static routes first to avoid {id} ambiguity) ─────
 
 @router.get("/api/projects")
-async def list_projects(request: Request, db: AsyncSession = Depends(get_db)):
+async def list_projects(request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(
             select(Project).where(Project.org_id == org_id).order_by(Project.created_at.desc())
@@ -245,9 +245,9 @@ async def list_projects(request: Request, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/api/projects", status_code=201)
-async def create_project(body: ProjectIn, request: Request, db: AsyncSession = Depends(get_db)):
+async def create_project(body: ProjectIn, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         p = Project(
             id=uuid.uuid4(), org_id=org_id,
@@ -274,6 +274,7 @@ async def create_project(body: ProjectIn, request: Request, db: AsyncSession = D
 @router.get("/api/projects/time-entries")
 async def list_time_entries(
     request: Request,
+    ctx: tuple = Depends(get_current_member),
     db: AsyncSession = Depends(get_db),
     project_id: Optional[str] = None,
     from_date: Optional[date] = None,
@@ -282,7 +283,7 @@ async def list_time_entries(
     billable: Optional[bool] = None,
 ):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         q = select(ProjectTimeEntry).where(ProjectTimeEntry.org_id == org_id)
         if project_id:
@@ -313,9 +314,9 @@ async def list_time_entries(
 
 
 @router.post("/api/projects/time-entries/generate-invoice", status_code=201)
-async def generate_invoice_from_entries(body: GenerateInvoiceIn, request: Request, db: AsyncSession = Depends(get_db)):
+async def generate_invoice_from_entries(body: GenerateInvoiceIn, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         cust_r = await db.execute(select(Customer).where(Customer.id == uuid.UUID(body.customer_id), Customer.org_id == org_id))
         customer = cust_r.scalar_one_or_none()
@@ -386,9 +387,9 @@ async def generate_invoice_from_entries(body: GenerateInvoiceIn, request: Reques
 
 
 @router.post("/api/projects/time-entries", status_code=201)
-async def create_time_entry(body: TimeEntryIn, request: Request, db: AsyncSession = Depends(get_db)):
+async def create_time_entry(body: TimeEntryIn, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(Project).where(Project.id == uuid.UUID(body.project_id), Project.org_id == org_id))
         if not result.scalar_one_or_none():
@@ -412,9 +413,9 @@ async def create_time_entry(body: TimeEntryIn, request: Request, db: AsyncSessio
 
 
 @router.patch("/api/projects/time-entries/{entry_id}")
-async def update_time_entry(entry_id: str, body: TimeEntryPatch, request: Request, db: AsyncSession = Depends(get_db)):
+async def update_time_entry(entry_id: str, body: TimeEntryPatch, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(ProjectTimeEntry).where(ProjectTimeEntry.id == uuid.UUID(entry_id), ProjectTimeEntry.org_id == org_id))
         e = result.scalar_one_or_none()
@@ -439,9 +440,9 @@ async def update_time_entry(entry_id: str, body: TimeEntryPatch, request: Reques
 
 
 @router.delete("/api/projects/time-entries/{entry_id}", status_code=204)
-async def delete_time_entry(entry_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def delete_time_entry(entry_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(ProjectTimeEntry).where(ProjectTimeEntry.id == uuid.UUID(entry_id), ProjectTimeEntry.org_id == org_id))
         e = result.scalar_one_or_none()
@@ -461,9 +462,9 @@ async def delete_time_entry(entry_id: str, request: Request, db: AsyncSession = 
 # ── Timesheet approval endpoints ───────────────────────────────────────────────
 
 @router.get("/api/projects/time-entries/pending-approval")
-async def list_pending_time_entries(request: Request, db: AsyncSession = Depends(get_db)):
+async def list_pending_time_entries(request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         role = getattr(member, "role", None) or "MEMBER"
         if role not in ("OWNER", "ADMIN"):
@@ -483,9 +484,9 @@ async def list_pending_time_entries(request: Request, db: AsyncSession = Depends
 
 
 @router.post("/api/projects/time-entries/{entry_id}/approve")
-async def approve_time_entry(entry_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def approve_time_entry(entry_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         role = getattr(member, "role", None) or "MEMBER"
         if role not in ("OWNER", "ADMIN"):
@@ -510,9 +511,9 @@ async def approve_time_entry(entry_id: str, request: Request, db: AsyncSession =
 
 
 @router.post("/api/projects/time-entries/{entry_id}/reject")
-async def reject_time_entry(entry_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def reject_time_entry(entry_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         role = getattr(member, "role", None) or "MEMBER"
         if role not in ("OWNER", "ADMIN"):
@@ -539,9 +540,9 @@ async def reject_time_entry(entry_id: str, request: Request, db: AsyncSession = 
 # ── Retainers (must be defined BEFORE /api/projects/{project_id}) ────────────
 
 @router.get("/api/projects/retainers")
-async def list_retainers(request: Request, db: AsyncSession = Depends(get_db)):
+async def list_retainers(request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(ProjectRetainer).where(ProjectRetainer.org_id == org_id).order_by(ProjectRetainer.created_at.desc()))
         retainers = result.scalars().all()
@@ -566,9 +567,9 @@ async def list_retainers(request: Request, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/api/projects/retainers", status_code=201)
-async def create_retainer(body: RetainerIn, request: Request, db: AsyncSession = Depends(get_db)):
+async def create_retainer(body: RetainerIn, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(Project).where(Project.id == uuid.UUID(body.project_id), Project.org_id == org_id))
         if not result.scalar_one_or_none():
@@ -596,9 +597,9 @@ async def create_retainer(body: RetainerIn, request: Request, db: AsyncSession =
 
 
 @router.patch("/api/projects/retainers/{retainer_id}")
-async def update_retainer(retainer_id: str, body: RetainerPatch, request: Request, db: AsyncSession = Depends(get_db)):
+async def update_retainer(retainer_id: str, body: RetainerPatch, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(ProjectRetainer).where(ProjectRetainer.id == uuid.UUID(retainer_id), ProjectRetainer.org_id == org_id))
         r = result.scalar_one_or_none()
@@ -621,9 +622,9 @@ async def update_retainer(retainer_id: str, body: RetainerPatch, request: Reques
 
 
 @router.delete("/api/projects/retainers/{retainer_id}", status_code=204)
-async def delete_retainer(retainer_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def delete_retainer(retainer_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(ProjectRetainer).where(ProjectRetainer.id == uuid.UUID(retainer_id), ProjectRetainer.org_id == org_id))
         r = result.scalar_one_or_none()
@@ -640,9 +641,9 @@ async def delete_retainer(retainer_id: str, request: Request, db: AsyncSession =
 
 
 @router.post("/api/projects/retainers/{retainer_id}/bill", status_code=201)
-async def bill_retainer(retainer_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def bill_retainer(retainer_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(ProjectRetainer).where(ProjectRetainer.id == uuid.UUID(retainer_id), ProjectRetainer.org_id == org_id))
         r = result.scalar_one_or_none()
@@ -689,9 +690,9 @@ async def bill_retainer(retainer_id: str, request: Request, db: AsyncSession = D
 # ── Project detail + mutations (dynamic {project_id} routes last) ─────────────
 
 @router.get("/api/projects/{project_id}")
-async def get_project(project_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def get_project(project_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(Project).where(Project.id == uuid.UUID(project_id), Project.org_id == org_id))
         p = result.scalar_one_or_none()
@@ -714,9 +715,9 @@ async def get_project(project_id: str, request: Request, db: AsyncSession = Depe
 
 
 @router.patch("/api/projects/{project_id}")
-async def update_project(project_id: str, body: ProjectPatch, request: Request, db: AsyncSession = Depends(get_db)):
+async def update_project(project_id: str, body: ProjectPatch, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(Project).where(Project.id == uuid.UUID(project_id), Project.org_id == org_id))
         p = result.scalar_one_or_none()
@@ -741,9 +742,9 @@ async def update_project(project_id: str, body: ProjectPatch, request: Request, 
 
 
 @router.delete("/api/projects/{project_id}", status_code=204)
-async def delete_project(project_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def delete_project(project_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(Project).where(Project.id == uuid.UUID(project_id), Project.org_id == org_id))
         p = result.scalar_one_or_none()
@@ -760,9 +761,9 @@ async def delete_project(project_id: str, request: Request, db: AsyncSession = D
 
 
 @router.get("/api/projects/{project_id}/pl")
-async def project_pl(project_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def project_pl(project_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(Project).where(Project.id == uuid.UUID(project_id), Project.org_id == org_id))
         p = result.scalar_one_or_none()
@@ -802,9 +803,9 @@ async def project_pl(project_id: str, request: Request, db: AsyncSession = Depen
 # ── Tasks ─────────────────────────────────────────────────────────────────────
 
 @router.post("/api/projects/{project_id}/tasks", status_code=201)
-async def create_task(project_id: str, body: TaskIn, request: Request, db: AsyncSession = Depends(get_db)):
+async def create_task(project_id: str, body: TaskIn, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(Project).where(Project.id == uuid.UUID(project_id), Project.org_id == org_id))
         if not result.scalar_one_or_none():
@@ -827,9 +828,9 @@ async def create_task(project_id: str, body: TaskIn, request: Request, db: Async
 
 
 @router.patch("/api/projects/{project_id}/tasks/{task_id}")
-async def update_task(project_id: str, task_id: str, body: TaskPatch, request: Request, db: AsyncSession = Depends(get_db)):
+async def update_task(project_id: str, task_id: str, body: TaskPatch, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(ProjectTask).where(ProjectTask.id == uuid.UUID(task_id), ProjectTask.org_id == org_id, ProjectTask.project_id == uuid.UUID(project_id)))
         t = result.scalar_one_or_none()
@@ -854,9 +855,9 @@ async def update_task(project_id: str, task_id: str, body: TaskPatch, request: R
 
 
 @router.delete("/api/projects/{project_id}/tasks/{task_id}", status_code=204)
-async def delete_task(project_id: str, task_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def delete_task(project_id: str, task_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(ProjectTask).where(ProjectTask.id == uuid.UUID(task_id), ProjectTask.org_id == org_id))
         t = result.scalar_one_or_none()
@@ -874,9 +875,9 @@ async def delete_task(project_id: str, task_id: str, request: Request, db: Async
 # ── Milestones ────────────────────────────────────────────────────────────────
 
 @router.post("/api/projects/{project_id}/milestones", status_code=201)
-async def create_milestone(project_id: str, body: MilestoneIn, request: Request, db: AsyncSession = Depends(get_db)):
+async def create_milestone(project_id: str, body: MilestoneIn, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(Project).where(Project.id == uuid.UUID(project_id), Project.org_id == org_id))
         if not result.scalar_one_or_none():
@@ -895,9 +896,9 @@ async def create_milestone(project_id: str, body: MilestoneIn, request: Request,
 
 
 @router.patch("/api/projects/{project_id}/milestones/{milestone_id}")
-async def update_milestone(project_id: str, milestone_id: str, body: MilestonePatch, request: Request, db: AsyncSession = Depends(get_db)):
+async def update_milestone(project_id: str, milestone_id: str, body: MilestonePatch, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(ProjectMilestone).where(ProjectMilestone.id == uuid.UUID(milestone_id), ProjectMilestone.org_id == org_id, ProjectMilestone.project_id == uuid.UUID(project_id)))
         m = result.scalar_one_or_none()
@@ -917,9 +918,9 @@ async def update_milestone(project_id: str, milestone_id: str, body: MilestonePa
 
 
 @router.delete("/api/projects/{project_id}/milestones/{milestone_id}", status_code=204)
-async def delete_milestone(project_id: str, milestone_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def delete_milestone(project_id: str, milestone_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(ProjectMilestone).where(ProjectMilestone.id == uuid.UUID(milestone_id), ProjectMilestone.org_id == org_id))
         m = result.scalar_one_or_none()
@@ -937,9 +938,9 @@ async def delete_milestone(project_id: str, milestone_id: str, request: Request,
 # ── Expenses ─────────────────────────────────────────────────────────────────
 
 @router.post("/api/projects/{project_id}/expenses", status_code=201)
-async def create_expense(project_id: str, body: ExpenseIn, request: Request, db: AsyncSession = Depends(get_db)):
+async def create_expense(project_id: str, body: ExpenseIn, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(Project).where(Project.id == uuid.UUID(project_id), Project.org_id == org_id))
         if not result.scalar_one_or_none():
@@ -962,9 +963,9 @@ async def create_expense(project_id: str, body: ExpenseIn, request: Request, db:
 
 
 @router.delete("/api/projects/{project_id}/expenses/{expense_id}", status_code=204)
-async def delete_expense(project_id: str, expense_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def delete_expense(project_id: str, expense_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(ProjectExpense).where(ProjectExpense.id == uuid.UUID(expense_id), ProjectExpense.org_id == org_id))
         e = result.scalar_one_or_none()

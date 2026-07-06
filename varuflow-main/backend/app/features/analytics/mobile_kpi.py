@@ -170,9 +170,9 @@ async def get_live_kpis(
         # Today's revenue (sum of paid invoice amounts)
         rev_today = await db.execute(
             text(
-                "SELECT COALESCE(SUM(total_amount), 0) FROM invoices "
-                "WHERE org_id = :org_id AND status = 'paid' "
-                "AND updated_at >= :start AND deleted_at IS NULL"
+                "SELECT COALESCE(SUM(total_sek), 0) FROM invoices "
+                "WHERE org_id = :org_id AND status = 'PAID' "
+                "AND created_at >= :start AND deleted_at IS NULL"
             ),
             {"org_id": str(org_id), "start": today_start},
         )
@@ -181,9 +181,9 @@ async def get_live_kpis(
         # Last month's revenue for comparison
         rev_last_month = await db.execute(
             text(
-                "SELECT COALESCE(SUM(total_amount), 0) FROM invoices "
-                "WHERE org_id = :org_id AND status = 'paid' "
-                "AND updated_at >= :start AND updated_at < :end AND deleted_at IS NULL"
+                "SELECT COALESCE(SUM(total_sek), 0) FROM invoices "
+                "WHERE org_id = :org_id AND status = 'PAID' "
+                "AND created_at >= :start AND created_at < :end AND deleted_at IS NULL"
             ),
             {"org_id": str(org_id), "start": last_month_start, "end": month_start},
         )
@@ -202,8 +202,8 @@ async def get_live_kpis(
         # Outstanding balance
         outstanding = await db.execute(
             text(
-                "SELECT COALESCE(SUM(total_amount), 0) FROM invoices "
-                "WHERE org_id = :org_id AND status IN ('sent', 'overdue') AND deleted_at IS NULL"
+                "SELECT COALESCE(SUM(total_sek), 0) FROM invoices "
+                "WHERE org_id = :org_id AND status IN ('SENT', 'OVERDUE') AND deleted_at IS NULL"
             ),
             {"org_id": str(org_id)},
         )

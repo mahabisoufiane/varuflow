@@ -49,7 +49,7 @@ def _org_id(ctx: tuple) -> uuid.UUID:
 
 def _user_id(ctx: tuple) -> uuid.UUID:
     user, _ = ctx
-    return uuid.UUID(str(user.id))
+    return uuid.UUID(str(user["user_id"]))
 
 
 async def _get_org(db: AsyncSession, org_id: uuid.UUID) -> Organization:

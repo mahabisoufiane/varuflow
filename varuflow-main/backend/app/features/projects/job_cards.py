@@ -147,10 +147,11 @@ async def list_job_cards(
     status: Optional[str] = None,
     customer_id: Optional[str] = None,
     request: Request = None,
+    ctx: tuple = Depends(get_current_member),
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         q = select(JobCard).where(JobCard.org_id == org_id)
         if status:
@@ -177,9 +178,9 @@ async def list_job_cards(
 
 
 @router.post("/api/job-cards", status_code=201)
-async def create_job_card(body: JobCardIn, request: Request, db: AsyncSession = Depends(get_db)):
+async def create_job_card(body: JobCardIn, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         job_number = await _next_job_number(org_id, db)
         c = JobCard(
@@ -205,9 +206,9 @@ async def create_job_card(body: JobCardIn, request: Request, db: AsyncSession = 
 
 
 @router.get("/api/job-cards/{card_id}")
-async def get_job_card(card_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def get_job_card(card_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         c = (await db.execute(select(JobCard).where(JobCard.id == uuid.UUID(card_id), JobCard.org_id == org_id))).scalar_one_or_none()
         if not c:
@@ -226,9 +227,9 @@ async def get_job_card(card_id: str, request: Request, db: AsyncSession = Depend
 
 
 @router.patch("/api/job-cards/{card_id}")
-async def update_job_card(card_id: str, body: JobCardPatch, request: Request, db: AsyncSession = Depends(get_db)):
+async def update_job_card(card_id: str, body: JobCardPatch, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         c = (await db.execute(select(JobCard).where(JobCard.id == uuid.UUID(card_id), JobCard.org_id == org_id))).scalar_one_or_none()
         if not c:
@@ -255,9 +256,9 @@ async def update_job_card(card_id: str, body: JobCardPatch, request: Request, db
 # ── Parts ──────────────────────────────────────────────────────────────────────
 
 @router.post("/api/job-cards/{card_id}/parts", status_code=201)
-async def add_part(card_id: str, body: PartIn, request: Request, db: AsyncSession = Depends(get_db)):
+async def add_part(card_id: str, body: PartIn, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         c = (await db.execute(select(JobCard).where(JobCard.id == uuid.UUID(card_id), JobCard.org_id == org_id))).scalar_one_or_none()
         if not c:
@@ -281,9 +282,9 @@ async def add_part(card_id: str, body: PartIn, request: Request, db: AsyncSessio
 
 
 @router.delete("/api/job-cards/{card_id}/parts/{part_id}", status_code=204)
-async def delete_part(card_id: str, part_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def delete_part(card_id: str, part_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         c = (await db.execute(select(JobCard).where(JobCard.id == uuid.UUID(card_id), JobCard.org_id == org_id))).scalar_one_or_none()
         if not c:
@@ -304,9 +305,9 @@ async def delete_part(card_id: str, part_id: str, request: Request, db: AsyncSes
 # ── Labour ─────────────────────────────────────────────────────────────────────
 
 @router.post("/api/job-cards/{card_id}/labour", status_code=201)
-async def add_labour(card_id: str, body: LabourIn, request: Request, db: AsyncSession = Depends(get_db)):
+async def add_labour(card_id: str, body: LabourIn, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         c = (await db.execute(select(JobCard).where(JobCard.id == uuid.UUID(card_id), JobCard.org_id == org_id))).scalar_one_or_none()
         if not c:
@@ -330,9 +331,9 @@ async def add_labour(card_id: str, body: LabourIn, request: Request, db: AsyncSe
 
 
 @router.delete("/api/job-cards/{card_id}/labour/{labour_id}", status_code=204)
-async def delete_labour(card_id: str, labour_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def delete_labour(card_id: str, labour_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         c = (await db.execute(select(JobCard).where(JobCard.id == uuid.UUID(card_id), JobCard.org_id == org_id))).scalar_one_or_none()
         if not c:
@@ -353,9 +354,9 @@ async def delete_labour(card_id: str, labour_id: str, request: Request, db: Asyn
 # ── Photos ─────────────────────────────────────────────────────────────────────
 
 @router.post("/api/job-cards/{card_id}/photos", status_code=201)
-async def add_photo(card_id: str, body: PhotoIn, request: Request, db: AsyncSession = Depends(get_db)):
+async def add_photo(card_id: str, body: PhotoIn, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         c = (await db.execute(select(JobCard).where(JobCard.id == uuid.UUID(card_id), JobCard.org_id == org_id))).scalar_one_or_none()
         if not c:
@@ -379,9 +380,9 @@ async def add_photo(card_id: str, body: PhotoIn, request: Request, db: AsyncSess
 # ── Signature ──────────────────────────────────────────────────────────────────
 
 @router.post("/api/job-cards/{card_id}/sign")
-async def sign_job_card(card_id: str, body: SignatureIn, request: Request, db: AsyncSession = Depends(get_db)):
+async def sign_job_card(card_id: str, body: SignatureIn, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         c = (await db.execute(select(JobCard).where(JobCard.id == uuid.UUID(card_id), JobCard.org_id == org_id))).scalar_one_or_none()
         if not c:
@@ -404,10 +405,10 @@ async def sign_job_card(card_id: str, body: SignatureIn, request: Request, db: A
 # ── Convert to invoice ─────────────────────────────────────────────────────────
 
 @router.post("/api/job-cards/{card_id}/invoice", status_code=201)
-async def invoice_job_card(card_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def invoice_job_card(card_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     """Auto-generate a DRAFT invoice from parts + labour on a completed job card."""
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         c = (await db.execute(select(JobCard).where(JobCard.id == uuid.UUID(card_id), JobCard.org_id == org_id))).scalar_one_or_none()
         if not c:

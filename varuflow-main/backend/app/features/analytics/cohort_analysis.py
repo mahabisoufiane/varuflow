@@ -49,7 +49,7 @@ async def _build_cohort(
         WITH cohorts AS (
             SELECT customer_id, date_trunc('month', MIN(issue_date)) AS cohort_month
             FROM invoices
-            WHERE org_id = :org_id AND status != 'void'
+            WHERE org_id = :org_id AND status != 'DRAFT'
             GROUP BY customer_id
         ),
         tagged AS (
@@ -62,7 +62,7 @@ async def _build_cohort(
                 i.id AS invoice_id
             FROM invoices i
             JOIN cohorts c ON c.customer_id = i.customer_id
-            WHERE i.org_id = :org_id AND i.status != 'void'
+            WHERE i.org_id = :org_id AND i.status != 'DRAFT'
         )
         SELECT
             TO_CHAR(cohort_month, 'YYYY-MM') AS cohort,
@@ -80,20 +80,20 @@ async def _build_cohort(
 
     # Also get cohort size (distinct customers per cohort month)
     size_sql = text("""
-        SELECT TO_CHAR(date_trunc('month', MIN(issue_date)), 'YYYY-MM') AS cohort,
+        SELECT TO_CHAR(date_trunc('month', first_date), 'YYYY-MM') AS cohort,
                COUNT(DISTINCT customer_id) AS cohort_size
         FROM invoices
-        WHERE org_id = :org_id AND status != 'void'
+        WHERE org_id = :org_id AND status != 'DRAFT'
         GROUP BY date_trunc('month', issue_date)
         HAVING date_trunc('month', MIN(issue_date)) = date_trunc('month', issue_date)
     """)
     # Simpler: use the first_invoice aggregation
     size_sql2 = text("""
-        SELECT TO_CHAR(date_trunc('month', MIN(issue_date)), 'YYYY-MM') AS cohort,
+        SELECT TO_CHAR(date_trunc('month', first_date), 'YYYY-MM') AS cohort,
                COUNT(DISTINCT customer_id) AS cohort_size
         FROM (
             SELECT customer_id, MIN(issue_date) AS first_date
-            FROM invoices WHERE org_id = :org_id AND status != 'void'
+            FROM invoices WHERE org_id = :org_id AND status != 'DRAFT'
             GROUP BY customer_id
         ) sub
         GROUP BY date_trunc('month', first_date)

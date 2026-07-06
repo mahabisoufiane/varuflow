@@ -277,7 +277,7 @@ async def create_request(
             document_id=uuid.UUID(body.document_id) if body.document_id else None,
             reminder_days=body.reminder_days,
             expires_at=expires_at,
-            created_by=uuid.UUID(str(member["user_id"])) if member.get("user_id") else None,
+            created_by=uuid.UUID(str(member.user_id)) if member.get("user_id") else None,
             status="draft",
         )
         db.add(req)

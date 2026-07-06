@@ -86,6 +86,23 @@ async def log_action(
             ip_address=ip,
             extra=enriched,
         )
+        # Tamper-evident chain (SOC 2): link this row to the org's previous
+        # row via SHA-256, per the contract documented in services/audit_chain.
+        # created_at is part of the hash preimage, so set it client-side before
+        # hashing (the server_default only applies when the value is absent) —
+        # hashing a None timestamp would break verification forever.
+        # Failures fall back to genesis hashes — audit must never break caller.
+        try:
+            from datetime import datetime, timezone
+
+            from app.services.audit_chain import compute_row_hash, get_previous_hash
+
+            entry.created_at = datetime.now(timezone.utc)
+            previous = await get_previous_hash(db, org_id)
+            entry.previous_hash = previous
+            entry.row_hash = compute_row_hash(previous, entry)
+        except Exception as chain_err:  # noqa: BLE001
+            log.error("audit_chain_hash_failed action=%s err=%s", action, str(chain_err))
         db.add(entry)
         await db.flush()
     except Exception as e:  # noqa: BLE001 — audit must never break caller

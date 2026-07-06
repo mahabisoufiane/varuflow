@@ -117,8 +117,8 @@ async def get_pending(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     _, member = ctx
-    org_id = member["org_id"]
-    user_id = member["user_id"]
+    org_id = member.org_id
+    user_id = member.user_id
     try:
         survey = await get_pending_survey(db, org_id=org_id, user_id=user_id)
         if survey is None:
@@ -138,7 +138,7 @@ async def respond(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     _, member = ctx
-    org_id = member["org_id"]
+    org_id = member.org_id
     try:
         survey_id = uuid.UUID(body.survey_id)
         survey = await svc_submit_response(
@@ -200,7 +200,7 @@ async def dismiss(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     _, member = ctx
-    org_id = member["org_id"]
+    org_id = member.org_id
     try:
         survey_id = uuid.UUID(body.survey_id)
         survey = await db.scalar(
@@ -229,7 +229,7 @@ async def nps_stats(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     _, member = ctx
-    org_id = member["org_id"]
+    org_id = member.org_id
     try:
         stats = await get_org_nps(db, org_id=org_id)
         return stats

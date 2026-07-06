@@ -118,6 +118,54 @@ async def create_quote(body: QuoteCreate, member=Depends(get_current_member), db
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+# NOTE: /analytics must precede /{quote_id} — routes match in declaration
+# order, so the dynamic segment was swallowing "analytics" (UUID parse 500).
+@router.get("/api/quotes/analytics")
+async def get_quote_analytics(member=Depends(get_current_member), db: AsyncSession = Depends(get_db)):
+    try:
+        org_id = member["org_id"]
+        rows = (await db.execute(
+            select(Quote).where(Quote.org_id == org_id)
+        )).scalars().all()
+
+        total = len(rows)
+        accepted = [r for r in rows if r.status == "accepted"]
+        rejected = [r for r in rows if r.status in ("rejected", "declined")]
+        acceptance_rate = round(len(accepted) / total * 100, 1) if total else 0
+
+        times_to_accept = []
+        for q in accepted:
+            if q.accepted_at and q.created_at:
+                delta = (q.accepted_at - q.created_at).total_seconds() / 3600
+                times_to_accept.append(delta)
+        avg_hours_to_accept = round(sum(times_to_accept) / len(times_to_accept), 1) if times_to_accept else None
+
+        won_revenue = float(sum(q.total for q in accepted))
+        lost_revenue = float(sum(q.total for q in rejected))
+
+        status_breakdown: dict[str, int] = {}
+        for r in rows:
+            status_breakdown[r.status] = status_breakdown.get(r.status, 0) + 1
+
+        return {
+            "total_quotes": total,
+            "acceptance_rate_pct": acceptance_rate,
+            "avg_hours_to_accept": avg_hours_to_accept,
+            "won_revenue": won_revenue,
+            "lost_revenue": lost_revenue,
+            "status_breakdown": status_breakdown,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"get_quote_analytics failed: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+# ── PDF download ──────────────────────────────────────────────────────────────
+
+
+
 @router.get("/api/quotes/{quote_id}")
 async def get_quote(quote_id: str, member=Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
@@ -307,50 +355,6 @@ def _quote_detail(q: Quote) -> dict:
 
 
 # ── Analytics ─────────────────────────────────────────────────────────────────
-
-@router.get("/api/quotes/analytics")
-async def get_quote_analytics(member=Depends(get_current_member), db: AsyncSession = Depends(get_db)):
-    try:
-        org_id = member["org_id"]
-        rows = (await db.execute(
-            select(Quote).where(Quote.org_id == org_id)
-        )).scalars().all()
-
-        total = len(rows)
-        accepted = [r for r in rows if r.status == "accepted"]
-        rejected = [r for r in rows if r.status in ("rejected", "declined")]
-        acceptance_rate = round(len(accepted) / total * 100, 1) if total else 0
-
-        times_to_accept = []
-        for q in accepted:
-            if q.accepted_at and q.created_at:
-                delta = (q.accepted_at - q.created_at).total_seconds() / 3600
-                times_to_accept.append(delta)
-        avg_hours_to_accept = round(sum(times_to_accept) / len(times_to_accept), 1) if times_to_accept else None
-
-        won_revenue = float(sum(q.total for q in accepted))
-        lost_revenue = float(sum(q.total for q in rejected))
-
-        status_breakdown: dict[str, int] = {}
-        for r in rows:
-            status_breakdown[r.status] = status_breakdown.get(r.status, 0) + 1
-
-        return {
-            "total_quotes": total,
-            "acceptance_rate_pct": acceptance_rate,
-            "avg_hours_to_accept": avg_hours_to_accept,
-            "won_revenue": won_revenue,
-            "lost_revenue": lost_revenue,
-            "status_breakdown": status_breakdown,
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"get_quote_analytics failed: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-
-# ── PDF download ──────────────────────────────────────────────────────────────
 
 @router.get("/api/quotes/{quote_id}/pdf")
 async def download_quote_pdf(quote_id: str, member=Depends(get_current_member), db: AsyncSession = Depends(get_db)):

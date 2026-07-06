@@ -64,13 +64,13 @@ async def churn_overview(
         # Explicitly marked churned customers
         explicit = await db.execute(text("""
             SELECT
-                c.id, c.name, c.email, c.churned_at, c.churn_reason, c.churn_score,
+                c.id, c.company_name, c.email, c.churned_at, c.churn_reason, c.churn_score,
                 COALESCE(
-                    (SELECT SUM(i.total_amount)
+                    (SELECT SUM(i.total_sek)
                      FROM invoices i
                      WHERE i.customer_id = c.id
                        AND i.org_id = :org_id
-                       AND i.status = 'paid'
+                       AND i.status = 'PAID'
                        AND i.issue_date >= NOW() - INTERVAL '12 months'),
                     0
                 ) AS revenue_last_12m,
@@ -87,15 +87,15 @@ async def churn_overview(
         # Inferred at-risk / implicit churn (no paid invoice in 90+ days, still "active")
         implicit = await db.execute(text("""
             SELECT
-                c.id, c.name, c.email, c.churn_score,
+                c.id, c.company_name, c.email, c.churn_score,
                 MAX(i.issue_date) AS last_invoice_date,
-                COALESCE(SUM(CASE WHEN i.issue_date >= NOW() - INTERVAL '12 months' AND i.status='paid' THEN i.total_amount ELSE 0 END), 0) AS revenue_last_12m
+                COALESCE(SUM(CASE WHEN i.issue_date >= NOW() - INTERVAL '12 months' AND i.status='PAID' THEN i.total_sek ELSE 0 END), 0) AS revenue_last_12m
             FROM customers c
             LEFT JOIN invoices i ON i.customer_id = c.id AND i.org_id = c.org_id
             WHERE c.org_id = :org_id
               AND c.churned_at IS NULL
               AND (c.deleted_at IS NULL OR c.deleted_at > NOW())
-            GROUP BY c.id, c.name, c.email, c.churn_score
+            GROUP BY c.id, c.company_name, c.email, c.churn_score
             HAVING MAX(i.issue_date) < :threshold OR MAX(i.issue_date) IS NULL
             ORDER BY last_invoice_date ASC NULLS FIRST
             LIMIT 100
@@ -275,18 +275,18 @@ async def churn_risk_scores(
         rows = await db.execute(text("""
             WITH customer_stats AS (
                 SELECT
-                    c.id, c.name, c.email,
+                    c.id, c.company_name, c.email,
                     MAX(i.issue_date) AS last_invoice_date,
                     COUNT(CASE WHEN i.issue_date >= NOW() - INTERVAL '12 months' THEN 1 END) AS invoices_l12m,
                     COUNT(CASE WHEN i.issue_date BETWEEN NOW() - INTERVAL '24 months' AND NOW() - INTERVAL '12 months' THEN 1 END) AS invoices_prev_12m,
-                    COALESCE(SUM(CASE WHEN i.issue_date >= NOW() - INTERVAL '12 months' AND i.status='paid' THEN i.total_amount ELSE 0 END), 0) AS rev_l12m,
-                    COALESCE(SUM(CASE WHEN i.issue_date BETWEEN NOW() - INTERVAL '24 months' AND NOW() - INTERVAL '12 months' AND i.status='paid' THEN i.total_amount ELSE 0 END), 0) AS rev_prev_12m
+                    COALESCE(SUM(CASE WHEN i.issue_date >= NOW() - INTERVAL '12 months' AND i.status='PAID' THEN i.total_sek ELSE 0 END), 0) AS rev_l12m,
+                    COALESCE(SUM(CASE WHEN i.issue_date BETWEEN NOW() - INTERVAL '24 months' AND NOW() - INTERVAL '12 months' AND i.status='PAID' THEN i.total_sek ELSE 0 END), 0) AS rev_prev_12m
                 FROM customers c
-                LEFT JOIN invoices i ON i.customer_id = c.id AND i.org_id = c.org_id AND i.status NOT IN ('draft','cancelled')
+                LEFT JOIN invoices i ON i.customer_id = c.id AND i.org_id = c.org_id AND i.status != 'DRAFT'
                 WHERE c.org_id = :org_id
                   AND c.churned_at IS NULL
                   AND (c.deleted_at IS NULL OR c.deleted_at > NOW())
-                GROUP BY c.id, c.name, c.email
+                GROUP BY c.id, c.company_name, c.email
             )
             SELECT *,
                 EXTRACT(DAY FROM NOW() - last_invoice_date::timestamptz)::int AS days_inactive
