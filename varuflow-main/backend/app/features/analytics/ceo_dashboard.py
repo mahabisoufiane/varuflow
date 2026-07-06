@@ -57,37 +57,47 @@ async def cash_forecast(
         )
         current_balance = float(bank_row.scalar() or 0)
 
-        # Fallback: net from invoices − expenses if no bank data
+        # Fallback: net from invoices − expenses if no bank data.
+        # Real schema: invoices carry total_sek/issue_date with UPPERCASE
+        # status enum; "paid so far" lives in payments(amount, invoice_id);
+        # expenses use amount/expense_date with UPPERCASE status. The original
+        # queries referenced paid_amount/issue_date/'paid' — none of which
+        # exist — so this endpoint 500'd on every call.
         if current_balance == 0:
             inv_row = await db.execute(
                 text("""
-                    SELECT COALESCE(SUM(paid_amount), 0)
+                    SELECT COALESCE(SUM(total_sek), 0)
                     FROM invoices
-                    WHERE org_id = :oid AND status = 'paid'
-                      AND issued_date >= now() - interval '12 months'
+                    WHERE org_id = :oid AND status = 'PAID'
+                      AND issue_date >= (now() - interval '12 months')::date
                 """).bindparams(oid=org_id)
             )
             exp_row = await db.execute(
                 text("""
                     SELECT COALESCE(SUM(amount), 0)
                     FROM expenses
-                    WHERE org_id = :oid AND status = 'approved'
-                      AND date >= now() - interval '12 months'
+                    WHERE org_id = :oid AND status = 'APPROVED'
+                      AND expense_date >= (now() - interval '12 months')::date
                 """).bindparams(oid=org_id)
             )
             current_balance = float(inv_row.scalar() or 0) - float(exp_row.scalar() or 0)
 
         # ── 2. Expected inflows: open invoices due in window ────────────────
+        # Expected = invoice total minus partial payments recorded against it.
         inf_rows = await db.execute(
             text("""
-                SELECT due_date, COALESCE(outstanding_amount, total_amount - COALESCE(paid_amount,0)) AS expected
-                FROM invoices
-                WHERE org_id = :oid
-                  AND status IN ('sent', 'overdue')
-                  AND due_date IS NOT NULL
-                  AND due_date >= :today
-                  AND due_date <= :horizon
-                ORDER BY due_date
+                SELECT i.due_date,
+                       i.total_sek - COALESCE((
+                           SELECT SUM(p.amount) FROM payments p
+                           WHERE p.invoice_id = i.id
+                       ), 0) AS expected
+                FROM invoices i
+                WHERE i.org_id = :oid
+                  AND i.status IN ('SENT', 'OVERDUE')
+                  AND i.due_date IS NOT NULL
+                  AND i.due_date >= :today
+                  AND i.due_date <= :horizon
+                ORDER BY i.due_date
             """).bindparams(oid=org_id, today=today, horizon=today + timedelta(days=horizon_days))
         )
         inflows: dict[date, float] = {}
@@ -100,8 +110,8 @@ async def cash_forecast(
             text("""
                 SELECT COALESCE(SUM(amount), 0) / 90.0 AS daily_burn
                 FROM expenses
-                WHERE org_id = :oid AND status = 'approved'
-                  AND date >= now() - interval '3 months'
+                WHERE org_id = :oid AND status = 'APPROVED'
+                  AND expense_date >= (now() - interval '3 months')::date
             """).bindparams(oid=org_id)
         )
         daily_burn = float(burn_row.scalar() or 0)
@@ -146,11 +156,11 @@ async def cash_forecast(
         # ── 5. Upcoming invoice inflows within 7 days ────────────────────────
         soon_rows = await db.execute(
             text("""
-                SELECT i.invoice_number, c.name AS customer, i.due_date,
-                       COALESCE(i.outstanding_amount, i.total_amount - COALESCE(i.paid_amount,0)) AS expected
+                SELECT i.invoice_number, c.company_name AS customer, i.due_date,
+                       i.total_sek - COALESCE((SELECT SUM(p.amount) FROM payments p WHERE p.invoice_id = i.id), 0) AS expected
                 FROM invoices i
                 LEFT JOIN customers c ON i.customer_id = c.id
-                WHERE i.org_id = :oid AND i.status IN ('sent','overdue')
+                WHERE i.org_id = :oid AND i.status IN ('SENT','OVERDUE')
                   AND i.due_date >= :today AND i.due_date <= :soon
                 ORDER BY i.due_date LIMIT 10
             """).bindparams(oid=org_id, today=today, soon=today + timedelta(days=7))
@@ -219,14 +229,14 @@ async def ceo_pnl(
         rev = await db.execute(
             text("""
                 SELECT
-                    COALESCE(SUM(total_amount), 0) AS invoiced,
-                    COALESCE(SUM(paid_amount), 0)  AS collected,
-                    COALESCE(SUM(tax_amount), 0)   AS tax,
+                    COALESCE(SUM(total_sek), 0) AS invoiced,
+                    COALESCE(SUM(COALESCE((SELECT SUM(p.amount) FROM payments p WHERE p.invoice_id = invoices.id), 0)), 0)  AS collected,
+                    COALESCE(SUM(vat_amount), 0)   AS tax,
                     COALESCE(SUM(subtotal), 0)     AS subtotal
                 FROM invoices
                 WHERE org_id = :oid
-                  AND status NOT IN ('draft', 'cancelled')
-                  AND issued_date BETWEEN :f AND :t
+                  AND status != 'DRAFT'
+                  AND issue_date BETWEEN :f AND :t
             """).bindparams(oid=org_id, f=from_date, t=to_date)
         )
         rev_row = rev.one()
@@ -238,24 +248,26 @@ async def ceo_pnl(
         # Revenue by month
         monthly_rev = await db.execute(
             text("""
-                SELECT date_trunc('month', issued_date) AS month,
-                       SUM(total_amount) AS revenue, SUM(paid_amount) AS collected
+                SELECT date_trunc('month', issue_date) AS month,
+                       SUM(total_sek) AS revenue, SUM(COALESCE((SELECT SUM(p.amount) FROM payments p WHERE p.invoice_id = invoices.id), 0)) AS collected
                 FROM invoices
                 WHERE org_id = :oid
-                  AND status NOT IN ('draft', 'cancelled')
-                  AND issued_date BETWEEN :f AND :t
+                  AND status != 'DRAFT'
+                  AND issue_date BETWEEN :f AND :t
                 GROUP BY 1 ORDER BY 1
             """).bindparams(oid=org_id, f=from_date, t=to_date)
         )
         rev_by_month = [{"month": str(r[0])[:7], "revenue": float(r[1] or 0), "collected": float(r[2] or 0)} for r in monthly_rev]
 
-        # Expenses by category
+        # Expenses by category — expenses carry category_id (FK to
+        # expense_categories); there is no inline "category" text column.
         exp = await db.execute(
             text("""
-                SELECT category, COALESCE(SUM(amount), 0) AS total
-                FROM expenses
-                WHERE org_id = :oid AND date BETWEEN :f AND :t
-                GROUP BY category ORDER BY total DESC
+                SELECT ec.name AS category, COALESCE(SUM(e.amount), 0) AS total
+                FROM expenses e
+                LEFT JOIN expense_categories ec ON e.category_id = ec.id
+                WHERE e.org_id = :oid AND e.expense_date BETWEEN :f AND :t
+                GROUP BY ec.name ORDER BY total DESC
             """).bindparams(oid=org_id, f=from_date, t=to_date)
         )
         expense_lines = [{"category": r[0] or "Other", "total": float(r[1])} for r in exp]
@@ -351,15 +363,15 @@ async def budget_summary(
 
         rev_actual = await db.execute(
             text("""
-                SELECT COALESCE(SUM(total_amount), 0) FROM invoices
-                WHERE org_id = :oid AND status NOT IN ('draft','cancelled')
-                  AND issued_date BETWEEN :f AND :t
+                SELECT COALESCE(SUM(total_sek), 0) FROM invoices
+                WHERE org_id = :oid AND status != 'DRAFT'
+                  AND issue_date BETWEEN :f AND :t
             """).bindparams(oid=org_id, f=from_date, t=to_date)
         )
         exp_actual = await db.execute(
             text("""
                 SELECT COALESCE(SUM(amount), 0) FROM expenses
-                WHERE org_id = :oid AND date BETWEEN :f AND :t
+                WHERE org_id = :oid AND expense_date BETWEEN :f AND :t
             """).bindparams(oid=org_id, f=from_date, t=to_date)
         )
 
@@ -434,18 +446,18 @@ async def generate_board_report(
 
         rev_row = await db.execute(
             text("""
-                SELECT COALESCE(SUM(total_amount),0), COALESCE(SUM(paid_amount),0),
-                       COALESCE(SUM(subtotal),0), COALESCE(SUM(tax_amount),0)
+                SELECT COALESCE(SUM(total_sek),0), COALESCE(SUM(COALESCE((SELECT SUM(p.amount) FROM payments p WHERE p.invoice_id = invoices.id), 0)),0),
+                       COALESCE(SUM(subtotal),0), COALESCE(SUM(vat_amount),0)
                 FROM invoices
-                WHERE org_id=:oid AND status NOT IN ('draft','cancelled')
-                  AND issued_date BETWEEN :f AND :t
+                WHERE org_id=:oid AND status != 'DRAFT'
+                  AND issue_date BETWEEN :f AND :t
             """).bindparams(oid=org_id, f=from_date, t=to_date)
         )
         rr = rev_row.one()
         invoiced, collected, subtotal, tax = (float(x or 0) for x in rr)
 
         exp_row = await db.execute(
-            text("SELECT COALESCE(SUM(amount),0) FROM expenses WHERE org_id=:oid AND date BETWEEN :f AND :t")
+            text("SELECT COALESCE(SUM(amount),0) FROM expenses WHERE org_id=:oid AND expense_date BETWEEN :f AND :t")
             .bindparams(oid=org_id, f=from_date, t=to_date)
         )
         total_exp = float(exp_row.scalar() or 0)
@@ -454,11 +466,11 @@ async def generate_board_report(
 
         top_cust = await db.execute(
             text("""
-                SELECT c.name, SUM(i.total_amount) AS rev
+                SELECT c.company_name, SUM(i.total_sek) AS rev
                 FROM invoices i JOIN customers c ON i.customer_id=c.id
-                WHERE i.org_id=:oid AND i.status NOT IN ('draft','cancelled')
-                  AND i.issued_date BETWEEN :f AND :t
-                GROUP BY c.id, c.name ORDER BY rev DESC LIMIT 5
+                WHERE i.org_id=:oid AND i.status != 'DRAFT'
+                  AND i.issue_date BETWEEN :f AND :t
+                GROUP BY c.id, c.company_name ORDER BY rev DESC LIMIT 5
             """).bindparams(oid=org_id, f=from_date, t=to_date)
         )
         customers_data = [(r[0], float(r[1] or 0)) for r in top_cust]

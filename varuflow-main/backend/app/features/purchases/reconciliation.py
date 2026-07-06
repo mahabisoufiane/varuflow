@@ -171,7 +171,7 @@ async def reconciliation_summary(
         unmatched_count = await db.scalar(
             select(func.count()).select_from(Invoice).where(
                 Invoice.org_id == org_id,
-                Invoice.status.notin_(["PAID", "CANCELLED", "VOID", "DRAFT"]),
+                Invoice.status.notin_(["PAID", "DRAFT"]),
                 paid_subq == 0,
             )
         ) or 0
@@ -179,7 +179,7 @@ async def reconciliation_summary(
         partial_count = await db.scalar(
             select(func.count()).select_from(Invoice).where(
                 Invoice.org_id == org_id,
-                Invoice.status.notin_(["PAID", "CANCELLED", "VOID"]),
+                Invoice.status.notin_(["PAID"]),
                 paid_subq > 0,
                 paid_subq < Invoice.total_sek,
             )
@@ -227,7 +227,7 @@ async def unmatched_invoices(
             select(Invoice)
             .where(
                 Invoice.org_id == org_id,
-                Invoice.status.notin_(["PAID", "CANCELLED", "VOID", "DRAFT"]),
+                Invoice.status.notin_(["PAID", "DRAFT"]),
                 paid_subq == 0,
             )
             .order_by(Invoice.due_date.asc().nullslast())
@@ -272,7 +272,7 @@ async def partial_invoices(
             select(Invoice, paid_col)
             .where(
                 Invoice.org_id == org_id,
-                Invoice.status.notin_(["PAID", "CANCELLED", "VOID"]),
+                Invoice.status.notin_(["PAID"]),
                 paid_subq > 0,
                 paid_subq < Invoice.total_sek,
             )

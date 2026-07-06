@@ -41,7 +41,7 @@ async def _customer_avg_delay(org_id: uuid.UUID, db: AsyncSession) -> dict[str, 
         .where(
             Invoice.org_id == org_id,
             Invoice.issue_date >= cutoff,
-            Invoice.status == "paid",
+            Invoice.status == "PAID",
         )
     )
     rows = result.all()
@@ -60,7 +60,7 @@ async def _open_invoices(org_id: uuid.UUID, db: AsyncSession) -> list[dict]:
         select(Invoice)
         .where(
             Invoice.org_id == org_id,
-            Invoice.status.in_(["sent", "overdue"]),
+            Invoice.status.in_(["SENT", "OVERDUE"]),
         )
     )
     return [

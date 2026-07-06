@@ -19,6 +19,7 @@ from app.middleware.plan_check import require_module
 from app.features.auth.organization import Organization
 from .models import (
     Product,
+    ProductBatch,
     PurchaseOrder,
     PurchaseOrderItem,
     PurchaseOrderStatus,
@@ -644,6 +645,42 @@ async def update_threshold(
         product=sl.product,
         warehouse=sl.warehouse,
     )
+
+
+# ── Product Batches ───────────────────────────────────────────────────────────
+
+@router.get("/batches")
+async def list_batches(
+    only_active: bool = Query(False),
+    product_id: Optional[uuid.UUID] = Query(None),
+    ctx: tuple = Depends(get_current_member),
+    db: AsyncSession = Depends(get_db),
+):
+    """Batch/expiry rows for the products table's batch column.
+
+    The frontend (inventory/products) has called this endpoint since the
+    batch-tracking UI shipped, but it never existed server-side — the page
+    silently showed "—" for every batch. ``only_active`` filters to batches
+    with stock remaining.
+    """
+    org_id = _org(ctx)
+    q = select(ProductBatch).where(ProductBatch.org_id == org_id)
+    if only_active:
+        q = q.where(ProductBatch.quantity > 0)
+    if product_id:
+        q = q.where(ProductBatch.product_id == product_id)
+    rows = (await db.execute(q.order_by(ProductBatch.expiry_date.asc().nulls_last()))).scalars().all()
+    return [
+        {
+            "id": str(b.id),
+            "product_id": str(b.product_id),
+            "warehouse_id": str(b.warehouse_id),
+            "batch_number": b.batch_number,
+            "expiry_date": b.expiry_date.isoformat() if b.expiry_date else None,
+            "quantity": b.quantity,
+        }
+        for b in rows
+    ]
 
 
 # ── Stock Movements ───────────────────────────────────────────────────────────

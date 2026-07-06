@@ -48,7 +48,7 @@ class WorkflowPatch(BaseModel):
 # ── Cash Flow Forecast ────────────────────────────────────────────────────────
 
 @router.get("/api/ai/cashflow")
-async def cashflow_forecast(request: Request, db: AsyncSession = Depends(get_db)):
+async def cashflow_forecast(request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     """
     Forecast 30/60/90-day cash position from:
     - Outstanding receivables (SENT/OVERDUE invoices)
@@ -56,7 +56,7 @@ async def cashflow_forecast(request: Request, db: AsyncSession = Depends(get_db)
     - Current balance estimate from recent bank credits
     """
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         today = date.today()
 
@@ -176,13 +176,13 @@ async def cashflow_forecast(request: Request, db: AsyncSession = Depends(get_db)
 # ── Smart Invoice Matching ────────────────────────────────────────────────────
 
 @router.get("/api/ai/bank-match")
-async def bank_match_suggestions(request: Request, db: AsyncSession = Depends(get_db)):
+async def bank_match_suggestions(request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     """
     For each UNMATCHED incoming bank transaction, suggest open invoices
     ranked by amount similarity + description pattern matching.
     """
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
 
         # UNMATCHED transactions (positive = incoming credit)
@@ -294,10 +294,10 @@ async def bank_match_suggestions(request: Request, db: AsyncSession = Depends(ge
 
 
 @router.post("/api/ai/bank-match/{tx_id}/confirm")
-async def confirm_bank_match(tx_id: str, invoice_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def confirm_bank_match(tx_id: str, invoice_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     """Apply a suggested match: mark transaction as MATCHED and link to invoice."""
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         tx_r = await db.execute(select(BankTransaction).where(BankTransaction.id == uuid.UUID(tx_id), BankTransaction.org_id == org_id))
         tx = tx_r.scalar_one_or_none()
@@ -322,7 +322,7 @@ async def confirm_bank_match(tx_id: str, invoice_id: str, request: Request, db: 
 # ── Anomaly Detection ─────────────────────────────────────────────────────────
 
 @router.get("/api/ai/anomalies")
-async def detect_anomalies(request: Request, db: AsyncSession = Depends(get_db)):
+async def detect_anomalies(request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     """
     Detect three classes of anomalies:
     1. Duplicate invoices (same customer + similar amount within 7 days)
@@ -330,7 +330,7 @@ async def detect_anomalies(request: Request, db: AsyncSession = Depends(get_db))
     3. Unusual spend spikes (bank debits 2× the 60-day average in last 7 days)
     """
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         today = date.today()
         anomalies = []
@@ -472,9 +472,9 @@ def _wf(r: WorkflowRule) -> dict:
 
 
 @router.get("/api/ai/workflows")
-async def list_workflows(request: Request, db: AsyncSession = Depends(get_db)):
+async def list_workflows(request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(WorkflowRule).where(WorkflowRule.org_id == org_id).order_by(WorkflowRule.created_at.desc()))
         return [_wf(r) for r in result.scalars().all()]
@@ -486,9 +486,9 @@ async def list_workflows(request: Request, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/api/ai/workflows", status_code=201)
-async def create_workflow(body: WorkflowIn, request: Request, db: AsyncSession = Depends(get_db)):
+async def create_workflow(body: WorkflowIn, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         r = WorkflowRule(
             id=uuid.uuid4(), org_id=org_id, name=body.name, description=body.description,
@@ -508,9 +508,9 @@ async def create_workflow(body: WorkflowIn, request: Request, db: AsyncSession =
 
 
 @router.patch("/api/ai/workflows/{workflow_id}")
-async def update_workflow(workflow_id: str, body: WorkflowPatch, request: Request, db: AsyncSession = Depends(get_db)):
+async def update_workflow(workflow_id: str, body: WorkflowPatch, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(WorkflowRule).where(WorkflowRule.id == uuid.UUID(workflow_id), WorkflowRule.org_id == org_id))
         r = result.scalar_one_or_none()
@@ -530,9 +530,9 @@ async def update_workflow(workflow_id: str, body: WorkflowPatch, request: Reques
 
 
 @router.delete("/api/ai/workflows/{workflow_id}", status_code=204)
-async def delete_workflow(workflow_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def delete_workflow(workflow_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(WorkflowRule).where(WorkflowRule.id == uuid.UUID(workflow_id), WorkflowRule.org_id == org_id))
         r = result.scalar_one_or_none()
@@ -549,14 +549,14 @@ async def delete_workflow(workflow_id: str, request: Request, db: AsyncSession =
 
 
 @router.post("/api/ai/workflows/{workflow_id}/run")
-async def run_workflow(workflow_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def run_workflow(workflow_id: str, request: Request, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     """
     Evaluate a workflow rule against the current org state and return
     the list of entities that would trigger it (dry-run) plus any
     actions that were queued.
     """
     try:
-        user, member = await get_current_member(request, db)
+        user, member = ctx
         org_id = member.org_id
         result = await db.execute(select(WorkflowRule).where(WorkflowRule.id == uuid.UUID(workflow_id), WorkflowRule.org_id == org_id))
         r = result.scalar_one_or_none()

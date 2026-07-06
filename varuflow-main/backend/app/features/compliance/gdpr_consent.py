@@ -53,8 +53,13 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def _get_org(member: dict) -> uuid.UUID:
-    return uuid.UUID(str(member["org_id"]))
+def _get_org(member) -> uuid.UUID:
+    # Accepts the OrganizationMember ORM object (tuple-unpacked ctx) or the
+    # dict-style MemberCtx — subscripting the ORM object raised TypeError.
+    org = getattr(member, "org_id", None)
+    if org is None:
+        org = member["org_id"]
+    return org if isinstance(org, uuid.UUID) else uuid.UUID(str(org))
 
 
 async def _write_log(

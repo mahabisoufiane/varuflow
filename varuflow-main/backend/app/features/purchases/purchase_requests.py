@@ -105,6 +105,48 @@ async def create_purchase_request(body: RequestCreate, member=Depends(get_curren
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+# NOTE: /report must be declared BEFORE /{req_id} — FastAPI matches routes
+# in declaration order, so the dynamic segment was swallowing "report" and
+# failing to cast it as a UUID (DataError 500).
+@router.get("/api/purchase-requests/report")
+async def purchase_request_report(member=Depends(get_current_member), db: AsyncSession = Depends(get_db)):
+    """Spending summary: total submitted / approved / declined / approved value."""
+    try:
+        from sqlalchemy import func as _func
+        org_id = member["org_id"]
+        rows = (await db.execute(
+            select(PurchaseRequest).where(PurchaseRequest.org_id == org_id, PurchaseRequest.is_template == False)  # noqa: E712
+        )).scalars().all()
+        total_submitted = len(rows)
+        total_approved = sum(1 for r in rows if r.status == "approved")
+        total_rejected = sum(1 for r in rows if r.status == "rejected")
+        total_pending = sum(1 for r in rows if r.status == "pending")
+        value_approved = float(sum(r.estimated_total for r in rows if r.status == "approved"))
+        value_pending = float(sum(r.estimated_total for r in rows if r.status == "pending"))
+        # by category
+        by_category: dict = {}
+        for r in rows:
+            cat = getattr(r, "budget_category", None) or "Uncategorised"
+            if cat not in by_category:
+                by_category[cat] = {"count": 0, "value": 0.0}
+            by_category[cat]["count"] += 1
+            by_category[cat]["value"] += float(r.estimated_total)
+        return {
+            "total_submitted": total_submitted,
+            "total_approved": total_approved,
+            "total_rejected": total_rejected,
+            "total_pending": total_pending,
+            "value_approved": value_approved,
+            "value_pending": value_pending,
+            "by_category": by_category,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"purchase_request_report failed: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
 @router.get("/api/purchase-requests/{req_id}")
 async def get_purchase_request(req_id: str, member=Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
@@ -206,40 +248,3 @@ def _req_dict(r: PurchaseRequest) -> dict:
     }
 
 
-@router.get("/api/purchase-requests/report")
-async def purchase_request_report(member=Depends(get_current_member), db: AsyncSession = Depends(get_db)):
-    """Spending summary: total submitted / approved / declined / approved value."""
-    try:
-        from sqlalchemy import func as _func
-        org_id = member["org_id"]
-        rows = (await db.execute(
-            select(PurchaseRequest).where(PurchaseRequest.org_id == org_id, PurchaseRequest.is_template == False)  # noqa: E712
-        )).scalars().all()
-        total_submitted = len(rows)
-        total_approved = sum(1 for r in rows if r.status == "approved")
-        total_rejected = sum(1 for r in rows if r.status == "rejected")
-        total_pending = sum(1 for r in rows if r.status == "pending")
-        value_approved = float(sum(r.estimated_total for r in rows if r.status == "approved"))
-        value_pending = float(sum(r.estimated_total for r in rows if r.status == "pending"))
-        # by category
-        by_category: dict = {}
-        for r in rows:
-            cat = getattr(r, "budget_category", None) or "Uncategorised"
-            if cat not in by_category:
-                by_category[cat] = {"count": 0, "value": 0.0}
-            by_category[cat]["count"] += 1
-            by_category[cat]["value"] += float(r.estimated_total)
-        return {
-            "total_submitted": total_submitted,
-            "total_approved": total_approved,
-            "total_rejected": total_rejected,
-            "total_pending": total_pending,
-            "value_approved": value_approved,
-            "value_pending": value_pending,
-            "by_category": by_category,
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"purchase_request_report failed: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
