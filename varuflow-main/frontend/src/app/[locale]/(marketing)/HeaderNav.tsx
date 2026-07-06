@@ -79,13 +79,21 @@ export default function MarketingHeaderNav() {
           Go to app
         </Link>
       ) : (
-        <Link
-          href="/auth/signup"
-          className="rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
-          style={{ background: "linear-gradient(135deg,#2563EB,#7c3aed)", color: "#fff" }}
-        >
-          Get started
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/auth/login"
+            className="rounded-lg px-4 py-2 text-sm font-semibold text-white/85 transition-colors hover:text-white"
+          >
+            Log in
+          </Link>
+          <Link
+            href="/auth/signup"
+            className="rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
+            style={{ background: "var(--vf-brand-primary)", color: "#fff" }}
+          >
+            Get started
+          </Link>
+        </div>
       )}
     </div>
   );
