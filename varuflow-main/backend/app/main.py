@@ -381,6 +381,12 @@ app.include_router(health.router, prefix="/api")
 # Feature packages (each includes all their sub-routers)
 app.include_router(auth_router)
 app.include_router(invoicing_router)
+# Quotes declare absolute /api/quotes/... paths — mounted at app level (no
+# prefix) so they resolve where the frontend and public quote-view tokens
+# expect, and so the public token endpoints stay dependency-free.
+from app.features.invoicing import quotes as _quotes_module  # noqa: E402
+app.include_router(_quotes_module.router)
+app.include_router(_quotes_module.public_router)
 app.include_router(pos_router)
 app.include_router(hr_router)
 app.include_router(expenses_router)

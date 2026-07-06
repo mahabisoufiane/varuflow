@@ -39,8 +39,12 @@ router.include_router(invoice_notes.router)
 router.include_router(invoice_tags.router)
 router.include_router(invoice_templates.router)
 router.include_router(quote_comparisons.router)
-router.include_router(quotes.router)
+# NOTE: quotes.router / quotes.public_router are mounted at APP level in
+# main.py, NOT here. quotes.py declares absolute "/api/quotes/..." paths (the
+# frontend and public quote-view tokens depend on them); nesting them under
+# this aggregate (a) doubled every path to /api/invoicing/api/quotes and
+# (b) made the public token endpoints inherit require_module("invoicing"),
+# locking customers out of their own quote links.
 router.include_router(receipt_exports.router)
 router.include_router(recurring.router)
-router.include_router(quotes.public_router)
 router.include_router(recurring.public_router)
