@@ -78,7 +78,9 @@ async def create_purchase_request(body: RequestCreate, member=Depends(get_curren
     try:
         org_id = member["org_id"]
         rec = PurchaseRequest(
-            org_id=org_id, requested_by=member.get("staff_id"),
+            # staff_id is always None in MemberCtx — the requester is the current
+            # user. NOT NULL column meant creation 500'd on every call.
+            org_id=org_id, requested_by=member.get("staff_id") or member["user_id"],
             title=body.title, justification=body.justification,
             supplier_id=body.supplier_id, estimated_total=Decimal(str(body.estimated_total)),
             currency=body.currency,
@@ -176,21 +178,28 @@ async def approve_purchase_request(req_id: str, body: ReviewBody, member=Depends
         if rec.status != "pending":
             raise HTTPException(status_code=409, detail="Already reviewed")
         rec.status = "approved"
-        rec.reviewed_by = member.get("staff_id")
+        rec.reviewed_by = member.get("staff_id") or member["user_id"]
         rec.reviewed_at = datetime.now(timezone.utc)
         rec.review_note = body.note
-        # Create draft PO
+        # Auto-create a draft PO — only when the request names a supplier.
+        # purchase_orders.supplier_id is NOT NULL, so approving a supplier-less
+        # request used to 500 here; approval and ordering are separate steps.
         await db.refresh(rec, ["items"])
-        po = PurchaseOrder(org_id=org_id, supplier_id=rec.supplier_id, status="DRAFT")
-        db.add(po)
-        await db.flush()
-        for item in rec.items:
-            db.add(PurchaseOrderItem(
-                purchase_order_id=po.id, product_id=item.product_id,
-                quantity=item.quantity, unit_price=item.unit_price,
-                line_total=item.unit_price * item.quantity,
-            ))
-        rec.purchase_order_id = po.id
+        # PO lines require a catalog product (NOT NULL product_id) while request
+        # lines are free-text; only product-backed lines can be copied. A PO is
+        # created only when there is a supplier AND at least one such line.
+        product_lines = [item for item in rec.items if item.product_id] if rec.supplier_id else []
+        if rec.supplier_id and product_lines:
+            po = PurchaseOrder(org_id=org_id, supplier_id=rec.supplier_id, status="DRAFT")
+            db.add(po)
+            await db.flush()
+            for item in product_lines:
+                db.add(PurchaseOrderItem(
+                    purchase_order_id=po.id, product_id=item.product_id,
+                    quantity=item.quantity, unit_price=item.unit_price,
+                    line_total=item.unit_price * item.quantity,
+                ))
+            rec.purchase_order_id = po.id
         await db.commit()
         await db.refresh(rec, ["items"])
         return _req_dict(rec)
@@ -214,7 +223,7 @@ async def reject_purchase_request(req_id: str, body: ReviewBody, member=Depends(
         if rec.status != "pending":
             raise HTTPException(status_code=409, detail="Already reviewed")
         rec.status = "rejected"
-        rec.reviewed_by = member.get("staff_id")
+        rec.reviewed_by = member.get("staff_id") or member["user_id"]
         rec.reviewed_at = datetime.now(timezone.utc)
         rec.review_note = body.note
         await db.commit()
