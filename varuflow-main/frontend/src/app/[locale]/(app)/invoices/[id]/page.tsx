@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useRouter, useParams } from "next/navigation";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyInvoices } from "@/components/illustrations";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Link } from "@/i18n/navigation";
@@ -162,7 +164,14 @@ export default function InvoiceDetailPage() {
       <div className="h-48 rounded-xl bg-gray-100" />
     </div>
   );
-  if (!invoice) return <p className="text-red-600">{error ?? "Invoice not found"}</p>;
+  if (!invoice) return (
+    <EmptyState
+      illustration={<EmptyInvoices />}
+      title={error ?? "Invoice not found"}
+      description="It may have been deleted, or the link is wrong."
+      action={<Link href="/invoices" className="vf-btn text-xs">Back to invoices</Link>}
+    />
+  );
 
   const totalPaid = payments.reduce((s, p) => s + Number(p.amount), 0);
   const balance = Number(invoice.total_sek) - totalPaid;

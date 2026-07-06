@@ -231,7 +231,7 @@ export default function CustomersPage() {
               { key: "email", header: "Email", render: (c) => c.email ?? "—" },
               { key: "phone", header: "Phone", render: (c) => c.phone ?? "—" },
               { key: "org_number", header: "Org number", render: (c) => c.org_number ?? "—" },
-              { key: "payment_terms_days", header: "Terms", render: (c) => `Net ${c.payment_terms_days}d` },
+              { key: "payment_terms_days", header: "Terms", className: "text-right", render: (c) => `Net ${c.payment_terms_days}d` },
             ]}
             selected={selected}
             onSelect={setSelected}
@@ -301,6 +301,10 @@ export default function CustomersPage() {
                   <input
                     id={id}
                     type={id === "payment_terms_days" ? "number" : "text"}
+                    // Swedish org numbers are NNNNNN-NNNN; the backend rejects
+                    // other shapes, so guard at input time instead of on save.
+                    pattern={id === "org_number" ? "\\d{6}-\\d{4}" : undefined}
+                    title={id === "org_number" ? "Format: 556123-4567" : undefined}
                     required={required}
                     min={id === "payment_terms_days" ? "0" : undefined}
                     max={id === "payment_terms_days" ? "365" : undefined}

@@ -48,6 +48,7 @@ export default function NewInvoicePage() {
   }, []);
 
   const [loadingRefs, setLoadingRefs] = useState(true);
+  const [touched, setTouched] = useState({ customer: false, due: false });
   useEffect(() => {
     Promise.all([
       api.get<Customer[]>("/api/invoicing/customers?is_active=true"),
@@ -181,11 +182,14 @@ export default function NewInvoicePage() {
           <h2 className="font-semibold text-gray-900">Invoice details</h2>
           <div className="space-y-1.5">
             <Label>Customer *</Label>
-            <select required disabled={loadingRefs} value={customerId} onChange={(e) => handleCustomerChange(e.target.value)} data-testid="customer-select"
+            <select required disabled={loadingRefs} value={customerId} onBlur={() => setTouched((t) => ({ ...t, customer: true }))} onChange={(e) => handleCustomerChange(e.target.value)} data-testid="customer-select"
               className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
               <option value="">{loadingRefs ? "Loading customers…" : "Select customer…"}</option>
               {customers.map((c) => <option key={c.id} value={c.id}>{c.company_name}</option>)}
             </select>
+            {touched.customer && !customerId && (
+              <p className="mt-1 text-xs text-[var(--vf-danger)]">Customer is required</p>
+            )}
             {!loadingRefs && customers.length === 0 && (
               <p className="text-xs text-muted-foreground">
                 No customers yet. <Link href="/customers" className="text-[var(--vf-text-primary)] underline">Add one first.</Link>
@@ -200,8 +204,11 @@ export default function NewInvoicePage() {
             </div>
             <div className="space-y-1.5">
               <Label>Due date *</Label>
-              <input type="date" required value={dueDate} onChange={(e) => setDueDate(e.target.value)}
+              <input type="date" required value={dueDate} onBlur={() => setTouched((t) => ({ ...t, due: true }))} onChange={(e) => setDueDate(e.target.value)}
                 className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
+              {touched.due && !dueDate && (
+                <p className="mt-1 text-xs text-[var(--vf-danger)]">Due date is required</p>
+              )}
             </div>
           </div>
           <div className="space-y-1.5">

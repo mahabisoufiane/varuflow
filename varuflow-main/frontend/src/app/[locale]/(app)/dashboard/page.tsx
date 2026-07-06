@@ -57,7 +57,7 @@ function Sk({ className }: { className?: string }) {
 }
 
 /* ── Sparkline ───────────────────────────────────────────────────────────────── */
-function Sparkline({ data, color = "#2563EB", w = 72, h = 30 }: {
+function Sparkline({ data, color = "var(--vf-brand-primary)", w = 72, h = 30 }: {
   data: number[]; color?: string; w?: number; h?: number;
 }) {
   const uid = useId().replace(/:/g, "");
@@ -312,7 +312,7 @@ export default function DashboardPage() {
           iconCls="text-[var(--vf-brand-primary)] bg-[var(--vf-brand-primary-subtle)]"
           href="/invoices?status=SENT"
           spark={revData}
-          sparkColor="#2563EB"
+          sparkColor="var(--vf-brand-primary)"
         />
         <KpiCard
           label="Invoiced this month"
