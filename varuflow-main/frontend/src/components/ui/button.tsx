@@ -25,15 +25,15 @@ const buttonVariants = cva(
           "text-[var(--vf-text-secondary)] hover:bg-[var(--vf-hover)] hover:text-[var(--vf-text-primary)]",
         // Red — destructive action
         danger:
-          "bg-[#DC2626] text-white hover:bg-[#B91C1C] hover:shadow-[0_4px_12px_rgba(220,38,38,0.25)]",
+          "bg-[var(--vf-danger)] text-white hover:opacity-90",
         // Green — confirm / success
         success:
-          "bg-[#059669] text-white hover:bg-[#047857] hover:shadow-[0_4px_12px_rgba(5,150,105,0.25)]",
+          "bg-[var(--vf-success)] text-white hover:opacity-90",
         // shadcn compat aliases
         default:
           "bg-[var(--vf-brand-primary)] text-white shadow-sm hover:bg-[var(--vf-brand-primary-hover)] hover:shadow-[0_4px_12px_rgba(37,99,235,0.25)]",
         destructive:
-          "bg-[#DC2626] text-white hover:bg-[#B91C1C]",
+          "bg-[var(--vf-danger)] text-white hover:opacity-90",
         outline:
           "border text-[var(--vf-text-secondary)] hover:text-[var(--vf-text-primary)]",
         link: "text-[var(--vf-brand-primary)] underline-offset-4 hover:underline h-auto px-0 rounded-none",

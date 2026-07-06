@@ -21,7 +21,7 @@ export const VFLabel = React.forwardRef<
   <label
     ref={ref}
     className={cn(
-      "block text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-1.5",
+      "block text-[11px] font-semibold uppercase tracking-wide text-[var(--vf-text-muted)] mb-1.5",
       className
     )}
     {...props}
@@ -35,7 +35,7 @@ VFLabel.displayName = "VFLabel";
 
 export function VFOptional() {
   return (
-    <span className="inline-block ml-1.5 text-[10px] font-medium text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded-full align-middle leading-none">
+    <span className="inline-block ml-1.5 text-[10px] font-medium text-[var(--vf-brand-secondary)] bg-[var(--vf-brand-secondary-subtle)] px-1.5 py-0.5 rounded-full align-middle leading-none">
       optional
     </span>
   );
@@ -44,10 +44,10 @@ export function VFOptional() {
 // ── Shared input token classes ────────────────────────────────────────────────
 
 const inputBase =
-  "w-full rounded-[8px] border border-slate-200 py-3 px-3 text-[14px] text-slate-900 " +
+  "w-full rounded-lg border border-[var(--vf-border)] py-3 px-3 text-[14px] text-[var(--vf-text-primary)] " +
   "bg-white outline-none transition-all " +
-  "focus:ring-2 focus:ring-blue-500 focus:border-blue-500 " +
-  "placeholder:text-[13px] placeholder:text-slate-400 " +
+  "focus:ring-2 focus:ring-[var(--vf-brand-primary)] focus:border-[var(--vf-brand-primary)] " +
+  "placeholder:text-[13px] placeholder:text-[var(--vf-text-placeholder)] " +
   "disabled:cursor-not-allowed disabled:opacity-50";
 
 // ── VFInput ───────────────────────────────────────────────────────────────────
@@ -129,7 +129,7 @@ export function VFField({
         <p className="mt-1.5 text-[12px] text-red-500">{error}</p>
       )}
       {!error && hint && (
-        <p className="mt-1.5 text-[12px] text-slate-400">{hint}</p>
+        <p className="mt-1.5 text-[12px] text-[var(--vf-text-muted)]">{hint}</p>
       )}
     </div>
   );

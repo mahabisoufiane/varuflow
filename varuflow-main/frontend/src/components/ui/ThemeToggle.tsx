@@ -34,7 +34,7 @@ export default function ThemeToggle() {
         style={{
           left: isDark ? "4px" : "calc(100% - 32px)",
           background: isDark
-            ? "linear-gradient(135deg, #2563EB, #1D4ED8)"
+            ? "linear-gradient(135deg, var(--vf-brand-primary), var(--vf-brand-primary-hover))"
             : "linear-gradient(135deg, #F59E0B, #F97316)",
         }}
       />

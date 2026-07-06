@@ -97,7 +97,7 @@ export default function ConsoleHeader({
           <button
             type="button"
             onClick={() => setCreateOpen((o) => !o)}
-            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-[var(--vf-brand-primary,#2563eb)] px-3 text-sm font-semibold text-white hover:opacity-90"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-[var(--vf-brand-primary)] px-3 text-sm font-semibold text-white hover:opacity-90"
           >
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">{t("header.quickCreate")}</span>
@@ -152,7 +152,7 @@ export default function ConsoleHeader({
             aria-label={t("header.account")}
             className="flex items-center gap-1 rounded-md p-0.5 hover:bg-accent"
           >
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--vf-brand-primary,#2563eb)] text-sm font-semibold text-white">
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--vf-brand-primary)] text-sm font-semibold text-white">
               {avatar}
             </span>
             <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />

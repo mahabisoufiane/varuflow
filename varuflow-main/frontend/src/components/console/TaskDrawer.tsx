@@ -39,8 +39,8 @@ const ACTIVITY_LABEL: Record<string, string> = {
 
 const STATUS_META: Record<TaskStatus, { icon: LucideIcon; className: string; spin?: boolean }> = {
   pending: { icon: Clock, className: "text-muted-foreground" },
-  running: { icon: Loader2, className: "text-blue-500", spin: true },
-  success: { icon: CheckCircle2, className: "text-emerald-500" },
+  running: { icon: Loader2, className: "text-[var(--vf-info)]", spin: true },
+  success: { icon: CheckCircle2, className: "text-[var(--vf-success)]" },
   failed: { icon: XCircle, className: "text-red-500" },
 };
 
@@ -104,7 +104,7 @@ export default function TaskDrawer() {
         <ListChecks className="h-4 w-4 shrink-0 text-muted-foreground" />
         <span className="font-medium text-foreground">{t("tasks.title")}</span>
         {runningCount > 0 && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-xs font-medium text-blue-600">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--vf-info-bg)] px-2 py-0.5 text-xs font-medium text-[var(--vf-info)]">
             <Loader2 className="h-3 w-3 animate-spin" />
             {runningCount} {t("tasks.status.running")}
           </span>

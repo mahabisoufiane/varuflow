@@ -31,7 +31,7 @@ export function EmptyState({
       )}
     >
       <div className="mb-6 w-[190px] max-w-full">{illustration}</div>
-      <h3 className="text-[15px] font-semibold vf-text-1">{title}</h3>
+      <h3 className="text-base font-semibold vf-text-1">{title}</h3>
       {description && (
         <p className="mt-1.5 max-w-sm text-sm vf-text-m">{description}</p>
       )}

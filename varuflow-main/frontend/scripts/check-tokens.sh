@@ -19,10 +19,10 @@ ARB_RADIUS=$(count 'rounded(-[a-z]+)?-\[[^]]+\]')
 ARB_SHADOW=$(count 'shadow-\[[^]]+\]')
 
 # Baseline = total OCCURRENCES as of 2026-07-06 (Phase 1A). Only ratchet DOWN.
-ARB_COLOR_MAX=990
-ARB_SIZE_MAX=385
-ARB_RADIUS_MAX=8
-ARB_SHADOW_MAX=14
+ARB_COLOR_MAX=981
+ARB_SIZE_MAX=379
+ARB_RADIUS_MAX=6
+ARB_SHADOW_MAX=11
 
 fail=0
 check() { # name current max

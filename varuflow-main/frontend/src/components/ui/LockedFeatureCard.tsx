@@ -45,7 +45,7 @@ export function LockedFeatureCard({
         )}
         <Link
           href={upgradeUrl}
-          className="mt-1 inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          className="mt-1 inline-flex items-center rounded-md bg-[var(--vf-brand-primary)] px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-[var(--vf-brand-primary-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)] focus:ring-offset-2"
         >
           Upgrade to {requiredPlan}
         </Link>
