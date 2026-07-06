@@ -98,7 +98,7 @@ async def list_sequences(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(EmailSequence)
             .where(EmailSequence.org_id == org_id)
@@ -127,7 +127,7 @@ async def create_sequence(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         seq = EmailSequence(
             id=uuid.uuid4(),
             org_id=org_id,
@@ -154,7 +154,7 @@ async def get_sequence(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(EmailSequence)
             .where(and_(EmailSequence.id == seq_id, EmailSequence.org_id == org_id))
@@ -183,7 +183,7 @@ async def update_sequence(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(EmailSequence).where(and_(EmailSequence.id == seq_id, EmailSequence.org_id == org_id))
         )
@@ -215,7 +215,7 @@ async def delete_sequence(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(EmailSequence).where(and_(EmailSequence.id == seq_id, EmailSequence.org_id == org_id))
         )
@@ -239,7 +239,7 @@ async def add_step(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(EmailSequence).where(and_(EmailSequence.id == seq_id, EmailSequence.org_id == org_id))
         )
@@ -273,7 +273,7 @@ async def update_step(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(EmailSequenceStep)
             .join(EmailSequence, EmailSequenceStep.sequence_id == EmailSequence.id)
@@ -306,7 +306,7 @@ async def delete_step(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(EmailSequenceStep)
             .join(EmailSequence, EmailSequenceStep.sequence_id == EmailSequence.id)
@@ -332,7 +332,7 @@ async def enroll_manually(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(EmailSequence)
             .where(and_(EmailSequence.id == seq_id, EmailSequence.org_id == org_id))
@@ -397,7 +397,7 @@ async def list_enrollments(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(EmailSequenceEnrollment)
             .where(

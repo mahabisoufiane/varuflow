@@ -86,9 +86,15 @@
         "newCustomer": "عميل جديد",
         "generic": "نشاط"
       }
+    },
+    "create": {
+      "newQuote": "عرض سعر جديد",
+      "newInvoice": "فاتورة جديدة",
+      "newCustomer": "عميل جديد",
+      "newProduct": "منتج جديد",
+      "newPurchaseOrder": "أمر شراء جديد"
     }
   },
-
   "common": {
     "appName": "Varuflow",
     "loading": "جارٍ التحميل...",

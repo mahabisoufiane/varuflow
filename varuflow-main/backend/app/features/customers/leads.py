@@ -123,7 +123,7 @@ async def list_leads(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         q = select(Lead).where(Lead.org_id == org_id)
         if status:
             q = q.where(Lead.status == status)
@@ -155,7 +155,7 @@ async def create_lead(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         duplicate = None
         if body.email:
             dup = (await db.execute(
@@ -197,7 +197,7 @@ async def get_lead(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         lead = (await db.execute(
             select(Lead).where(Lead.id == lead_id, Lead.org_id == org_id)
         )).scalars().first()
@@ -219,7 +219,7 @@ async def update_lead(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         lead = (await db.execute(
             select(Lead).where(Lead.id == lead_id, Lead.org_id == org_id)
         )).scalars().first()
@@ -265,7 +265,7 @@ async def delete_lead(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         lead = (await db.execute(
             select(Lead).where(Lead.id == lead_id, Lead.org_id == org_id)
         )).scalars().first()
@@ -290,7 +290,7 @@ async def convert_lead(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         lead = (await db.execute(
             select(Lead).where(Lead.id == lead_id, Lead.org_id == org_id)
         )).scalars().first()
@@ -353,7 +353,7 @@ async def add_score_event(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         lead = (await db.execute(
             select(Lead).where(Lead.id == lead_id, Lead.org_id == org_id)
         )).scalars().first()
@@ -389,7 +389,7 @@ async def import_leads_csv(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         created = 0
         skipped = 0
         duplicates: list[dict] = []

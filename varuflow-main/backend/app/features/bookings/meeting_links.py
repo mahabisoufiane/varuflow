@@ -89,7 +89,7 @@ async def list_meeting_links(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(MeetingLink)
             .where(MeetingLink.org_id == org_id)
@@ -110,7 +110,7 @@ async def create_meeting_link(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         slug = body.slug or re.sub(r"[^a-z0-9-]", "-", body.title.lower())[:60]
         if not _VALID_SLUG.match(slug):
             raise HTTPException(status_code=422, detail="Invalid slug")
@@ -149,7 +149,7 @@ async def update_meeting_link(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(MeetingLink).where(and_(MeetingLink.id == link_id, MeetingLink.org_id == org_id))
         )
@@ -175,7 +175,7 @@ async def delete_meeting_link(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(MeetingLink).where(and_(MeetingLink.id == link_id, MeetingLink.org_id == org_id))
         )

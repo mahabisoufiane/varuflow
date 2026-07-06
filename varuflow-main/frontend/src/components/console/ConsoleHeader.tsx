@@ -13,25 +13,29 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { Menu, Search, Plus, Bell, ChevronDown, LogOut, Globe } from "lucide-react";
+import {
+  Menu, Search, Plus, Bell, ChevronDown, LogOut, Globe,
+  FileSignature, FileText, UserPlus, PackagePlus, ClipboardList,
+  type LucideIcon,
+} from "lucide-react";
 
 import { routing } from "@/i18n/routing";
 import { useBranding } from "@/lib/branding";
-import { QUICK_ACTIONS } from "@/lib/quick-actions";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { WorkspaceSwitcher } from "@/components/app/WorkspaceSwitcher";
 import { useTaskDrawer } from "@/components/console/TaskDrawerContext";
 
-// Quick actions that open an inline mobile form have no desktop host; map them to
-// the closest create route so +New always navigates somewhere sensible.
-const CREATE_ROUTE: Record<string, string> = {
-  ADD_STOCK_MOVEMENT: "/inventory",
-  NEW_QUICK_INVOICE: "/invoices",
-  SCAN_PRODUCT: "/inventory",
-  QUICK_POS_SALE: "/pos",
-  RECORD_PAYMENT: "/invoices",
-};
+// +New targets the real create pages (labels under console.create.*). The old
+// menu reused the mobile quick-actions, whose inline-sheet/scanner entries had
+// no desktop host and just dumped users on /inventory.
+const CREATE_ITEMS: { key: string; href: string; icon: LucideIcon }[] = [
+  { key: "newQuote", href: "/quotes/new", icon: FileSignature },
+  { key: "newInvoice", href: "/invoices/new", icon: FileText },
+  { key: "newCustomer", href: "/customers/new", icon: UserPlus },
+  { key: "newProduct", href: "/inventory/products/new", icon: PackagePlus },
+  { key: "newPurchaseOrder", href: "/inventory/purchase-orders/new", icon: ClipboardList },
+];
 
 /** Opens the ⌘K CommandPalette that is already mounted in ConsoleShell. */
 function openSearch() {
@@ -48,7 +52,6 @@ export default function ConsoleHeader({
   onSignOut: () => void;
 }) {
   const t = useTranslations("console");
-  const tRoot = useTranslations();
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -103,26 +106,22 @@ export default function ConsoleHeader({
             <>
               <div className="fixed inset-0 z-40" onClick={() => setCreateOpen(false)} />
               <div className="absolute right-0 z-50 mt-1 w-60 rounded-md border bg-background p-1 shadow-lg">
-                {QUICK_ACTIONS.map((action) => {
-                  const Icon = action.icon;
-                  const href = action.to ?? CREATE_ROUTE[action.id] ?? "/dashboard";
-                  return (
-                    <button
-                      key={action.id}
-                      type="button"
-                      onClick={() => {
-                        setCreateOpen(false);
-                        router.push(href);
-                      }}
-                      className="flex w-full items-center gap-2.5 rounded px-2 py-2 text-left text-sm hover:bg-accent"
-                    >
-                      <span className={cn("grid h-7 w-7 place-items-center rounded-md", action.colorClass)}>
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      {tRoot(action.labelKey as Parameters<typeof tRoot>[0])}
-                    </button>
-                  );
-                })}
+                {CREATE_ITEMS.map(({ key, href, icon: Icon }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => {
+                      setCreateOpen(false);
+                      router.push(href);
+                    }}
+                    className="flex w-full items-center gap-2.5 rounded px-2 py-2 text-left text-sm hover:bg-accent"
+                  >
+                    <span className="grid h-7 w-7 place-items-center rounded-md bg-accent text-foreground">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    {t(`create.${key}` as Parameters<typeof t>[0])}
+                  </button>
+                ))}
               </div>
             </>
           )}

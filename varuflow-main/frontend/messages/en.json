@@ -86,9 +86,15 @@
         "newCustomer": "New customer",
         "generic": "Activity"
       }
+    },
+    "create": {
+      "newQuote": "New quote",
+      "newInvoice": "New invoice",
+      "newCustomer": "New customer",
+      "newProduct": "New product",
+      "newPurchaseOrder": "New purchase order"
     }
   },
-
   "common": {
     "appName": "Varuflow",
     "loading": "Loading...",

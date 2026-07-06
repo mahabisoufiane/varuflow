@@ -178,7 +178,7 @@ async def get_pipeline(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         stages = await _get_stages(db, org_id)
         result = await db.execute(
             select(Deal).where(Deal.org_id == org_id).order_by(Deal.created_at.desc())
@@ -217,7 +217,7 @@ async def list_deals(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         q = select(Deal).where(Deal.org_id == org_id)
         if stage:
             q = q.where(Deal.stage == stage)
@@ -248,7 +248,7 @@ async def create_deal(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         stages = await _get_stages(db, org_id)
         valid_slugs = {s["slug"] for s in stages} | BUILTIN_SLUGS
         if body.stage not in valid_slugs:
@@ -285,7 +285,7 @@ async def get_deal(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(Deal)
             .where(and_(Deal.id == deal_id, Deal.org_id == org_id))
@@ -310,7 +310,7 @@ async def update_deal(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(Deal)
             .where(and_(Deal.id == deal_id, Deal.org_id == org_id))
@@ -387,7 +387,7 @@ async def delete_deal(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(Deal).where(and_(Deal.id == deal_id, Deal.org_id == org_id))
         )
@@ -413,7 +413,7 @@ async def log_activity(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         if body.activity_type not in VALID_ACTIVITY_TYPES:
             raise HTTPException(status_code=422, detail=f"Invalid activity_type: {body.activity_type}")
         result = await db.execute(
@@ -441,7 +441,7 @@ async def log_activity(
 @router.get("/api/crm/stages")
 async def get_stages(ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         return await _get_stages(db, org_id)
     except HTTPException:
         raise
@@ -453,7 +453,7 @@ async def get_stages(ctx: tuple = Depends(get_current_member), db: AsyncSession 
 @router.post("/api/crm/stages", status_code=201)
 async def create_stage(body: StageCreate, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         stage = DealStage(org_id=org_id, name=body.name, slug=body.slug,
                           color=body.color, order_idx=body.order_idx,
                           is_won=body.is_won, is_lost=body.is_lost)
@@ -473,7 +473,7 @@ async def create_stage(body: StageCreate, ctx: tuple = Depends(get_current_membe
 @router.patch("/api/crm/stages/{stage_id}")
 async def update_stage(stage_id: uuid.UUID, body: StagePatch, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         stage = (await db.execute(select(DealStage).where(DealStage.id == stage_id, DealStage.org_id == org_id))).scalar_one_or_none()
         if not stage:
             raise HTTPException(status_code=404, detail="Stage not found")
@@ -494,7 +494,7 @@ async def update_stage(stage_id: uuid.UUID, body: StagePatch, ctx: tuple = Depen
 @router.delete("/api/crm/stages/{stage_id}", status_code=204)
 async def delete_stage(stage_id: uuid.UUID, ctx: tuple = Depends(get_current_member), db: AsyncSession = Depends(get_db)):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         stage = (await db.execute(select(DealStage).where(DealStage.id == stage_id, DealStage.org_id == org_id))).scalar_one_or_none()
         if not stage:
             raise HTTPException(status_code=404, detail="Stage not found")
@@ -516,7 +516,7 @@ async def get_forecast(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         if months < 1 or months > 24:
             months = 3
         result = await db.execute(
@@ -567,7 +567,7 @@ async def get_crm_analytics(
 ):
     """Win rate, avg sales cycle, revenue won vs lost, win/loss reason breakdown."""
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         rows = (await db.execute(
             select(Deal).where(Deal.org_id == org_id)
         )).scalars().all()

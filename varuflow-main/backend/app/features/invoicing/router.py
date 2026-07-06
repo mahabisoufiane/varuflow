@@ -27,24 +27,32 @@ router = APIRouter(
     tags=["invoicing"],
     dependencies=[Depends(require_module("invoicing"))],
 )
+# Only the four core modules use RELATIVE paths and belong under the
+# /api/invoicing prefix.
 router.include_router(_customers_router)
 router.include_router(_invoices_router)
 router.include_router(_payments_router)
 router.include_router(_payment_links_router)
+
+# Every other sub-module declares its own ABSOLUTE prefix (/api/credit-notes,
+# /api/recurring, /api/quotes, …) and its own require_module(...) dependency.
+# Nesting them under this prefixed aggregate doubled every path
+# (/api/invoicing/api/recurring — the frontend 404'd across credit notes,
+# disputes, recurring, quotes, …) and stacked an extra module gate onto the
+# public token/cron endpoints. They are exported on `standalone_router`
+# (no prefix, no extra deps) which main.py mounts at app level.
 from . import credit_notes, disputes, invoice_activity, invoice_notes, invoice_tags, invoice_templates, quote_comparisons, quotes, receipt_exports, recurring
-router.include_router(credit_notes.router)
-router.include_router(disputes.router)
-router.include_router(invoice_activity.router)
-router.include_router(invoice_notes.router)
-router.include_router(invoice_tags.router)
-router.include_router(invoice_templates.router)
-router.include_router(quote_comparisons.router)
-# NOTE: quotes.router / quotes.public_router are mounted at APP level in
-# main.py, NOT here. quotes.py declares absolute "/api/quotes/..." paths (the
-# frontend and public quote-view tokens depend on them); nesting them under
-# this aggregate (a) doubled every path to /api/invoicing/api/quotes and
-# (b) made the public token endpoints inherit require_module("invoicing"),
-# locking customers out of their own quote links.
-router.include_router(receipt_exports.router)
-router.include_router(recurring.router)
-router.include_router(recurring.public_router)
+
+standalone_router = APIRouter()
+standalone_router.include_router(credit_notes.router)
+standalone_router.include_router(disputes.router)
+standalone_router.include_router(invoice_activity.router)
+standalone_router.include_router(invoice_notes.router)
+standalone_router.include_router(invoice_tags.router)
+standalone_router.include_router(invoice_templates.router)
+standalone_router.include_router(quote_comparisons.router)
+standalone_router.include_router(receipt_exports.router)
+standalone_router.include_router(recurring.router)
+standalone_router.include_router(recurring.public_router)
+standalone_router.include_router(quotes.router)
+standalone_router.include_router(quotes.public_router)

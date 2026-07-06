@@ -8,7 +8,13 @@ import { useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import BarcodeInput, { type OFFResult } from "@/components/barcode/BarcodeInput";
+import dynamic from "next/dynamic";
+import type { OFFResult } from "@/components/barcode/BarcodeInput";
+
+// Lazy-load: BarcodeInput pulls react-zxing (the multi-MB @zxing decoder). A
+// static import drags that whole graph into this page's compile/bundle —
+// first dev compile of this route took minutes because of it.
+const BarcodeInput = dynamic(() => import("@/components/barcode/BarcodeInput"), { ssr: false });
 
 const TAX_RATES = [
   { label: "25% — Standard", value: "25" },

@@ -8,7 +8,12 @@ import { useEffect, useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { ArrowLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import BarcodeInput, { type OFFResult } from "@/components/barcode/BarcodeInput";
+import dynamic from "next/dynamic";
+import type { OFFResult } from "@/components/barcode/BarcodeInput";
+
+// Lazy-load: BarcodeInput pulls react-zxing (the multi-MB @zxing decoder) —
+// see products/new/page.tsx for why a static import is prohibitive here.
+const BarcodeInput = dynamic(() => import("@/components/barcode/BarcodeInput"), { ssr: false });
 
 const TAX_RATES = [
   { label: "25% — Standard", value: "25" },

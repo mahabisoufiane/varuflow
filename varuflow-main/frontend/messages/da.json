@@ -86,9 +86,15 @@
         "newCustomer": "Ny kunde",
         "generic": "Aktivitet"
       }
+    },
+    "create": {
+      "newQuote": "Nyt tilbud",
+      "newInvoice": "Ny faktura",
+      "newCustomer": "Ny kunde",
+      "newProduct": "Nyt produkt",
+      "newPurchaseOrder": "Ny indkøbsordre"
     }
   },
-
   "common": {
     "appName": "Varuflow",
     "loading": "Indlæser...",

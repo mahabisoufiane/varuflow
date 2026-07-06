@@ -77,7 +77,7 @@ async def list_forms(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(LeadForm).where(LeadForm.org_id == org_id).order_by(LeadForm.created_at.desc())
         )
@@ -97,7 +97,7 @@ async def create_form(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         slug = body.slug or re.sub(r"[^a-z0-9-]", "-", body.title.lower())[:60]
         if not _VALID_SLUG.match(slug):
             raise HTTPException(status_code=422, detail="Invalid slug")
@@ -135,7 +135,7 @@ async def update_form(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(LeadForm).where(and_(LeadForm.id == form_id, LeadForm.org_id == org_id))
         )
@@ -171,7 +171,7 @@ async def delete_form(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(LeadForm).where(and_(LeadForm.id == form_id, LeadForm.org_id == org_id))
         )
@@ -194,7 +194,7 @@ async def list_submissions(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(LeadFormSubmission)
             .where(and_(LeadFormSubmission.form_id == form_id, LeadFormSubmission.org_id == org_id))
@@ -217,7 +217,7 @@ async def convert_submission(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        org_id = ctx[1]
+        org_id = ctx[1].org_id
         result = await db.execute(
             select(LeadFormSubmission).where(
                 and_(
