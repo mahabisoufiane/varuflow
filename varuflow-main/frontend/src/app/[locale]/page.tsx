@@ -9,6 +9,11 @@ const SUPABASE_CONFIGURED =
   !SUPABASE_URL.includes("127.0.0.1");
 
 export default async function LocaleRootPage() {
+  // Local development: the root of localhost is the dev hub — project
+  // overview, service URLs, auth modes, run/test commands, live status.
+  // NODE_ENV gates it, so production routing below is untouched.
+  if (process.env.NODE_ENV === "development") redirect("/dev");
+
   if (SUPABASE_CONFIGURED) {
     try {
       const supabase = await createClient();

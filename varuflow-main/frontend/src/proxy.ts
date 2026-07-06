@@ -132,6 +132,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Local dev hub (project info page). The page itself renders nothing
+  // outside NODE_ENV=development, so passing it through is prod-safe.
+  if (request.nextUrl.pathname.startsWith("/dev")) {
+    return NextResponse.next();
+  }
+
   // Skip Supabase session refresh if not configured (local dev without auth).
   // Also treat placeholder/localhost Supabase URLs as "unconfigured" so the app
   // is explorable in local dev — mirrors ENFORCE_AUTH in (app)/layout.tsx. In
