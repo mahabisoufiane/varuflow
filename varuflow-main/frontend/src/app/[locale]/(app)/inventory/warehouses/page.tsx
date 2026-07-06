@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
 import { Plus, Warehouse } from "lucide-react";
+import ContentPanel from "@/components/console/ContentPanel";
 
 interface WarehouseItem {
   id: string; name: string; location: string | null; is_active: boolean;
@@ -13,7 +14,8 @@ interface WarehouseItem {
 
 export default function WarehousesPage() {
   const [warehouses, setWarehouses] = useState<WarehouseItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<WarehouseItem | null>(null);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<WarehouseItem | null>(null);
   const [name, setName] = useState("");
@@ -77,11 +79,7 @@ export default function WarehousesPage() {
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>
       )}
 
-      {loading ? (
-        <div className="space-y-2 animate-pulse">
-          {[1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-gray-100" />)}
-        </div>
-      ) : warehouses.length === 0 ? (
+      {!loading && warehouses.length === 0 ? (
         <div className="rounded-xl border bg-white px-6 py-12 text-center">
           <Warehouse className="mx-auto h-10 w-10 text-gray-300" />
           <h3 className="mt-3 font-medium text-gray-900">No warehouses yet</h3>
@@ -91,16 +89,38 @@ export default function WarehousesPage() {
           </Button>
         </div>
       ) : (
-        <div className="space-y-2">
-          {warehouses.map((w) => (
-            <div key={w.id} className="flex items-center justify-between rounded-xl border bg-white px-5 py-4">
-              <div>
-                <p className="font-medium text-gray-900">{w.name}</p>
-                {w.location && <p className="text-sm text-muted-foreground">{w.location}</p>}
+        <div className="overflow-hidden rounded-xl border bg-white">
+          <ContentPanel<WarehouseItem>
+            hideHeader
+            title="Warehouses"
+            rows={warehouses}
+            loading={loading}
+            getRowId={(w) => w.id}
+            columns={[
+              { key: "name", header: "Name", render: (w) => <span className="font-medium text-foreground">{w.name}</span> },
+              { key: "location", header: "Location", render: (w) => w.location ?? "—" },
+              { key: "is_active", header: "Status", render: (w) => w.is_active ? "Active" : "Inactive" },
+            ]}
+            selected={selected}
+            onSelect={setSelected}
+            detailTitle={(w) => w.name}
+            renderDetail={(w) => (
+              <div className="space-y-4">
+                <dl className="divide-y">
+                  {([
+                    ["Location", w.location || "—"],
+                    ["Status", w.is_active ? "Active" : "Inactive"],
+                  ] as [string, string][]).map(([label, val]) => (
+                    <div key={label} className="grid grid-cols-3 gap-2 py-2.5">
+                      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+                      <dd className="col-span-2 text-sm text-foreground">{val}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <Button variant="outline" size="sm" onClick={() => { setSelected(null); openEdit(w); }}>Edit</Button>
               </div>
-              <Button variant="outline" size="sm" onClick={() => openEdit(w)}>Edit</Button>
-            </div>
-          ))}
+            )}
+          />
         </div>
       )}
 
