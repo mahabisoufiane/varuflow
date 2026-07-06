@@ -65,12 +65,12 @@ export default function StockTransfersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1a2332]">Stock Transfers</h1>
+          <h1 className="text-2xl font-bold text-[var(--vf-text-primary)]">Stock Transfers</h1>
           <p className="text-sm text-muted-foreground">
             {rows.length} transfer{rows.length === 1 ? "" : "s"}
           </p>
         </div>
-        <Button asChild size="sm" className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+        <Button asChild size="sm" className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
           <Link href="/inventory/transfers/new">
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             New transfer
@@ -100,7 +100,7 @@ export default function StockTransfersPage() {
           <Button
             asChild
             size="sm"
-            className="mt-4 bg-[#1a2332] hover:bg-[#2a3342] text-white"
+            className="mt-4 bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
           >
             <Link href="/inventory/transfers/new">
               <Plus className="mr-1.5 h-3.5 w-3.5" />
@@ -142,7 +142,7 @@ export default function StockTransfersPage() {
                     <td className="px-4 py-2 text-right">
                       <Link
                         href={`/inventory/transfers/${t.id}`}
-                        className="inline-flex items-center text-sm text-[#1a2332] hover:underline"
+                        className="inline-flex items-center text-sm text-[var(--vf-text-primary)] hover:underline"
                       >
                         Details <ArrowRight className="ml-1 h-3 w-3" />
                       </Link>

@@ -193,7 +193,7 @@ export default function EmailTemplatesPage() {
         <div className="flex border-b text-xs">
           {(["templates", "history"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
-              className={`flex-1 py-2 font-medium capitalize ${tab === t ? "border-b-2 border-[#1a2332] text-[#1a2332]" : "text-gray-500"}`}>
+              className={`flex-1 py-2 font-medium capitalize ${tab === t ? "border-b-2 border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]" : "text-gray-500"}`}>
               {t}
             </button>
           ))}

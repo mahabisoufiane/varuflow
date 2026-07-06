@@ -207,7 +207,7 @@ function BudgetPageInner() {
             Department managers submit budgets; owners approve and lock the baseline.
           </p>
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> New Budget
         </Button>
       </div>
@@ -256,7 +256,7 @@ function BudgetPageInner() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
             <Button disabled={actionLoading === "create"} onClick={createBudget}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               {actionLoading === "create" ? "Creating…" : "Create Budget"}
             </Button>
           </div>
@@ -366,7 +366,7 @@ function BudgetPageInner() {
               value={reviewModal.notes}
               onChange={(e) => setReviewModal((m) => m ? { ...m, notes: e.target.value } : null)}
               rows={4} placeholder="Please revise Q3 expense figures…"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setReviewModal(null)}>Cancel</Button>

@@ -105,7 +105,7 @@ export default function NewExpensePage() {
               value={form.amount}
               onChange={(e) => update("amount", e.target.value)}
               placeholder="0.00"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a2332]/20 focus:border-[#1a2332]"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]/20 focus:border-[var(--vf-brand-primary)]"
               required
             />
           </div>
@@ -114,7 +114,7 @@ export default function NewExpensePage() {
             <select
               value={form.currency}
               onChange={(e) => update("currency", e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a2332]/20 focus:border-[#1a2332]"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]/20 focus:border-[var(--vf-brand-primary)]"
             >
               <option value="SEK">SEK</option>
               <option value="NOK">NOK</option>
@@ -130,7 +130,7 @@ export default function NewExpensePage() {
           <select
             value={form.category_id}
             onChange={(e) => update("category_id", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a2332]/20 focus:border-[#1a2332]"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]/20 focus:border-[var(--vf-brand-primary)]"
           >
             <option value="">Select category…</option>
             {categories.map((c) => (
@@ -146,7 +146,7 @@ export default function NewExpensePage() {
             type="date"
             value={form.expense_date}
             onChange={(e) => update("expense_date", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a2332]/20 focus:border-[#1a2332]"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]/20 focus:border-[var(--vf-brand-primary)]"
             required
           />
         </div>
@@ -159,7 +159,7 @@ export default function NewExpensePage() {
             onChange={(e) => update("description", e.target.value)}
             rows={3}
             placeholder="What was this expense for?"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a2332]/20 focus:border-[#1a2332] resize-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]/20 focus:border-[var(--vf-brand-primary)] resize-none"
           />
         </div>
 
@@ -203,7 +203,7 @@ export default function NewExpensePage() {
           <button
             type="submit"
             disabled={submitting}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#1a2332] text-white text-sm font-medium hover:bg-[#2a3342] disabled:opacity-50 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--vf-brand-primary)] text-white text-sm font-medium hover:bg-[var(--vf-brand-primary-hover)] disabled:opacity-50 transition-colors"
           >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Receipt className="h-4 w-4" />}
             {submitting ? "Submitting…" : "Submit Expense"}

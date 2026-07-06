@@ -60,10 +60,10 @@ export default function PurchaseOrdersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1a2332]">Purchase Orders</h1>
+          <h1 className="text-2xl font-bold text-[var(--vf-text-primary)]">Purchase Orders</h1>
           <p className="text-sm text-muted-foreground">{orders.length} orders</p>
         </div>
-        <Button asChild size="sm" className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+        <Button asChild size="sm" className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
           <Link href="/inventory/purchase-orders/new">
             <Plus className="mr-1.5 h-3.5 w-3.5" />New order
           </Link>
@@ -77,7 +77,7 @@ export default function PurchaseOrdersPage() {
           <FileText className="mx-auto h-10 w-10 text-gray-300" />
           <h3 className="mt-3 font-medium text-gray-900">No purchase orders yet</h3>
           <p className="mt-1 text-sm text-muted-foreground">Create a PO to restock from a supplier.</p>
-          <Button asChild size="sm" className="mt-4 bg-[#1a2332] hover:bg-[#2a3342] text-white">
+          <Button asChild size="sm" className="mt-4 bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
             <Link href="/inventory/purchase-orders/new"><Plus className="mr-1.5 h-3.5 w-3.5" />New order</Link>
           </Button>
         </div>

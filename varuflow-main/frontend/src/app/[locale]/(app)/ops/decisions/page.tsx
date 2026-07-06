@@ -205,7 +205,7 @@ export default function DecisionsPage() {
             Record significant business decisions with context and outcomes.
           </p>
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> Log Decision
         </Button>
       </div>
@@ -237,7 +237,7 @@ export default function DecisionsPage() {
         <select
           value={areaFilter}
           onChange={(e) => setAreaFilter(e.target.value)}
-          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
         >
           <option value="all">All Areas</option>
           {AREAS.map((a) => (
@@ -247,7 +247,7 @@ export default function DecisionsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
         >
           <option value="all">All Statuses</option>
           {Object.entries(STATUS_CONFIG).map(([k, v]) => (
@@ -258,7 +258,7 @@ export default function DecisionsPage() {
 
       {/* New decision form */}
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">Log Decision</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2 space-y-1">
@@ -267,7 +267,7 @@ export default function DecisionsPage() {
                 value={newForm.title}
                 onChange={(e) => setNewForm((f) => ({ ...f, title: e.target.value }))}
                 placeholder="Move to new warehouse provider"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
             <div className="space-y-1">
@@ -276,7 +276,7 @@ export default function DecisionsPage() {
                 type="date"
                 value={newForm.decided_at}
                 onChange={(e) => setNewForm((f) => ({ ...f, decided_at: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
             <div className="space-y-1">
@@ -285,7 +285,7 @@ export default function DecisionsPage() {
                 value={newForm.decided_by_name}
                 onChange={(e) => setNewForm((f) => ({ ...f, decided_by_name: e.target.value }))}
                 placeholder="Anna Svensson"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
             <div className="space-y-1">
@@ -293,7 +293,7 @@ export default function DecisionsPage() {
               <select
                 value={newForm.area}
                 onChange={(e) => setNewForm((f) => ({ ...f, area: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               >
                 {AREAS.map((a) => (
                   <option key={a} value={a}>{a.charAt(0).toUpperCase() + a.slice(1)}</option>
@@ -308,7 +308,7 @@ export default function DecisionsPage() {
               onChange={(e) => setNewForm((f) => ({ ...f, decision_summary: e.target.value }))}
               rows={3}
               placeholder="Describe the decision made…"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="space-y-1">
@@ -318,7 +318,7 @@ export default function DecisionsPage() {
               onChange={(e) => setNewForm((f) => ({ ...f, alternatives_considered: e.target.value }))}
               rows={2}
               placeholder="What other options were evaluated?"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="space-y-1">
@@ -328,7 +328,7 @@ export default function DecisionsPage() {
               onChange={(e) => setNewForm((f) => ({ ...f, expected_outcome: e.target.value }))}
               rows={2}
               placeholder="What outcome is expected?"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="flex gap-2">
@@ -336,7 +336,7 @@ export default function DecisionsPage() {
             <Button
               disabled={actionLoading === "create"}
               onClick={createDecision}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
             >
               {actionLoading === "create" ? "Saving…" : "Log Decision"}
             </Button>
@@ -401,7 +401,7 @@ export default function DecisionsPage() {
                             value={editForm.decision_summary ?? dec.decision_summary}
                             onChange={(e) => setEditForm((f) => ({ ...f, decision_summary: e.target.value }))}
                             rows={3}
-                            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                           />
                         </div>
                         <div className="space-y-1">
@@ -410,7 +410,7 @@ export default function DecisionsPage() {
                             value={editForm.alternatives_considered ?? dec.alternatives_considered ?? ""}
                             onChange={(e) => setEditForm((f) => ({ ...f, alternatives_considered: e.target.value }))}
                             rows={2}
-                            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                           />
                         </div>
                         <div className="space-y-1">
@@ -419,7 +419,7 @@ export default function DecisionsPage() {
                             value={editForm.expected_outcome ?? dec.expected_outcome ?? ""}
                             onChange={(e) => setEditForm((f) => ({ ...f, expected_outcome: e.target.value }))}
                             rows={2}
-                            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                           />
                         </div>
                         <div className="space-y-1">
@@ -429,7 +429,7 @@ export default function DecisionsPage() {
                             onChange={(e) => setEditForm((f) => ({ ...f, actual_outcome: e.target.value }))}
                             rows={2}
                             placeholder="What actually happened?"
-                            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                           />
                         </div>
                         <div className="space-y-1">
@@ -437,7 +437,7 @@ export default function DecisionsPage() {
                           <select
                             value={editForm.status ?? dec.status}
                             onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value }))}
-                            className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                            className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                           >
                             {Object.entries(STATUS_CONFIG).map(([k, v]) => (
                               <option key={k} value={k}>{v.label}</option>
@@ -454,7 +454,7 @@ export default function DecisionsPage() {
                           <Button
                             disabled={actionLoading === dec.id + "_save"}
                             onClick={() => saveEdit(dec.id)}
-                            className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+                            className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
                           >
                             {actionLoading === dec.id + "_save" ? "Saving…" : "Save Changes"}
                           </Button>

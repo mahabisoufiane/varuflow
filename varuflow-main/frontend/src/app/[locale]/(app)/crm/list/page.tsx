@@ -86,7 +86,7 @@ export default function CrmListPage() {
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <List size={20} className="text-[#1a2332]" />
+          <List size={20} className="text-[var(--vf-text-primary)]" />
           <h1 className="text-xl font-bold">Deals</h1>
           <span className="text-xs text-gray-400 ml-1">{deals.length} deals · {fmt(totalValue)}</span>
         </div>
@@ -101,13 +101,13 @@ export default function CrmListPage() {
           <div className="relative">
             <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
-              className="pl-7 pr-3 py-1.5 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332] w-48"
+              className="pl-7 pr-3 py-1.5 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)] w-48"
               placeholder="Search deals…"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <button type="submit" className="px-3 py-1.5 bg-[#1a2332] text-white rounded text-sm hover:opacity-90">Search</button>
+          <button type="submit" className="px-3 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-sm hover:opacity-90">Search</button>
         </form>
 
         <select

@@ -183,7 +183,7 @@ export default function SmsOutboxPage() {
       <div className="flex gap-1 border-b">
         {(["outbox", "conversation", "opt-outs"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium capitalize ${tab === t ? "border-b-2 border-[#1a2332] text-[#1a2332]" : "text-gray-500"}`}>
+            className={`px-4 py-2 text-sm font-medium capitalize ${tab === t ? "border-b-2 border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]" : "text-gray-500"}`}>
             {t === "opt-outs" ? `Opt-outs (${optOuts.length})` : t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
@@ -277,7 +277,7 @@ export default function SmsOutboxPage() {
                 {thread.map(m => (
                   <div key={m.id} className={`flex ${m.direction === "out" ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[70%] space-y-0.5 ${m.direction === "out" ? "items-end" : "items-start"} flex flex-col`}>
-                      <div className={`px-3 py-2 rounded-2xl text-sm ${m.direction === "out" ? "bg-[#1a2332] text-white rounded-tr-sm" : "bg-gray-100 text-gray-900 rounded-tl-sm"}`}>
+                      <div className={`px-3 py-2 rounded-2xl text-sm ${m.direction === "out" ? "bg-[var(--vf-brand-primary)] text-white rounded-tr-sm" : "bg-gray-100 text-gray-900 rounded-tl-sm"}`}>
                         {m.body}
                       </div>
                       <div className="flex items-center gap-1 text-[10px] text-gray-400 px-1">
@@ -292,9 +292,9 @@ export default function SmsOutboxPage() {
               <div className="border-t p-3 flex gap-2">
                 <input value={compose.body} onChange={e => setCompose(p => ({ ...p, body: e.target.value }))}
                   onKeyDown={e => e.key === "Enter" && replyInThread()}
-                  placeholder="Type a reply…" className="flex-1 border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                  placeholder="Type a reply…" className="flex-1 border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 <button onClick={replyInThread} disabled={!compose.body.trim()}
-                  className="p-2 rounded-xl bg-[#1a2332] text-white hover:opacity-90 disabled:opacity-40">
+                  className="p-2 rounded-xl bg-[var(--vf-brand-primary)] text-white hover:opacity-90 disabled:opacity-40">
                   <Send size={16} />
                 </button>
               </div>

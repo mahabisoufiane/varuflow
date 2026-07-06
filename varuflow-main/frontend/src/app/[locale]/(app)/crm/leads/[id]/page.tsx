@@ -157,7 +157,7 @@ export default function LeadDetailPage() {
         <div className="flex gap-2 shrink-0">
           {editing ? (
             <>
-              <button onClick={saveEdits} disabled={saving} className="px-3 py-1.5 bg-[#1a2332] text-white rounded text-sm hover:opacity-90 disabled:opacity-50">
+              <button onClick={saveEdits} disabled={saving} className="px-3 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-sm hover:opacity-90 disabled:opacity-50">
                 {saving ? <Loader2 size={13} className="animate-spin" /> : "Save"}
               </button>
               <button onClick={() => setEditing(false)} className="px-3 py-1.5 border rounded text-sm hover:bg-gray-50">Cancel</button>
@@ -289,7 +289,7 @@ export default function LeadDetailPage() {
             <div className="space-y-1.5">
               {STATUSES.map((s, i) => (
                 <button key={s} onClick={() => moveStatus(s)}
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-left transition-colors capitalize ${lead.status === s ? "bg-[#1a2332] text-white" : "hover:bg-gray-50"}`}>
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-left transition-colors capitalize ${lead.status === s ? "bg-[var(--vf-brand-primary)] text-white" : "hover:bg-gray-50"}`}>
                   <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs shrink-0 ${lead.status === s ? "bg-white/20" : "bg-gray-100 text-gray-500"}`}>
                     {i + 1}
                   </span>

@@ -143,7 +143,7 @@ export default function WhistleblowerPage() {
         {TABS.map((t) => (
           <button key={t.key} type="button" onClick={() => setTab(t.key)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
-              tab === t.key ? "border-[#1a2332] text-[#1a2332]" : "border-transparent text-muted-foreground hover:text-gray-700"
+              tab === t.key ? "border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]" : "border-transparent text-muted-foreground hover:text-gray-700"
             }`}>
             {t.label}
             {t.key === "new" && newCount > 0 && (
@@ -209,7 +209,7 @@ export default function WhistleblowerPage() {
                     <div className="space-y-1">
                       <label className="text-xs font-semibold text-gray-700">Status</label>
                       <select value={ed.status} onChange={(e) => setEditing((prev) => ({ ...prev, [report.id]: { ...ed, status: e.target.value } }))}
-                        className="block rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                        className="block rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                         <option value="new">New</option>
                         <option value="under_review">Under Review</option>
                         <option value="resolved">Resolved</option>
@@ -220,10 +220,10 @@ export default function WhistleblowerPage() {
                       <label className="text-xs font-semibold text-gray-700">Resolution Notes</label>
                       <textarea value={ed.notes} onChange={(e) => setEditing((prev) => ({ ...prev, [report.id]: { ...ed, notes: e.target.value } }))}
                         rows={3} placeholder="Add internal notes about this report…"
-                        className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                        className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                     </div>
                     <Button size="sm" disabled={actionLoading === report.id + "_save"} onClick={() => saveReport(report.id)}
-                      className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                      className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                       {actionLoading === report.id + "_save" ? "Saving…" : "Save Changes"}
                     </Button>
                   </div>

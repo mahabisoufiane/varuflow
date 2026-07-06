@@ -229,7 +229,7 @@ export default function SopPage() {
           <h1 className="text-xl font-semibold text-gray-900">SOP Library</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Company procedures and process documentation.</p>
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> New SOP
         </Button>
       </div>
@@ -239,7 +239,7 @@ export default function SopPage() {
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
         >
           <option value="all">All Categories</option>
           {categories.map((c) => (
@@ -254,7 +254,7 @@ export default function SopPage() {
               onClick={() => setStatusFilter(s)}
               className={`px-3 py-1.5 text-sm font-medium border-b-2 transition-colors capitalize ${
                 statusFilter === s
-                  ? "border-[#1a2332] text-[#1a2332]"
+                  ? "border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]"
                   : "border-transparent text-muted-foreground hover:text-gray-700"
               }`}
             >
@@ -266,7 +266,7 @@ export default function SopPage() {
 
       {/* New SOP form */}
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">Create SOP</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -284,7 +284,7 @@ export default function SopPage() {
                   }));
                 }}
                 placeholder="Customer Onboarding Process"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
             <div className="space-y-1">
@@ -293,7 +293,7 @@ export default function SopPage() {
                 value={newForm.slug}
                 onChange={(e) => setNewForm((f) => ({ ...f, slug: e.target.value }))}
                 placeholder="customer-onboarding-process"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
           </div>
@@ -303,7 +303,7 @@ export default function SopPage() {
               value={newForm.category}
               onChange={(e) => setNewForm((f) => ({ ...f, category: e.target.value }))}
               placeholder="Operations, HR, Sales…"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="space-y-1">
@@ -313,7 +313,7 @@ export default function SopPage() {
               onChange={(e) => setNewForm((f) => ({ ...f, content_markdown: e.target.value }))}
               rows={12}
               placeholder="Write the procedure steps here…"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="flex gap-2">
@@ -321,7 +321,7 @@ export default function SopPage() {
             <Button
               disabled={actionLoading === "create"}
               onClick={createSop}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
             >
               {actionLoading === "create" ? "Creating…" : "Create SOP"}
             </Button>
@@ -450,7 +450,7 @@ export default function SopPage() {
                         value={currentEdit}
                         onChange={(e) => setEditContent((prev) => ({ ...prev, [sop.id]: e.target.value }))}
                         rows={10}
-                        className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                        className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                       />
                       <Button
                         disabled={
@@ -458,7 +458,7 @@ export default function SopPage() {
                           currentEdit === sop.content_markdown
                         }
                         onClick={() => saveSop(sop.id)}
-                        className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+                        className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
                       >
                         {actionLoading === sop.id + "_save"
                           ? <><RefreshCw className="h-3 w-3 animate-spin mr-2" />Saving…</>

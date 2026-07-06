@@ -123,7 +123,7 @@ export default function PhotosPage() {
       </div>
 
       {/* Send photo form */}
-      <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-4">
+      <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-4">
         <h3 className="text-sm font-semibold text-gray-900">Send Photo</h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
@@ -132,7 +132,7 @@ export default function PhotosPage() {
               value={form.appointment_id}
               onChange={(e) => setForm((f) => ({ ...f, appointment_id: e.target.value }))}
               placeholder="UUID"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="space-y-1">
@@ -141,7 +141,7 @@ export default function PhotosPage() {
               value={form.customer_id}
               onChange={(e) => setForm((f) => ({ ...f, customer_id: e.target.value }))}
               placeholder="UUID"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
         </div>
@@ -151,7 +151,7 @@ export default function PhotosPage() {
             value={form.photo_url}
             onChange={(e) => setForm((f) => ({ ...f, photo_url: e.target.value }))}
             placeholder="https://…"
-            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
           />
         </div>
         <div className="space-y-1">
@@ -161,11 +161,11 @@ export default function PhotosPage() {
             value={form.caption}
             onChange={(e) => setForm((f) => ({ ...f, caption: e.target.value }))}
             placeholder="Work in progress on the rear bumper…"
-            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
           />
         </div>
         <Button disabled={actionLoading === "send"} onClick={sendPhoto}
-          className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+          className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           {actionLoading === "send" ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
           Send Photo
         </Button>
@@ -176,7 +176,7 @@ export default function PhotosPage() {
         {(["all", "unviewed"] as const).map((t) => (
           <button key={t} type="button" onClick={() => setTab(t)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors capitalize ${
-              tab === t ? "border-[#1a2332] text-[#1a2332]" : "border-transparent text-muted-foreground hover:text-gray-700"
+              tab === t ? "border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]" : "border-transparent text-muted-foreground hover:text-gray-700"
             }`}>
             {t === "unviewed" ? `Unviewed (${unviewedCount})` : "All"}
           </button>

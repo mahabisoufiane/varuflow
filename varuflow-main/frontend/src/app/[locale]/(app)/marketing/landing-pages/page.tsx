@@ -159,13 +159,13 @@ export default function LandingPagesPage() {
           <h1 className="text-xl font-semibold text-gray-900">Landing Pages</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Campaign-specific landing pages with lead capture.</p>
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> New Page
         </Button>
       </div>
 
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">Create Landing Page</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -173,46 +173,46 @@ export default function LandingPagesPage() {
               <input value={newForm.title}
                 onChange={(e) => setNewForm((f) => ({ ...f, title: e.target.value, slug: slugify(e.target.value) }))}
                 placeholder="Black Friday 2026"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Slug</label>
               <input value={newForm.slug} onChange={(e) => setNewForm((f) => ({ ...f, slug: e.target.value }))}
                 placeholder="black-friday-2026"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Headline</label>
               <input value={newForm.headline} onChange={(e) => setNewForm((f) => ({ ...f, headline: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Subheadline</label>
               <input value={newForm.subheadline} onChange={(e) => setNewForm((f) => ({ ...f, subheadline: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">CTA Text</label>
               <input value={newForm.cta_text} onChange={(e) => setNewForm((f) => ({ ...f, cta_text: e.target.value }))}
                 placeholder="Get Started"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">CTA URL</label>
               <input value={newForm.cta_url} onChange={(e) => setNewForm((f) => ({ ...f, cta_url: e.target.value }))}
                 placeholder="https://..."
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1 col-span-2">
               <label className="text-xs font-medium text-gray-700">Body HTML</label>
               <textarea rows={4} value={newForm.body_html} onChange={(e) => setNewForm((f) => ({ ...f, body_html: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
             <Button disabled={actionLoading === "create"} onClick={createPage}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               {actionLoading === "create" ? "Creating…" : "Create Page"}
             </Button>
           </div>
@@ -271,18 +271,18 @@ export default function LandingPagesPage() {
                         <label className="text-xs font-medium text-gray-700">{label}</label>
                         <input value={ef[key]}
                           onChange={(e) => setEditForm((f) => ({ ...f, [p.id]: { ...ef, [key]: e.target.value } }))}
-                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                       </div>
                     ))}
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-gray-700">Body HTML</label>
                       <textarea rows={4} value={ef.body_html}
                         onChange={(e) => setEditForm((f) => ({ ...f, [p.id]: { ...ef, body_html: e.target.value } }))}
-                        className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                        className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                     </div>
                     <div className="flex justify-end">
                       <Button size="sm" disabled={actionLoading === p.id + "_save"} onClick={() => savePage(p.id)}
-                        className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                        className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                         {actionLoading === p.id + "_save" ? "Saving…" : "Save Changes"}
                       </Button>
                     </div>

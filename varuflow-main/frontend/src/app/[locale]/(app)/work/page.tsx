@@ -198,7 +198,7 @@ export default function TasksPage() {
         <div className="flex gap-1">
           {(["all","my","overdue"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium ${tab === t ? "bg-[#1a2332] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium ${tab === t ? "bg-[var(--vf-brand-primary)] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
               {t === "all" ? "All" : t === "my" ? "My Tasks" : "⚠ Overdue"}
             </button>
           ))}

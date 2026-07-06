@@ -214,7 +214,7 @@ export default function MerchantSubscriptionsPage() {
       <div className="flex gap-1 border-b">
         {(["plans", "subscriptions", "analytics"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium capitalize ${tab === t ? "border-b-2 border-[#1a2332] text-[#1a2332]" : "text-gray-500"}`}>
+            className={`px-4 py-2 text-sm font-medium capitalize ${tab === t ? "border-b-2 border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]" : "text-gray-500"}`}>
             {t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
@@ -230,7 +230,7 @@ export default function MerchantSubscriptionsPage() {
             </div>
           )}
           {plans.map(p => (
-            <div key={p.id} className={`bg-white border-2 rounded-xl p-5 ${p.is_active ? "border-[#1a2332]" : "border-gray-200 opacity-60"}`}>
+            <div key={p.id} className={`bg-white border-2 rounded-xl p-5 ${p.is_active ? "border-[var(--vf-brand-primary)]" : "border-gray-200 opacity-60"}`}>
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="font-semibold">{p.name}</h3>

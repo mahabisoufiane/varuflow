@@ -222,7 +222,7 @@ export default function ProductsPage() {
           </button>
           <Link
             href="/inventory/products/new"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#0d1117] px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-[#161b22] transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--vf-brand-primary)] px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-[var(--vf-brand-primary-hover)] transition-colors"
           >
             <Plus className="h-3.5 w-3.5" />New product
           </Link>
@@ -270,7 +270,7 @@ export default function ProductsPage() {
           <p className="text-sm text-gray-400">{search ? "No products match" : "No products yet"}</p>
           {!search && (
             <Link href="/inventory/products/new"
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#0d1117] px-4 py-2 text-sm font-medium text-white hover:bg-[#161b22]">
+              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[var(--vf-brand-primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--vf-brand-primary-hover)]">
               <Plus className="h-3.5 w-3.5" />Add first product
             </Link>
           )}
@@ -328,7 +328,7 @@ export default function ProductsPage() {
                     )}
                   </dl>
                   <Link href={`/inventory/products/${p.id}`}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#0d1117] px-4 py-2 text-sm font-medium text-white hover:bg-[#161b22]">
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--vf-brand-primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--vf-brand-primary-hover)]">
                     <Pencil className="h-3.5 w-3.5" />Edit product
                   </Link>
                 </div>

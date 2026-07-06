@@ -256,7 +256,7 @@ export default function ExpenseDetailPage() {
                 min="0"
                 value={form.amount}
                 onChange={(e) => update("amount", e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a2332]/20 focus:border-[#1a2332]"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]/20 focus:border-[var(--vf-brand-primary)]"
                 required
               />
             ) : (
@@ -341,7 +341,7 @@ export default function ExpenseDetailPage() {
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#1a2332] text-white text-sm font-medium hover:bg-[#2a3342] disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--vf-brand-primary)] text-white text-sm font-medium hover:bg-[var(--vf-brand-primary-hover)] disabled:opacity-50"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {saving ? "Saving…" : "Save Changes"}

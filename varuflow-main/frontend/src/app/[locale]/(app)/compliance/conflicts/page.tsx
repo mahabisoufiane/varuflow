@@ -165,20 +165,20 @@ export default function ConflictsPage() {
           <h1 className="text-xl font-semibold text-gray-900">Conflict of Interest Register</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Declare and review potential conflicts of interest.</p>
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> Declare Conflict
         </Button>
       </div>
 
       {/* New declaration form */}
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">New Declaration</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Declaration Type</label>
               <select value={newForm.declaration_type} onChange={(e) => setNewForm((f) => ({ ...f, declaration_type: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                 <option value="financial_interest">Financial Interest</option>
                 <option value="family_relationship">Family Relationship</option>
                 <option value="outside_employment">Outside Employment</option>
@@ -190,24 +190,24 @@ export default function ConflictsPage() {
               <label className="text-xs font-medium text-gray-700">Counterparty Name *</label>
               <input value={newForm.counterparty_name} onChange={(e) => setNewForm((f) => ({ ...f, counterparty_name: e.target.value }))}
                 placeholder="Company or person name"
-                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Counterparty Type</label>
               <input value={newForm.counterparty_type} onChange={(e) => setNewForm((f) => ({ ...f, counterparty_type: e.target.value }))}
                 placeholder="Supplier, Customer, Competitor…"
-                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <label className="text-xs font-medium text-gray-700">Declared Value</label>
                 <input type="number" value={newForm.declared_value} onChange={(e) => setNewForm((f) => ({ ...f, declared_value: e.target.value }))}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-gray-700">Currency</label>
                 <select value={newForm.currency} onChange={(e) => setNewForm((f) => ({ ...f, currency: e.target.value }))}
-                  className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                  className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                   <option value="SEK">SEK</option>
                   <option value="NOK">NOK</option>
                   <option value="DKK">DKK</option>
@@ -220,12 +220,12 @@ export default function ConflictsPage() {
             <label className="text-xs font-medium text-gray-700">Relationship Description</label>
             <textarea value={newForm.relationship_description} onChange={(e) => setNewForm((f) => ({ ...f, relationship_description: e.target.value }))}
               rows={3} placeholder="Describe the nature of the relationship or conflict…"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
             <Button disabled={actionLoading === "create"} onClick={createDeclaration}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               {actionLoading === "create" ? "Submitting…" : "Submit Declaration"}
             </Button>
           </div>
@@ -290,7 +290,7 @@ export default function ConflictsPage() {
                           value={reviewNotes[dec.id] ?? ""}
                           onChange={(e) => setReviewNotes((prev) => ({ ...prev, [dec.id]: e.target.value }))}
                           rows={2} placeholder="Optional notes for reviewer decision…"
-                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                         />
                         <div className="flex gap-2">
                           <Button size="sm"

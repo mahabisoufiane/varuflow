@@ -138,7 +138,7 @@ export default function SegmentDetailPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-[#1a2332] flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-[var(--vf-text-primary)] flex items-center gap-2">
               <Users className="h-5 w-5" /> {seg.name}
             </h1>
             <p className="text-xs text-gray-500">
@@ -212,7 +212,7 @@ export default function SegmentDetailPage() {
             <Button
               onClick={addMember}
               disabled={busy || !picker}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               Add

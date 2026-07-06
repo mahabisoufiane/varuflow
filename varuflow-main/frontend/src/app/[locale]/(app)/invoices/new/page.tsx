@@ -133,7 +133,7 @@ export default function NewInvoicePage() {
         <Button asChild variant="ghost" size="sm" className="mb-2 -ml-2 text-muted-foreground">
           <Link href="/invoices"><ArrowLeft className="mr-1 h-3.5 w-3.5" />Invoices</Link>
         </Button>
-        <h1 className="text-2xl font-bold text-[#1a2332]">New Invoice</h1>
+        <h1 className="text-2xl font-bold text-[var(--vf-text-primary)]">New Invoice</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -143,8 +143,8 @@ export default function NewInvoicePage() {
           <div className="grid grid-cols-3 gap-3">
             {(Object.entries(TYPE_LABELS) as [InvoiceType, { label: string; desc: string }][]).map(([t, { label, desc }]) => (
               <button key={t} type="button" onClick={() => handleTypeChange(t)}
-                className={`rounded-lg border p-3 text-left transition-colors ${invoiceType === t ? "border-[#1a2332] bg-[#1a2332]/5 ring-1 ring-[#1a2332]/20" : "hover:border-gray-300"}`}>
-                <p className={`text-sm font-medium ${invoiceType === t ? "text-[#1a2332]" : "text-gray-700"}`}>{label}</p>
+                className={`rounded-lg border p-3 text-left transition-colors ${invoiceType === t ? "border-[var(--vf-brand-primary)] bg-[var(--vf-brand-primary)]/5 ring-1 ring-[var(--vf-brand-primary)]/20" : "hover:border-gray-300"}`}>
+                <p className={`text-sm font-medium ${invoiceType === t ? "text-[var(--vf-text-primary)]" : "text-gray-700"}`}>{label}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
               </button>
             ))}
@@ -159,7 +159,7 @@ export default function NewInvoicePage() {
                 </p>
               ) : (
                 <select required value={parentInvoiceId} onChange={(e) => setParentInvoiceId(e.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                   <option value="">Select deposit invoice…</option>
                   {customerInvoices.map((inv) => (
                     <option key={inv.id} value={inv.id}>
@@ -182,13 +182,13 @@ export default function NewInvoicePage() {
           <div className="space-y-1.5">
             <Label>Customer *</Label>
             <select required disabled={loadingRefs} value={customerId} onChange={(e) => handleCustomerChange(e.target.value)} data-testid="customer-select"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
               <option value="">{loadingRefs ? "Loading customers…" : "Select customer…"}</option>
               {customers.map((c) => <option key={c.id} value={c.id}>{c.company_name}</option>)}
             </select>
             {!loadingRefs && customers.length === 0 && (
               <p className="text-xs text-muted-foreground">
-                No customers yet. <Link href="/customers" className="text-[#1a2332] underline">Add one first.</Link>
+                No customers yet. <Link href="/customers" className="text-[var(--vf-text-primary)] underline">Add one first.</Link>
               </p>
             )}
           </div>
@@ -196,18 +196,18 @@ export default function NewInvoicePage() {
             <div className="space-y-1.5">
               <Label>Issue date *</Label>
               <input type="date" required value={issueDate} onChange={(e) => setIssueDate(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1.5">
               <Label>Due date *</Label>
               <input type="date" required value={dueDate} onChange={(e) => setDueDate(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
           </div>
           <div className="space-y-1.5">
             <Label>Notes</Label>
             <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Payment instructions, bank details…"
-              className="block w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+              className="block w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
           </div>
         </div>
 
@@ -219,7 +219,7 @@ export default function NewInvoicePage() {
                 <div className="col-span-4 space-y-1.5">
                   {i === 0 && <Label>Product (optional)</Label>}
                   <select value={item.product_id} onChange={(e) => setItem(i, "product_id", e.target.value)}
-                    className="block w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                    className="block w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                     <option value="">Custom…</option>
                     {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
@@ -228,24 +228,24 @@ export default function NewInvoicePage() {
                   {i === 0 && <Label>Description *</Label>}
                   <input required value={item.description} onChange={(e) => setItem(i, "description", e.target.value)}
                     placeholder="Service or item…"
-                    className="block w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
                 <div className="col-span-1 space-y-1.5">
                   {i === 0 && <Label>Qty</Label>}
                   <input type="number" min="0.001" step="0.001" required value={item.quantity}
                     onChange={(e) => setItem(i, "quantity", e.target.value)}
-                    className="block w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
                 <div className="col-span-2 space-y-1.5">
                   {i === 0 && <Label>Price (SEK)</Label>}
                   <input type="number" step="0.01" min="0" required value={item.unit_price}
                     onChange={(e) => setItem(i, "unit_price", e.target.value)}
-                    className="block w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
                 <div className="col-span-1 space-y-1.5">
                   {i === 0 && <Label>VAT%</Label>}
                   <select value={item.tax_rate} onChange={(e) => setItem(i, "tax_rate", e.target.value)}
-                    className="block w-full rounded-md border border-gray-300 px-1 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                    className="block w-full rounded-md border border-gray-300 px-1 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                     <option value="25">25%</option>
                     <option value="12">12%</option>
                     <option value="6">6%</option>
@@ -282,7 +282,7 @@ export default function NewInvoicePage() {
                   <span className="font-mono">-{depositOffset.toLocaleString("sv-SE", { minimumFractionDigits: 2 })} SEK</span>
                 </div>
               )}
-              <div className="flex justify-between gap-8 text-base font-bold text-[#1a2332]">
+              <div className="flex justify-between gap-8 text-base font-bold text-[var(--vf-text-primary)]">
                 <span>{invoiceType === "final" && depositOffset > 0 ? "Total due" : "Total"}</span>
                 <span className="font-mono">
                   {(invoiceType === "final" && depositOffset > 0
@@ -299,7 +299,7 @@ export default function NewInvoicePage() {
 
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={() => router.back()} data-testid="cancel-invoice">Cancel</Button>
-          <Button type="submit" disabled={saving} className="bg-[#1a2332] hover:bg-[#2a3342] text-white" data-testid="save-draft">
+          <Button type="submit" disabled={saving} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white" data-testid="save-draft">
             {saving ? "Creating…" : "Create invoice"}
           </Button>
         </div>

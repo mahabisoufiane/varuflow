@@ -58,10 +58,10 @@ export default function SuppliersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1a2332]">Suppliers</h1>
+          <h1 className="text-2xl font-bold text-[var(--vf-text-primary)]">Suppliers</h1>
           <p className="text-sm text-muted-foreground">{suppliers.length} active suppliers</p>
         </div>
-        <Button size="sm" className="bg-[#1a2332] hover:bg-[#2a3342] text-white" onClick={openCreate}>
+        <Button size="sm" className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white" onClick={openCreate}>
           <Plus className="mr-1.5 h-3.5 w-3.5" />New supplier
         </Button>
       </div>
@@ -73,7 +73,7 @@ export default function SuppliersPage() {
           <Truck className="mx-auto h-10 w-10 text-gray-300" />
           <h3 className="mt-3 font-medium text-gray-900">No suppliers yet</h3>
           <p className="mt-1 text-sm text-muted-foreground">Add your first supplier to create purchase orders.</p>
-          <Button size="sm" className="mt-4 bg-[#1a2332] hover:bg-[#2a3342] text-white" onClick={openCreate}>
+          <Button size="sm" className="mt-4 bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white" onClick={openCreate}>
             <Plus className="mr-1.5 h-3.5 w-3.5" />Add supplier
           </Button>
         </div>
@@ -131,7 +131,7 @@ export default function SuppliersPage() {
               <div key={id} className="space-y-1.5">
                 <Label htmlFor={id}>{label}</Label>
                 <input id={id} required={required} value={(form as any)[id]} onChange={(e) => set(id, e.target.value)} placeholder={placeholder}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
               </div>
             ))}
             <div className="flex items-start gap-3 rounded-md border bg-gray-50 px-3 py-2">
@@ -156,7 +156,7 @@ export default function SuppliersPage() {
             {error && <p className="text-sm text-red-600">{error}</p>}
             <div className="flex justify-end gap-3 pt-2">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={saving} className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              <Button type="submit" disabled={saving} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                 {saving ? "Saving…" : editing ? "Save changes" : "Create"}
               </Button>
             </div>

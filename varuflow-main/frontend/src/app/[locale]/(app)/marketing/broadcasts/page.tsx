@@ -156,7 +156,7 @@ export default function BroadcastsPage() {
           <h1 className="text-xl font-semibold text-gray-900">Broadcasts</h1>
           <p className="text-sm text-muted-foreground mt-0.5">SMS and WhatsApp promotional campaigns to opted-in segments.</p>
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> New Broadcast
         </Button>
       </div>
@@ -165,26 +165,26 @@ export default function BroadcastsPage() {
       <div className="flex items-center gap-1 border-b">
         {(["all", "sms", "whatsapp"] as const).map((ch) => (
           <button key={ch} type="button" onClick={() => setChannelFilter(ch)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors capitalize ${channelFilter === ch ? "border-[#1a2332] text-[#1a2332]" : "border-transparent text-muted-foreground hover:text-gray-700"}`}>
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors capitalize ${channelFilter === ch ? "border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]" : "border-transparent text-muted-foreground hover:text-gray-700"}`}>
             {ch}
           </button>
         ))}
       </div>
 
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">Create Broadcast</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Name *</label>
               <input value={newForm.name} onChange={(e) => setNewForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="Black Friday Promo"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Channel</label>
               <select value={newForm.channel} onChange={(e) => setNewForm((f) => ({ ...f, channel: e.target.value as "sms" | "whatsapp" }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                 <option value="sms">SMS</option>
                 <option value="whatsapp">WhatsApp</option>
               </select>
@@ -199,24 +199,24 @@ export default function BroadcastsPage() {
                 )}
               </div>
               <textarea rows={3} value={newForm.body_text} onChange={(e) => setNewForm((f) => ({ ...f, body_text: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Segment ID (optional)</label>
               <input value={newForm.segment_id} onChange={(e) => setNewForm((f) => ({ ...f, segment_id: e.target.value }))}
                 placeholder="UUID"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Schedule For (optional)</label>
               <input type="datetime-local" value={newForm.scheduled_for} onChange={(e) => setNewForm((f) => ({ ...f, scheduled_for: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
             <Button disabled={actionLoading === "create"} onClick={createBroadcast}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               {actionLoading === "create" ? "Creating…" : "Create Broadcast"}
             </Button>
           </div>
@@ -254,7 +254,7 @@ export default function BroadcastsPage() {
                     </Button>
                     <Button size="sm" disabled={actionLoading === b.id + "_send"}
                       onClick={() => sendNow(b.id)}
-                      className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                      className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                       {actionLoading === b.id + "_send" ? "Sending…" : "Send Now"}
                     </Button>
                   </>
@@ -274,12 +274,12 @@ export default function BroadcastsPage() {
               <label className="text-xs font-medium text-gray-700">Send At</label>
               <input type="datetime-local" value={scheduleModal.scheduled_for}
                 onChange={(e) => setScheduleModal((m) => m ? { ...m, scheduled_for: e.target.value } : null)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setScheduleModal(null)}>Cancel</Button>
               <Button disabled={actionLoading?.endsWith("_schedule")} onClick={scheduleBroadcast}
-                className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                 {actionLoading?.endsWith("_schedule") ? "Scheduling…" : "Schedule"}
               </Button>
             </div>

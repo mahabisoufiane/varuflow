@@ -35,7 +35,7 @@ export default function StorefrontConfigPage() {
   const [name, setName] = useState("");
   const [tagline, setTagline] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
-  const [primaryColor, setPrimaryColor] = useState("#1a2332");
+  const [primaryColor, setPrimaryColor] = useState("#2f5ea8");
   const [paymentMethods, setPaymentMethods] = useState<string[]>(["card"]);
   const [currency, setCurrency] = useState("SEK");
   const [isActive, setIsActive] = useState(false);
@@ -52,7 +52,7 @@ export default function StorefrontConfigPage() {
       setName(data.name ?? "");
       setTagline(data.tagline ?? "");
       setLogoUrl(data.logo_url ?? "");
-      setPrimaryColor(data.primary_color ?? "#1a2332");
+      setPrimaryColor(data.primary_color ?? "#2f5ea8");
       setPaymentMethods(data.payment_methods ?? ["card"]);
       setCurrency(data.currency ?? "SEK");
       setIsActive(data.is_active ?? false);

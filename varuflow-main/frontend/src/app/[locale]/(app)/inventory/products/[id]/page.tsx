@@ -119,7 +119,7 @@ export default function EditProductPage() {
           <Button asChild variant="ghost" size="sm" className="mb-2 -ml-2 text-muted-foreground">
             <Link href="/inventory/products"><ArrowLeft className="mr-1 h-3.5 w-3.5" />Products</Link>
           </Button>
-          <h1 className="text-2xl font-bold text-[#1a2332] dark:text-gray-100">Edit Product</h1>
+          <h1 className="text-2xl font-bold text-[var(--vf-text-primary)] dark:text-gray-100">Edit Product</h1>
         </div>
         <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={handleDeactivate}>
           <Trash2 className="h-4 w-4 mr-1.5" />Deactivate
@@ -152,7 +152,7 @@ export default function EditProductPage() {
               id="unit"
               value={form.unit}
               onChange={(e) => set("unit", e.target.value)}
-              className="block h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+              className="block h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
             >
               {UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
             </select>
@@ -171,7 +171,7 @@ export default function EditProductPage() {
         <div className="space-y-1.5">
           <Label htmlFor="tax_rate">VAT rate</Label>
           <select id="tax_rate" value={form.tax_rate} onChange={(e) => set("tax_rate", e.target.value)}
-            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
             {TAX_RATES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
           </select>
         </div>
@@ -179,14 +179,14 @@ export default function EditProductPage() {
         <div className="space-y-1.5">
           <Label htmlFor="description">Description</Label>
           <textarea id="description" rows={3} value={form.description} onChange={(e) => set("description", e.target.value)}
-            className="block w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100" />
+            className="block w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100" />
         </div>
 
         {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-          <Button type="submit" disabled={saving} className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+          <Button type="submit" disabled={saving} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
             {saving ? "Saving…" : "Save changes"}
           </Button>
         </div>
@@ -222,7 +222,7 @@ function Field({ id, label, value, onChange, placeholder, required, type = "text
       <Label htmlFor={id}>{label}</Label>
       <input id={id} type={type} step={step} required={required} value={value}
         onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-        className="block h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100" />
+        className="block h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100" />
     </div>
   );
 }

@@ -95,7 +95,7 @@ export default function InvoiceTemplatesPage() {
     try {
       const created = await api.post<TemplateOut>("/api/invoice-templates", {
         name: t("new_template_name"),
-        primary_color: "#1a2332",
+        primary_color: "#2f5ea8",
         accent_color: "#2563eb",
         font_family: "Helvetica",
         show_bank_details: true,

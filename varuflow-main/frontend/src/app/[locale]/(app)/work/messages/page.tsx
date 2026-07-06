@@ -107,7 +107,7 @@ export default function MessagesPage() {
             <MessageCircle size={16} />
             Messages
             {totalUnread > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 rounded-full bg-[#1a2332] text-white text-xs">{totalUnread}</span>
+              <span className="ml-1 px-1.5 py-0.5 rounded-full bg-[var(--vf-brand-primary)] text-white text-xs">{totalUnread}</span>
             )}
           </div>
           <button
@@ -141,7 +141,7 @@ export default function MessagesPage() {
                   onClick={() => openDm(s.id, s.name)}
                   className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-gray-100 flex items-center gap-2"
                 >
-                  <div className="w-5 h-5 rounded-full bg-[#1a2332] text-white text-[10px] flex items-center justify-center shrink-0">
+                  <div className="w-5 h-5 rounded-full bg-[var(--vf-brand-primary)] text-white text-[10px] flex items-center justify-center shrink-0">
                     {s.name[0]?.toUpperCase()}
                   </div>
                   {s.name}
@@ -169,7 +169,7 @@ export default function MessagesPage() {
             >
               <span>{ch.name}</span>
               {(unread.channels[ch.slug] ?? 0) > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full bg-[#1a2332] text-white text-[10px]">
+                <span className="px-1.5 py-0.5 rounded-full bg-[var(--vf-brand-primary)] text-white text-[10px]">
                   {unread.channels[ch.slug]}
                 </span>
               )}
@@ -201,7 +201,7 @@ export default function MessagesPage() {
                   </span>
                 </div>
                 {dm.unread > 0 && (
-                  <span className="px-1.5 py-0.5 rounded-full bg-[#1a2332] text-white text-[10px] shrink-0">{dm.unread}</span>
+                  <span className="px-1.5 py-0.5 rounded-full bg-[var(--vf-brand-primary)] text-white text-[10px] shrink-0">{dm.unread}</span>
                 )}
               </div>
               <p className="text-xs text-gray-400 truncate mt-0.5 pl-8">{dm.last_message}</p>
@@ -218,7 +218,7 @@ export default function MessagesPage() {
             {active.type === "channel" ? (
               <Hash size={16} className="text-gray-500" />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-[#1a2332] text-white text-xs flex items-center justify-center shrink-0">
+              <div className="w-6 h-6 rounded-full bg-[var(--vf-brand-primary)] text-white text-xs flex items-center justify-center shrink-0">
                 {(allStaff.find(s => s.id === active.id)?.name ?? active.label)[0]?.toUpperCase()}
               </div>
             )}
@@ -254,7 +254,7 @@ export default function MessagesPage() {
                     </div>
                   )}
                   <div className={`flex gap-2 ${m.is_mine ? "flex-row-reverse" : ""}`}>
-                    <div className={`w-7 h-7 rounded-full text-xs flex items-center justify-center shrink-0 font-medium ${m.is_mine ? "bg-[#1a2332] text-white" : "bg-gray-200 text-gray-600"}`}>
+                    <div className={`w-7 h-7 rounded-full text-xs flex items-center justify-center shrink-0 font-medium ${m.is_mine ? "bg-[var(--vf-brand-primary)] text-white" : "bg-gray-200 text-gray-600"}`}>
                       {m.is_mine
                         ? "Me"
                         : (allStaff.find(s => s.id === m.sender_id)?.name ?? "?")[0]?.toUpperCase()}
@@ -265,7 +265,7 @@ export default function MessagesPage() {
                           {allStaff.find(s => s.id === m.sender_id)?.name ?? "Staff"}
                         </span>
                       )}
-                      <div className={`px-3 py-2 rounded-2xl text-sm leading-relaxed ${m.is_mine ? "bg-[#1a2332] text-white rounded-tr-sm" : "bg-gray-100 text-gray-900 rounded-tl-sm"}`}>
+                      <div className={`px-3 py-2 rounded-2xl text-sm leading-relaxed ${m.is_mine ? "bg-[var(--vf-brand-primary)] text-white rounded-tr-sm" : "bg-gray-100 text-gray-900 rounded-tl-sm"}`}>
                         {m.body}
                       </div>
                       <span className="text-[10px] text-gray-400 px-1">
@@ -293,12 +293,12 @@ export default function MessagesPage() {
                   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
                 }}
                 placeholder={`Message ${active.type === "channel" ? "#" + active.id : allStaff.find(s => s.id === active.id)?.name ?? "…"}…`}
-                className="flex-1 border rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="flex-1 border rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
               <button
                 type="submit"
                 disabled={sending || !draft.trim()}
-                className="p-2 rounded-xl bg-[#1a2332] text-white hover:opacity-90 disabled:opacity-40 shrink-0"
+                className="p-2 rounded-xl bg-[var(--vf-brand-primary)] text-white hover:opacity-90 disabled:opacity-40 shrink-0"
               >
                 <Send size={16} />
               </button>

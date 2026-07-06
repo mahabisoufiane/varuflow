@@ -175,7 +175,7 @@ export default function StatusAlertsPage() {
       </div>
 
       {/* Create form */}
-      <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-4">
+      <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-4">
         <h3 className="text-sm font-semibold text-gray-900">Send Alert</h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
@@ -183,7 +183,7 @@ export default function StatusAlertsPage() {
             <select
               value={form.alert_type}
               onChange={(e) => handleTypeChange(e.target.value)}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             >
               {Object.entries(ALERT_TYPE_CONFIG).map(([val, cfg]) => (
                 <option key={val} value={val}>{cfg.label}</option>
@@ -197,7 +197,7 @@ export default function StatusAlertsPage() {
                 type="number"
                 value={form.delay_minutes}
                 onChange={(e) => handleDelayChange(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
           )}
@@ -209,7 +209,7 @@ export default function StatusAlertsPage() {
               value={form.appointment_id}
               onChange={(e) => setForm((f) => ({ ...f, appointment_id: e.target.value }))}
               placeholder="UUID"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="space-y-1">
@@ -218,7 +218,7 @@ export default function StatusAlertsPage() {
               value={form.customer_id}
               onChange={(e) => setForm((f) => ({ ...f, customer_id: e.target.value }))}
               placeholder="UUID"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
         </div>
@@ -228,13 +228,13 @@ export default function StatusAlertsPage() {
             rows={3}
             value={form.message}
             onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
           />
         </div>
         <Button
           disabled={actionLoading === "send"}
           onClick={sendAlert}
-          className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2"
+          className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2"
         >
           {actionLoading === "send" ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
           Send Alert

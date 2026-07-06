@@ -95,7 +95,7 @@ function MonthlyChart({ series }: { series: MonthPoint[] }) {
 function KpiCard({ label, value, prev, sub, highlight }: {
   label: string; value: number; prev?: number; sub?: string; highlight?: "green" | "red" | "neutral";
 }) {
-  const color = highlight === "green" ? "text-green-600" : highlight === "red" ? "text-red-500" : "text-[#1a2332]";
+  const color = highlight === "green" ? "text-green-600" : highlight === "red" ? "text-red-500" : "text-[var(--vf-text-primary)]";
   return (
     <div className="bg-white border rounded-xl p-4 space-y-1">
       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{label}</p>
@@ -112,7 +112,7 @@ function WfRow({ label, value, indent, bold, separator, color }: {
   label: string; value: number; indent?: boolean; bold?: boolean; separator?: boolean; color?: string;
 }) {
   return (
-    <tr className={separator ? "border-t-2 border-[#1a2332]" : ""}>
+    <tr className={separator ? "border-t-2 border-[var(--vf-brand-primary)]" : ""}>
       <td className={`py-2 text-sm ${bold ? "font-semibold" : "text-gray-600"} ${indent ? "pl-6" : ""}`}>{label}</td>
       <td className={`py-2 text-right font-mono text-sm ${bold ? "font-semibold" : ""} ${color || (value < 0 ? "text-red-500" : "")}`}>
         {value < 0 ? `(${fmt(Math.abs(value))})` : fmt(value)} SEK
@@ -167,9 +167,9 @@ export default function PnLPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
-          <BarChart3 size={22} className="text-[#1a2332]" />
+          <BarChart3 size={22} className="text-[var(--vf-text-primary)]" />
           <div>
-            <h1 className="text-xl font-bold text-[#1a2332]">Profit &amp; Loss</h1>
+            <h1 className="text-xl font-bold text-[var(--vf-text-primary)]">Profit &amp; Loss</h1>
             {cur && <p className="text-sm text-gray-400 mt-0.5">{cur.label}</p>}
           </div>
         </div>
@@ -188,7 +188,7 @@ export default function PnLPage() {
         <div className="flex gap-1">
           {(["month","quarter","year","custom"] as PeriodType[]).map((t) => (
             <button key={t} onClick={() => setPeriodType(t)}
-              className={`px-3 py-1.5 rounded text-sm font-medium capitalize transition-colors ${periodType === t ? "bg-[#1a2332] text-white" : "text-gray-600 hover:bg-gray-100"}`}>
+              className={`px-3 py-1.5 rounded text-sm font-medium capitalize transition-colors ${periodType === t ? "bg-[var(--vf-brand-primary)] text-white" : "text-gray-600 hover:bg-gray-100"}`}>
               {t}
             </button>
           ))}
@@ -236,7 +236,7 @@ export default function PnLPage() {
               </div>
             </>
           )}
-          <button onClick={load} className="px-4 py-1.5 bg-[#1a2332] text-white rounded text-sm hover:opacity-90">
+          <button onClick={load} className="px-4 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-sm hover:opacity-90">
             {loading ? "Loading…" : "Apply"}
           </button>
         </div>

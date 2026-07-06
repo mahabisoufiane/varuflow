@@ -71,7 +71,7 @@ export default function NewPurchaseOrderPage() {
         <Button asChild variant="ghost" size="sm" className="mb-2 -ml-2 text-muted-foreground">
           <Link href="/inventory/purchase-orders"><ArrowLeft className="mr-1 h-3.5 w-3.5" />Purchase Orders</Link>
         </Button>
-        <h1 className="text-2xl font-bold text-[#1a2332]">New Purchase Order</h1>
+        <h1 className="text-2xl font-bold text-[var(--vf-text-primary)]">New Purchase Order</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -80,20 +80,20 @@ export default function NewPurchaseOrderPage() {
           <div className="space-y-1.5">
             <Label>Supplier *</Label>
             <select required value={supplierId} onChange={(e) => setSupplierId(e.target.value)}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
               <option value="">Select supplier…</option>
               {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
             {suppliers.length === 0 && (
               <p className="text-xs text-muted-foreground">
-                No suppliers yet. <Link href="/inventory/suppliers" className="text-[#1a2332] underline">Add one first.</Link>
+                No suppliers yet. <Link href="/inventory/suppliers" className="text-[var(--vf-text-primary)] underline">Add one first.</Link>
               </p>
             )}
           </div>
           <div className="space-y-1.5">
             <Label>Notes</Label>
             <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Delivery instructions, terms…"
-              className="block w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+              className="block w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
           </div>
         </div>
 
@@ -105,7 +105,7 @@ export default function NewPurchaseOrderPage() {
                 <div className="flex-1 space-y-1.5">
                   {i === 0 && <Label>Product</Label>}
                   <select required value={item.product_id} onChange={(e) => setItem(i, "product_id", e.target.value)}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                     <option value="">Select product…</option>
                     {products.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>)}
                   </select>
@@ -114,13 +114,13 @@ export default function NewPurchaseOrderPage() {
                   {i === 0 && <Label>Qty</Label>}
                   <input type="number" min="1" required value={item.quantity}
                     onChange={(e) => setItem(i, "quantity", Number(e.target.value))}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
                 <div className="w-28 space-y-1.5">
                   {i === 0 && <Label>Price (SEK)</Label>}
                   <input type="number" step="0.01" min="0.01" required value={item.unit_price}
                     onChange={(e) => setItem(i, "unit_price", e.target.value)}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
                 <div className="w-24 space-y-1.5">
                   {i === 0 && <Label>Total</Label>}
@@ -145,7 +145,7 @@ export default function NewPurchaseOrderPage() {
           <div className="flex justify-end border-t pt-3">
             <div className="text-right">
               <p className="text-xs text-muted-foreground">Total (excl. VAT)</p>
-              <p className="text-xl font-bold text-[#1a2332]">
+              <p className="text-xl font-bold text-[var(--vf-text-primary)]">
                 {total.toLocaleString("sv-SE", { minimumFractionDigits: 2 })} SEK
               </p>
             </div>
@@ -156,7 +156,7 @@ export default function NewPurchaseOrderPage() {
 
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-          <Button type="submit" disabled={saving} className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+          <Button type="submit" disabled={saving} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
             {saving ? "Creating…" : "Create purchase order"}
           </Button>
         </div>

@@ -176,7 +176,7 @@ function ReconciliationPageInner() {
       <div className="flex gap-1 border-b">
         {(["overview", "unmatched", "partial", "overpaid"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium capitalize ${tab === t ? "border-b-2 border-[#1a2332] text-[#1a2332]" : "text-gray-500"}`}>
+            className={`px-4 py-2 text-sm font-medium capitalize ${tab === t ? "border-b-2 border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]" : "text-gray-500"}`}>
             {t.charAt(0).toUpperCase() + t.slice(1)}
             {t === "unmatched" && summary && summary.unmatched_invoices > 0 && (
               <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px]">{summary.unmatched_invoices}</span>

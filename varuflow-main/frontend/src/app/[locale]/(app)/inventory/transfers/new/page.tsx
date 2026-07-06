@@ -90,7 +90,7 @@ export default function NewStockTransferPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold text-[#1a2332]">New stock transfer</h1>
+        <h1 className="text-2xl font-bold text-[var(--vf-text-primary)]">New stock transfer</h1>
         <p className="text-sm text-muted-foreground">
           Create a draft transfer between two warehouses. Stock is not moved
           until the transfer is shipped.
@@ -193,7 +193,7 @@ export default function NewStockTransferPage() {
         <Button
           onClick={submit}
           disabled={saving}
-          className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+          className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
         >
           {saving ? "Creating…" : "Create transfer"}
         </Button>

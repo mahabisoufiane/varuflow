@@ -171,7 +171,7 @@ export default function CustomerHistoryPage() {
       </div>
 
       {/* Customer lookup */}
-      <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+      <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
         <h3 className="text-sm font-semibold text-gray-900">Customer Lookup</h3>
         <div className="flex gap-3">
           <input
@@ -179,10 +179,10 @@ export default function CustomerHistoryPage() {
             onChange={(e) => setCustomerId(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") loadHistory(); }}
             placeholder="Customer UUID"
-            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
           />
           <Button disabled={loading} onClick={loadHistory}
-            className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+            className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
             {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             Load History
           </Button>
@@ -240,7 +240,7 @@ export default function CustomerHistoryPage() {
 
       {/* Log event form */}
       {showLogForm && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">Log Event</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -248,7 +248,7 @@ export default function CustomerHistoryPage() {
               <select
                 value={logForm.event_type}
                 onChange={(e) => setLogForm((f) => ({ ...f, event_type: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               >
                 {Object.entries(EVENT_TYPE_CONFIG).map(([val, cfg]) => (
                   <option key={val} value={val}>{cfg.label}</option>
@@ -261,7 +261,7 @@ export default function CustomerHistoryPage() {
                 type="datetime-local"
                 value={logForm.event_date}
                 onChange={(e) => setLogForm((f) => ({ ...f, event_date: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
           </div>
@@ -271,7 +271,7 @@ export default function CustomerHistoryPage() {
               value={logForm.title}
               onChange={(e) => setLogForm((f) => ({ ...f, title: e.target.value }))}
               placeholder="Service appointment"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="space-y-1">
@@ -280,7 +280,7 @@ export default function CustomerHistoryPage() {
               rows={2}
               value={logForm.description}
               onChange={(e) => setLogForm((f) => ({ ...f, description: e.target.value }))}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -292,7 +292,7 @@ export default function CustomerHistoryPage() {
                 value={logForm.amount}
                 onChange={(e) => setLogForm((f) => ({ ...f, amount: e.target.value }))}
                 placeholder="0"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
             <div className="space-y-1">
@@ -300,7 +300,7 @@ export default function CustomerHistoryPage() {
               <select
                 value={logForm.currency}
                 onChange={(e) => setLogForm((f) => ({ ...f, currency: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               >
                 <option>SEK</option>
                 <option>NOK</option>
@@ -312,7 +312,7 @@ export default function CustomerHistoryPage() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowLogForm(false)}>Cancel</Button>
             <Button disabled={actionLoading === "log"} onClick={logEvent}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               {actionLoading === "log" ? "Saving…" : "Save Event"}
             </Button>
           </div>
@@ -340,7 +340,7 @@ export default function CustomerHistoryPage() {
                 onClick={() => setFilter(chip.key)}
                 className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
                   filter === chip.key
-                    ? "bg-[#1a2332] text-white border-[#1a2332]"
+                    ? "bg-[var(--vf-brand-primary)] text-white border-[var(--vf-brand-primary)]"
                     : "bg-white text-gray-600 border-gray-300 hover:border-gray-400"
                 }`}
               >

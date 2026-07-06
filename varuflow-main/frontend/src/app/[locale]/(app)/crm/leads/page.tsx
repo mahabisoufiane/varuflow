@@ -126,7 +126,7 @@ export default function LeadsPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <Users size={20} className="text-[#1a2332]" />
+          <Users size={20} className="text-[var(--vf-text-primary)]" />
           <h1 className="text-xl font-bold">Leads</h1>
           <span className="text-xs text-gray-400 ml-1">{leads.length} leads</span>
         </div>
@@ -137,7 +137,7 @@ export default function LeadsPage() {
           <button onClick={() => setShowCsv(true)} className="flex items-center gap-1.5 px-3 py-1.5 border rounded text-sm hover:bg-gray-50">
             <Upload size={13} /> Import CSV
           </button>
-          <button onClick={() => setShowNew(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a2332] text-white rounded text-sm hover:opacity-90">
+          <button onClick={() => setShowNew(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-sm hover:opacity-90">
             <Plus size={13} /> New Lead
           </button>
         </div>
@@ -166,7 +166,7 @@ export default function LeadsPage() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <button type="submit" className="px-3 py-1.5 bg-[#1a2332] text-white rounded text-sm hover:opacity-90">Search</button>
+          <button type="submit" className="px-3 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-sm hover:opacity-90">Search</button>
         </form>
 
         <select className="border rounded px-2 py-1.5 text-sm focus:outline-none" value={sourceFilter} onChange={e => setSourceFilter(e.target.value)}>
@@ -187,7 +187,7 @@ export default function LeadsPage() {
             {SOURCES.map(s => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
           </select>
           <div className="flex gap-2">
-            <button onClick={createLead} disabled={saving || !newName.trim()} className="px-4 py-1.5 bg-[#1a2332] text-white rounded text-sm hover:opacity-90 disabled:opacity-40">
+            <button onClick={createLead} disabled={saving || !newName.trim()} className="px-4 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-sm hover:opacity-90 disabled:opacity-40">
               {saving ? <Loader2 size={13} className="animate-spin" /> : "Create"}
             </button>
             <button onClick={() => setShowNew(false)} className="px-4 py-1.5 border rounded text-sm hover:bg-gray-50">Cancel</button>
@@ -204,7 +204,7 @@ export default function LeadsPage() {
             placeholder="name,email,company&#10;John Smith,john@example.com,Acme"
             className="w-full border rounded px-3 py-2 text-sm font-mono resize-none focus:outline-none" />
           <div className="flex gap-2">
-            <button onClick={importCsv} disabled={importing || !csvText.trim()} className="px-4 py-1.5 bg-[#1a2332] text-white rounded text-sm hover:opacity-90 disabled:opacity-40">
+            <button onClick={importCsv} disabled={importing || !csvText.trim()} className="px-4 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-sm hover:opacity-90 disabled:opacity-40">
               {importing ? <Loader2 size={13} className="animate-spin" /> : "Import"}
             </button>
             <button onClick={() => setShowCsv(false)} className="px-4 py-1.5 border rounded text-sm hover:bg-gray-50">Cancel</button>

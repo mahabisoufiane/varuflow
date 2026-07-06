@@ -141,7 +141,7 @@ export default function FamilyAccountsPage() {
     }
   }
 
-  const inputCls = "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]";
+  const inputCls = "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]";
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">
@@ -151,14 +151,14 @@ export default function FamilyAccountsPage() {
           <h1 className="text-xl font-semibold text-gray-900">Family Accounts</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Manage family groups with shared loyalty benefits.</p>
         </div>
-        <Button onClick={() => setShowCreateForm((s) => !s)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowCreateForm((s) => !s)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> New Family Group
         </Button>
       </div>
 
       {/* Create form */}
       {showCreateForm && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">Create Family Group</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -183,7 +183,7 @@ export default function FamilyAccountsPage() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowCreateForm(false)}>Cancel</Button>
             <Button disabled={actionLoading === "create"} onClick={createGroup}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               {actionLoading === "create" ? "Creating…" : "Create Group"}
             </Button>
           </div>
@@ -308,7 +308,7 @@ export default function FamilyAccountsPage() {
                           </div>
                         </div>
                         <Button size="sm" disabled={actionLoading === g.id + "_add_member"} onClick={() => addMember(g.id)}
-                          className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                          className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                           {actionLoading === g.id + "_add_member" ? "Adding…" : "Add Member"}
                         </Button>
                       </div>

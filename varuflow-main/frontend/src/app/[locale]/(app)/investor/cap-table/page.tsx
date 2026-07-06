@@ -219,7 +219,7 @@ export default function CapTablePage() {
       <div className="flex items-center gap-1 border-b">
         {TABS.map((t) => (
           <button key={t.key} type="button" onClick={() => setTab(t.key)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === t.key ? "border-[#1a2332] text-[#1a2332]" : "border-transparent text-muted-foreground hover:text-gray-700"}`}>
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === t.key ? "border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]" : "border-transparent text-muted-foreground hover:text-gray-700"}`}>
             {t.label}
           </button>
         ))}
@@ -267,40 +267,40 @@ export default function CapTablePage() {
       {!loading && tab === "shareholders" && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <Button onClick={() => setShowShForm(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+            <Button onClick={() => setShowShForm(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
               <PlusCircle className="h-4 w-4" /> Add Shareholder
             </Button>
           </div>
           {showShForm && (
-            <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+            <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700">Name *</label>
                   <input value={shForm.name} onChange={(e) => setShForm((f) => ({ ...f, name: e.target.value }))}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700">Type</label>
                   <select value={shForm.shareholder_type} onChange={(e) => setShForm((f) => ({ ...f, shareholder_type: e.target.value }))}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                     {["founder", "investor", "employee", "other"].map((t) => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700">Email</label>
                   <input value={shForm.email} onChange={(e) => setShForm((f) => ({ ...f, email: e.target.value }))}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700">Notes</label>
                   <input value={shForm.notes} onChange={(e) => setShForm((f) => ({ ...f, notes: e.target.value }))}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setShowShForm(false)}>Cancel</Button>
                 <Button disabled={actionLoading === "sh_create"} onClick={createShareholder}
-                  className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                  className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                   {actionLoading === "sh_create" ? "Adding…" : "Add Shareholder"}
                 </Button>
               </div>
@@ -327,28 +327,28 @@ export default function CapTablePage() {
       {!loading && tab === "classes" && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <Button onClick={() => setShowClForm(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+            <Button onClick={() => setShowClForm(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
               <PlusCircle className="h-4 w-4" /> Add Share Class
             </Button>
           </div>
           {showClForm && (
-            <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+            <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700">Name *</label>
                   <input value={clForm.name} onChange={(e) => setClForm((f) => ({ ...f, name: e.target.value }))}
                     placeholder="Series A Preferred"
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700">Authorized Shares</label>
                   <input type="number" value={clForm.authorized_shares} onChange={(e) => setClForm((f) => ({ ...f, authorized_shares: e.target.value }))}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700">Liquidation Priority</label>
                   <input type="number" value={clForm.liquidation_priority} onChange={(e) => setClForm((f) => ({ ...f, liquidation_priority: e.target.value }))}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
                 <div className="flex items-center gap-4 pt-5">
                   <label className="flex items-center gap-2 text-sm text-gray-700">
@@ -364,7 +364,7 @@ export default function CapTablePage() {
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setShowClForm(false)}>Cancel</Button>
                 <Button disabled={actionLoading === "cl_create"} onClick={createClass}
-                  className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                  className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                   {actionLoading === "cl_create" ? "Creating…" : "Create Share Class"}
                 </Button>
               </div>
@@ -394,44 +394,44 @@ export default function CapTablePage() {
       {!loading && tab === "scenarios" && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <Button onClick={() => setShowScForm(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+            <Button onClick={() => setShowScForm(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
               <PlusCircle className="h-4 w-4" /> New Scenario
             </Button>
           </div>
           {showScForm && (
-            <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+            <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1 col-span-2">
                   <label className="text-xs font-medium text-gray-700">Title *</label>
                   <input value={scForm.title} onChange={(e) => setScForm((f) => ({ ...f, title: e.target.value }))}
                     placeholder="Series B Round"
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700">New Shares *</label>
                   <input type="number" value={scForm.new_shares} onChange={(e) => setScForm((f) => ({ ...f, new_shares: e.target.value }))}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700">Pre-money Valuation</label>
                   <input type="number" value={scForm.pre_money_valuation} onChange={(e) => setScForm((f) => ({ ...f, pre_money_valuation: e.target.value }))}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700">Currency</label>
                   <input value={scForm.currency} onChange={(e) => setScForm((f) => ({ ...f, currency: e.target.value }))}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700">Notes</label>
                   <input value={scForm.notes} onChange={(e) => setScForm((f) => ({ ...f, notes: e.target.value }))}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setShowScForm(false)}>Cancel</Button>
                 <Button disabled={actionLoading === "sc_create"} onClick={createScenario}
-                  className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                  className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                   {actionLoading === "sc_create" ? "Creating…" : "Create Scenario"}
                 </Button>
               </div>

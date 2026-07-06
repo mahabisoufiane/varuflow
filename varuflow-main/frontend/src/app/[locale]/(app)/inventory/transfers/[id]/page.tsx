@@ -103,7 +103,7 @@ export default function TransferDetailPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-[#1a2332] flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-[var(--vf-text-primary)] flex items-center gap-2">
               <Truck className="h-5 w-5" /> Stock transfer
             </h1>
             <p className="text-xs text-gray-500 font-mono">{t.id}</p>
@@ -205,7 +205,7 @@ export default function TransferDetailPage() {
           <Button
             onClick={() => runAction("ship")}
             disabled={busy !== null}
-            className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+            className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
           >
             <Send className="mr-1.5 h-3.5 w-3.5" />
             {busy === "ship" ? "Shipping…" : "Ship"}

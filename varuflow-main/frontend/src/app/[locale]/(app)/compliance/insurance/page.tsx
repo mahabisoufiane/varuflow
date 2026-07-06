@@ -210,7 +210,7 @@ export default function InsurancePage() {
           <h1 className="text-xl font-semibold text-gray-900">Insurance Policies</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Manage policies, track renewals, and log claims.</p>
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> Add Policy
         </Button>
       </div>
@@ -227,30 +227,30 @@ export default function InsurancePage() {
 
       {/* New policy form */}
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">New Policy</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Policy Name *</label>
               <input value={newForm.policy_name} onChange={(e) => setNewForm((f) => ({ ...f, policy_name: e.target.value }))}
                 placeholder="General Liability 2026"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Insurer</label>
               <input value={newForm.insurer} onChange={(e) => setNewForm((f) => ({ ...f, insurer: e.target.value }))}
                 placeholder="Folksam"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Policy Number</label>
               <input value={newForm.policy_number} onChange={(e) => setNewForm((f) => ({ ...f, policy_number: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Type</label>
               <select value={newForm.type} onChange={(e) => setNewForm((f) => ({ ...f, type: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                className="block w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                 <option value="general_liability">General Liability</option>
                 <option value="property">Property</option>
                 <option value="cyber">Cyber</option>
@@ -263,12 +263,12 @@ export default function InsurancePage() {
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Coverage Amount</label>
               <input type="number" value={newForm.coverage_amount} onChange={(e) => setNewForm((f) => ({ ...f, coverage_amount: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Currency</label>
               <select value={newForm.currency} onChange={(e) => setNewForm((f) => ({ ...f, currency: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                className="block w-full rounded-md border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                 <option value="SEK">SEK</option>
                 <option value="NOK">NOK</option>
                 <option value="DKK">DKK</option>
@@ -278,28 +278,28 @@ export default function InsurancePage() {
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Annual Premium</label>
               <input type="number" value={newForm.premium_annual} onChange={(e) => setNewForm((f) => ({ ...f, premium_annual: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Renewal Due</label>
               <input type="date" value={newForm.renewal_due} onChange={(e) => setNewForm((f) => ({ ...f, renewal_due: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Start Date</label>
               <input type="date" value={newForm.start_date} onChange={(e) => setNewForm((f) => ({ ...f, start_date: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">End Date</label>
               <input type="date" value={newForm.end_date} onChange={(e) => setNewForm((f) => ({ ...f, end_date: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
             <Button disabled={actionLoading === "create_policy"} onClick={createPolicy}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               {actionLoading === "create_policy" ? "Saving…" : "Create Policy"}
             </Button>
           </div>
@@ -373,26 +373,26 @@ export default function InsurancePage() {
                             <label className="text-xs font-medium text-gray-700">Claim Date *</label>
                             <input type="date" value={newClaim.claim_date}
                               onChange={(e) => setNewClaim((f) => ({ ...f, claim_date: e.target.value }))}
-                              className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                              className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                           </div>
                           <div className="space-y-1 col-span-2">
                             <label className="text-xs font-medium text-gray-700">Description</label>
                             <input value={newClaim.description}
                               onChange={(e) => setNewClaim((f) => ({ ...f, description: e.target.value }))}
                               placeholder="Brief claim description"
-                              className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                              className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                           </div>
                           <div className="space-y-1">
                             <label className="text-xs font-medium text-gray-700">Amount Claimed</label>
                             <input type="number" value={newClaim.amount_claimed}
                               onChange={(e) => setNewClaim((f) => ({ ...f, amount_claimed: e.target.value }))}
-                              className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                              className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                           </div>
                         </div>
                         <div className="flex gap-2">
                           <Button variant="outline" size="sm" onClick={() => setShowClaimFor(null)}>Cancel</Button>
                           <Button size="sm" disabled={actionLoading === "create_claim_" + policy.id} onClick={() => addClaim(policy.id)}
-                            className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                            className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                             Save Claim
                           </Button>
                         </div>

@@ -48,7 +48,7 @@ const PLATFORM_MODULE: Record<string, keyof typeof styles> = {
 export default function CustomerAppConfigPage() {
   const [config, setConfig] = useState<AppConfig>({
     app_name: "",
-    primary_color: "#1a2332",
+    primary_color: "#2f5ea8",
     secondary_color: "#ffffff",
     logo_url: "",
     welcome_message: "",
@@ -133,7 +133,7 @@ export default function CustomerAppConfigPage() {
     }
   }
 
-  const inputCls = "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]";
+  const inputCls = "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]";
 
   if (loading) {
     return (
@@ -207,7 +207,7 @@ export default function CustomerAppConfigPage() {
           ))}
         </div>
         <div>
-          <Button onClick={saveConfig} disabled={saving} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+          <Button onClick={saveConfig} disabled={saving} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
             {saving ? <RefreshCw className="h-4 w-4 animate-spin" /> : null}
             Save Config
           </Button>
@@ -243,7 +243,7 @@ export default function CustomerAppConfigPage() {
       <div className="rounded-xl border bg-white shadow-sm">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <h2 className="text-sm font-semibold text-gray-900">Push Tokens</h2>
-          <Button onClick={() => setShowTokenForm((s) => !s)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+          <Button onClick={() => setShowTokenForm((s) => !s)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
             <Smartphone className="h-4 w-4" /> Register Token
           </Button>
         </div>
@@ -284,7 +284,7 @@ export default function CustomerAppConfigPage() {
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setShowTokenForm(false)}>Cancel</Button>
               <Button disabled={actionLoading === "register"} onClick={registerToken}
-                className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                 {actionLoading === "register" ? "Registering…" : "Register"}
               </Button>
             </div>

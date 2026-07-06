@@ -53,7 +53,7 @@ export default function NewCampaignPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold text-[#1a2332]">New campaign</h1>
+        <h1 className="text-2xl font-bold text-[var(--vf-text-primary)]">New campaign</h1>
         <p className="text-sm text-muted-foreground">
           Target a customer segment with a broadcast email. You can preview
           and schedule before sending.
@@ -115,7 +115,7 @@ export default function NewCampaignPage() {
         </div>
 
         <div className="flex gap-2 pt-2">
-          <Button onClick={submit} disabled={saving} className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+          <Button onClick={submit} disabled={saving} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
             Save draft
           </Button>
           <Button variant="ghost" onClick={() => router.back()}>

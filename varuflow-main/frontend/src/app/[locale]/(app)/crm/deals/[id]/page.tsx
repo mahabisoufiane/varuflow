@@ -133,7 +133,7 @@ export default function DealDetailPage() {
           <div>
             {editing ? (
               <input
-                className="text-2xl font-bold border-b border-[#1a2332] outline-none w-full"
+                className="text-2xl font-bold border-b border-[var(--vf-brand-primary)] outline-none w-full"
                 value={editTitle}
                 onChange={e => setEditTitle(e.target.value)}
               />
@@ -155,7 +155,7 @@ export default function DealDetailPage() {
         <div className="flex gap-2 shrink-0">
           {editing ? (
             <>
-              <button onClick={saveEdits} disabled={saving} className="px-3 py-1.5 bg-[#1a2332] text-white rounded text-sm hover:opacity-90 disabled:opacity-50">
+              <button onClick={saveEdits} disabled={saving} className="px-3 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-sm hover:opacity-90 disabled:opacity-50">
                 {saving ? <Loader2 size={13} className="animate-spin" /> : "Save"}
               </button>
               <button onClick={() => setEditing(false)} className="px-3 py-1.5 border rounded text-sm hover:bg-gray-50">Cancel</button>
@@ -252,7 +252,7 @@ export default function DealDetailPage() {
               <div className="flex gap-1.5">
                 {ACTIVITY_TYPES.map(t => (
                   <button key={t} onClick={() => setActivityType(t)}
-                    className={`px-2 py-0.5 rounded text-xs capitalize ${activityType === t ? "bg-[#1a2332] text-white" : "bg-gray-100 hover:bg-gray-200"}`}>
+                    className={`px-2 py-0.5 rounded text-xs capitalize ${activityType === t ? "bg-[var(--vf-brand-primary)] text-white" : "bg-gray-100 hover:bg-gray-200"}`}>
                     {t}
                   </button>
                 ))}
@@ -265,7 +265,7 @@ export default function DealDetailPage() {
                 className="w-full border rounded px-3 py-1.5 text-sm resize-none focus:outline-none focus:ring-1"
               />
               <button onClick={logActivity} disabled={loggingActivity || !activityNote.trim()}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a2332] text-white rounded text-sm hover:opacity-90 disabled:opacity-40">
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-sm hover:opacity-90 disabled:opacity-40">
                 <Plus size={13} />
                 {loggingActivity ? "Logging…" : `Log ${activityType}`}
               </button>
@@ -308,7 +308,7 @@ export default function DealDetailPage() {
                 <button
                   key={s.slug}
                   onClick={() => moveStage(s.slug)}
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-left transition-colors ${deal.stage === s.slug ? "bg-[#1a2332] text-white" : "hover:bg-gray-50"}`}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-left transition-colors ${deal.stage === s.slug ? "bg-[var(--vf-brand-primary)] text-white" : "hover:bg-gray-50"}`}
                 >
                   <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs shrink-0 ${deal.stage === s.slug ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"}`}>
                     {i + 1}

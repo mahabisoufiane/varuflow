@@ -200,25 +200,25 @@ export default function ABTestingPage() {
           <h1 className="text-xl font-semibold text-gray-900">Email A/B Testing</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Test campaign variants and auto-promote winners.</p>
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> New Test
         </Button>
       </div>
 
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">Create A/B Test</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1 col-span-2">
               <label className="text-xs font-medium text-gray-700">Name *</label>
               <input value={newForm.name} onChange={(e) => setNewForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="Black Friday Subject Line Test"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Test Metric</label>
               <select value={newForm.test_metric} onChange={(e) => setNewForm((f) => ({ ...f, test_metric: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                 {["open_rate", "click_rate", "conversion_rate"].map((m) => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
@@ -231,7 +231,7 @@ export default function ABTestingPage() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
             <Button disabled={actionLoading === "create"} onClick={createTest}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               {actionLoading === "create" ? "Creating…" : "Create Test"}
             </Button>
           </div>
@@ -303,24 +303,24 @@ export default function ABTestingPage() {
                               <label className="text-xs font-medium text-gray-700">Subject Line</label>
                               <input value={ve.subject_line}
                                 onChange={(e) => setVariantEdits((f) => ({ ...f, [v.id]: { ...ve, subject_line: e.target.value } }))}
-                                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                             </div>
                             <div className="space-y-1">
                               <label className="text-xs font-medium text-gray-700">Body HTML</label>
                               <textarea rows={3} value={ve.body_html}
                                 onChange={(e) => setVariantEdits((f) => ({ ...f, [v.id]: { ...ve, body_html: e.target.value } }))}
-                                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                             </div>
                             <div className="flex items-center gap-3">
                               <div className="space-y-1 w-32">
                                 <label className="text-xs font-medium text-gray-700">Recipient %</label>
                                 <input type="number" value={ve.recipient_pct}
                                   onChange={(e) => setVariantEdits((f) => ({ ...f, [v.id]: { ...ve, recipient_pct: e.target.value } }))}
-                                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                               </div>
                               <Button size="sm" disabled={actionLoading === v.id + "_save"}
                                 onClick={() => saveVariant(t.id, v.id)}
-                                className="mt-4 bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                                className="mt-4 bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                                 {actionLoading === v.id + "_save" ? "Saving…" : "Save Variant"}
                               </Button>
                             </div>
@@ -346,7 +346,7 @@ export default function ABTestingPage() {
                 <label className="text-xs font-medium text-gray-700">Variant</label>
                 <select value={statsModal.variantId}
                   onChange={(e) => setStatsModal((m) => m ? { ...m, variantId: e.target.value } : null)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                   {tests.find((t) => t.id === statsModal.testId)?.variants?.map((v) => (
                     <option key={v.id} value={v.id}>Variant {v.label}</option>
                   ))}
@@ -363,7 +363,7 @@ export default function ABTestingPage() {
                     <label className="text-xs font-medium text-gray-700">{label}</label>
                     <input type="number" value={statsModal[key]}
                       onChange={(e) => setStatsModal((m) => m ? { ...m, [key]: e.target.value } : null)}
-                      className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                      className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                   </div>
                 ))}
               </div>
@@ -371,7 +371,7 @@ export default function ABTestingPage() {
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setStatsModal(null)}>Cancel</Button>
               <Button disabled={actionLoading === "stats_record"} onClick={recordStats}
-                className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                 {actionLoading === "stats_record" ? "Recording…" : "Record"}
               </Button>
             </div>

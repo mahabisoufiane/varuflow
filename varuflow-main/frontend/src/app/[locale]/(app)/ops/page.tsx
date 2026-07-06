@@ -53,8 +53,8 @@ export default function OpsPage() {
           <Link key={key} href={`/${locale}/ops/${path}`}>
             <div className="rounded-xl border bg-white shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer group">
               <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#1a2332]/10 group-hover:bg-[#1a2332]/20 transition-colors">
-                  <Icon className="h-5 w-5 text-[#1a2332]" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--vf-brand-primary)]/10 group-hover:bg-[var(--vf-brand-primary)]/20 transition-colors">
+                  <Icon className="h-5 w-5 text-[var(--vf-text-primary)]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900">{title}</p>

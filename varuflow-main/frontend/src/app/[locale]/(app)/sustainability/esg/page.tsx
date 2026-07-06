@@ -201,7 +201,7 @@ export default function EsgPage() {
           onChange={(e) => setEditFields((prev) => ({
             ...prev, [id]: { ...prev[id], [field]: e.target.value === "" ? null : parseFloat(e.target.value) },
           }))}
-          className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+          className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
         />
       </div>
     );
@@ -229,32 +229,32 @@ export default function EsgPage() {
           <h1 className="text-xl font-semibold text-gray-900">ESG Reports</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Create and publish Environmental, Social, and Governance reports.</p>
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> New Report
         </Button>
       </div>
 
       {/* New report form */}
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">New ESG Report</h3>
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2 space-y-1">
               <label className="text-xs font-medium text-gray-700">Title *</label>
               <input value={newForm.title} onChange={(e) => setNewForm((f) => ({ ...f, title: e.target.value }))}
                 placeholder="Annual Sustainability Report 2026"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Report Year</label>
               <input type="number" value={newForm.report_year} onChange={(e) => setNewForm((f) => ({ ...f, report_year: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
             <Button disabled={actionLoading === "create"} onClick={createReport}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               {actionLoading === "create" ? "Creating…" : "Create Report"}
             </Button>
           </div>
@@ -348,7 +348,7 @@ export default function EsgPage() {
                     </div>
 
                     <Button size="sm" disabled={actionLoading === report.id + "_save"} onClick={() => saveFields(report.id)}
-                      className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                      className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                       {actionLoading === report.id + "_save" ? "Saving…" : "Save Metrics"}
                     </Button>
                   </div>

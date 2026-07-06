@@ -213,7 +213,7 @@ function SummaryCard({ label, best, worst, invert }: { label: string; best: numb
     <div className="bg-white border rounded-xl p-4 space-y-1">
       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{label}</p>
       <div className="flex items-end gap-2">
-        <p className={`text-xl font-bold ${invert ? (best < 0 ? "text-red-500" : "text-green-600") : "text-[#1a2332]"}`}>
+        <p className={`text-xl font-bold ${invert ? (best < 0 ? "text-red-500" : "text-green-600") : "text-[var(--vf-text-primary)]"}`}>
           {fmt(best)}
         </p>
         <span className="text-xs text-gray-300 pb-0.5">SEK</span>
@@ -328,9 +328,9 @@ export default function CashFlowPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
-          <BarChart3 size={22} className="text-[#1a2332]" />
+          <BarChart3 size={22} className="text-[var(--vf-text-primary)]" />
           <div>
-            <h1 className="text-xl font-bold text-[#1a2332]">Cash Flow Forecast</h1>
+            <h1 className="text-xl font-bold text-[var(--vf-text-primary)]">Cash Flow Forecast</h1>
             {data && (
               <p className="text-sm text-gray-400 mt-0.5">
                 Next {horizon} days · {data.items.length} items
@@ -477,7 +477,7 @@ export default function CashFlowPage() {
               <p className="text-sm font-semibold text-gray-700">Manual adjustments</p>
               <button
                 onClick={() => setAdjOpen(!adjOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a2332] text-white rounded text-xs hover:opacity-90"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-xs hover:opacity-90"
               >
                 <Plus size={13} /> Add
               </button>
@@ -534,7 +534,7 @@ export default function CashFlowPage() {
                   <button
                     onClick={addAdjustment}
                     disabled={adjSaving}
-                    className="px-4 py-1.5 bg-[#1a2332] text-white rounded text-sm disabled:opacity-50"
+                    className="px-4 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-sm disabled:opacity-50"
                   >
                     {adjSaving ? "Saving…" : "Save"}
                   </button>

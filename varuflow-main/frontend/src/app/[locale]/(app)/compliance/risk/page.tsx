@@ -178,7 +178,7 @@ export default function RiskRegisterPage() {
           <h1 className="text-xl font-semibold text-gray-900">Risk Register</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Identify and monitor operational, financial, and strategic risks.</p>
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> Add Risk
         </Button>
       </div>
@@ -188,7 +188,7 @@ export default function RiskRegisterPage() {
         {["all", "identified", "monitoring", "mitigating", "resolved", "accepted"].map((s) => (
           <button key={s} type="button" onClick={() => setStatusFilter(s)}
             className={`rounded-full px-3 py-1 text-xs font-medium capitalize transition-colors ${
-              statusFilter === s ? "bg-[#1a2332] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              statusFilter === s ? "bg-[var(--vf-brand-primary)] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}>
             {s === "all" ? "All" : s}
           </button>
@@ -197,16 +197,16 @@ export default function RiskRegisterPage() {
 
       {/* New risk form */}
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">New Risk</h3>
           <input value={newForm.title} onChange={(e) => setNewForm((f) => ({ ...f, title: e.target.value }))}
             placeholder="Risk title *"
-            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Category</label>
               <select value={newForm.category} onChange={(e) => setNewForm((f) => ({ ...f, category: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                 <option value="supply_chain">Supply Chain</option>
                 <option value="key_person">Key Person</option>
                 <option value="currency">Currency</option>
@@ -216,14 +216,14 @@ export default function RiskRegisterPage() {
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Likelihood (1-4)</label>
               <select value={newForm.likelihood} onChange={(e) => setNewForm((f) => ({ ...f, likelihood: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                 {LIKELIHOOD_OPTS.map((v) => <option key={v} value={v}>{v}</option>)}
               </select>
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Impact (1-4)</label>
               <select value={newForm.impact} onChange={(e) => setNewForm((f) => ({ ...f, impact: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                 {IMPACT_OPTS.map((v) => <option key={v} value={v}>{v}</option>)}
               </select>
             </div>
@@ -237,14 +237,14 @@ export default function RiskRegisterPage() {
           </div>
           <textarea value={newForm.description} onChange={(e) => setNewForm((f) => ({ ...f, description: e.target.value }))}
             placeholder="Description (optional)" rows={2}
-            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
           <textarea value={newForm.mitigation_plan} onChange={(e) => setNewForm((f) => ({ ...f, mitigation_plan: e.target.value }))}
             placeholder="Mitigation plan (optional)" rows={2}
-            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
             <Button disabled={actionLoading === "create"} onClick={createRisk}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               {actionLoading === "create" ? "Saving…" : "Add Risk"}
             </Button>
           </div>

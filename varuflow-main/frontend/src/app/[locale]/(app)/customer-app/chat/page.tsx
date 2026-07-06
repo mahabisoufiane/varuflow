@@ -204,7 +204,7 @@ export default function CustomerChatPage() {
             </span>
           )}
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> New Thread
         </Button>
       </div>
@@ -218,7 +218,7 @@ export default function CustomerChatPage() {
             onClick={() => setStatusFilter(t.value)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               statusFilter === t.value
-                ? "border-[#1a2332] text-[#1a2332]"
+                ? "border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]"
                 : "border-transparent text-muted-foreground hover:text-gray-700"
             }`}
           >
@@ -229,7 +229,7 @@ export default function CustomerChatPage() {
 
       {/* New thread form */}
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">New Thread</h3>
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-700">Customer ID (UUID) *</label>
@@ -237,7 +237,7 @@ export default function CustomerChatPage() {
               value={newThreadForm.customer_id}
               onChange={(e) => setNewThreadForm((f) => ({ ...f, customer_id: e.target.value }))}
               placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="space-y-1">
@@ -246,7 +246,7 @@ export default function CustomerChatPage() {
               value={newThreadForm.subject}
               onChange={(e) => setNewThreadForm((f) => ({ ...f, subject: e.target.value }))}
               placeholder="Order inquiry, delivery issue…"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="flex gap-2">
@@ -254,7 +254,7 @@ export default function CustomerChatPage() {
             <Button
               disabled={actionLoading === "create_thread"}
               onClick={createThread}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
             >
               {actionLoading === "create_thread" ? "Creating…" : "Create Thread"}
             </Button>
@@ -372,7 +372,7 @@ export default function CustomerChatPage() {
                         onChange={(e) => setNewMsg(e.target.value)}
                         rows={2}
                         placeholder="Type a reply…"
-                        className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332] bg-white"
+                        className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)] bg-white"
                       />
                       {showAttachment && (
                         <div className="flex items-center gap-2">
@@ -380,7 +380,7 @@ export default function CustomerChatPage() {
                             value={attachmentUrl}
                             onChange={(e) => setAttachmentUrl(e.target.value)}
                             placeholder="Attachment URL (optional)"
-                            className="flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332] bg-white"
+                            className="flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)] bg-white"
                           />
                           <button type="button" onClick={() => { setShowAttachment(false); setAttachmentUrl(""); }}>
                             <X className="h-4 w-4 text-muted-foreground" />
@@ -427,7 +427,7 @@ export default function CustomerChatPage() {
                             size="sm"
                             disabled={sendingMsg || !newMsg.trim()}
                             onClick={() => sendMessage(thread.id)}
-                            className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-1"
+                            className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-1"
                           >
                             {sendingMsg ? (
                               <RefreshCw className="h-3.5 w-3.5 animate-spin" />

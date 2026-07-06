@@ -54,7 +54,7 @@ export default function QuoteAnalyticsPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <BarChart2 size={22} className="text-[#1a2332]" />
+        <BarChart2 size={22} className="text-[var(--vf-text-primary)]" />
         <h1 className="text-2xl font-bold">Quote Analytics</h1>
       </div>
 

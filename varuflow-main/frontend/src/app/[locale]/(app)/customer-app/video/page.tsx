@@ -156,7 +156,7 @@ export default function VideoConsultationsPage() {
             Schedule and manage video sessions with customers.
           </p>
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> Schedule Consultation
         </Button>
       </div>
@@ -178,7 +178,7 @@ export default function VideoConsultationsPage() {
             onClick={() => setStatusFilter(t.value)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               statusFilter === t.value
-                ? "border-[#1a2332] text-[#1a2332]"
+                ? "border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]"
                 : "border-transparent text-muted-foreground hover:text-gray-700"
             }`}
           >
@@ -189,7 +189,7 @@ export default function VideoConsultationsPage() {
 
       {/* New consultation form */}
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">Schedule Video Consultation</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -198,7 +198,7 @@ export default function VideoConsultationsPage() {
                 value={newForm.customer_id}
                 onChange={(e) => setNewForm((f) => ({ ...f, customer_id: e.target.value }))}
                 placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
             <div className="space-y-1">
@@ -207,7 +207,7 @@ export default function VideoConsultationsPage() {
                 type="datetime-local"
                 value={newForm.scheduled_for}
                 onChange={(e) => setNewForm((f) => ({ ...f, scheduled_for: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
           </div>
@@ -217,7 +217,7 @@ export default function VideoConsultationsPage() {
               <select
                 value={newForm.provider}
                 onChange={(e) => setNewForm((f) => ({ ...f, provider: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332] bg-white"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)] bg-white"
               >
                 <option value="daily">Daily.co</option>
                 <option value="twilio">Twilio</option>
@@ -229,7 +229,7 @@ export default function VideoConsultationsPage() {
                 value={newForm.staff_user_id}
                 onChange={(e) => setNewForm((f) => ({ ...f, staff_user_id: e.target.value }))}
                 placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
           </div>
@@ -240,7 +240,7 @@ export default function VideoConsultationsPage() {
               onChange={(e) => setNewForm((f) => ({ ...f, notes: e.target.value }))}
               rows={2}
               placeholder="Pre-session notes…"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="flex gap-2">
@@ -248,7 +248,7 @@ export default function VideoConsultationsPage() {
             <Button
               disabled={actionLoading === "create"}
               onClick={createConsultation}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
             >
               {actionLoading === "create" ? "Scheduling…" : "Schedule"}
             </Button>

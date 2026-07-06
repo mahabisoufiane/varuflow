@@ -47,7 +47,7 @@ function SectionTable({
   return (
     <div>
       <div className="flex items-center justify-between px-4 py-2.5 bg-[#f8f9fb] border-b">
-        <span className="text-sm font-bold text-[#1a2332] uppercase tracking-wide">{section.title}</span>
+        <span className="text-sm font-bold text-[var(--vf-text-primary)] uppercase tracking-wide">{section.title}</span>
         <span className="text-xs text-gray-400 font-medium">SEK</span>
       </div>
       {section.lines.map((line, i) => {
@@ -71,8 +71,8 @@ function SectionTable({
         );
       })}
       {/* Total row */}
-      <div className="flex items-center justify-between px-4 py-3 border-t-2 border-[#1a2332] bg-[#f8f9fb]">
-        <span className="text-sm font-bold text-[#1a2332]">{totalLabel}</span>
+      <div className="flex items-center justify-between px-4 py-3 border-t-2 border-[var(--vf-brand-primary)] bg-[#f8f9fb]">
+        <span className="text-sm font-bold text-[var(--vf-text-primary)]">{totalLabel}</span>
         <span className={`font-mono text-sm font-bold tabular-nums ${totalColor}`}>
           {fmt(section.total)}
         </span>
@@ -119,9 +119,9 @@ export default function BalanceSheetPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
-          <Scale size={22} className="text-[#1a2332]" />
+          <Scale size={22} className="text-[var(--vf-text-primary)]" />
           <div>
-            <h1 className="text-xl font-bold text-[#1a2332]">Balance Sheet</h1>
+            <h1 className="text-xl font-bold text-[var(--vf-text-primary)]">Balance Sheet</h1>
             {data && (
               <p className="text-sm text-gray-400 mt-0.5">
                 As at {data.as_of}
@@ -141,7 +141,7 @@ export default function BalanceSheetPage() {
           </div>
           <button
             onClick={apply}
-            className="px-4 py-1.5 bg-[#1a2332] text-white rounded text-sm hover:opacity-90"
+            className="px-4 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-sm hover:opacity-90"
           >
             {loading ? "Loading…" : "Apply"}
           </button>
@@ -192,7 +192,7 @@ export default function BalanceSheetPage() {
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-white border rounded-xl p-4 space-y-1">
               <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Assets</p>
-              <p className={`text-2xl font-bold ${totalAssets >= 0 ? "text-[#1a2332]" : "text-red-500"}`}>
+              <p className={`text-2xl font-bold ${totalAssets >= 0 ? "text-[var(--vf-text-primary)]" : "text-red-500"}`}>
                 {fmt(data.total_assets)}
               </p>
               <p className="text-[10px] text-gray-400">SEK</p>
@@ -241,9 +241,9 @@ export default function BalanceSheetPage() {
           </div>
 
           {/* Final reconciliation */}
-          <div className="bg-white border-2 border-[#1a2332] rounded-xl overflow-hidden">
+          <div className="bg-white border-2 border-[var(--vf-brand-primary)] rounded-xl overflow-hidden">
             <div className="px-4 py-3 flex items-center justify-between bg-[#f8f9fb] border-b">
-              <span className="text-sm font-bold text-[#1a2332]">Reconciliation</span>
+              <span className="text-sm font-bold text-[var(--vf-text-primary)]">Reconciliation</span>
             </div>
             <div className="divide-y">
               <div className="flex items-center justify-between px-4 py-3">
@@ -255,7 +255,7 @@ export default function BalanceSheetPage() {
                 <span className="font-mono text-sm font-semibold">{fmt(data.total_liabilities_and_equity)} SEK</span>
               </div>
               <div className="flex items-center justify-between px-4 py-3 bg-gray-50">
-                <span className="text-sm font-bold text-[#1a2332]">Difference</span>
+                <span className="text-sm font-bold text-[var(--vf-text-primary)]">Difference</span>
                 <span className={`font-mono text-sm font-bold ${
                   Math.abs(totalAssets - totalLE) < 1 ? "text-green-600" : "text-red-500"
                 }`}>

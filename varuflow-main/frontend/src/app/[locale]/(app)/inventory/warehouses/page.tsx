@@ -67,10 +67,10 @@ export default function WarehousesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1a2332]">Warehouses</h1>
+          <h1 className="text-2xl font-bold text-[var(--vf-text-primary)]">Warehouses</h1>
           <p className="text-sm text-muted-foreground">Manage storage locations</p>
         </div>
-        <Button size="sm" className="bg-[#1a2332] hover:bg-[#2a3342] text-white" onClick={openCreate}>
+        <Button size="sm" className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white" onClick={openCreate}>
           <Plus className="mr-1.5 h-3.5 w-3.5" />New warehouse
         </Button>
       </div>
@@ -84,7 +84,7 @@ export default function WarehousesPage() {
           <Warehouse className="mx-auto h-10 w-10 text-gray-300" />
           <h3 className="mt-3 font-medium text-gray-900">No warehouses yet</h3>
           <p className="mt-1 text-sm text-muted-foreground">Add your first warehouse to start tracking stock.</p>
-          <Button size="sm" className="mt-4 bg-[#1a2332] hover:bg-[#2a3342] text-white" onClick={openCreate}>
+          <Button size="sm" className="mt-4 bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white" onClick={openCreate}>
             <Plus className="mr-1.5 h-3.5 w-3.5" />Add warehouse
           </Button>
         </div>
@@ -133,17 +133,17 @@ export default function WarehousesPage() {
             <div className="space-y-1.5">
               <Label htmlFor="wh-name">Name *</Label>
               <input id="wh-name" required value={name} onChange={(e) => setName(e.target.value)}
-                placeholder="Stockholm — Main" className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                placeholder="Stockholm — Main" className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="wh-loc">Location</Label>
               <input id="wh-loc" value={location} onChange={(e) => setLocation(e.target.value)}
-                placeholder="Industrivägen 5, Stockholm" className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                placeholder="Industrivägen 5, Stockholm" className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <div className="flex justify-end gap-3 pt-2">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={saving} className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              <Button type="submit" disabled={saving} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                 {saving ? "Saving…" : editing ? "Save changes" : "Create"}
               </Button>
             </div>

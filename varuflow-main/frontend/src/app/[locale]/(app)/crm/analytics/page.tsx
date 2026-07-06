@@ -68,7 +68,7 @@ export default function CrmAnalyticsPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-2">
-        <BarChart2 size={22} className="text-[#1a2332]" />
+        <BarChart2 size={22} className="text-[var(--vf-text-primary)]" />
         <h1 className="text-2xl font-bold">CRM Analytics</h1>
       </div>
 
@@ -113,7 +113,7 @@ export default function CrmAnalyticsPage() {
                 <span>{count}</span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-[#1a2332] rounded-full" style={{ width: `${(count / maxStage) * 100}%` }} />
+                <div className="h-full bg-[var(--vf-brand-primary)] rounded-full" style={{ width: `${(count / maxStage) * 100}%` }} />
               </div>
             </div>
           ))}

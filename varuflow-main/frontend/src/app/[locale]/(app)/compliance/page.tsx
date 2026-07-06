@@ -70,7 +70,7 @@ export default function ComplianceHubPage() {
                   <Icon className={`h-5 w-5 ${card.color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 group-hover:text-[#1a2332]">{card.title}</p>
+                  <p className="text-sm font-semibold text-gray-900 group-hover:text-[var(--vf-text-primary)]">{card.title}</p>
                   <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{card.description}</p>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5 group-hover:text-gray-700" />

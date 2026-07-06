@@ -68,8 +68,8 @@ function ModuleStatsBar({ cards, activeModule, onSelect }: {
             onClick={() => onSelect(active ? null : m)}
             className={`rounded-xl border p-4 text-left transition-all ${
               active
-                ? "border-[#1a2332] bg-[#1a2332] text-white"
-                : "border-gray-200 bg-white hover:border-[#1a2332]/40"
+                ? "border-[var(--vf-brand-primary)] bg-[var(--vf-brand-primary)] text-white"
+                : "border-gray-200 bg-white hover:border-[var(--vf-brand-primary)]/40"
             }`}
           >
             <div className="flex items-center justify-between mb-2">
@@ -163,10 +163,10 @@ export default function AiAdvisorPage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1a2332]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--vf-brand-primary)]">
               <Bot className="h-4 w-4 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-[#1a2332]">AI Advisor</h1>
+            <h1 className="text-2xl font-bold text-[var(--vf-text-primary)]">AI Advisor</h1>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {loading ? "Analyzing your business data…" : (

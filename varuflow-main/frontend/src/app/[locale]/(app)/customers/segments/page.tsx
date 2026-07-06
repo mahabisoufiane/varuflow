@@ -60,12 +60,12 @@ export default function SegmentsListPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1a2332]">Customer Segments</h1>
+          <h1 className="text-2xl font-bold text-[var(--vf-text-primary)]">Customer Segments</h1>
           <p className="text-sm text-muted-foreground">
             {rows.length} segment{rows.length === 1 ? "" : "s"}
           </p>
         </div>
-        <Button asChild size="sm" className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+        <Button asChild size="sm" className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
           <Link href="/customers/segments/new">
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             New segment
@@ -89,7 +89,7 @@ export default function SegmentsListPage() {
           <Button
             asChild
             size="sm"
-            className="mt-4 bg-[#1a2332] hover:bg-[#2a3342] text-white"
+            className="mt-4 bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
           >
             <Link href="/customers/segments/new">
               <Plus className="mr-1.5 h-3.5 w-3.5" />
@@ -113,7 +113,7 @@ export default function SegmentsListPage() {
               {rows.map((s) => (
                 <tr key={s.id} className="border-t">
                   <td className="px-4 py-2">
-                    <Link href={`/customers/segments/${s.id}`} className="font-medium text-[#1a2332] hover:underline">
+                    <Link href={`/customers/segments/${s.id}`} className="font-medium text-[var(--vf-text-primary)] hover:underline">
                       {s.name}
                     </Link>
                     {s.description && (

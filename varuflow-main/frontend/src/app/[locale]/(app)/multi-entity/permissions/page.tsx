@@ -135,7 +135,7 @@ export default function MultiEntityPermissionsPage() {
             For example, a user can be Admin in HQ but Viewer in a branch.
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowForm(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> Assign Role
         </Button>
       </div>
@@ -149,7 +149,7 @@ export default function MultiEntityPermissionsPage() {
 
       {/* Assign form */}
       {showForm && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">Assign Cross-Entity Role</h3>
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-700">User ID (UUID)</label>
@@ -157,7 +157,7 @@ export default function MultiEntityPermissionsPage() {
               placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
               value={form.user_id}
               onChange={(e) => setForm((f) => ({ ...f, user_id: e.target.value }))}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
             <p className="text-xs text-muted-foreground">Find the user ID from Settings → Team → member row.</p>
           </div>
@@ -167,7 +167,7 @@ export default function MultiEntityPermissionsPage() {
               <select
                 value={form.org_id}
                 onChange={(e) => setForm((f) => ({ ...f, org_id: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               >
                 <option value="">Select entity…</option>
                 {entities.map((e) => (
@@ -180,7 +180,7 @@ export default function MultiEntityPermissionsPage() {
               <select
                 value={form.role}
                 onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               >
                 <option value="owner">Owner</option>
                 <option value="admin">Admin</option>
@@ -191,7 +191,7 @@ export default function MultiEntityPermissionsPage() {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
-            <Button disabled={saving} onClick={assignRole} className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+            <Button disabled={saving} onClick={assignRole} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               {saving ? "Saving…" : "Assign Role"}
             </Button>
           </div>

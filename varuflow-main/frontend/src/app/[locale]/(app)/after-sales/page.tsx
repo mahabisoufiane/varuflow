@@ -80,7 +80,7 @@ export default function AfterSalesPage() {
       <h1 className="text-2xl font-bold">After-Sales</h1>
       <div className="flex gap-2 border-b">
         {tabs.map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === t ? "border-[#1a2332] text-[#1a2332]" : "border-transparent text-gray-500 hover:text-gray-800"}`}>
+          <button key={t} onClick={() => setTab(t)} className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === t ? "border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]" : "border-transparent text-gray-500 hover:text-gray-800"}`}>
             {TAB_LABELS[t]}
           </button>
         ))}
@@ -113,7 +113,7 @@ export default function AfterSalesPage() {
                     </select>
                     <textarea value={resolution} onChange={e => setResolution(e.target.value)} placeholder="Resolution notes…" rows={2} className="w-full border rounded px-2 py-1 text-xs" />
                     <div className="flex gap-2">
-                      <button onClick={() => resolveReturn(r.id)} className="px-3 py-1 bg-[#1a2332] text-white text-xs rounded hover:opacity-90">Save</button>
+                      <button onClick={() => resolveReturn(r.id)} className="px-3 py-1 bg-[var(--vf-brand-primary)] text-white text-xs rounded hover:opacity-90">Save</button>
                       <button onClick={() => setResolveId("")} className="px-3 py-1 border text-xs rounded">Cancel</button>
                     </div>
                   </div>

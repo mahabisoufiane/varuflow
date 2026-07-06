@@ -153,7 +153,7 @@ export default function SupplierSustainabilityPage() {
           <p className="text-sm text-muted-foreground mt-0.5">Rate and monitor supplier ESG performance.</p>
         </div>
         <Button onClick={() => { setForm(EMPTY_FORM); setShowForm("new"); }}
-          className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+          className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> Add Rating
         </Button>
       </div>
@@ -163,7 +163,7 @@ export default function SupplierSustainabilityPage() {
         {["all", "low", "medium", "high", "critical"].map((r) => (
           <button key={r} type="button" onClick={() => setRiskFilter(r)}
             className={`rounded-full px-3 py-1 text-xs font-medium capitalize transition-colors ${
-              riskFilter === r ? "bg-[#1a2332] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              riskFilter === r ? "bg-[var(--vf-brand-primary)] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}>
             {r === "all" ? "All" : r}
           </button>
@@ -172,37 +172,37 @@ export default function SupplierSustainabilityPage() {
 
       {/* Form */}
       {showForm && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">{showForm === "new" ? "New Rating" : "Edit Rating"}</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div className="space-y-1 col-span-2 sm:col-span-1">
               <label className="text-xs font-medium text-gray-700">Supplier ID (UUID) *</label>
               <input value={form.supplier_id} onChange={(e) => setForm((f) => ({ ...f, supplier_id: e.target.value }))}
                 placeholder="UUID from your supplier record"
-                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Environmental (0-100)</label>
               <input type="number" min="0" max="100" value={form.environmental_score}
                 onChange={(e) => setForm((f) => ({ ...f, environmental_score: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Social (0-100)</label>
               <input type="number" min="0" max="100" value={form.social_score}
                 onChange={(e) => setForm((f) => ({ ...f, social_score: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Governance (0-100)</label>
               <input type="number" min="0" max="100" value={form.governance_score}
                 onChange={(e) => setForm((f) => ({ ...f, governance_score: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Risk Level</label>
               <select value={form.risk_level} onChange={(e) => setForm((f) => ({ ...f, risk_level: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
@@ -214,7 +214,7 @@ export default function SupplierSustainabilityPage() {
               <input value={form.certifications}
                 onChange={(e) => setForm((f) => ({ ...f, certifications: e.target.value }))}
                 placeholder="ISO 14001, SA8000, Fair Trade…"
-                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
@@ -226,7 +226,7 @@ export default function SupplierSustainabilityPage() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowForm(null)}>Cancel</Button>
             <Button disabled={actionLoading === "save"} onClick={saveRating}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               {actionLoading === "save" ? "Saving…" : "Save Rating"}
             </Button>
           </div>
@@ -278,7 +278,7 @@ export default function SupplierSustainabilityPage() {
                 <span className="h-4 w-4 flex-shrink-0" />
               )}
               <button type="button" onClick={() => openEdit(r)}
-                className="text-muted-foreground hover:text-[#1a2332] transition-colors flex-shrink-0">
+                className="text-muted-foreground hover:text-[var(--vf-text-primary)] transition-colors flex-shrink-0">
                 <Edit3 className="h-4 w-4" />
               </button>
             </div>

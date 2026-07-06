@@ -181,7 +181,7 @@ export default function AttributionPage() {
           <h1 className="text-xl font-semibold text-gray-900">Marketing Attribution</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Track which channels bring the highest LTV customers.</p>
         </div>
-        <Button onClick={() => setShowEventModal(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowEventModal(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> Log Event
         </Button>
       </div>
@@ -189,10 +189,10 @@ export default function AttributionPage() {
       {/* Date filter */}
       <div className="flex items-center gap-3">
         <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
         <span className="text-sm text-gray-500">to</span>
         <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
         <Button variant="outline" size="sm" onClick={load}>Apply</Button>
       </div>
 
@@ -256,22 +256,22 @@ export default function AttributionPage() {
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-gray-900">Attribution Sources</p>
               <Button size="sm" onClick={() => setShowSourceForm(true)}
-                className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+                className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
                 <PlusCircle className="h-3 w-3" /> Add Source
               </Button>
             </div>
             {showSourceForm && (
-              <div className="rounded-xl border border-[#1a2332]/20 bg-white p-4 shadow-sm space-y-3">
+              <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-4 shadow-sm space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-gray-700">Name *</label>
                     <input value={sourceForm.name} onChange={(e) => setSourceForm((f) => ({ ...f, name: e.target.value }))}
-                      className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                      className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-gray-700">Channel</label>
                     <select value={sourceForm.channel} onChange={(e) => setSourceForm((f) => ({ ...f, channel: e.target.value }))}
-                      className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                      className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                       {["google_ads", "referral", "organic", "social", "email", "other"].map((c) => (
                         <option key={c} value={c}>{c}</option>
                       ))}
@@ -285,14 +285,14 @@ export default function AttributionPage() {
                     <div key={key} className="space-y-1">
                       <label className="text-xs font-medium text-gray-700">{label}</label>
                       <input value={sourceForm[key]} onChange={(e) => setSourceForm((f) => ({ ...f, [key]: e.target.value }))}
-                        className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                        className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                     </div>
                   ))}
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={() => setShowSourceForm(false)}>Cancel</Button>
                   <Button size="sm" disabled={actionLoading === "src_create"} onClick={createSource}
-                    className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                    className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                     {actionLoading === "src_create" ? "Creating…" : "Add Source"}
                   </Button>
                 </div>
@@ -333,7 +333,7 @@ export default function AttributionPage() {
               <div className="space-y-1">
                 <label className="text-xs font-medium text-gray-700">Source *</label>
                 <select value={eventForm.source_id} onChange={(e) => setEventForm((f) => ({ ...f, source_id: e.target.value }))}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                   <option value="">Select source…</option>
                   {sources.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
@@ -342,14 +342,14 @@ export default function AttributionPage() {
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700">Event Type</label>
                   <select value={eventForm.event_type} onChange={(e) => setEventForm((f) => ({ ...f, event_type: e.target.value }))}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                     {["lead", "conversion", "purchase"].map((t) => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700">Channel</label>
                   <select value={eventForm.channel} onChange={(e) => setEventForm((f) => ({ ...f, channel: e.target.value }))}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                     {["google_ads", "referral", "organic", "social", "email", "other"].map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
@@ -358,14 +358,14 @@ export default function AttributionPage() {
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700">Revenue (optional)</label>
                   <input type="number" value={eventForm.revenue} onChange={(e) => setEventForm((f) => ({ ...f, revenue: e.target.value }))}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
               </div>
             </div>
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setShowEventModal(false)}>Cancel</Button>
               <Button disabled={actionLoading === "event_log"} onClick={logEvent}
-                className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                 {actionLoading === "event_log" ? "Logging…" : "Log Event"}
               </Button>
             </div>

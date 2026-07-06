@@ -209,7 +209,7 @@ export default function CrmPipelinePage() {
       <div className="px-6 pt-5 pb-3 border-b bg-white shrink-0">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <Target size={20} className="text-[#1a2332]" />
+            <Target size={20} className="text-[var(--vf-text-primary)]" />
             <h1 className="text-xl font-bold">Sales Pipeline</h1>
             {!loading && (
               <span className="text-xs text-gray-400 ml-2">
@@ -226,7 +226,7 @@ export default function CrmPipelinePage() {
             </Link>
             <button
               onClick={() => setShowNew(s => !s)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a2332] text-white rounded text-sm hover:opacity-90"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-sm hover:opacity-90"
             >
               <Plus size={14} /> New Deal
             </button>
@@ -239,7 +239,7 @@ export default function CrmPipelinePage() {
             <div className="flex flex-wrap gap-2">
               <input
                 autoFocus
-                className="flex-1 min-w-48 border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="flex-1 min-w-48 border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                 placeholder="Deal title…"
                 value={newTitle}
                 onChange={e => setNewTitle(e.target.value)}
@@ -268,7 +268,7 @@ export default function CrmPipelinePage() {
               <button
                 onClick={handleCreate}
                 disabled={saving || !newTitle.trim()}
-                className="px-4 py-1.5 bg-[#1a2332] text-white rounded text-sm hover:opacity-90 disabled:opacity-50"
+                className="px-4 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-sm hover:opacity-90 disabled:opacity-50"
               >
                 {saving ? <Loader2 size={14} className="animate-spin" /> : "Create"}
               </button>
@@ -392,7 +392,7 @@ export default function CrmPipelinePage() {
                 value={closeReason}
                 onChange={e => setCloseReason(e.target.value)}
                 placeholder="e.g. Price, competitor, timing…"
-                className="w-full border rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="w-full border rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
             <div className="flex gap-3">
@@ -439,7 +439,7 @@ export default function CrmPipelinePage() {
                 <button
                   key={s.slug}
                   onClick={() => moveDeal(selectedDeal, s.slug)}
-                  className={`px-2 py-0.5 rounded text-xs font-medium border transition-colors ${selectedDeal.stage === s.slug ? "bg-[#1a2332] text-white border-[#1a2332]" : "hover:bg-gray-50"}`}
+                  className={`px-2 py-0.5 rounded text-xs font-medium border transition-colors ${selectedDeal.stage === s.slug ? "bg-[var(--vf-brand-primary)] text-white border-[var(--vf-brand-primary)]" : "hover:bg-gray-50"}`}
                 >
                   {s.name}
                 </button>
@@ -515,7 +515,7 @@ export default function CrmPipelinePage() {
                   <button
                     key={t}
                     onClick={() => setActivityType(t)}
-                    className={`px-2 py-1 rounded text-xs capitalize ${activityType === t ? "bg-[#1a2332] text-white" : "bg-gray-100 hover:bg-gray-200"}`}
+                    className={`px-2 py-1 rounded text-xs capitalize ${activityType === t ? "bg-[var(--vf-brand-primary)] text-white" : "bg-gray-100 hover:bg-gray-200"}`}
                   >
                     {t}
                   </button>
@@ -526,12 +526,12 @@ export default function CrmPipelinePage() {
                 value={activityNote}
                 onChange={e => setActivityNote(e.target.value)}
                 placeholder="Add a note…"
-                className="w-full border rounded px-2 py-1.5 text-xs resize-none focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="w-full border rounded px-2 py-1.5 text-xs resize-none focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
               <button
                 onClick={handleLogActivity}
                 disabled={loggingActivity || !activityNote.trim()}
-                className="w-full py-1.5 bg-[#1a2332] text-white rounded text-xs hover:opacity-90 disabled:opacity-40"
+                className="w-full py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-xs hover:opacity-90 disabled:opacity-40"
               >
                 {loggingActivity ? <Loader2 size={12} className="animate-spin mx-auto" /> : "Log"}
               </button>

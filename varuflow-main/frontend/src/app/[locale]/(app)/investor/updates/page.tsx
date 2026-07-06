@@ -152,7 +152,7 @@ export default function InvestorUpdatesPage() {
           <h1 className="text-xl font-semibold text-gray-900">Investor Updates</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Monthly investor updates with revenue snapshots.</p>
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> New Update
         </Button>
       </div>
@@ -175,37 +175,37 @@ export default function InvestorUpdatesPage() {
 
       {/* New update form */}
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">Create Investor Update</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Title *</label>
               <input value={newForm.title} onChange={(e) => setNewForm((f) => ({ ...f, title: e.target.value }))}
                 placeholder="Q1 2026 Investor Update"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Period Month *</label>
               <input type="month" value={newForm.period_month} onChange={(e) => setNewForm((f) => ({ ...f, period_month: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Revenue Snapshot</label>
               <input type="number" value={newForm.revenue_snapshot} onChange={(e) => setNewForm((f) => ({ ...f, revenue_snapshot: e.target.value }))}
                 placeholder="0"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Burn Rate</label>
               <input type="number" value={newForm.burn_rate} onChange={(e) => setNewForm((f) => ({ ...f, burn_rate: e.target.value }))}
                 placeholder="0"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Runway (months)</label>
               <input type="number" value={newForm.runway_months} onChange={(e) => setNewForm((f) => ({ ...f, runway_months: e.target.value }))}
                 placeholder="12"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
           </div>
           {[
@@ -216,13 +216,13 @@ export default function InvestorUpdatesPage() {
             <div key={key} className="space-y-1">
               <label className="text-xs font-medium text-gray-700">{label}</label>
               <textarea rows={2} value={newForm[key]} onChange={(e) => setNewForm((f) => ({ ...f, [key]: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
           ))}
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
             <Button disabled={actionLoading === "create"} onClick={createUpdate}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               {actionLoading === "create" ? "Creating…" : "Create Update"}
             </Button>
           </div>
@@ -255,7 +255,7 @@ export default function InvestorUpdatesPage() {
                     </span>
                     {u.status === "draft" && (
                       <Button size="sm" onClick={(e) => { e.stopPropagation(); setSendModal({ id: u.id, emails: "" }); }}
-                        className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+                        className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
                         <Send className="h-3 w-3" /> Send
                       </Button>
                     )}
@@ -291,11 +291,11 @@ export default function InvestorUpdatesPage() {
             <textarea rows={5} value={sendModal.emails}
               onChange={(e) => setSendModal((m) => m ? { ...m, emails: e.target.value } : null)}
               placeholder={"investor@example.com\nboard@example.com"}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setSendModal(null)}>Cancel</Button>
               <Button disabled={actionLoading?.endsWith("_send")} onClick={sendUpdate}
-                className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                 {actionLoading?.endsWith("_send") ? "Sending…" : "Send"}
               </Button>
             </div>

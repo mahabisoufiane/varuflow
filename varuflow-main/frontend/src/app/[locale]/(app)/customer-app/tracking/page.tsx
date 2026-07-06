@@ -149,7 +149,7 @@ export default function TrackingPage() {
       </div>
 
       {/* Start new session form */}
-      <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-4">
+      <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-4">
         <h3 className="text-sm font-semibold text-gray-900">Start New Session</h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
@@ -158,7 +158,7 @@ export default function TrackingPage() {
               value={startForm.appointment_id}
               onChange={(e) => setStartForm((f) => ({ ...f, appointment_id: e.target.value }))}
               placeholder="UUID"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="space-y-1">
@@ -167,7 +167,7 @@ export default function TrackingPage() {
               value={startForm.customer_id}
               onChange={(e) => setStartForm((f) => ({ ...f, customer_id: e.target.value }))}
               placeholder="UUID"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="space-y-1">
@@ -178,7 +178,7 @@ export default function TrackingPage() {
               value={startForm.destination_lat}
               onChange={(e) => setStartForm((f) => ({ ...f, destination_lat: e.target.value }))}
               placeholder="59.3293"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="space-y-1">
@@ -189,12 +189,12 @@ export default function TrackingPage() {
               value={startForm.destination_lng}
               onChange={(e) => setStartForm((f) => ({ ...f, destination_lng: e.target.value }))}
               placeholder="18.0686"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
         </div>
         <Button disabled={actionLoading === "start"} onClick={startSession}
-          className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+          className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           {actionLoading === "start" ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
           Start Tracking
         </Button>
@@ -280,7 +280,7 @@ export default function TrackingPage() {
                             type="number" step="any"
                             value={locationForm[s.id]?.lat ?? ""}
                             onChange={(e) => setLocationForm((f) => ({ ...f, [s.id]: { ...f[s.id], lat: e.target.value } }))}
-                            className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                            className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                           />
                         </div>
                         <div className="space-y-1">
@@ -289,7 +289,7 @@ export default function TrackingPage() {
                             type="number" step="any"
                             value={locationForm[s.id]?.lng ?? ""}
                             onChange={(e) => setLocationForm((f) => ({ ...f, [s.id]: { ...f[s.id], lng: e.target.value } }))}
-                            className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                            className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                           />
                         </div>
                         <div className="space-y-1">
@@ -298,13 +298,13 @@ export default function TrackingPage() {
                             type="number"
                             value={locationForm[s.id]?.eta ?? ""}
                             onChange={(e) => setLocationForm((f) => ({ ...f, [s.id]: { ...f[s.id], eta: e.target.value } }))}
-                            className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                            className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                           />
                         </div>
                       </div>
                       <div className="flex gap-2">
                         <Button size="sm" disabled={actionLoading === "loc_" + s.id} onClick={() => updateLocation(s.id)}
-                          className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-1">
+                          className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-1">
                           {actionLoading === "loc_" + s.id ? <RefreshCw className="h-3 w-3 animate-spin" /> : null}
                           Save
                         </Button>

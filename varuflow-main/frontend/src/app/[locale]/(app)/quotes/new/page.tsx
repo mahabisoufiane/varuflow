@@ -12,7 +12,7 @@ interface Customer { id: string; company_name: string; }
 interface LineItem { description: string; quantity: string; unit_price: string; }
 
 const inputCls =
-  "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]";
+  "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]";
 
 const labelCls = "block text-xs font-medium text-gray-600 mb-1";
 
@@ -95,7 +95,7 @@ export default function NewQuotePage() {
         <Link href="/quotes" className="text-gray-400 hover:text-gray-700 transition-colors">
           <ArrowLeft className="h-4 w-4" />
         </Link>
-        <h1 className="text-xl font-bold text-[#1a2332]">New Quote</h1>
+        <h1 className="text-xl font-bold text-[var(--vf-text-primary)]">New Quote</h1>
       </div>
 
       {/* Header */}
@@ -247,7 +247,7 @@ export default function NewQuotePage() {
 
         <div className="border-t pt-3 text-right">
           <p className="text-xs text-gray-500">Total (ex. VAT)</p>
-          <p className="text-lg font-bold text-[#1a2332]">
+          <p className="text-lg font-bold text-[var(--vf-text-primary)]">
             {grandTotal.toLocaleString("sv-SE", { minimumFractionDigits: 2 })} {form.currency}
           </p>
         </div>
@@ -258,7 +258,7 @@ export default function NewQuotePage() {
         <button
           onClick={submit}
           disabled={submitting}
-          className="rounded-md bg-[#1a2332] px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60 hover:bg-[#243249] transition-colors"
+          className="rounded-md bg-[var(--vf-brand-primary)] px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60 hover:bg-[#243249] transition-colors"
         >
           {submitting ? "Creating…" : "Create Quote"}
         </button>

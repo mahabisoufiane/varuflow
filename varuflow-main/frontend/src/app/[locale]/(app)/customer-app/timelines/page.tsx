@@ -175,7 +175,7 @@ export default function TimelinesPage() {
         {/* Left panel */}
         <div className="col-span-2 space-y-4">
           {/* Create form */}
-          <div className="rounded-xl border border-[#1a2332]/20 bg-white p-4 shadow-sm space-y-3">
+          <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-4 shadow-sm space-y-3">
             <h3 className="text-sm font-semibold text-gray-900">New Timeline</h3>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Title *</label>
@@ -183,7 +183,7 @@ export default function TimelinesPage() {
                 value={createForm.title}
                 onChange={(e) => setCreateForm((f) => ({ ...f, title: e.target.value }))}
                 placeholder="Customer visit Apr 12"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
             <div className="space-y-1">
@@ -192,13 +192,13 @@ export default function TimelinesPage() {
                 value={createForm.appointment_id}
                 onChange={(e) => setCreateForm((f) => ({ ...f, appointment_id: e.target.value }))}
                 placeholder="UUID"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
             <Button
               disabled={actionLoading === "create"}
               onClick={createTimeline}
-              className="w-full bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2"
+              className="w-full bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2"
             >
               {actionLoading === "create" ? <RefreshCw className="h-4 w-4 animate-spin" /> : <PlusCircle className="h-4 w-4" />}
               Create Timeline
@@ -251,10 +251,10 @@ export default function TimelinesPage() {
                     <input
                       value={titleDraft}
                       onChange={(e) => setTitleDraft(e.target.value)}
-                      className="flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                      className="flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                     />
                     <Button size="sm" onClick={saveTitle} disabled={actionLoading === "title"}
-                      className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                      className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                       {actionLoading === "title" ? <RefreshCw className="h-3 w-3 animate-spin" /> : "Save"}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setEditingTitle(false)}>Cancel</Button>
@@ -372,7 +372,7 @@ export default function TimelinesPage() {
                       value={stageForm.stage}
                       onChange={(e) => setStageForm((f) => ({ ...f, stage: e.target.value }))}
                       placeholder="preparation"
-                      className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                      className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                     />
                   </div>
                   <div className="space-y-1">
@@ -381,7 +381,7 @@ export default function TimelinesPage() {
                       value={stageForm.label}
                       onChange={(e) => setStageForm((f) => ({ ...f, label: e.target.value }))}
                       placeholder="Preparing materials"
-                      className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                      className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                     />
                   </div>
                 </div>
@@ -391,11 +391,11 @@ export default function TimelinesPage() {
                     value={stageForm.description}
                     onChange={(e) => setStageForm((f) => ({ ...f, description: e.target.value }))}
                     placeholder="Optional details"
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                   />
                 </div>
                 <Button disabled={actionLoading === "add_stage"} onClick={addStage}
-                  className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+                  className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
                   {actionLoading === "add_stage" ? <RefreshCw className="h-4 w-4 animate-spin" /> : <PlusCircle className="h-4 w-4" />}
                   Add Stage
                 </Button>

@@ -271,7 +271,7 @@ export default function RemindersPage() {
             User-defined recurring reminders and task triggers.
           </p>
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> New Reminder
         </Button>
       </div>
@@ -296,7 +296,7 @@ export default function RemindersPage() {
               setActiveOnly(e.target.checked);
               setTimeout(() => load(), 0);
             }}
-            className="h-4 w-4 rounded border-gray-300 accent-[#1a2332]"
+            className="h-4 w-4 rounded border-gray-300 accent-[var(--vf-brand-primary)]"
           />
           Active only
         </label>
@@ -304,7 +304,7 @@ export default function RemindersPage() {
 
       {/* New reminder form */}
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">Create Reminder</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -313,7 +313,7 @@ export default function RemindersPage() {
                 value={newForm.title}
                 onChange={(e) => setNewForm((f) => ({ ...f, title: e.target.value }))}
                 placeholder="Monthly stock count"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
             <div className="space-y-1">
@@ -321,7 +321,7 @@ export default function RemindersPage() {
               <select
                 value={newForm.frequency}
                 onChange={(e) => setNewForm((f) => ({ ...f, frequency: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               >
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
@@ -336,7 +336,7 @@ export default function RemindersPage() {
                 type="time"
                 value={newForm.time_of_day}
                 onChange={(e) => setNewForm((f) => ({ ...f, time_of_day: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
             {newForm.frequency === "weekly" && (
@@ -345,7 +345,7 @@ export default function RemindersPage() {
                 <select
                   value={newForm.day_of_week}
                   onChange={(e) => setNewForm((f) => ({ ...f, day_of_week: e.target.value }))}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                 >
                   {DAYS_OF_WEEK.map((d) => (
                     <option key={d} value={d}>{d}</option>
@@ -362,7 +362,7 @@ export default function RemindersPage() {
                   max={31}
                   value={newForm.day_of_month}
                   onChange={(e) => setNewForm((f) => ({ ...f, day_of_month: e.target.value }))}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                 />
               </div>
             )}
@@ -373,7 +373,7 @@ export default function RemindersPage() {
               value={newForm.description}
               onChange={(e) => setNewForm((f) => ({ ...f, description: e.target.value }))}
               placeholder="Optional description…"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="space-y-1">
@@ -382,7 +382,7 @@ export default function RemindersPage() {
               value={newForm.assigned_to_user_id}
               onChange={(e) => setNewForm((f) => ({ ...f, assigned_to_user_id: e.target.value }))}
               placeholder="UUID…"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="flex gap-2">
@@ -390,7 +390,7 @@ export default function RemindersPage() {
             <Button
               disabled={actionLoading === "create"}
               onClick={createReminder}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
             >
               {actionLoading === "create" ? "Creating…" : "Create Reminder"}
             </Button>

@@ -128,7 +128,7 @@ export default function LocalPaymentsPage() {
       <div className="flex gap-1 border-b">
         {(["providers", "sessions"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium capitalize ${tab === t ? "border-b-2 border-[#1a2332] text-[#1a2332]" : "text-gray-500"}`}>
+            className={`px-4 py-2 text-sm font-medium capitalize ${tab === t ? "border-b-2 border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]" : "text-gray-500"}`}>
             {t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}

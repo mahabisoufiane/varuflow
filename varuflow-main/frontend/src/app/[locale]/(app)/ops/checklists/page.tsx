@@ -293,7 +293,7 @@ export default function ChecklistsPage() {
           <p className="text-sm text-muted-foreground mt-0.5">Reusable checklists for recurring routines.</p>
         </div>
         {tab === "templates" && (
-          <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+          <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
             <PlusCircle className="h-4 w-4" /> New Template
           </Button>
         )}
@@ -366,7 +366,7 @@ export default function ChecklistsPage() {
             <Button
               disabled={actionLoading === "create"}
               onClick={createTemplate}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
             >
               {actionLoading === "create" ? "Creating…" : "Create Template"}
             </Button>
@@ -424,7 +424,7 @@ export default function ChecklistsPage() {
                         size="sm"
                         disabled={actionLoading === tmpl.id + "_start"}
                         onClick={() => startRun(tmpl.id)}
-                        className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+                        className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
                       >
                         {actionLoading === tmpl.id + "_start"
                           ? <RefreshCw className="h-3 w-3 animate-spin" />
@@ -477,7 +477,7 @@ export default function ChecklistsPage() {
                       )}
 
                       {showAddItem === tmpl.id ? (
-                        <div className="bg-white rounded-md border border-[#1a2332]/20 p-3 space-y-2">
+                        <div className="bg-white rounded-md border border-[var(--vf-brand-primary)]/20 p-3 space-y-2">
                           <div className="grid grid-cols-3 gap-2">
                             <div className="col-span-2 space-y-1">
                               <label className="text-xs font-medium text-gray-700">Title *</label>
@@ -485,7 +485,7 @@ export default function ChecklistsPage() {
                                 value={newItem.title}
                                 onChange={(e) => setNewItem((n) => ({ ...n, title: e.target.value }))}
                                 placeholder="Check inventory levels"
-                                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                               />
                             </div>
                             <div className="space-y-1">
@@ -494,7 +494,7 @@ export default function ChecklistsPage() {
                                 type="number"
                                 value={newItem.sort_order}
                                 onChange={(e) => setNewItem((n) => ({ ...n, sort_order: e.target.value }))}
-                                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                               />
                             </div>
                           </div>
@@ -504,7 +504,7 @@ export default function ChecklistsPage() {
                               value={newItem.description}
                               onChange={(e) => setNewItem((n) => ({ ...n, description: e.target.value }))}
                               placeholder="Optional description…"
-                              className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                              className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                             />
                           </div>
                           <div className="flex gap-2">
@@ -513,7 +513,7 @@ export default function ChecklistsPage() {
                               size="sm"
                               disabled={actionLoading === tmpl.id + "_additem"}
                               onClick={() => addItem(tmpl.id)}
-                              className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+                              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
                             >
                               Add Item
                             </Button>
@@ -606,7 +606,7 @@ export default function ChecklistsPage() {
                                       actionLoading === `${run.id}_check_${item.id}`
                                     }
                                     onChange={() => toggleCheck(run.id, item.id, item.is_checked)}
-                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 accent-[#1a2332] cursor-pointer"
+                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 accent-[var(--vf-brand-primary)] cursor-pointer"
                                   />
                                   <div className="flex-1 min-w-0">
                                     <p className={`text-sm font-medium ${item.is_checked ? "line-through text-muted-foreground" : "text-gray-900"}`}>
@@ -630,7 +630,7 @@ export default function ChecklistsPage() {
                                   onBlur={() => saveItemNotes(run.id, item.id)}
                                   placeholder="Add notes…"
                                   disabled={run.status === "completed"}
-                                  className="block w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#1a2332] disabled:bg-gray-50"
+                                  className="block w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)] disabled:bg-gray-50"
                                 />
                               </div>
                             );

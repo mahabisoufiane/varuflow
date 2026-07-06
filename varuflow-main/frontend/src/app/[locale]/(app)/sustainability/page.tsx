@@ -54,10 +54,10 @@ export default function SustainabilityHubPage() {
                   <Icon className={`h-5 w-5 ${card.color}`} />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-900 group-hover:text-[#1a2332]">{card.title}</p>
+                  <p className="text-sm font-semibold text-gray-900 group-hover:text-[var(--vf-text-primary)]">{card.title}</p>
                   <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{card.description}</p>
                 </div>
-                <div className="flex items-center gap-1 text-xs text-[#1a2332] font-medium group-hover:underline">
+                <div className="flex items-center gap-1 text-xs text-[var(--vf-text-primary)] font-medium group-hover:underline">
                   Open <ChevronRight className="h-3.5 w-3.5" />
                 </div>
               </div>

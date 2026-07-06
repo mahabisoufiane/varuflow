@@ -169,7 +169,7 @@ export default function VoiceNotesPage() {
             Inbox of all voice messages from customers and staff.
           </p>
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> Upload Voice Note
         </Button>
       </div>
@@ -184,7 +184,7 @@ export default function VoiceNotesPage() {
               onClick={() => setSenderFilter(t.value)}
               className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                 senderFilter === t.value
-                  ? "border-[#1a2332] text-[#1a2332]"
+                  ? "border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]"
                   : "border-transparent text-muted-foreground hover:text-gray-700"
               }`}
             >
@@ -197,7 +197,7 @@ export default function VoiceNotesPage() {
             type="checkbox"
             checked={unreadOnly}
             onChange={(e) => setUnreadOnly(e.target.checked)}
-            className="rounded border-gray-300 focus:ring-[#1a2332]"
+            className="rounded border-gray-300 focus:ring-[var(--vf-brand-primary)]"
           />
           Unread only
         </label>
@@ -205,7 +205,7 @@ export default function VoiceNotesPage() {
 
       {/* Upload form */}
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">Upload Voice Note</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -213,7 +213,7 @@ export default function VoiceNotesPage() {
               <select
                 value={newForm.sender_type}
                 onChange={(e) => setNewForm((f) => ({ ...f, sender_type: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332] bg-white"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)] bg-white"
               >
                 <option value="customer">Customer</option>
                 <option value="staff">Staff</option>
@@ -226,7 +226,7 @@ export default function VoiceNotesPage() {
                 value={newForm.duration_seconds}
                 onChange={(e) => setNewForm((f) => ({ ...f, duration_seconds: e.target.value }))}
                 placeholder="32"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
           </div>
@@ -236,7 +236,7 @@ export default function VoiceNotesPage() {
               value={newForm.audio_url}
               onChange={(e) => setNewForm((f) => ({ ...f, audio_url: e.target.value }))}
               placeholder="https://…"
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -246,7 +246,7 @@ export default function VoiceNotesPage() {
                 value={newForm.customer_id}
                 onChange={(e) => setNewForm((f) => ({ ...f, customer_id: e.target.value }))}
                 placeholder="UUID"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
             <div className="space-y-1">
@@ -255,7 +255,7 @@ export default function VoiceNotesPage() {
                 value={newForm.thread_id}
                 onChange={(e) => setNewForm((f) => ({ ...f, thread_id: e.target.value }))}
                 placeholder="UUID"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
               />
             </div>
           </div>
@@ -264,7 +264,7 @@ export default function VoiceNotesPage() {
             <Button
               disabled={actionLoading === "upload"}
               onClick={uploadNote}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
             >
               {actionLoading === "upload" ? "Uploading…" : "Upload"}
             </Button>
@@ -346,7 +346,7 @@ export default function VoiceNotesPage() {
                           }
                           rows={3}
                           placeholder="Type transcription…"
-                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332] bg-white"
+                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)] bg-white"
                         />
                         <div className="flex gap-2">
                           <Button
@@ -360,7 +360,7 @@ export default function VoiceNotesPage() {
                             size="sm"
                             disabled={actionLoading === note.id + "_transcribe"}
                             onClick={() => addTranscription(note.id)}
-                            className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+                            className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
                           >
                             {actionLoading === note.id + "_transcribe" ? "Saving…" : "Save"}
                           </Button>

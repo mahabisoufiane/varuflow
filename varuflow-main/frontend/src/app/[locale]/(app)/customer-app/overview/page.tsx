@@ -59,10 +59,10 @@ export default function CustomerAppOverviewPage() {
       <div className="grid grid-cols-3 gap-4">
         {NAV_CARDS.map(({ icon: Icon, title, description, href }) => (
           <Link key={title} href={href(locale)}>
-            <div className="rounded-xl border bg-white shadow-sm p-5 hover:shadow-md hover:border-[#1a2332]/30 transition-all cursor-pointer h-full">
+            <div className="rounded-xl border bg-white shadow-sm p-5 hover:shadow-md hover:border-[var(--vf-brand-primary)]/30 transition-all cursor-pointer h-full">
               <div className="flex items-center gap-3 mb-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#1a2332]/8 bg-gray-100">
-                  <Icon className="h-5 w-5 text-[#1a2332]" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--vf-brand-primary)]/8 bg-gray-100">
+                  <Icon className="h-5 w-5 text-[var(--vf-text-primary)]" />
                 </div>
                 <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
               </div>

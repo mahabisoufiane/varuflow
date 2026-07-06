@@ -48,8 +48,8 @@ export default function InvestorPage() {
         {CARDS.map(({ icon: Icon, title, description, href }) => (
           <Link key={href} href={`/${locale}/${href}`}>
             <div className="rounded-xl border bg-white shadow-sm p-5 hover:shadow-md transition-shadow cursor-pointer flex items-start gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#1a2332]/10">
-                <Icon className="h-5 w-5 text-[#1a2332]" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--vf-brand-primary)]/10">
+                <Icon className="h-5 w-5 text-[var(--vf-text-primary)]" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-900">{title}</p>

@@ -180,7 +180,7 @@ function MatchModal({
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between p-4 border-b">
           <div>
-            <p className="text-sm font-semibold text-[#1a2332]">Match transaction to invoice</p>
+            <p className="text-sm font-semibold text-[var(--vf-text-primary)]">Match transaction to invoice</p>
             <p className="text-xs text-gray-400">{tx.description} · +{fmt(tx.amount)} SEK</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
@@ -206,7 +206,7 @@ function MatchModal({
                 className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-gray-50 text-left"
               >
                 <div>
-                  <p className="text-sm font-medium text-[#1a2332]">{inv.invoice_number}</p>
+                  <p className="text-sm font-medium text-[var(--vf-text-primary)]">{inv.invoice_number}</p>
                   <p className="text-xs text-gray-400">Due {inv.due_date} · {inv.status}</p>
                 </div>
                 <span className="font-mono text-sm font-semibold text-green-600">{fmt(inv.total_sek)} SEK</span>
@@ -247,7 +247,7 @@ function ReportModal({ accountId, onClose }: { accountId: string; onClose: () =>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
           <div>
-            <p className="text-sm font-semibold text-[#1a2332]">Month-end Reconciliation Report</p>
+            <p className="text-sm font-semibold text-[var(--vf-text-primary)]">Month-end Reconciliation Report</p>
             {report && <p className="text-xs text-gray-400">{report.account_name}</p>}
           </div>
           <div className="flex items-center gap-2">
@@ -276,7 +276,7 @@ function ReportModal({ accountId, onClose }: { accountId: string; onClose: () =>
                 ].map(({ label, value }) => (
                   <div key={label} className="bg-gray-50 rounded-lg p-3">
                     <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">{label}</p>
-                    <p className="font-mono text-sm font-semibold text-[#1a2332]">{fmt(value)}</p>
+                    <p className="font-mono text-sm font-semibold text-[var(--vf-text-primary)]">{fmt(value)}</p>
                   </div>
                 ))}
               </div>
@@ -462,9 +462,9 @@ export default function BankReconciliationPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
-          <RefreshCw size={20} className="text-[#1a2332]" />
+          <RefreshCw size={20} className="text-[var(--vf-text-primary)]" />
           <div>
-            <h1 className="text-xl font-bold text-[#1a2332]">Bank Reconciliation</h1>
+            <h1 className="text-xl font-bold text-[var(--vf-text-primary)]">Bank Reconciliation</h1>
             {selected && <p className="text-sm text-gray-400 mt-0.5">{selected.name}{selected.iban ? ` · ${selected.iban}` : ""}</p>}
           </div>
         </div>
@@ -482,7 +482,7 @@ export default function BankReconciliationPage() {
           <button
             onClick={runAutoMatch}
             disabled={autoMatchLoading || !selectedId}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a2332] text-white rounded text-sm hover:opacity-90 disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-sm hover:opacity-90 disabled:opacity-50"
           >
             <Zap size={13} />
             {autoMatchLoading ? "Matching…" : "Auto-match"}
@@ -535,7 +535,7 @@ export default function BankReconciliationPage() {
               onClick={() => setTab(t)}
               className={`px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px transition-colors ${
                 tab === t
-                  ? "border-[#1a2332] text-[#1a2332]"
+                  ? "border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]"
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
@@ -585,7 +585,7 @@ export default function BankReconciliationPage() {
         <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm">
             <div className="flex items-center justify-between p-4 border-b">
-              <p className="text-sm font-semibold text-[#1a2332]">Create expense from transaction</p>
+              <p className="text-sm font-semibold text-[var(--vf-text-primary)]">Create expense from transaction</p>
               <button onClick={() => { setCreateExpTx(null); setExpDesc(""); }} className="text-gray-400">
                 <X size={16} />
               </button>
@@ -613,7 +613,7 @@ export default function BankReconciliationPage() {
                 <button
                   onClick={createExpense}
                   disabled={expSaving}
-                  className="px-4 py-1.5 bg-[#1a2332] text-white rounded text-sm disabled:opacity-50"
+                  className="px-4 py-1.5 bg-[var(--vf-brand-primary)] text-white rounded text-sm disabled:opacity-50"
                 >
                   {expSaving ? "Creating…" : "Create expense"}
                 </button>

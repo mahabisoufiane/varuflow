@@ -46,8 +46,8 @@ function ToggleRow({ label, checked, onChange }: ToggleRowProps) {
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-[#1a2332] focus:ring-offset-2 ${
-          checked ? "bg-[#1a2332]" : "bg-gray-200"
+        className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)] focus:ring-offset-2 ${
+          checked ? "bg-[var(--vf-brand-primary)]" : "bg-gray-200"
         }`}
       >
         <span
@@ -165,12 +165,12 @@ export default function ReminderPrefsPage() {
             onChange={(e) => setLookupId(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && lookupCustomer()}
             placeholder="Customer UUID"
-            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
           />
           <Button
             disabled={loading}
             onClick={lookupCustomer}
-            className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-1"
+            className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-1"
           >
             {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : null}
             Load
@@ -230,7 +230,7 @@ export default function ReminderPrefsPage() {
             <Button
               disabled={saving}
               onClick={savePrefs}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-1"
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-1"
             >
               {saving ? <RefreshCw className="h-4 w-4 animate-spin" /> : null}
               Save Preferences

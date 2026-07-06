@@ -220,7 +220,7 @@ export default function DataRoomPage() {
       <div className="flex items-center gap-1 border-b">
         {[{ key: "files" as const, label: "Files" }, { key: "shares" as const, label: "Share Links" }].map((t) => (
           <button key={t.key} type="button" onClick={() => setTab(t.key)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === t.key ? "border-[#1a2332] text-[#1a2332]" : "border-transparent text-muted-foreground hover:text-gray-700"}`}>
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === t.key ? "border-[var(--vf-brand-primary)] text-[var(--vf-text-primary)]" : "border-transparent text-muted-foreground hover:text-gray-700"}`}>
             {t.label}
           </button>
         ))}
@@ -236,17 +236,17 @@ export default function DataRoomPage() {
               <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Folders</p>
               <button type="button" onClick={() => setShowFolderForm(true)}
                 className="rounded-md p-1 hover:bg-gray-100">
-                <PlusCircle className="h-4 w-4 text-[#1a2332]" />
+                <PlusCircle className="h-4 w-4 text-[var(--vf-text-primary)]" />
               </button>
             </div>
             {showFolderForm && (
               <div className="space-y-2">
                 <input value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)}
                   placeholder="Folder name"
-                  className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                  className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 <div className="flex gap-1">
                   <Button size="sm" disabled={actionLoading === "folder_create"} onClick={createFolder}
-                    className="bg-[#1a2332] hover:bg-[#2a3342] text-white text-xs px-2 py-1 h-auto">
+                    className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white text-xs px-2 py-1 h-auto">
                     Add
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => setShowFolderForm(false)} className="text-xs px-2 py-1 h-auto">
@@ -261,7 +261,7 @@ export default function DataRoomPage() {
               ) : folders.map((f) => (
                 <button key={f.id} type="button"
                   onClick={() => selectFolder(f)}
-                  className={`w-full text-left px-3 py-2.5 text-sm transition-colors ${selectedFolder?.id === f.id ? "bg-[#1a2332]/5 font-medium text-[#1a2332]" : "text-gray-700 hover:bg-gray-50"}`}>
+                  className={`w-full text-left px-3 py-2.5 text-sm transition-colors ${selectedFolder?.id === f.id ? "bg-[var(--vf-brand-primary)]/5 font-medium text-[var(--vf-text-primary)]" : "text-gray-700 hover:bg-gray-50"}`}>
                   {f.name}
                 </button>
               ))}
@@ -275,40 +275,40 @@ export default function DataRoomPage() {
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold text-gray-900">{selectedFolder.name}</p>
                   <Button size="sm" onClick={() => setShowDocForm(true)}
-                    className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+                    className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
                     <PlusCircle className="h-3 w-3" /> Add Document
                   </Button>
                 </div>
                 {showDocForm && (
-                  <div className="rounded-xl border border-[#1a2332]/20 bg-white p-4 shadow-sm space-y-3">
+                  <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-4 shadow-sm space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1 col-span-2">
                         <label className="text-xs font-medium text-gray-700">Name *</label>
                         <input value={docForm.name} onChange={(e) => setDocForm((f) => ({ ...f, name: e.target.value }))}
-                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                       </div>
                       <div className="space-y-1 col-span-2">
                         <label className="text-xs font-medium text-gray-700">File URL *</label>
                         <input value={docForm.file_url} onChange={(e) => setDocForm((f) => ({ ...f, file_url: e.target.value }))}
                           placeholder="https://..."
-                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                       </div>
                       <div className="space-y-1">
                         <label className="text-xs font-medium text-gray-700">MIME Type</label>
                         <input value={docForm.mime_type} onChange={(e) => setDocForm((f) => ({ ...f, mime_type: e.target.value }))}
                           placeholder="application/pdf"
-                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                       </div>
                       <div className="space-y-1">
                         <label className="text-xs font-medium text-gray-700">File Size (bytes)</label>
                         <input type="number" value={docForm.file_size} onChange={(e) => setDocForm((f) => ({ ...f, file_size: e.target.value }))}
-                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={() => setShowDocForm(false)}>Cancel</Button>
                       <Button size="sm" disabled={actionLoading === "doc_create"} onClick={addDocument}
-                        className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                        className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                         {actionLoading === "doc_create" ? "Adding…" : "Add Document"}
                       </Button>
                     </div>
@@ -366,18 +366,18 @@ export default function DataRoomPage() {
         /* Shares tab */
         <div className="space-y-4">
           <div className="flex justify-end">
-            <Button onClick={() => setShowShareForm(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+            <Button onClick={() => setShowShareForm(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
               <PlusCircle className="h-4 w-4" /> Create Share Link
             </Button>
           </div>
           {showShareForm && (
-            <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+            <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1 col-span-2">
                   <label className="text-xs font-medium text-gray-700">Label *</label>
                   <input value={shareForm.label} onChange={(e) => setShareForm((f) => ({ ...f, label: e.target.value }))}
                     placeholder="Investor Due Diligence"
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
                 <div className="space-y-1 col-span-2">
                   <label className="text-xs font-medium text-gray-700">Folders</label>
@@ -398,13 +398,13 @@ export default function DataRoomPage() {
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-gray-700">Expires At (optional)</label>
                   <input type="date" value={shareForm.expires_at} onChange={(e) => setShareForm((f) => ({ ...f, expires_at: e.target.value }))}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 </div>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setShowShareForm(false)}>Cancel</Button>
                 <Button disabled={actionLoading === "share_create"} onClick={createShare}
-                  className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                  className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                   {actionLoading === "share_create" ? "Creating…" : "Create Share Link"}
                 </Button>
               </div>

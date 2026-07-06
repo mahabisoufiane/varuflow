@@ -161,31 +161,31 @@ export default function BoardPacksPage() {
           <h1 className="text-xl font-semibold text-gray-900">Board Packs</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Board meeting packs with auto-populated financials.</p>
         </div>
-        <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+        <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
           <PlusCircle className="h-4 w-4" /> New Pack
         </Button>
       </div>
 
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">Create Board Pack</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1 col-span-2">
               <label className="text-xs font-medium text-gray-700">Title *</label>
               <input value={newForm.title} onChange={(e) => setNewForm((f) => ({ ...f, title: e.target.value }))}
                 placeholder="Q1 2026 Board Meeting"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Meeting Date *</label>
               <input type="date" value={newForm.meeting_date} onChange={(e) => setNewForm((f) => ({ ...f, meeting_date: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Financial Period</label>
               <input value={newForm.financial_period} onChange={(e) => setNewForm((f) => ({ ...f, financial_period: e.target.value }))}
                 placeholder="Q1 2026"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             {[
               { key: "executive_summary" as const, label: "Executive Summary" },
@@ -195,14 +195,14 @@ export default function BoardPacksPage() {
               <div key={key} className="space-y-1 col-span-2">
                 <label className="text-xs font-medium text-gray-700">{label}</label>
                 <textarea rows={2} value={newForm[key]} onChange={(e) => setNewForm((f) => ({ ...f, [key]: e.target.value }))}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
               </div>
             ))}
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
             <Button disabled={actionLoading === "create"} onClick={createPack}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               {actionLoading === "create" ? "Creating…" : "Create Pack"}
             </Button>
           </div>
@@ -258,7 +258,7 @@ export default function BoardPacksPage() {
                         <label className="text-xs font-medium text-gray-700">{label}</label>
                         <textarea rows={3} value={ef[key]}
                           onChange={(e) => setEditForm((f) => ({ ...f, [p.id]: { ...ef, [key]: e.target.value } }))}
-                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                       </div>
                     ))}
                     {p.kpi_snapshot && (
@@ -269,7 +269,7 @@ export default function BoardPacksPage() {
                     )}
                     <div className="flex justify-end">
                       <Button size="sm" disabled={actionLoading === p.id + "_save"} onClick={() => savePack(p.id)}
-                        className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+                        className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                         {actionLoading === p.id + "_save" ? "Saving…" : "Save Changes"}
                       </Button>
                     </div>

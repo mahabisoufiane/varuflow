@@ -55,7 +55,7 @@ export default function NewSegmentPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-bold text-[#1a2332]">New segment</h1>
+        <h1 className="text-2xl font-bold text-[var(--vf-text-primary)]">New segment</h1>
         <p className="text-sm text-muted-foreground">
           Auto segments are rule-driven and refreshed nightly. Manual segments
           let you pick customers yourself.
@@ -70,7 +70,7 @@ export default function NewSegmentPage() {
             onClick={() => setType(t)}
             className={`rounded-xl border p-4 text-left transition ${
               type === t
-                ? "border-[#1a2332] bg-[#1a2332] text-white"
+                ? "border-[var(--vf-brand-primary)] bg-[var(--vf-brand-primary)] text-white"
                 : "border-gray-200 bg-white hover:border-gray-300"
             }`}
           >
@@ -116,7 +116,7 @@ export default function NewSegmentPage() {
                 key={k.value}
                 className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition ${
                   kind === k.value
-                    ? "border-[#1a2332] bg-[#f8fafc]"
+                    ? "border-[var(--vf-brand-primary)] bg-[#f8fafc]"
                     : "border-gray-200 bg-white hover:border-gray-300"
                 }`}
               >
@@ -142,7 +142,7 @@ export default function NewSegmentPage() {
         <Button
           onClick={submit}
           disabled={saving}
-          className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+          className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
         >
           {saving ? "Creating…" : "Create segment"}
         </Button>

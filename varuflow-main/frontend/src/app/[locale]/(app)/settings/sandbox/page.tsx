@@ -256,7 +256,7 @@ export default function SandboxPage() {
           </ul>
 
           <Button
-            className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2"
+            className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2"
             disabled={actionLoading === "create"}
             onClick={createSandbox}
           >

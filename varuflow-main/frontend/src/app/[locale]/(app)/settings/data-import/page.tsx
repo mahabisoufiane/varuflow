@@ -255,7 +255,7 @@ export default function DataImportPage() {
       <div className="flex items-center gap-1 text-xs text-muted-foreground">
         {(["source","upload","mapping","validate","execute","done"] as WizardStep[]).map((s, i) => (
           <span key={s} className="flex items-center gap-1">
-            <span className={`font-medium ${s === step ? "text-[#1a2332]" : ""}`}>
+            <span className={`font-medium ${s === step ? "text-[var(--vf-text-primary)]" : ""}`}>
               {["Source","Upload","Mapping","Validate","Execute","Done"][i]}
             </span>
             {i < 5 && <ChevronRight className="h-3 w-3" />}
@@ -276,7 +276,7 @@ export default function DataImportPage() {
                 onClick={() => setSourceSystem(s.id)}
                 className={`flex flex-col items-center gap-2 rounded-lg border p-4 text-sm font-medium transition-colors ${
                   sourceSystem === s.id
-                    ? "border-[#1a2332] bg-[#1a2332]/5 text-[#1a2332]"
+                    ? "border-[var(--vf-brand-primary)] bg-[var(--vf-brand-primary)]/5 text-[var(--vf-text-primary)]"
                     : "border-gray-200 hover:bg-gray-50 text-gray-700"
                 }`}
               >
@@ -297,7 +297,7 @@ export default function DataImportPage() {
                     value={t.id}
                     checked={importType === t.id}
                     onChange={() => setImportType(t.id)}
-                    className="accent-[#1a2332]"
+                    className="accent-[var(--vf-brand-primary)]"
                   />
                   <span className="text-sm text-gray-700">{t.label}</span>
                 </label>
@@ -306,7 +306,7 @@ export default function DataImportPage() {
           </div>
 
           <Button
-            className="w-full bg-[#1a2332] hover:bg-[#2a3342] text-white"
+            className="w-full bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
             disabled={!sourceSystem}
             onClick={() => setStep("upload")}
           >
@@ -396,7 +396,7 @@ export default function DataImportPage() {
                 <select
                   value={mapping[h] ?? ""}
                   onChange={(e) => setMapping((m) => ({ ...m, [h]: e.target.value }))}
-                  className="flex-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:border-[#1a2332] focus:ring-[#1a2332]"
+                  className="flex-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:border-[var(--vf-brand-primary)] focus:ring-[var(--vf-brand-primary)]"
                 >
                   <option value="">(skip)</option>
                   <option value="company_name">company_name</option>
@@ -425,7 +425,7 @@ export default function DataImportPage() {
               <ArrowLeft className="h-4 w-4 mr-2" /> Back
             </Button>
             <Button
-              className="flex-1 bg-[#1a2332] hover:bg-[#2a3342] text-white"
+              className="flex-1 bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
               disabled={actionLoading}
               onClick={handleSaveMapping}
             >
@@ -484,7 +484,7 @@ export default function DataImportPage() {
               <ArrowLeft className="h-4 w-4 mr-2" /> Back
             </Button>
             <Button
-              className="flex-1 bg-[#1a2332] hover:bg-[#2a3342] text-white"
+              className="flex-1 bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
               disabled={validRows === 0 || actionLoading}
               onClick={() => { setStep("execute"); handleExecute(); }}
             >
@@ -497,7 +497,7 @@ export default function DataImportPage() {
       {/* ── Step: Execute (progress) ── */}
       {step === "execute" && (
         <div className="rounded-xl border bg-white p-8 shadow-sm space-y-4 text-center">
-          <RefreshCw className="h-8 w-8 animate-spin mx-auto text-[#1a2332]" />
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto text-[var(--vf-text-primary)]" />
           <p className="text-sm font-medium text-gray-700">Importing data…</p>
           <p className="text-xs text-muted-foreground">This may take a moment for large files.</p>
         </div>
@@ -526,7 +526,7 @@ export default function DataImportPage() {
           <div className="flex gap-3 justify-center">
             <Button variant="outline" onClick={reset}>Import Another File</Button>
             {finalJob.status === "done" && (
-              <Button className="bg-[#1a2332] hover:bg-[#2a3342] text-white" onClick={() => router.push("/dashboard")}>
+              <Button className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white" onClick={() => router.push("/dashboard")}>
                 Go to Dashboard
               </Button>
             )}

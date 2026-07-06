@@ -49,12 +49,12 @@ export default function CampaignsListPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1a2332]">Email campaigns</h1>
+          <h1 className="text-2xl font-bold text-[var(--vf-text-primary)]">Email campaigns</h1>
           <p className="text-sm text-muted-foreground">
             {rows.length} campaign{rows.length === 1 ? "" : "s"}
           </p>
         </div>
-        <Button asChild size="sm" className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+        <Button asChild size="sm" className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
           <Link href="/campaigns/new">
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             New campaign
@@ -75,7 +75,7 @@ export default function CampaignsListPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             Target a customer segment with a broadcast email.
           </p>
-          <Button asChild size="sm" className="mt-4 bg-[#1a2332] hover:bg-[#2a3342] text-white">
+          <Button asChild size="sm" className="mt-4 bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
             <Link href="/campaigns/new">
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               New campaign
@@ -98,7 +98,7 @@ export default function CampaignsListPage() {
               {rows.map((c) => (
                 <tr key={c.id} className={styles.tableRow}>
                   <td className="px-4 py-3">
-                    <Link href={`/campaigns/${c.id}`} className="font-medium text-[#1a2332] hover:underline">
+                    <Link href={`/campaigns/${c.id}`} className="font-medium text-[var(--vf-text-primary)] hover:underline">
                       {c.name}
                     </Link>
                   </td>

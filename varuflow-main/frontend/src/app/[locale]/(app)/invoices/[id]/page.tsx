@@ -175,7 +175,7 @@ export default function InvoiceDetailPage() {
         </Button>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-[#1a2332]">{invoice.invoice_number}</h1>
+            <h1 className="text-2xl font-bold text-[var(--vf-text-primary)]">{invoice.invoice_number}</h1>
             <div className="flex items-center gap-2 mt-1">
               <span className={styles[STATUS_MODULE[invoice.status] ?? "statusDraft"]}>{invoice.status}</span>
               {invoice.invoice_type !== "standard" && (
@@ -235,7 +235,7 @@ export default function InvoiceDetailPage() {
               )
             )}
             {NEXT_STATUS[invoice.status] && (
-              <Button size="sm" className="bg-[#1a2332] hover:bg-[#2a3342] text-white" disabled={updating} onClick={advanceStatus}>
+              <Button size="sm" className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white" disabled={updating} onClick={advanceStatus}>
                 {NEXT_LABEL[invoice.status]}
               </Button>
             )}
@@ -314,7 +314,7 @@ export default function InvoiceDetailPage() {
               <td colSpan={4} className="px-4 py-2 text-right text-muted-foreground">VAT</td>
               <td className="px-4 py-2 text-right font-mono">{Number(invoice.vat_amount).toLocaleString("sv-SE", { minimumFractionDigits: 2 })}</td>
             </tr>
-            <tr className="font-bold text-[#1a2332]">
+            <tr className="font-bold text-[var(--vf-text-primary)]">
               <td colSpan={4} className="px-4 py-3 text-right">Total (SEK)</td>
               <td className="px-4 py-3 text-right font-mono text-base">{Number(invoice.total_sek).toLocaleString("sv-SE", { minimumFractionDigits: 2 })}</td>
             </tr>
@@ -327,7 +327,7 @@ export default function InvoiceDetailPage() {
                     <td colSpan={4} className="px-4 py-2 text-right text-sm">Less deposit paid</td>
                     <td className="px-4 py-2 text-right font-mono text-sm">-{dep.toLocaleString("sv-SE", { minimumFractionDigits: 2 })}</td>
                   </tr>
-                  <tr className="font-bold text-[#1a2332] border-t-2">
+                  <tr className="font-bold text-[var(--vf-text-primary)] border-t-2">
                     <td colSpan={4} className="px-4 py-3 text-right">Total due (SEK)</td>
                     <td className="px-4 py-3 text-right font-mono text-base">{due.toLocaleString("sv-SE", { minimumFractionDigits: 2 })}</td>
                   </tr>
@@ -368,18 +368,18 @@ export default function InvoiceDetailPage() {
               <Label>Amount (SEK) *</Label>
               <input type="number" step="0.01" min="0.01" required value={payForm.amount}
                 onChange={(e) => setPayForm((f) => ({ ...f, amount: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1.5">
               <Label>Payment date *</Label>
               <input type="date" required value={payForm.payment_date}
                 onChange={(e) => setPayForm((f) => ({ ...f, payment_date: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1.5">
               <Label>Method</Label>
               <select value={payForm.method} onChange={(e) => setPayForm((f) => ({ ...f, method: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                 <option value="BANK_TRANSFER">Bank transfer</option>
                 <option value="CARD">Card</option>
                 <option value="CASH">Cash</option>
@@ -390,12 +390,12 @@ export default function InvoiceDetailPage() {
               <Label>Reference</Label>
               <input value={payForm.reference} onChange={(e) => setPayForm((f) => ({ ...f, reference: e.target.value }))}
                 placeholder="Transaction ID, bank ref…"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <div className="flex justify-end gap-3 pt-2">
               <Button type="button" variant="outline" onClick={() => setPayOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={paying} className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              <Button type="submit" disabled={paying} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                 {paying ? "Saving…" : "Record"}
               </Button>
             </div>

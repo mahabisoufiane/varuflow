@@ -236,9 +236,9 @@ export default function OkrPage() {
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
             placeholder="Q1 2025"
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm w-28 focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm w-28 focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
           />
-          <Button onClick={() => setShowNewObj(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+          <Button onClick={() => setShowNewObj(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
             <PlusCircle className="h-4 w-4" /> Add Objective
           </Button>
         </div>
@@ -272,30 +272,30 @@ export default function OkrPage() {
 
       {/* New objective form */}
       {showNewObj && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">New Objective</h3>
           <input
             placeholder="Objective title *"
             value={newObj.title}
             onChange={(e) => setNewObj((f) => ({ ...f, title: e.target.value }))}
-            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
           />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <select value={newObj.level} onChange={(e) => setNewObj((f) => ({ ...f, level: e.target.value }))}
-              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
               <option value="company">Company</option>
               <option value="department">Department</option>
               <option value="individual">Individual</option>
             </select>
             <input placeholder="Department" value={newObj.department}
               onChange={(e) => setNewObj((f) => ({ ...f, department: e.target.value }))}
-              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             <input placeholder="Period label" value={newObj.period_label}
               onChange={(e) => setNewObj((f) => ({ ...f, period_label: e.target.value }))}
-              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             <select value={newObj.parent_id}
               onChange={(e) => setNewObj((f) => ({ ...f, parent_id: e.target.value }))}
-              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+              className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
               <option value="">No parent</option>
               {objectives.filter((o) => o.level !== "individual").map((o) => (
                 <option key={o.id} value={o.id}>{o.title.slice(0, 40)}</option>
@@ -304,7 +304,7 @@ export default function OkrPage() {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowNewObj(false)}>Cancel</Button>
-            <Button onClick={createObjective} className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+            <Button onClick={createObjective} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               Create
             </Button>
           </div>
@@ -432,7 +432,7 @@ function ObjectiveCard({
                     type="number"
                     defaultValue={kr.current_value}
                     onBlur={(e) => onUpdateKrProgress(kr.id, e.target.value)}
-                    className="w-20 rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-[#1a2332]"
+                    className="w-20 rounded border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]"
                   />
                   <span className="text-xs text-muted-foreground">/ {kr.target_value} {kr.unit ?? ""}</span>
                 </div>
@@ -444,28 +444,28 @@ function ObjectiveCard({
             <div className="rounded-lg border bg-white p-4 space-y-2">
               <input placeholder="Key result title *" value={newKr.title}
                 onChange={(e) => setNewKr((f) => ({ ...f, title: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
               <div className="grid grid-cols-3 gap-2">
                 <input placeholder="Target" type="number" value={newKr.target_value}
                   onChange={(e) => setNewKr((f) => ({ ...f, target_value: e.target.value }))}
-                  className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                  className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 <input placeholder="Current (opt)" type="number" value={newKr.current_value}
                   onChange={(e) => setNewKr((f) => ({ ...f, current_value: e.target.value }))}
-                  className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                  className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
                 <input placeholder="Unit (%, SEK…)" value={newKr.unit}
                   onChange={(e) => setNewKr((f) => ({ ...f, unit: e.target.value }))}
-                  className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                  className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={onCancelKr}>Cancel</Button>
-                <Button size="sm" className="bg-[#1a2332] hover:bg-[#2a3342] text-white" onClick={onSaveKr}>
+                <Button size="sm" className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white" onClick={onSaveKr}>
                   Add Key Result
                 </Button>
               </div>
             </div>
           ) : (
             <button type="button" onClick={onAddKr}
-              className="flex items-center gap-2 text-sm text-[#1a2332] hover:text-[#2a3342] font-medium">
+              className="flex items-center gap-2 text-sm text-[var(--vf-text-primary)] hover:text-[var(--vf-text-secondary)] font-medium">
               <Plus className="h-4 w-4" /> Add Key Result
             </button>
           )}

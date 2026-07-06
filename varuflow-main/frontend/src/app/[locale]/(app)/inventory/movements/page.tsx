@@ -78,10 +78,10 @@ export default function MovementsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1a2332]">Stock Movements</h1>
+          <h1 className="text-2xl font-bold text-[var(--vf-text-primary)]">Stock Movements</h1>
           <p className="text-sm text-muted-foreground">Goods in, goods out, adjustments</p>
         </div>
-        <Button size="sm" className="bg-[#1a2332] hover:bg-[#2a3342] text-white" onClick={() => setOpen(true)}>
+        <Button size="sm" className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white" onClick={() => setOpen(true)}>
           <Plus className="mr-1.5 h-3.5 w-3.5" />Record movement
         </Button>
       </div>
@@ -98,7 +98,7 @@ export default function MovementsPage() {
         <div className="rounded-xl border bg-white px-6 py-12 text-center">
           <p className="font-medium text-gray-900">No movements recorded yet</p>
           <p className="mt-1 text-sm text-muted-foreground">Record goods in, out, or manual adjustments.</p>
-          <Button size="sm" className="mt-4 bg-[#1a2332] hover:bg-[#2a3342] text-white" onClick={() => setOpen(true)}>
+          <Button size="sm" className="mt-4 bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white" onClick={() => setOpen(true)}>
             Record first movement
           </Button>
         </div>
@@ -141,7 +141,7 @@ export default function MovementsPage() {
             <div className="space-y-1.5">
               <Label>Product *</Label>
               <select required value={form.product_id} onChange={(e) => set("product_id", e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                 <option value="">Select product…</option>
                 {products.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>)}
               </select>
@@ -149,7 +149,7 @@ export default function MovementsPage() {
             <div className="space-y-1.5">
               <Label>Warehouse *</Label>
               <select required value={form.warehouse_id} onChange={(e) => set("warehouse_id", e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                 <option value="">Select warehouse…</option>
                 {warehouses.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
               </select>
@@ -158,7 +158,7 @@ export default function MovementsPage() {
               <div className="space-y-1.5">
                 <Label>Type *</Label>
                 <select value={form.type} onChange={(e) => set("type", e.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                   <option value="IN">IN — Goods received</option>
                   <option value="OUT">OUT — Goods shipped</option>
                   <option value="ADJUSTMENT">ADJUSTMENT</option>
@@ -167,18 +167,18 @@ export default function MovementsPage() {
               <div className="space-y-1.5">
                 <Label>Quantity *</Label>
                 <input required type="number" min="1" value={form.quantity} onChange={(e) => set("quantity", e.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
               </div>
             </div>
             <div className="space-y-1.5">
               <Label>Reference</Label>
               <input value={form.reference} onChange={(e) => set("reference", e.target.value)} placeholder="Order #, PO #…"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--vf-brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <div className="flex justify-end gap-3 pt-2">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={saving} className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              <Button type="submit" disabled={saving} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
                 {saving ? "Saving…" : "Record"}
               </Button>
             </div>

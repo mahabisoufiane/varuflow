@@ -137,7 +137,7 @@ export default function CampaignDetailPage() {
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1a2332]">{campaign.name}</h1>
+          <h1 className="text-2xl font-bold text-[var(--vf-text-primary)]">{campaign.name}</h1>
           <div className="mt-1 flex items-center gap-3 text-sm">
             <StatusBadge status={campaign.status} />
             <span className="text-muted-foreground">Subject: {campaign.subject}</span>
@@ -170,7 +170,7 @@ export default function CampaignDetailPage() {
             <>
               <Button
                 size="sm"
-                className="bg-[#1a2332] hover:bg-[#2a3342] text-white"
+                className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white"
                 onClick={sendNow}
                 disabled={busy}
               >
@@ -201,7 +201,7 @@ export default function CampaignDetailPage() {
 
       {preview && (
         <div className="rounded-xl border bg-white p-5">
-          <h3 className="mb-3 font-medium text-[#1a2332]">Preview</h3>
+          <h3 className="mb-3 font-medium text-[var(--vf-text-primary)]">Preview</h3>
           <div
             className="prose prose-sm max-w-none rounded border bg-white p-4"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(preview) }}

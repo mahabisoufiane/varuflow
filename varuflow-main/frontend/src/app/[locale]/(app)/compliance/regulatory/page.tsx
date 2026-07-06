@@ -189,7 +189,7 @@ export default function RegulatoryCalendarPage() {
               Seed {c}
             </Button>
           ))}
-          <Button onClick={() => setShowNew(true)} className="bg-[#1a2332] hover:bg-[#2a3342] text-white gap-2">
+          <Button onClick={() => setShowNew(true)} className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white gap-2">
             <PlusCircle className="h-4 w-4" /> Add Event
           </Button>
         </div>
@@ -200,7 +200,7 @@ export default function RegulatoryCalendarPage() {
         {["all", "SE", "NO", "DK"].map((c) => (
           <button key={c} type="button" onClick={() => setCountryFilter(c)}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              countryFilter === c ? "bg-[#1a2332] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              countryFilter === c ? "bg-[var(--vf-brand-primary)] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}>
             {c === "all" ? "All" : `${COUNTRY_FLAGS[c]} ${c}`}
           </button>
@@ -209,22 +209,22 @@ export default function RegulatoryCalendarPage() {
 
       {/* Create form */}
       {showNew && (
-        <div className="rounded-xl border border-[#1a2332]/20 bg-white p-5 shadow-sm space-y-3">
+        <div className="rounded-xl border border-[var(--vf-brand-primary)]/20 bg-white p-5 shadow-sm space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">New Regulatory Event</h3>
           <input value={newForm.title} onChange={(e) => setNewForm((f) => ({ ...f, title: e.target.value }))}
             placeholder="Event title *"
-            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Event Type</label>
               <input value={newForm.event_type} onChange={(e) => setNewForm((f) => ({ ...f, event_type: e.target.value }))}
                 placeholder="VAT, AGM, Filing…"
-                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Country</label>
               <select value={newForm.country} onChange={(e) => setNewForm((f) => ({ ...f, country: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                 <option value="SE">🇸🇪 Sweden</option>
                 <option value="NO">🇳🇴 Norway</option>
                 <option value="DK">🇩🇰 Denmark</option>
@@ -233,12 +233,12 @@ export default function RegulatoryCalendarPage() {
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Due Date *</label>
               <input type="date" value={newForm.due_date} onChange={(e) => setNewForm((f) => ({ ...f, due_date: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">Recurrence</label>
               <select value={newForm.recurrence} onChange={(e) => setNewForm((f) => ({ ...f, recurrence: e.target.value }))}
-                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
+                className="block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]">
                 <option value="">None</option>
                 <option value="monthly">Monthly</option>
                 <option value="quarterly">Quarterly</option>
@@ -248,11 +248,11 @@ export default function RegulatoryCalendarPage() {
           </div>
           <textarea value={newForm.notes} onChange={(e) => setNewForm((f) => ({ ...f, notes: e.target.value }))}
             placeholder="Notes (optional)" rows={2}
-            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#1a2332]" />
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--vf-brand-primary)]" />
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
             <Button disabled={actionLoading === "create"} onClick={createEvent}
-              className="bg-[#1a2332] hover:bg-[#2a3342] text-white">
+              className="bg-[var(--vf-brand-primary)] hover:bg-[var(--vf-brand-primary-hover)] text-white">
               {actionLoading === "create" ? "Saving…" : "Add Event"}
             </Button>
           </div>
