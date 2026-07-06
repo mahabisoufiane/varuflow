@@ -239,7 +239,7 @@ export default function NewQuotePage() {
 
         <button
           onClick={addItem}
-          className="flex items-center gap-1.5 text-sm text-[#1a2332] hover:text-blue-700 font-medium"
+          className="flex items-center gap-1.5 text-sm text-[var(--vf-text-primary)] hover:text-[var(--vf-brand-primary)] font-medium"
         >
           <Plus className="h-4 w-4" />
           Add line

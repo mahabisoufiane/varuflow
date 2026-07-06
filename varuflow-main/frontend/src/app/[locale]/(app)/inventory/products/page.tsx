@@ -221,9 +221,9 @@ export default function ProductsPage() {
       {/* KPI strip */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Total products",  value: total,                icon: <Package className="h-4 w-4" />,    color: "text-blue-600 bg-blue-50"    },
+          { label: "Total products",  value: total,                icon: <Package className="h-4 w-4" />,    color: "text-[var(--vf-brand-primary)] bg-blue-50"    },
           { label: "Active",          value: products.length,      icon: <Package className="h-4 w-4" />,    color: "text-emerald-600 bg-emerald-50" },
-          { label: "Avg margin",      value: `${avgMargin}%`,      icon: <TrendingUp className="h-4 w-4" />, color: avgMargin < 20 ? "text-red-600 bg-red-50" : "text-indigo-600 bg-indigo-50" },
+          { label: "Avg margin",      value: `${avgMargin}%`,      icon: <TrendingUp className="h-4 w-4" />, color: avgMargin < 20 ? "text-red-600 bg-red-50" : "text-[var(--vf-brand-primary)] bg-[var(--vf-brand-primary-subtle)]" },
         ].map(({ label, value, icon, color }) => (
           <div key={label} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
             <div className={`inline-flex h-8 w-8 items-center justify-center rounded-lg ${color} mb-3`}>{icon}</div>

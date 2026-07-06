@@ -99,7 +99,7 @@ function MiniBar({ data }: { data: number[] }) {
             style={{ height: `${h}%` }}
             className={cn(
               "flex-1 rounded-[3px] transition-all",
-              isLast ? "bg-indigo-500" : "bg-indigo-500/20"
+              isLast ? "bg-[var(--vf-brand-primary)]" : "bg-[var(--vf-brand-primary)]/20"
             )}
           />
         );
@@ -247,7 +247,7 @@ export default function DashboardPage() {
           sub={`${openInvoices.length} open invoice${openInvoices.length !== 1 ? "s" : ""}`}
           trend={overdueCount > 0 ? { label: `${overdueCount} overdue`, up: false } : undefined}
           icon={<FileText className="h-4 w-4" />}
-          iconCls="text-indigo-400 bg-indigo-500/10"
+          iconCls="text-[var(--vf-brand-primary)] bg-[var(--vf-brand-primary-subtle)]"
           href="/invoices?status=SENT"
           spark={revData}
           sparkColor="#2563EB"
@@ -292,7 +292,7 @@ export default function DashboardPage() {
         <div className="md:col-span-2 relative overflow-hidden vf-section p-6">
           {/* Ambient orbs */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-indigo-600/10 blur-3xl" />
+            <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-[var(--vf-brand-primary)]/10 blur-3xl" />
             <div className="absolute bottom-0 left-0 h-48 w-48 rounded-full bg-violet-600/8 blur-3xl" />
           </div>
           <div className="relative">
@@ -300,8 +300,8 @@ export default function DashboardPage() {
               /* First-run state — user has no invoices yet */
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 py-2">
                 <div className="flex flex-col items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10">
-                    <FileText className="h-6 w-6 text-indigo-400" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--vf-brand-primary-subtle)]">
+                    <FileText className="h-6 w-6 text-[var(--vf-brand-primary)]" />
                   </div>
                   <div>
                     <p className="text-base font-semibold vf-text-1">Ready to send your first invoice?</p>
@@ -383,11 +383,11 @@ export default function DashboardPage() {
           </p>
           <div className="flex flex-col gap-[2px] flex-1">
             {[
-              { href: "/invoices/new",           icon: FileText,     label: "New invoice",   cls: "text-indigo-400 bg-indigo-500/10"  },
+              { href: "/invoices/new",           icon: FileText,     label: "New invoice",   cls: "text-[var(--vf-brand-primary)] bg-[var(--vf-brand-primary-subtle)]"  },
               { href: "/inventory/products/new", icon: Package,      label: "Add product",   cls: "text-amber-400 bg-amber-500/10"    },
               { href: "/customers/new",          icon: Users,        label: "Add customer",  cls: "text-emerald-400 bg-emerald-500/10" },
               { href: "/pos",                    icon: ShoppingCart, label: "Open register", cls: "text-violet-400 bg-violet-500/10"  },
-              { href: "/ai",                     icon: Zap,          label: "AI insights",   cls: "text-indigo-400 bg-indigo-500/10"  },
+              { href: "/ai",                     icon: Zap,          label: "AI insights",   cls: "text-[var(--vf-brand-primary)] bg-[var(--vf-brand-primary-subtle)]"  },
             ].map(({ href, icon: Icon, label, cls }) => (
               <Link key={href} href={href}
                 className="vf-row flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium vf-text-2 hover:vf-text-1 transition-colors group">
@@ -409,7 +409,7 @@ export default function DashboardPage() {
         <div className="vf-section">
           <div className="vf-section-header">
             <h2 className="flex items-center gap-2 text-[13px] font-semibold vf-text-1">
-              <FileText className="h-4 w-4 text-indigo-400" />Awaiting payment
+              <FileText className="h-4 w-4 text-[var(--vf-brand-primary)]" />Awaiting payment
             </h2>
             <Link href="/invoices" className="flex items-center gap-1 text-xs vf-text-m hover:vf-text-2 transition-colors">
               All <ArrowRight className="h-3 w-3" />
@@ -431,11 +431,11 @@ export default function DashboardPage() {
                   <div key={inv.id} className="vf-row flex items-center gap-3 px-5 py-3.5">
                     {overdue
                       ? <span className="pill-overdue shrink-0">Overdue</span>
-                      : <span className="h-2 w-2 rounded-full bg-indigo-400 shrink-0" />
+                      : <span className="h-2 w-2 rounded-full bg-[var(--vf-brand-primary)] shrink-0" />
                     }
                     <div className="flex-1 min-w-0">
                       <Link href={`/invoices/${inv.id}`}
-                        className="text-[13px] font-medium hover:text-indigo-400 transition-colors vf-text-1">
+                        className="text-[13px] font-medium hover:text-[var(--vf-brand-primary)] transition-colors vf-text-1">
                         {inv.invoice_number}
                       </Link>
                       <p className="text-xs vf-text-m truncate">{inv.customer.company_name}</p>
@@ -518,7 +518,7 @@ export default function DashboardPage() {
           <div className="py-10 text-center">
             <p className="text-sm font-medium vf-text-2">No stock movements yet</p>
             <p className="text-xs vf-text-m mt-0.5">Add products to inventory to start tracking stock.</p>
-            <Link href="/inventory/products/new" className="mt-3 inline-flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-500">
+            <Link href="/inventory/products/new" className="mt-3 inline-flex items-center gap-1 text-xs text-[var(--vf-brand-primary)] hover:text-[var(--vf-brand-primary)]">
               <Plus className="h-3 w-3" />Add first product
             </Link>
           </div>

@@ -150,7 +150,7 @@ export default function InvoicesPage() {
           {
             label: "Outstanding", value: `${fmt(outstanding)} kr`,
             sub: `${invoices.filter(i => i.status === "SENT" || i.status === "OVERDUE").length} invoices`,
-            icon: <TrendingUp className="h-4 w-4" />, col: "text-indigo-400 bg-indigo-500/10",
+            icon: <TrendingUp className="h-4 w-4" />, col: "text-[var(--vf-brand-primary)] bg-[var(--vf-brand-primary-subtle)]",
           },
           {
             label: "Overdue", value: `${fmt(overdueAmt)} kr`,

@@ -69,7 +69,7 @@ const STATUS_MODULE: Record<string, keyof typeof styles> = {
 
 const URGENCY_BADGE: Record<string, string> = {
   low: "bg-gray-100 vf-text-2",
-  normal: "bg-blue-50 text-blue-600",
+  normal: "bg-[var(--vf-brand-primary-subtle)] text-[var(--vf-brand-primary)]",
   high: "bg-orange-100 text-orange-700",
   urgent: "bg-red-100 text-red-700",
 };
@@ -228,7 +228,7 @@ export default function PurchaseRequestsPage() {
           <button
             key={t}
             onClick={() => { setTab(t); setSelected(null); }}
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === t ? "border-indigo-600 text-indigo-700" : "border-transparent vf-text-m hover:text-[var(--vf-text-primary)]"}`}
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === t ? "border-[var(--vf-brand-primary)] text-[var(--vf-brand-primary)]" : "border-transparent vf-text-m hover:text-[var(--vf-text-primary)]"}`}
           >
             {t === "requests" ? "Requests" : t === "templates" ? "Templates" : "Spending Report"}
           </button>
@@ -279,7 +279,7 @@ export default function PurchaseRequestsPage() {
               <label className="text-xs vf-text-m font-medium">Line items</label>
               <button
                 onClick={() => setLineItems(prev => [...prev, { description: "", quantity: "1", unit_price: "" }])}
-                className="text-xs text-indigo-600 hover:underline"
+                className="text-xs text-[var(--vf-brand-primary)] hover:underline"
               >
                 + Add line
               </button>
@@ -413,7 +413,7 @@ export default function PurchaseRequestsPage() {
                   <button
                     key={s || "all"}
                     onClick={() => setStatusFilter(s)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${statusFilter === s ? "bg-indigo-600 text-white border-indigo-600" : "bg-[var(--vf-bg-surface)] vf-text-2 border-[var(--vf-border)] hover:border-[var(--vf-text-muted)]"}`}
+                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${statusFilter === s ? "bg-[var(--vf-brand-primary)] text-white border-[var(--vf-brand-primary)]" : "bg-[var(--vf-bg-surface)] vf-text-2 border-[var(--vf-border)] hover:border-[var(--vf-text-muted)]"}`}
                   >
                     {s ? s.charAt(0).toUpperCase() + s.slice(1) : "All"}
                   </button>
@@ -433,7 +433,7 @@ export default function PurchaseRequestsPage() {
               <div
                 key={req.id}
                 onClick={() => { setSelected(req); setReviewNote(""); }}
-                className={`rounded-xl border bg-[var(--vf-bg-surface)] shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow ${selected?.id === req.id ? "ring-2 ring-indigo-400" : ""}`}
+                className={`rounded-xl border bg-[var(--vf-bg-surface)] shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow ${selected?.id === req.id ? "ring-2 ring-[var(--vf-brand-primary)]" : ""}`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -465,7 +465,7 @@ export default function PurchaseRequestsPage() {
                   <div className="text-right shrink-0">
                     <p className="font-semibold vf-text-1">{req.estimated_total.toLocaleString()} {req.currency}</p>
                     {req.purchase_order_id && (
-                      <p className="text-xs text-indigo-600 mt-0.5">PO created</p>
+                      <p className="text-xs text-[var(--vf-brand-primary)] mt-0.5">PO created</p>
                     )}
                   </div>
                 </div>
@@ -495,7 +495,7 @@ export default function PurchaseRequestsPage() {
                   <div className="col-span-2"><span className="font-medium vf-text-2">Review note:</span> {selected.review_note}</div>
                 )}
                 {selected.purchase_order_id && (
-                  <div className="col-span-2 text-indigo-600">PO: {selected.purchase_order_id.slice(0, 8)}…</div>
+                  <div className="col-span-2 text-[var(--vf-brand-primary)]">PO: {selected.purchase_order_id.slice(0, 8)}…</div>
                 )}
               </div>
 

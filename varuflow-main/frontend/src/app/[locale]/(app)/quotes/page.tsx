@@ -41,12 +41,12 @@ export default function QuotesPage() {
         <h1 className="text-2xl font-bold">Quotes & Proposals</h1>
         <div className="flex gap-2">
           <Link href="/quotes/analytics" className="px-4 py-2 border rounded hover:bg-gray-50 text-sm">Analytics</Link>
-          <Link href="/quotes/new" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">New Quote</Link>
+          <Link href="/quotes/new" className="px-4 py-2 bg-[var(--vf-brand-primary)] text-white rounded hover:bg-[var(--vf-brand-primary-hover)]">New Quote</Link>
         </div>
       </div>
       <div className="flex gap-2">
         {["", "draft", "sent", "accepted", "rejected", "invoiced"].map(s => (
-          <button key={s} onClick={() => setFilter(s)} className={`px-3 py-1 rounded text-sm ${filter === s ? "bg-blue-600 text-white" : "bg-gray-100"}`}>{s || "All"}</button>
+          <button key={s} onClick={() => setFilter(s)} className={`px-3 py-1 rounded text-sm ${filter === s ? "bg-[var(--vf-brand-primary)] text-white" : "bg-gray-100"}`}>{s || "All"}</button>
         ))}
       </div>
       <div className="overflow-hidden rounded border">
@@ -85,7 +85,7 @@ export default function QuotesPage() {
                 ))}
               </dl>
               {/* next-intl Link → /sv/quotes/{id} (app), not the public /quotes/[token] */}
-              <Link href={`/quotes/${q.id}`} className="inline-flex px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+              <Link href={`/quotes/${q.id}`} className="inline-flex px-4 py-2 bg-[var(--vf-brand-primary)] text-white rounded hover:bg-[var(--vf-brand-primary-hover)] text-sm">
                 Open quote
               </Link>
             </div>
