@@ -27,7 +27,7 @@
     --vf-glass-border:   rgba(0,0,0,0.07);
     --vf-divider:        #E6E3DC;
     --vf-hover:          rgba(28,25,23,0.05);
-    --vf-focus-ring:     rgba(37,99,235,0.25);
+    --vf-focus-ring:     rgba(47,94,168,0.25);
     --vf-overlay:        rgba(0,0,0,0.45);
     --vf-shadow-color:   30 12% 55%;
 
@@ -38,9 +38,9 @@
     --vf-radius-xl:  20px;
 
     /* Brand (overridable by white-label) */
-    --vf-brand-primary:       #2563EB;
-    --vf-brand-primary-hover: #1D4ED8;
-    --vf-brand-primary-subtle: rgba(37,99,235,0.08);
+    --vf-brand-primary:       #2F5EA8;
+    --vf-brand-primary-hover: #254B87;
+    --vf-brand-primary-subtle: rgba(47,94,168,0.08);
     --vf-brand-text-on-primary: #ffffff;
 
     --vf-brand-secondary:        #0F766E;
@@ -55,8 +55,8 @@
     --vf-warning-bg: rgba(217,119,6,0.08);
     --vf-danger:     #DC2626;
     --vf-danger-bg:  rgba(220,38,38,0.08);
-    --vf-info:       #2563EB;
-    --vf-info-bg:    rgba(37,99,235,0.08);
+    --vf-info:       #2F5EA8;
+    --vf-info-bg:    rgba(47,94,168,0.08);
 
     /* Chart colors */
     --chart-grid:           rgba(28,25,23,0.07);
@@ -116,13 +116,13 @@
     --vf-glass-border:   rgba(255,255,255,0.08);
     --vf-divider:        rgba(255,255,255,0.05);
     --vf-hover:          rgba(255,255,255,0.04);
-    --vf-focus-ring:     rgba(59,130,246,0.35);
+    --vf-focus-ring:     rgba(91,141,214,0.35);
     --vf-overlay:        rgba(0,0,0,0.6);
     --vf-shadow-color:   222 47% 5%;
 
-    --vf-brand-primary:       #3B82F6;
-    --vf-brand-primary-hover: #2563EB;
-    --vf-brand-primary-subtle: rgba(59,130,246,0.12);
+    --vf-brand-primary:       #5B8DD6;
+    --vf-brand-primary-hover: #6FA0E4;
+    --vf-brand-primary-subtle: rgba(91,141,214,0.12);
     --vf-brand-text-on-primary: #ffffff;
 
     --vf-brand-secondary:        #14B8A6;
@@ -136,8 +136,8 @@
     --vf-warning-bg: rgba(251,191,36,0.12);
     --vf-danger:     #F87171;
     --vf-danger-bg:  rgba(248,113,113,0.12);
-    --vf-info:       #60A5FA;
-    --vf-info-bg:    rgba(96,165,250,0.12);
+    --vf-info:       #7FA8DE;
+    --vf-info-bg:    rgba(127,168,222,0.12);
 
     --chart-grid:           rgba(255,255,255,0.06);
     --chart-tick:           #475569;
