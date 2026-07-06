@@ -39,7 +39,6 @@ def upgrade() -> None:
         "DRAFT", "ISSUED", "VOIDED",
         name="credit_note_status",
     )
-    credit_note_status.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "credit_notes",

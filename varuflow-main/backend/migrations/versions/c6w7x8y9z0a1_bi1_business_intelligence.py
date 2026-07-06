@@ -6,7 +6,7 @@ Create Date: 2026-04-30
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 revision = "c6w7x8y9z0a1"
 down_revision = "b5v6w7x8y9z0"
@@ -24,9 +24,9 @@ def upgrade() -> None:
     # Custom dashboard layouts per user/org
     op.create_table(
         "dashboard_configs",
-        sa.Column("id", sa.String(36), primary_key=True),
-        sa.Column("org_id", sa.String(36), sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("user_id", sa.String(36), nullable=False),
+        sa.Column("id", UUID(as_uuid=True), primary_key=True),
+        sa.Column("org_id", UUID(as_uuid=True), sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("user_id", UUID(as_uuid=True), nullable=False),
         sa.Column("name", sa.String(100), nullable=False),
         sa.Column("is_default", sa.Boolean(), nullable=False, server_default="false"),
         sa.Column("layout", JSONB, nullable=False, server_default="[]"),
@@ -39,9 +39,9 @@ def upgrade() -> None:
     # Saved custom report definitions
     op.create_table(
         "custom_reports",
-        sa.Column("id", sa.String(36), primary_key=True),
-        sa.Column("org_id", sa.String(36), sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("user_id", sa.String(36), nullable=False),
+        sa.Column("id", UUID(as_uuid=True), primary_key=True),
+        sa.Column("org_id", UUID(as_uuid=True), sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("user_id", UUID(as_uuid=True), nullable=False),
         sa.Column("name", sa.String(100), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("config", JSONB, nullable=False, server_default="{}"),
@@ -55,16 +55,16 @@ def upgrade() -> None:
     # Scheduled email delivery of reports
     op.create_table(
         "scheduled_reports",
-        sa.Column("id", sa.String(36), primary_key=True),
-        sa.Column("org_id", sa.String(36), sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("user_id", sa.String(36), nullable=False),
+        sa.Column("id", UUID(as_uuid=True), primary_key=True),
+        sa.Column("org_id", UUID(as_uuid=True), sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("user_id", UUID(as_uuid=True), nullable=False),
         sa.Column("name", sa.String(100), nullable=False),
         sa.Column("report_type", sa.String(30), nullable=False),  # analytics_overview | pnl | custom
-        sa.Column("custom_report_id", sa.String(36), nullable=True),  # FK to custom_reports if type=custom
+        sa.Column("custom_report_id", UUID(as_uuid=True), nullable=True),  # FK to custom_reports if type=custom
         sa.Column("config", JSONB, nullable=False, server_default="{}"),
         sa.Column("recipients", JSONB, nullable=False, server_default="[]"),  # [{"email": "...", "name": "..."}]
         sa.Column("cron_expr", sa.String(50), nullable=False),  # e.g. "0 8 * * 1" = Mon 8am
-        sa.Column("timezone", sa.String(50), nullable=False, server_default="'UTC'"),
+        sa.Column("timezone", sa.String(50), nullable=False, server_default="UTC"),
         sa.Column("is_active", sa.Boolean(), nullable=False, server_default="true"),
         sa.Column("last_sent_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("next_send_at", sa.DateTime(timezone=True), nullable=True),

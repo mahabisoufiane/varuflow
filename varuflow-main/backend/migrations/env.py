@@ -13,6 +13,13 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.models import Base
 
+# Import the full application so EVERY model is registered on Base.metadata for
+# autogenerate. `app.models` alone misses models that are only imported by
+# routers/services (e.g. tickets, disputes, share_classes), which would make
+# `alembic revision --autogenerate` silently skip them. Importing app.main is a
+# no-op for `upgrade`/`downgrade` (those use explicit op.* calls, not metadata).
+import app.main  # noqa: E402,F401
+
 # ---------------------------------------------------------------------------
 # Database URL — read from environment, never from a hardcoded string.
 # Supabase (and many PaaS providers) supply postgresql:// without a driver
@@ -64,8 +71,23 @@ def run_migrations_offline() -> None:
 # ---------------------------------------------------------------------------
 # Online mode — connect to the live database and apply migrations
 # ---------------------------------------------------------------------------
+def _include_object(object_, name, type_, reflected, compare_to):
+    # Opt-in additive-only autogenerate. With ALEMBIC_ADDITIVE_ONLY=1, restrict
+    # detection to objects present in the models but absent from the DB
+    # (compare_to is None and not reflected). This lets us generate a drift
+    # catch-up migration that only ADDS missing tables/columns/indexes without
+    # churning or dropping existing schema. Unset (default): normal behaviour.
+    if os.getenv("ALEMBIC_ADDITIVE_ONLY") == "1":
+        return (not reflected) and (compare_to is None)
+    return True
+
+
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        include_object=_include_object,
+    )
     with context.begin_transaction():
         context.run_migrations()
 

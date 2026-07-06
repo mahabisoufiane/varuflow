@@ -24,7 +24,6 @@ def upgrade() -> None:
         "DRAFT", "ACTIVE", "EXPIRED", "TERMINATED",
         name="contract_status",
     )
-    contract_status.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "customer_contracts",

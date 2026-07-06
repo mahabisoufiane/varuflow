@@ -13,7 +13,10 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 revision = "ff6gg7hh8ii9"
 down_revision = "ee5ff6gg7hh8"
 branch_labels = None
-depends_on = None
+# FKs to `appointments` and `services` (created on a parallel branch,
+# e8f0a2b4c6d9). Force that migration first so a fresh `alembic upgrade head`
+# can't order these tables before their FK targets exist.
+depends_on = "e8f0a2b4c6d9"
 
 
 def upgrade() -> None:

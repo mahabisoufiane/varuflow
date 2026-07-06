@@ -31,7 +31,6 @@ def upgrade() -> None:
         "DRAFT", "SUBMITTED", "APPROVED", "REJECTED", "PAID",
         name="expense_report_status",
     )
-    rstatus.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "expense_reports",

@@ -39,7 +39,9 @@ def upgrade() -> None:
             sa.dialects.postgresql.UUID(as_uuid=True),
             sa.ForeignKey("organizations.id", ondelete="CASCADE"),
             nullable=False,
-            index=True,
+            # No index=True here — the explicit op.create_index below already
+            # creates ix_org_ip_allowlist_org_id. Having both double-creates the
+            # index and fails a fresh upgrade with DuplicateTableError.
         ),
         sa.Column("cidr", sa.Text(), nullable=False),
         sa.Column("label", sa.Text(), nullable=True),

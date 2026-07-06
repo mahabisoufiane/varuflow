@@ -11,11 +11,14 @@ from alembic import op
 from sqlalchemy.dialects.postgresql import UUID
 
 revision = "gg7hh8ii9jj0"
-down_revision = "ff6gg7hh8ii9"
+# This migration ALTERs approval_rules/approval_requests (created by governance,
+# f9z0a1b2c3d4). Both were parallel parents of the final merge, so ordering them
+# via depends_on broke alembic's merge head-tracking (KeyError). Express it as a
+# real down_revision edge instead; f9z0a1b2c3d4 is then dropped from the merge.
+down_revision = ("ff6gg7hh8ii9", "f9z0a1b2c3d4")
 branch_labels = None
-depends_on = None
-
-
+# quotes (ee4ff5gg6hh7) is interior to another branch (not a merge parent) — depends_on is safe.
+depends_on = "ee4ff5gg6hh7"
 def upgrade() -> None:
     # approval_rules: escalation config + CEO notification email
     op.add_column("approval_rules", sa.Column("escalation_days", sa.Integer, nullable=True))

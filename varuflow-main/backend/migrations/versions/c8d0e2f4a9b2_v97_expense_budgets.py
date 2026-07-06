@@ -25,7 +25,6 @@ def upgrade() -> None:
         "MONTH", "QUARTER", "YEAR",
         name="expense_budget_period",
     )
-    period.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "expense_budgets",

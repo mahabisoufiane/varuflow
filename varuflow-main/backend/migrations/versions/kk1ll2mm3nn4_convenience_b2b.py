@@ -233,7 +233,7 @@ def upgrade() -> None:
                   sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
         sa.Column("customer_id", UUID(as_uuid=True), nullable=False),
         sa.Column("title", sa.String(200), nullable=False),
-        sa.Column("quote_ids", JSONB(), nullable=False, server_default="'[]'"),
+        sa.Column("quote_ids", JSONB(), nullable=False, server_default="[]"),
         # array of quote UUIDs from different suppliers
         sa.Column("notes", sa.Text(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True),

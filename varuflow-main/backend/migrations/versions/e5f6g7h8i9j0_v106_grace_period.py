@@ -15,7 +15,6 @@ depends_on = None
 
 def upgrade() -> None:
     grace_status = sa.Enum("active", "recovered", "expired", name="grace_period_status")
-    grace_status.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "subscription_grace_periods",
