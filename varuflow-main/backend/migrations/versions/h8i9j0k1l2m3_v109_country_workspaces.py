@@ -15,33 +15,16 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column(
-        "organizations",
-        sa.Column(
-            "entity_type",
-            sa.String(20),
-            server_default="standalone",
-            nullable=False,
-        ),
-    )
-    op.add_column(
-        "organizations",
-        sa.Column(
-            "parent_org_id",
-            UUID(as_uuid=True),
-            sa.ForeignKey("organizations.id", ondelete="SET NULL"),
-            nullable=True,
-        ),
-    )
+    # entity_type + parent_org_id (and the ix_organizations_parent_org_id index)
+    # are already added on a parallel branch by a4u5v6w7x8y9 (multi_entity_
+    # franchise) with identical definitions. Re-adding them here duplicated the
+    # columns on a fresh `alembic upgrade head` (DuplicateColumnError). This
+    # migration now contributes only country_code.
     op.add_column(
         "organizations",
         sa.Column("country_code", sa.String(2), nullable=True),
     )
-    op.create_index("ix_organizations_parent_org_id", "organizations", ["parent_org_id"])
 
 
 def downgrade() -> None:
-    op.drop_index("ix_organizations_parent_org_id", table_name="organizations")
     op.drop_column("organizations", "country_code")
-    op.drop_column("organizations", "parent_org_id")
-    op.drop_column("organizations", "entity_type")

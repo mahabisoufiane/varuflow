@@ -61,8 +61,17 @@ def upgrade() -> None:
     op.add_column("invoices", sa.Column("quote_id", UUID(as_uuid=True), sa.ForeignKey("quotes.id", ondelete="SET NULL"), nullable=True))
     op.create_index("ix_invoices_quote_id", "invoices", ["quote_id"])
 
+    # Deferred FK: deals.quote_id was added in aa1bb2cc3dd4 (an ancestor of this
+    # migration) without its FK, because `quotes` is created here. Wire it up now
+    # that the table exists. ON DELETE SET NULL matches the original intent.
+    op.create_foreign_key(
+        "fk_deals_quote_id", "deals", "quotes",
+        ["quote_id"], ["id"], ondelete="SET NULL",
+    )
+
 
 def downgrade() -> None:
+    op.drop_constraint("fk_deals_quote_id", "deals", type_="foreignkey")
     op.drop_index("ix_invoices_quote_id", table_name="invoices")
     op.drop_column("invoices", "quote_id")
     op.drop_table("quote_line_items")

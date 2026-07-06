@@ -11,9 +11,8 @@ from sqlalchemy.dialects import postgresql
 revision = "vv2ww3xx4yy5"
 down_revision = "uu1vv2ww3xx4"
 branch_labels = None
-depends_on = None
-
-
+# cross-branch ordering: staff_messages live on parallel branches — apply first
+depends_on = "hh7ii8jj9kk0"
 def upgrade() -> None:
     op.add_column("staff_messages", sa.Column("ref_type", sa.String(50), nullable=True))
     op.add_column("staff_messages", sa.Column("ref_id", postgresql.UUID(as_uuid=True), nullable=True))

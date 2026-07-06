@@ -22,7 +22,10 @@ from sqlalchemy.dialects import postgresql
 revision = "c7e9a1b3d5f8"
 down_revision = "b6d8f0a2c4e7"
 branch_labels = None
-depends_on = None
+# appointment_checkin_tokens has an FK to `appointments`, which is created on a
+# parallel branch (e8f0a2b4c6d9). Force that migration to apply first so a fresh
+# `alembic upgrade head` can't order this table before its FK target exists.
+depends_on = "e8f0a2b4c6d9"
 
 
 def upgrade() -> None:

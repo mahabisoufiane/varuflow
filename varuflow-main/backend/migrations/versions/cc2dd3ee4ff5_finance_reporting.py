@@ -11,9 +11,8 @@ from sqlalchemy.dialects.postgresql import UUID
 revision = "cc2dd3ee4ff5"
 down_revision = "bb1cc2dd3ee4"
 branch_labels = None
-depends_on = None
-
-
+# cross-branch ordering: expense_budgets (which chains after mileage_logs) is on a parallel branch — apply first
+depends_on = "c8d0e2f4a9b2"
 def upgrade() -> None:
     # -- ALTER expense_budgets: add owner + department --
     op.add_column("expense_budgets", sa.Column("owner_staff_id", UUID(as_uuid=True), nullable=True))

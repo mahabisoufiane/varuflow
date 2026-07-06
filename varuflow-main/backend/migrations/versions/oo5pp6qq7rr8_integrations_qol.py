@@ -79,7 +79,7 @@ def upgrade() -> None:
         sa.Column("hook_id", UUID(as_uuid=True),
                   sa.ForeignKey("zapier_hooks.id", ondelete="SET NULL"), nullable=True),
         sa.Column("event_type", sa.String(60), nullable=False),
-        sa.Column("payload", JSONB(), nullable=False, server_default="'{}'"),
+        sa.Column("payload", JSONB(), nullable=False, server_default="{}"),
         sa.Column("status", sa.String(20), nullable=False, server_default="pending"),
         # pending / delivered / failed / skipped
         sa.Column("attempt_count", sa.Integer(), nullable=False, server_default="0"),
@@ -103,7 +103,7 @@ def upgrade() -> None:
         sa.Column("url", sa.String(500), nullable=False),
         sa.Column("secret", sa.String(100), nullable=False),
         # HMAC-SHA256 signing secret — generated automatically
-        sa.Column("events", JSONB(), nullable=False, server_default="'[]'"),
+        sa.Column("events", JSONB(), nullable=False, server_default="[]"),
         # list of event type strings
         sa.Column("description", sa.String(200), nullable=True),
         sa.Column("is_active", sa.Boolean(), nullable=False, server_default="true"),
@@ -125,7 +125,7 @@ def upgrade() -> None:
         sa.Column("org_id", UUID(as_uuid=True),
                   sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
         sa.Column("event_type", sa.String(60), nullable=False),
-        sa.Column("payload", JSONB(), nullable=False, server_default="'{}'"),
+        sa.Column("payload", JSONB(), nullable=False, server_default="{}"),
         sa.Column("response_status", sa.Integer(), nullable=True),
         sa.Column("response_body", sa.Text(), nullable=True),
         sa.Column("delivered_at", sa.DateTime(timezone=True), nullable=True),
@@ -152,7 +152,7 @@ def upgrade() -> None:
         sa.Column("key_prefix", sa.String(12), nullable=False),
         # first 12 chars for display e.g. "vf_abcd1234"
         sa.Column("name", sa.String(100), nullable=False),
-        sa.Column("scopes", JSONB(), nullable=False, server_default="'[]'"),
+        sa.Column("scopes", JSONB(), nullable=False, server_default="[]"),
         # ["bookings:read", "invoices:read", ...]
         sa.Column("is_active", sa.Boolean(), nullable=False, server_default="true"),
         sa.Column("last_used_at", sa.DateTime(timezone=True), nullable=True),
@@ -195,7 +195,7 @@ def upgrade() -> None:
                   sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
         sa.Column("user_id", UUID(as_uuid=True), nullable=False),
         sa.Column("bundle_name", sa.String(100), nullable=False),
-        sa.Column("event_types", JSONB(), nullable=False, server_default="'[]'"),
+        sa.Column("event_types", JSONB(), nullable=False, server_default="[]"),
         sa.Column("delivery_channel", sa.String(20), nullable=False, server_default="email"),
         # push / email / sms / in_app
         sa.Column("schedule", sa.String(20), nullable=False, server_default="immediate"),

@@ -11,9 +11,8 @@ import sqlalchemy as sa
 revision = "qq7rr8ss9tt0"
 down_revision = "pp6qq7rr8ss9"
 branch_labels = None
-depends_on = None
-
-
+# cross-branch ordering: quotes live on parallel branches — apply first
+depends_on = "ee4ff5gg6hh7"
 def upgrade() -> None:
     op.add_column("quotes", sa.Column("acceptance_name", sa.String(200), nullable=True))
     op.add_column("quotes", sa.Column("acceptance_ip", sa.String(45), nullable=True))

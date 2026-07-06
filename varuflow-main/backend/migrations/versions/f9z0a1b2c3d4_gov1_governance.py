@@ -11,9 +11,8 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 revision = "f9z0a1b2c3d4"
 down_revision = "e8y9z0a1b2c3"
 branch_labels = None
-depends_on = None
-
-
+# cross-branch ordering: customer_contracts (which chains after expenses) is on a parallel branch — apply first
+depends_on = "d5e7f9a1b4c5"
 def upgrade() -> None:
     # approval_rules — configurable threshold rules per resource type
     op.create_table(

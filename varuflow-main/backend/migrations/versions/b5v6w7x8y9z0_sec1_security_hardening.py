@@ -12,8 +12,8 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 revision = "b5v6w7x8y9z0"
 down_revision = "a4u5v6w7x8y9"
 branch_labels = None
-depends_on = None
-
+# cross-branch ordering: audit_log live on parallel branches — apply first
+depends_on = "d7f9b2c4e5a8"
 # Genesis hash value for the first row in a chain
 GENESIS_HASH = "0" * 64
 

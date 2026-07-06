@@ -30,7 +30,6 @@ def upgrade() -> None:
         "PENDING", "QUALIFIED", "REWARDED", "REJECTED",
         name="referral_status",
     )
-    referral_status.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "referral_codes",

@@ -25,7 +25,6 @@ def upgrade() -> None:
         "DAILY", "WEEKLY", "MONTHLY", "YEARLY",
         name="recurring_expense_cadence",
     )
-    cadence.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "recurring_expense_templates",

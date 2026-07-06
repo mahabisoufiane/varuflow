@@ -47,9 +47,12 @@ def upgrade() -> None:
     op.add_column("deals", sa.Column("closed_at", sa.DateTime(timezone=True), nullable=True))
 
     # Optional link to a quote that was sent as part of this deal.
+    # The FK to quotes.id is added later in ee4ff5gg6hh7 (portal_quotes), which
+    # creates the `quotes` table and is a DESCENDANT of this migration. Declaring
+    # the FK inline here fails a fresh `alembic upgrade head` — `quotes` does not
+    # exist yet at this point in the migration DAG.
     op.add_column("deals", sa.Column(
         "quote_id", UUID(as_uuid=True),
-        sa.ForeignKey("quotes.id", ondelete="SET NULL"),
         nullable=True,
     ))
 

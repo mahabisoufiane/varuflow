@@ -32,7 +32,7 @@ def upgrade() -> None:
         # ios / android
         sa.Column("widget_size", sa.String(10), nullable=False, server_default="medium"),
         # small / medium / large
-        sa.Column("config", JSONB(), nullable=False, server_default="'{}'"),
+        sa.Column("config", JSONB(), nullable=False, server_default="{}"),
         # per-widget config: refresh_interval, thresholds, layout preferences
         sa.Column("is_active", sa.Boolean(), nullable=False, server_default="true"),
         sa.Column("last_rendered_at", sa.DateTime(timezone=True), nullable=True),
@@ -53,7 +53,7 @@ def upgrade() -> None:
         sa.Column("org_id", UUID(as_uuid=True),
                   sa.ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False),
         sa.Column("widget_type", sa.String(40), nullable=False),
-        sa.Column("snapshot", JSONB(), nullable=False, server_default="'{}'"),
+        sa.Column("snapshot", JSONB(), nullable=False, server_default="{}"),
         # serialized widget payload served to the native app/widget extension
         sa.Column("generated_at", sa.DateTime(timezone=True),
                   server_default=sa.text("NOW()"), nullable=False),
@@ -105,7 +105,7 @@ def upgrade() -> None:
         # e.g. "Show today's revenue"
         sa.Column("action_type", sa.String(40), nullable=False),
         # today_revenue / today_bookings / low_stock / open_invoices / next_appointment
-        sa.Column("action_params", JSONB(), nullable=False, server_default="'{}'"),
+        sa.Column("action_params", JSONB(), nullable=False, server_default="{}"),
         # extra params, e.g. {"date_range": "today", "currency": "SEK"}
         sa.Column("response_template", sa.String(500), nullable=True),
         # optional custom spoken response template

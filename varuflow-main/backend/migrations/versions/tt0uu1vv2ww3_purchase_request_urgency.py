@@ -11,9 +11,8 @@ import sqlalchemy as sa
 revision = "tt0uu1vv2ww3"
 down_revision = "ss9tt0uu1vv2"
 branch_labels = None
-depends_on = None
-
-
+# cross-branch ordering: purchase_requests live on parallel branches — apply first
+depends_on = "cc2dd3ee4ff5"
 def upgrade() -> None:
     op.add_column("purchase_requests", sa.Column("urgency", sa.String(20), nullable=True, server_default="normal"))
     op.add_column("purchase_requests", sa.Column("budget_category", sa.String(100), nullable=True))

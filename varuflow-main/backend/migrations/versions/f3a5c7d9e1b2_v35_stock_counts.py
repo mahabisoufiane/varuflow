@@ -59,7 +59,11 @@ def upgrade() -> None:
         sa.Column("created_by", postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column(
             "status",
-            sa.Enum(
+            # postgresql.ENUM (not sa.Enum) so create_type=False is honored —
+            # the type is pre-created above via .create(checkfirst=True). With
+            # the generic sa.Enum, create_type is ignored and create_table
+            # re-emits CREATE TYPE, failing with DuplicateObjectError.
+            postgresql.ENUM(
                 "DRAFT",
                 "SUBMITTED",
                 "SYNCED",
