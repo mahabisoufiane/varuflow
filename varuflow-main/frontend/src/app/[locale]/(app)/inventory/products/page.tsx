@@ -2,6 +2,7 @@
 
 import { api } from "@/lib/api-client";
 import { Link } from "@/i18n/navigation";
+import ContentPanel from "@/components/console/ContentPanel";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -85,6 +86,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
   const [batchesByProduct, setBatchesByProduct] = useState<Record<string, Batch>>({});
+  const [selected, setSelected] = useState<Product | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const t = useTranslations("inventory");
 
@@ -250,17 +252,8 @@ export default function ProductsPage() {
         CSV format: <code className="rounded bg-gray-100 px-1">name, sku, category, unit, purchase_price, sell_price, tax_rate</code>
       </p>
 
-      {/* Table */}
-      {loading ? (
-        <div className="divide-y rounded-2xl border border-gray-200 bg-white shadow-sm">
-          {[1,2,3,4,5].map(i => (
-            <div key={i} className="flex gap-4 px-5 py-4 animate-pulse">
-              <div className="h-4 w-40 rounded bg-gray-100" /><div className="h-4 w-20 rounded bg-gray-100" />
-              <div className="ml-auto h-4 w-16 rounded bg-gray-100" />
-            </div>
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
+      {/* Products — ContentPanel (shadcn Table + detail Sheet) */}
+      {!loading && filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-200 bg-white py-20 text-center">
           <Package className="mx-auto h-8 w-8 text-gray-200 mb-2" />
           <p className="text-sm text-gray-400">{search ? "No products match" : "No products yet"}</p>
@@ -272,62 +265,65 @@ export default function ProductsPage() {
           )}
         </div>
       ) : (
-        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/70">
-                {["Product", "SKU", "Category", "Buy", "Sell", "Margin", "VAT", t("batch_number"), ""].map(h => (
-                  <th key={h} className={`px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-400 ${h === "" ? "" : h === "Buy" || h === "Sell" || h === "Margin" ? "text-right" : "text-left"}`}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filtered.map(p => {
-                const mgn = margin(p.purchase_price, p.sell_price);
-                const batch = batchesByProduct[p.id];
-                return (
-                  <tr key={p.id} className="hover:bg-gray-50/70 transition-colors">
-                    <td className="px-4 py-3.5">
-                      <span className="font-semibold text-gray-900">{p.name}</span>
-                    </td>
-                    <td className="px-4 py-3.5 font-mono text-xs text-gray-400">{p.sku}</td>
-                    <td className="px-4 py-3.5 text-gray-500">
-                      {p.category ? (
-                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium">{p.category}</span>
-                      ) : <span className="text-gray-300">—</span>}
-                    </td>
-                    <td className="px-4 py-3.5 text-right font-mono text-gray-600">{Number(p.purchase_price).toFixed(2)}</td>
-                    <td className="px-4 py-3.5 text-right font-mono font-semibold text-gray-900">{Number(p.sell_price).toFixed(2)}</td>
-                    <td className="px-4 py-3.5 text-right">
-                      {mgn !== null && (
-                        <span className={`tabular-nums text-xs font-semibold ${mgn < 20 ? "text-red-500" : mgn < 40 ? "text-amber-500" : "text-emerald-600"}`}>
-                          {mgn}%
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3.5 text-center"><VatBadge rate={p.tax_rate} /></td>
-                    <td className="px-4 py-3.5">
-                      {batch ? (
-                        <ExpiryBadge batch={batch} tExpiry={t("expiry_date")} />
-                      ) : (
-                        <span className="text-gray-300 text-xs">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3.5 text-right">
-                      <Link
-                        href={`/inventory/products/${p.id}`}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+          <ContentPanel<Product>
+            hideHeader
+            title="Products"
+            rows={filtered}
+            loading={loading}
+            getRowId={(p) => p.id}
+            columns={[
+              { key: "name", header: "Product", render: (p) => <span className="font-semibold text-foreground">{p.name}</span> },
+              { key: "sku", header: "SKU", render: (p) => <span className="font-mono text-xs text-muted-foreground">{p.sku}</span> },
+              { key: "category", header: "Category", render: (p) => p.category ? <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium">{p.category}</span> : <span className="text-gray-300">—</span> },
+              { key: "purchase_price", header: "Buy", className: "text-right", render: (p) => <span className="font-mono">{Number(p.purchase_price).toFixed(2)}</span> },
+              { key: "sell_price", header: "Sell", className: "text-right", render: (p) => <span className="font-mono font-semibold">{Number(p.sell_price).toFixed(2)}</span> },
+              { key: "margin", header: "Margin", className: "text-right", render: (p) => { const m = margin(p.purchase_price, p.sell_price); return m !== null ? <span className={`tabular-nums text-xs font-semibold ${m < 20 ? "text-red-500" : m < 40 ? "text-amber-500" : "text-emerald-600"}`}>{m}%</span> : null; } },
+              { key: "tax_rate", header: "VAT", render: (p) => <VatBadge rate={p.tax_rate} /> },
+              { key: "batch", header: t("batch_number"), render: (p) => { const b = batchesByProduct[p.id]; return b ? <ExpiryBadge batch={b} tExpiry={t("expiry_date")} /> : <span className="text-gray-300 text-xs">—</span>; } },
+            ]}
+            selected={selected}
+            onSelect={setSelected}
+            detailTitle={(p) => p.name}
+            detailDescription={(p) => p.sku}
+            renderDetail={(p) => {
+              const m = margin(p.purchase_price, p.sell_price);
+              const b = batchesByProduct[p.id];
+              return (
+                <div className="space-y-4">
+                  <dl className="divide-y">
+                    {([
+                      ["SKU", p.sku],
+                      ["Category", p.category || "—"],
+                      ["Unit", p.unit],
+                      ["Buy price", Number(p.purchase_price).toFixed(2)],
+                      ["Sell price", Number(p.sell_price).toFixed(2)],
+                      ["Margin", m !== null ? `${m}%` : "—"],
+                    ] as [string, string][]).map(([label, val]) => (
+                      <div key={label} className="grid grid-cols-3 gap-2 py-2.5">
+                        <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+                        <dd className="col-span-2 text-sm text-foreground">{val}</dd>
+                      </div>
+                    ))}
+                    <div className="grid grid-cols-3 gap-2 py-2.5">
+                      <dt className="text-xs font-medium text-muted-foreground">VAT</dt>
+                      <dd className="col-span-2"><VatBadge rate={p.tax_rate} /></dd>
+                    </div>
+                    {b && (
+                      <div className="grid grid-cols-3 gap-2 py-2.5">
+                        <dt className="text-xs font-medium text-muted-foreground">{t("batch_number")}</dt>
+                        <dd className="col-span-2"><ExpiryBadge batch={b} tExpiry={t("expiry_date")} /></dd>
+                      </div>
+                    )}
+                  </dl>
+                  <Link href={`/inventory/products/${p.id}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#0d1117] px-4 py-2 text-sm font-medium text-white hover:bg-[#161b22]">
+                    <Pencil className="h-3.5 w-3.5" />Edit product
+                  </Link>
+                </div>
+              );
+            }}
+          />
         </div>
       )}
     </div>
