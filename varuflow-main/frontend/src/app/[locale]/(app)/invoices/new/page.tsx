@@ -47,12 +47,14 @@ export default function NewInvoicePage() {
     setDueDate(addDays(t, 30));
   }, []);
 
+  const [loadingRefs, setLoadingRefs] = useState(true);
   useEffect(() => {
     Promise.all([
       api.get<Customer[]>("/api/invoicing/customers?is_active=true"),
       api.get<{ items: Product[] }>("/api/inventory/products?limit=200&is_active=true"),
     ]).then(([c, p]) => { setCustomers(c); setProducts(p.items); })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(e.message))
+      .finally(() => setLoadingRefs(false));
   }, []);
 
   async function loadCustomerDepositInvoices(cid: string) {
@@ -179,12 +181,12 @@ export default function NewInvoicePage() {
           <h2 className="font-semibold text-gray-900">Invoice details</h2>
           <div className="space-y-1.5">
             <Label>Customer *</Label>
-            <select required value={customerId} onChange={(e) => handleCustomerChange(e.target.value)} data-testid="customer-select"
+            <select required disabled={loadingRefs} value={customerId} onChange={(e) => handleCustomerChange(e.target.value)} data-testid="customer-select"
               className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#1a2332] focus:outline-none focus:ring-1 focus:ring-[#1a2332]">
-              <option value="">Select customer…</option>
+              <option value="">{loadingRefs ? "Loading customers…" : "Select customer…"}</option>
               {customers.map((c) => <option key={c.id} value={c.id}>{c.company_name}</option>)}
             </select>
-            {customers.length === 0 && (
+            {!loadingRefs && customers.length === 0 && (
               <p className="text-xs text-muted-foreground">
                 No customers yet. <Link href="/customers" className="text-[#1a2332] underline">Add one first.</Link>
               </p>

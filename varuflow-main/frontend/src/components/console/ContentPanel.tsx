@@ -71,6 +71,8 @@ export interface ContentPanelProps<T> {
   renderDetail?: (row: T) => React.ReactNode;
   /** Hide the built-in title/count header (e.g. when the host page has its own). */
   hideHeader?: boolean;
+  /** Compact ~34px rows (Fortnox-grade density). Default true for list screens. */
+  dense?: boolean;
   className?: string;
 }
 
@@ -89,6 +91,7 @@ export function ContentPanel<T>({
   detailFields,
   renderDetail,
   hideHeader = false,
+  dense = true,
   className,
 }: ContentPanelProps<T>) {
   const t = useTranslations("console");
@@ -118,7 +121,7 @@ export function ContentPanel<T>({
           <TableHeader>
             <TableRow>
               {columns.map((c) => (
-                <TableHead key={c.key} className={c.className}>
+                <TableHead key={c.key} className={cn(dense && "h-9 px-3 text-xs", c.className)}>
                   {c.header}
                 </TableHead>
               ))}
@@ -129,7 +132,7 @@ export function ContentPanel<T>({
               Array.from({ length: 6 }).map((_, i) => (
                 <TableRow key={`sk-${i}`}>
                   {columns.map((c) => (
-                    <TableCell key={c.key}>
+                    <TableCell key={c.key} className={cn(dense && "px-3 py-2")}>
                       <Skeleton className="h-4 w-24" />
                     </TableCell>
                   ))}
@@ -152,7 +155,7 @@ export function ContentPanel<T>({
                     className={cn(selectable && "cursor-pointer")}
                   >
                     {columns.map((c) => (
-                      <TableCell key={c.key} className={c.className}>
+                      <TableCell key={c.key} className={cn(dense && "px-3 py-2", c.className)}>
                         {c.render ? c.render(row) : String((row as Record<string, unknown>)[c.key] ?? "")}
                       </TableCell>
                     ))}

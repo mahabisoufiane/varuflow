@@ -374,7 +374,7 @@ export default function DashboardPage() {
                     <p className="mt-1 text-sm vf-text-m">Create an invoice and it will appear here with payment tracking.</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Link href="/invoices/new" className="vf-btn text-xs px-3.5 h-8">
+                    <Link href="/invoices/new" className="vf-btn-secondary text-xs px-3.5 h-8">
                       <Plus className="h-3.5 w-3.5" />Create invoice
                     </Link>
                     <Link href="/customers/new" className="vf-btn-ghost text-xs px-3.5 h-8">
@@ -429,7 +429,7 @@ export default function DashboardPage() {
 
                 <div className="flex items-center gap-2">
                   <Link href="/invoices?status=SENT"
-                    className="vf-btn text-xs px-3.5 h-8">
+                    className="vf-btn-secondary text-xs px-3.5 h-8">
                     View invoices <ArrowUpRight className="h-3 w-3" />
                   </Link>
                   <Link href="/analytics"

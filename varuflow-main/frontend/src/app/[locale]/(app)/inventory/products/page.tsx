@@ -117,9 +117,20 @@ export default function ProductsPage() {
     } catch { /* optional enrichment */ }
   }
 
+  // Server-side search (P1): the client-side `filtered` below only ever saw
+  // the first 100 rows, so catalogs beyond that returned wrong results.
+  // Debounce 300ms, then let the API's ?search= do the real filtering.
   useEffect(() => {
-    fetchProducts();
+    const t = setTimeout(() => fetchProducts(search), 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
+
+  useEffect(() => {
+    // fetchProducts happens via the debounced search effect above (fires on
+    // mount with the empty query) — only batches need a separate mount load.
     fetchBatches();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleCSVImport(e: React.ChangeEvent<HTMLInputElement>) {

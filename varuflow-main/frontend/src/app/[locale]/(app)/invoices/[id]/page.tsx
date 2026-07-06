@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowLeft, Mail, Link2, CheckCircle2, Clock } from "lucide-react";
@@ -82,8 +83,9 @@ export default function InvoiceDetailPage() {
     setUpdating(true);
     try {
       await api.patch(`/api/invoicing/invoices/${invoice.id}/status`, { status: next });
+      toast.success(`${invoice.invoice_number} → ${next.toLowerCase()}`);
       await load();
-    } catch (e: any) { setError(e.message); } finally { setUpdating(false); }
+    } catch (e: any) { toast.error(e.message); } finally { setUpdating(false); }
   }
 
   async function handlePayment(e: React.FormEvent) {
@@ -96,8 +98,9 @@ export default function InvoiceDetailPage() {
         reference: payForm.reference || null,
       });
       setPayOpen(false);
+      toast.success("Payment recorded");
       await load();
-    } catch (e: any) { setError(e.message); } finally { setPaying(false); }
+    } catch (e: any) { toast.error(e.message); } finally { setPaying(false); }
   }
 
   async function handleSendEmail() {
@@ -107,8 +110,10 @@ export default function InvoiceDetailPage() {
       const res = await api.post<{ status: string; to?: string; reason?: string }>(
         `/api/invoicing/invoices/${invoice.id}/send`, {}
       );
+      if (res.status === "sent") toast.success(`Sent to ${res.to}`);
+      else toast.info(res.reason ?? "Send skipped");
       setSendMsg(res.status === "sent" ? `Sent to ${res.to}` : res.reason ?? "Skipped");
-    } catch (e: any) { setError(e.message); } finally { setSending(false); }
+    } catch (e: any) { toast.error(e.message); } finally { setSending(false); }
   }
 
   async function handleSendPaymentLink() {
