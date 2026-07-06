@@ -72,21 +72,36 @@ def run_migrations_offline() -> None:
 # Online mode — connect to the live database and apply migrations
 # ---------------------------------------------------------------------------
 def _include_object(object_, name, type_, reflected, compare_to):
-    # Opt-in additive-only autogenerate. With ALEMBIC_ADDITIVE_ONLY=1, restrict
-    # detection to objects present in the models but absent from the DB
-    # (compare_to is None and not reflected). This lets us generate a drift
-    # catch-up migration that only ADDS missing tables/columns/indexes without
-    # churning or dropping existing schema. Unset (default): normal behaviour.
+    # Opt-in additive-only autogenerate (ALEMBIC_ADDITIVE_ONLY=1): emit only
+    # ADD operations — new tables, new columns and new indexes present in the
+    # models but absent from the DB — never drops or alters. Unset: normal.
+    #
+    # Type-aware on purpose. The naive form `(not reflected) and (compare_to
+    # is None)` also excluded every *existing* (reflected) table, which makes
+    # alembic skip diffing their contents entirely — missing COLUMNS on
+    # existing tables were silently never detected (that gap is how
+    # organizations.fiscal_year_start & co. were missed in 7b5ce99831ed).
     if os.getenv("ALEMBIC_ADDITIVE_ONLY") == "1":
+        if type_ == "table":
+            # New model table → include; existing pair → include so column
+            # diffs run; DB-only table (would be a DROP) → exclude.
+            return not (reflected and compare_to is None)
+        # Columns/indexes/constraints: only genuinely-new model objects
+        # (add_column / create_index). Excluding matched pairs also disables
+        # alter_column churn; excluding reflected-only objects disables drops.
         return (not reflected) and (compare_to is None)
     return True
 
 
 def do_run_migrations(connection: Connection) -> None:
+    additive = os.getenv("ALEMBIC_ADDITIVE_ONLY") == "1"
     context.configure(
         connection=connection,
         target_metadata=target_metadata,
         include_object=_include_object,
+        # In additive mode, belt-and-braces: never emit type/default rewrites.
+        compare_type=not additive,
+        compare_server_default=False,
     )
     with context.begin_transaction():
         context.run_migrations()

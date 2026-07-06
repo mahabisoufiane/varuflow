@@ -25,7 +25,10 @@ class LineItemIn(BaseModel):
     description: str
     quantity: float = 1
     unit_price: float
-    tax_rate: float = 0
+    # Swedish standard VAT by default; send 12/6/0 explicitly for reduced or
+    # zero-rated lines. VAT is computed per line (see create_quote) so quote
+    # totals agree with the invoice later generated from the same lines.
+    tax_rate: float = 25
 
 
 class QuoteCreate(BaseModel):
@@ -76,12 +79,16 @@ async def create_quote(body: QuoteCreate, member=Depends(get_current_member), db
     try:
         org_id = member["org_id"]
         subtotal = Decimal("0")
+        vat = Decimal("0")
         items_data = []
         for i, item in enumerate(body.items):
             lt = Decimal(str(item.quantity)) * Decimal(str(item.unit_price))
             subtotal += lt
+            # Per-line VAT — a 12% food line and a 25% goods line must not
+            # both be taxed at a blanket 25%; the invoice generated from these
+            # same lines computes per-line, and the two documents must agree.
+            vat += lt * Decimal(str(item.tax_rate)) / Decimal("100")
             items_data.append((item, lt, i))
-        vat = subtotal * Decimal("0.25")  # Default 25% Swedish VAT
         total = subtotal + vat
 
         quote = Quote(
