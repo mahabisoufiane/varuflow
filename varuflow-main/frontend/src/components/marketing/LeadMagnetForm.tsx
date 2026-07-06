@@ -34,14 +34,15 @@ export default function LeadMagnetForm({
 
     try {
       // Register lead with newsletter/waitlist endpoint
-      const res = await fetch(`${API}/api/waitlist/signup`, {
+      const res = await fetch(`${API}/api/waitlist`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          name: name || undefined,
+          // Backend WaitlistJoin accepts { email, company_name } — extras are
+          // ignored, so map the name field onto company_name to keep it.
+          company_name: name || undefined,
           source: `lead_magnet_${pdfSlug}`,
-          tags: ["lead_magnet", pdfSlug],
         }),
       });
       // 409 = already signed up — still give download access

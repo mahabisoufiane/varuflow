@@ -23,12 +23,20 @@ export default function DemoRequestForm() {
     setLoading(true);
     setError("");
     try {
-      // Post to waitlist endpoint with demo source — no dedicated demo endpoint yet
-      await fetch(`${API}/api/waitlist/signup`, {
+      // Captured via the marketing waitlist (no dedicated demo endpoint yet).
+      // Real route is POST /api/waitlist ("/signup" hit a dynamic segment and
+      // failed) — and the old code never checked res.ok, so visitors saw
+      // "request received" while nothing was saved.
+      const res = await fetch(`${API}/api/waitlist`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, source: "demo_request" }),
+        body: JSON.stringify({
+          email: form.email,
+          // Backend stores {email, company_name} — keep company + contact name.
+          company_name: `${form.company} — ${form.name} (demo request)`.slice(0, 255),
+        }),
       });
+      if (!res.ok && res.status !== 409) throw new Error(`HTTP ${res.status}`);
       setDone(true);
     } catch {
       setError("Something went wrong. Please try again or email us directly.");

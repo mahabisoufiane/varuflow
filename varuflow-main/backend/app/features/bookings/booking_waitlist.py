@@ -30,7 +30,10 @@ from app.middleware.auth import get_current_member
 from app.middleware.plan_check import require_module
 from .booking_waitlist_models import BookingWaitlistEntry
 
-router = APIRouter(prefix="/api/waitlist", tags=["booking-waitlist"], dependencies=[Depends(require_module("invoicing"))])
+# /api/booking-waitlist — NOT /api/waitlist, which is the public marketing
+# email capture (this auth-gated router registering first shadowed it and
+# 405/422'd every landing-page signup).
+router = APIRouter(prefix="/api/booking-waitlist", tags=["booking-waitlist"], dependencies=[Depends(require_module("invoicing"))])
 log = logging.getLogger(__name__)
 
 

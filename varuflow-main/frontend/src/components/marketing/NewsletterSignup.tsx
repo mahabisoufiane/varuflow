@@ -19,7 +19,7 @@ export default function NewsletterSignup({ compact = false }: { compact?: boolea
 
     try {
       // Best-effort: POST to /api/waitlist (re-use existing waitlist endpoint for newsletter)
-      const res = await fetch(`${API}/api/waitlist/signup`, {
+      const res = await fetch(`${API}/api/waitlist`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, source: "newsletter_signup" }),

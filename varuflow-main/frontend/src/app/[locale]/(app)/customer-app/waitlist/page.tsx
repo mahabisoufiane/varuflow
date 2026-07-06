@@ -58,7 +58,7 @@ export default function WaitlistPage() {
   async function load() {
     setLoading(true);
     try {
-      const data = await api.get<WaitlistEntry[]>("/api/waitlist");
+      const data = await api.get<WaitlistEntry[]>("/api/booking-waitlist");
       data.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
       setEntries(data);
     } catch {
@@ -74,7 +74,7 @@ export default function WaitlistPage() {
     if (!addForm.customer_id.trim()) { toast.error("Customer ID is required"); return; }
     setActionLoading("add");
     try {
-      await api.post("/api/waitlist", {
+      await api.post("/api/booking-waitlist", {
         customer_id: addForm.customer_id,
         service_id: addForm.service_id || null,
         preferred_date: addForm.preferred_date || null,
@@ -97,7 +97,7 @@ export default function WaitlistPage() {
   async function notifyEntry(id: string) {
     setActionLoading(id + "_notify");
     try {
-      await api.post(`/api/waitlist/${id}/notify`, {});
+      await api.post(`/api/booking-waitlist/${id}/notify`, {});
       toast.success("Customer notified, offer expires in 24h");
       await load();
     } catch {
@@ -110,7 +110,7 @@ export default function WaitlistPage() {
   async function bookEntry(id: string) {
     setActionLoading(id + "_book");
     try {
-      await api.post(`/api/waitlist/${id}/book`, {});
+      await api.post(`/api/booking-waitlist/${id}/book`, {});
       toast.success("Waitlist booking confirmed");
       await load();
     } catch {
@@ -123,7 +123,7 @@ export default function WaitlistPage() {
   async function removeEntry(id: string) {
     setActionLoading(id + "_remove");
     try {
-      await api.delete(`/api/waitlist/${id}`);
+      await api.delete(`/api/booking-waitlist/${id}`);
       toast.success("Removed from waitlist");
       await load();
     } catch {
