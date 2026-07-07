@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api-client";
 
-interface UnreadCustomer { customer_id: string; unread_count: number; last_message_at: string | null; }
+interface UnreadCustomer { customer_id: string; unread_count: number; last_message_at: string | null; needs_human?: boolean; }
 interface Message { id: string; sender_type: string; body: string; created_at: string; }
 
 export default function PortalAdminChatPage() {
@@ -33,7 +33,14 @@ export default function PortalAdminChatPage() {
         <h2 className="p-3 font-bold border-b">Conversations</h2>
         {customers.map(c => (
           <button key={c.customer_id} onClick={() => openChat(c.customer_id)} className={`w-full text-left px-3 py-2 border-b hover:bg-gray-50 ${selected === c.customer_id ? "bg-blue-50" : ""}`}>
-            <div className="text-sm font-medium truncate">{c.customer_id.slice(0, 8)}...</div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium truncate">{c.customer_id.slice(0, 8)}...</span>
+              {c.needs_human && (
+                <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                  Needs human
+                </span>
+              )}
+            </div>
             <div className="text-xs text-gray-500 flex justify-between">
               <span>{c.unread_count} unread</span>
               <span>{c.last_message_at ? new Date(c.last_message_at).toLocaleDateString() : ""}</span>
@@ -47,6 +54,11 @@ export default function PortalAdminChatPage() {
           {messages.map(m => (
             <div key={m.id} className={`flex ${m.sender_type === "staff" ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[70%] rounded-lg px-3 py-2 text-sm ${m.sender_type === "staff" ? "bg-blue-600 text-white" : "bg-gray-100"}`}>
+                {m.sender_type === "bot" && (
+                  <div className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--vf-brand-primary)" }}>
+                    Bot
+                  </div>
+                )}
                 {m.body}
                 <div className={`text-xs mt-1 ${m.sender_type === "staff" ? "text-blue-200" : "text-gray-400"}`}>{new Date(m.created_at).toLocaleTimeString()}</div>
               </div>

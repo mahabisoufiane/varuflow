@@ -41,7 +41,18 @@ async def chat_unread(member=Depends(get_current_member), db: AsyncSession = Dep
             .group_by(PortalChatMessage.customer_id)
             .order_by(func.max(PortalChatMessage.created_at).desc())
         )).all()
-        return [{"customer_id": str(r.customer_id), "unread_count": r.unread_count, "last_message_at": r.last_msg.isoformat() if r.last_msg else None} for r in rows]
+        # Customers whose active bot conversation escalated to a human
+        # (portal_chatbot sets escalated_at with visitor_id = customer_id).
+        from app.features.ai.model_chatbot import ChatbotConversation
+        escalated = set((await db.execute(
+            select(ChatbotConversation.visitor_id)
+            .where(
+                ChatbotConversation.org_id == org_id,
+                ChatbotConversation.escalated_at.is_not(None),
+                ChatbotConversation.visitor_id.in_([r.customer_id for r in rows]),
+            )
+        )).scalars().all()) if rows else set()
+        return [{"customer_id": str(r.customer_id), "unread_count": r.unread_count, "last_message_at": r.last_msg.isoformat() if r.last_msg else None, "needs_human": r.customer_id in escalated} for r in rows]
     except HTTPException:
         raise
     except Exception as e:

@@ -142,7 +142,9 @@ async def upsert_chatbot_config(
                     "escalation_threshold": body.escalation_threshold,
                     "knowledge_base_enabled": body.knowledge_base_enabled,
                     "handoff_email": body.handoff_email,
-                    "updated_at": datetime.now(timezone.utc),
+                    # chatbot_configs.updated_at is timestamp WITHOUT
+                    # time zone — asyncpg rejects aware datetimes here.
+                    "updated_at": datetime.now(timezone.utc).replace(tzinfo=None),
                 },
             )
             .returning(ChatbotConfig)
@@ -163,7 +165,14 @@ async def chatbot_chat(
     body: ChatIn,
     db: AsyncSession = Depends(get_db),
 ):
-    """PUBLIC — no auth required. Visitor sends message to the bot."""
+    """PUBLIC — no auth required. Visitor sends message to the bot.
+
+    This is the future public-widget endpoint (org_id supplied by the
+    embedding site). Only *published* KB articles are exposed and it never
+    sends email. Before any widget ships, add per-IP rate limiting here.
+    The portal chat bot lives in services/portal_chatbot.py instead —
+    portal-token authenticated, org_id from the token.
+    """
     try:
         org_id = body.org_id
         visitor_id = body.visitor_id
@@ -210,7 +219,8 @@ async def chatbot_chat(
         messages.append({"role": "visitor", "content": body.message, "ts": datetime.now(timezone.utc).isoformat()})
         messages.append({"role": "bot", "content": reply, "ts": datetime.now(timezone.utc).isoformat()})
         conv.messages = messages
-        conv.updated_at = datetime.now(timezone.utc)
+        # naive column — see updated_at note above
+        conv.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
 
         # Check escalation
         config = (

@@ -3217,3 +3217,56 @@ async def send_trial_onboarding_email(
         return False
 
     return await handler(to_email=to_email, tokens=merged_tokens)
+
+
+async def send_chat_handoff_email(
+    *,
+    to_email: str,
+    org_name: str,
+    customer_name: str,
+    recent_messages: list[dict],
+) -> bool:
+    """Notify the configured handoff address that the portal chatbot
+    escalated a conversation to a human. Returns False when Resend isn't
+    configured or the destination address is blank (dev-safe no-op)."""
+    if not settings.RESEND_API_KEY or not to_email:
+        return False
+
+    def _row(m: dict) -> str:
+        who = {"visitor": "Customer", "bot": "Bot"}.get(m.get("role", ""), "Staff")
+        return (
+            f'<tr><td style="padding:4px 8px;color:#888;white-space:nowrap;'
+            f'vertical-align:top">{_h(who)}</td>'
+            f'<td style="padding:4px 8px">{_h((m.get("content") or "")[:400])}</td></tr>'
+        )
+
+    transcript_rows = "".join(_row(m) for m in recent_messages[-6:])
+
+    payload = {
+        "from": _from_header("Varuflow", "support@varuflow.app"),
+        "to": [to_email],
+        "subject": f"Chat handoff — {customer_name} needs a human",
+        "html": f"""
+        <div style="font-family:sans-serif;max-width:620px;margin:0 auto">
+          <h2 style="color:#1a2332">A portal chat needs a human</h2>
+          <p>The chatbot couldn't resolve a conversation with
+             <strong>{_h(customer_name)}</strong>. The customer has been told
+             a team member will follow up.</p>
+          <table style="border-collapse:collapse;font-size:14px;background:#f7f8fa;
+                        border-radius:8px;width:100%">{transcript_rows}</table>
+          <p style="margin-top:16px">Reply from <strong>Portal Admin →
+             Chat</strong> in Varuflow.</p>
+          <p style="color:#888;font-size:12px;margin-top:24px">
+            Organisation: {_h(org_name)}
+          </p>
+        </div>
+        """,
+    }
+
+    async with httpx.AsyncClient(timeout=15) as client:
+        res = await client.post(
+            RESEND_URL,
+            json=payload,
+            headers={"Authorization": f"Bearer {settings.RESEND_API_KEY}"},
+        )
+    return res.status_code in (200, 201)

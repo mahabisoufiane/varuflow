@@ -35,6 +35,9 @@ export default function PortalChatPage() {
     await portalApi.post("/api/portal/chat", { body: input });
     setInput("");
     load();
+    // The bot (if the org enabled it) replies via a background task —
+    // pull once more before the next 5s poll tick so it appears fast.
+    setTimeout(load, 2500);
   };
 
   return (
@@ -44,6 +47,11 @@ export default function PortalChatPage() {
         {messages.map(m => (
           <div key={m.id} className={`flex ${m.sender_type === "customer" ? "justify-end" : "justify-start"}`}>
             <div className={`max-w-[70%] rounded-lg px-3 py-2 text-sm ${m.sender_type === "customer" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-900"}`}>
+              {m.sender_type === "bot" && (
+                <div className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--vf-brand-primary)" }}>
+                  Assistant
+                </div>
+              )}
               {m.body}
               <div className={`text-xs mt-1 ${m.sender_type === "customer" ? "text-blue-200" : "text-gray-400"}`}>
                 {new Date(m.created_at).toLocaleTimeString()}

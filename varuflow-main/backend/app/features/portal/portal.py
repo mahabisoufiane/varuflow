@@ -16,7 +16,7 @@ import uuid
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel, EmailStr, Field
@@ -1202,6 +1202,7 @@ class ChatMessageIn(BaseModel):
 @router.post("/chat", status_code=201)
 async def portal_chat_send(
     body: ChatMessageIn,
+    background_tasks: BackgroundTasks,
     ctx: tuple[uuid.UUID, uuid.UUID] = Depends(get_portal_customer),
     db: AsyncSession = Depends(get_db),
 ):
@@ -1210,6 +1211,17 @@ async def portal_chat_send(
     db.add(msg)
     await db.commit()
     await db.refresh(msg)
+    # Bot pipeline runs AFTER the response with its own session — message
+    # persistence can never be blocked by KB lookup or an LLM call. The
+    # task is a no-op unless the org opted in via /api/chatbot/config.
+    from app.services.portal_chatbot import run_bot_turn
+    background_tasks.add_task(
+        run_bot_turn,
+        org_id=org_id,
+        customer_id=customer_id,
+        message_id=msg.id,
+        message_body=msg.body,
+    )
     return {"id": str(msg.id), "sender_type": "customer", "body": msg.body, "created_at": msg.created_at.isoformat()}
 
 
