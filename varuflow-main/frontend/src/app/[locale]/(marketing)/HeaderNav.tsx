@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 
 export default function MarketingHeaderNav() {
+  const t = useTranslations("home");
   const pathname = usePathname();
   const router = useRouter();
   const locale = useLocale();
@@ -76,7 +78,7 @@ export default function MarketingHeaderNav() {
           className="rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
           style={{ background: "rgba(255,255,255,0.12)", color: "#fff" }}
         >
-          Go to app
+          {t("nav.goToApp")}
         </Link>
       ) : (
         <div className="flex items-center gap-2">
@@ -84,14 +86,14 @@ export default function MarketingHeaderNav() {
             href="/auth/login"
             className="rounded-lg px-4 py-2 text-sm font-semibold text-white/85 transition-colors hover:text-white"
           >
-            Log in
+            {t("nav.login")}
           </Link>
           <Link
             href="/auth/signup"
             className="rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
             style={{ background: "var(--vf-brand-primary)", color: "#fff" }}
           >
-            Get started
+            {t("nav.getStarted")}
           </Link>
         </div>
       )}

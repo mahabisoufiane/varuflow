@@ -8,77 +8,33 @@ import {
   Shield, Globe, Bot, Star,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/marketing/ScrollReveal";
+import { useTranslations } from "next-intl";
 
 /* ── Data ────────────────────────────────────────────────────────────────── */
+// Copy lives in messages/*.json under home.features.* (sv is the primary market).
 const FEATURES = [
-  {
-    icon: Package,
-    title: "Real-time inventory",
-    body: "Live stock across every warehouse. Low-stock alerts fire before customers notice. Goods-in and adjustment records in seconds.",
-    color: "from-blue-500 to-cyan-500",
-  },
-  {
-    icon: FileText,
-    title: "SE-compliant invoicing",
-    body: "25 / 12 / 6 % VAT baked in. PDF export, payment tracking, automatic overdue detection — no Fortnox copy-paste ever again.",
-    color: "from-violet-500 to-indigo-500",
-  },
-  {
-    icon: TrendingUp,
-    title: "Cash flow visibility",
-    body: "Aging reports show 30 / 60 / 90+ day buckets at a glance. Always know what's outstanding and what's overdue.",
-    color: "from-emerald-500 to-teal-500",
-  },
-  {
-    icon: ShoppingCart,
-    title: "Point of sale",
-    body: "Fast checkout with barcode scanning, split payments, and automatic stock deduction. Works offline, syncs when you reconnect.",
-    color: "from-orange-500 to-amber-500",
-  },
-  {
-    icon: Bot,
-    title: "AI advisor",
-    body: "Flags cash-flow risks, suggests reorder quantities, and drafts purchase orders — before you even think to ask.",
-    color: "from-pink-500 to-rose-500",
-  },
-  {
-    icon: BarChart3,
-    title: "Demand forecasting",
-    body: "See your fastest movers and seasonal patterns. Auto-generated POs based on real historical movement data.",
-    color: "from-indigo-500 to-purple-500",
-  },
-];
+  { icon: Package,      k: "f1", color: "from-blue-500 to-cyan-500" },
+  { icon: FileText,     k: "f2", color: "from-violet-500 to-indigo-500" },
+  { icon: TrendingUp,   k: "f3", color: "from-emerald-500 to-teal-500" },
+  { icon: ShoppingCart, k: "f4", color: "from-orange-500 to-amber-500" },
+  { icon: Bot,          k: "f5", color: "from-pink-500 to-rose-500" },
+  { icon: BarChart3,    k: "f6", color: "from-indigo-500 to-purple-500" },
+] as const;
 
-const STEPS = [
-  { n: "1", title: "Create your account", body: "Sign up in 60 seconds. No credit card required." },
-  { n: "2", title: "Import your data", body: "Upload products, customers, and opening stock from CSV or Excel." },
-  { n: "3", title: "Start selling", body: "Issue invoices, manage inventory, and accept payments — all in one tab." },
-];
+const STEPS = [{ n: "1", k: "s1" }, { n: "2", k: "s2" }, { n: "3", k: "s3" }] as const;
 
 const TRUST_ITEMS = [
-  { icon: Shield, label: "GDPR-compliant" },
-  { icon: Globe, label: "EU data residency" },
-  { icon: CheckCircle2, label: "Bokföringslagen ready" },
-  { icon: RefreshCw, label: "99.9 % uptime SLA" },
-];
+  { icon: Shield, k: "gdpr" },
+  { icon: Globe, k: "eu" },
+  { icon: CheckCircle2, k: "bokforing" },
+  { icon: RefreshCw, k: "uptime" },
+] as const;
 
 const TESTIMONIALS = [
-  {
-    quote: "Finally an alternative for those of us who've outgrown Excel but don't want an ERP.",
-    name: "Mattias L.",
-    role: "Food wholesale · Gothenburg",
-  },
-  {
-    quote: "We cut invoice processing time by 70 %. The Fortnox sync alone paid for itself in week one.",
-    name: "Sara K.",
-    role: "Building supplies · Stockholm",
-  },
-  {
-    quote: "The AI advisor flagged a stockout three weeks before our busiest season. That saved us.",
-    name: "Johan A.",
-    role: "Electronics distributor · Malmö",
-  },
-];
+  { name: "Mattias L.", k: 1 },
+  { name: "Sara K.", k: 2 },
+  { name: "Johan A.", k: 3 },
+] as const;
 
 /* ── Reusable badge ───────────────────────────────────────────────────────── */
 function Badge({ children }: { children: React.ReactNode }) {
@@ -91,6 +47,7 @@ function Badge({ children }: { children: React.ReactNode }) {
 
 /* ── Page ─────────────────────────────────────────────────────────────────── */
 export default function HomePage() {
+  const t = useTranslations("home");
   return (
     <div className="flex flex-col text-white" style={{ background: "#070B12" }}>
 
@@ -114,22 +71,21 @@ export default function HomePage() {
         <div className="relative mx-auto max-w-4xl text-center">
           <Badge>
             <Zap className="h-3 w-3" />
-            Built for Nordic wholesalers
+            {t("hero.badge")}
           </Badge>
 
           <h1 className="mt-6 text-5xl font-extrabold leading-tight tracking-tight sm:text-6xl lg:text-7xl">
-            The backoffice
+            {t("hero.h1a")}
             <br />
             <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">
-              Nordic wholesalers
+              {t("hero.h1b")}
             </span>
             <br />
-            actually want to use.
+            {t("hero.h1c")}
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-400 leading-relaxed">
-            Inventory, invoicing, POS, and AI-driven insights — all in one platform.
-            Replace Excel, Fortnox copy-paste, and guesswork with one tab that does everything.
+            {t("hero.sub")}
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -137,20 +93,20 @@ export default function HomePage() {
               href="/auth/signup"
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98]"
             >
-              Start free trial
+              {t("hero.ctaTrial")}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <Link
               href="/demo"
               className="flex items-center gap-2 rounded-xl border border-white/20 bg-[#1a2234] px-7 py-3.5 text-sm font-semibold text-slate-300 transition-all hover:bg-[#1e2740] hover:text-white"
             >
-              Book a demo
+              {t("hero.ctaDemo")}
               <ChevronRight className="h-4 w-4 opacity-50" />
             </Link>
           </div>
 
           <p className="mt-4 text-xs text-slate-500">
-            14-day free trial · No credit card required · Cancel any time
+            {t("hero.disclaimer")}
           </p>
         </div>
 
@@ -221,10 +177,10 @@ export default function HomePage() {
       ═══════════════════════════════════════════════════════════════════ */}
       <section className="border-y border-white/[0.06] bg-white/[0.015] px-4 py-5">
         <div className="mx-auto max-w-4xl flex flex-wrap items-center justify-center gap-8">
-          {TRUST_ITEMS.map(({ icon: Icon, label }) => (
-            <div key={label} className="flex items-center gap-2 text-sm text-slate-400">
+          {TRUST_ITEMS.map(({ icon: Icon, k }) => (
+            <div key={k} className="flex items-center gap-2 text-sm text-slate-400">
               <Icon className="h-4 w-4 text-emerald-500 shrink-0" />
-              {label}
+              {t(`trust.${k}`)}
             </div>
           ))}
         </div>
@@ -236,36 +192,35 @@ export default function HomePage() {
       <section className="px-4 py-24">
         <div className="mx-auto max-w-5xl">
           <div className="text-center mb-16">
-            <Badge>Features</Badge>
+            <Badge>{t("features.badge")}</Badge>
             <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              Everything in one platform.
+              {t("features.h2a")}
               <br />
-              <span className="text-slate-400">Nothing you don't need.</span>
+              <span className="text-slate-400">{t("features.h2b")}</span>
             </h2>
             <p className="mt-4 text-slate-400 max-w-xl mx-auto">
-              No add-ons to install, no integrations to babysit, no consultants to call.
-              One product that does the whole job.
+              {t("features.sub")}
             </p>
           </div>
 
           <ScrollReveal stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {FEATURES.map(({ icon: Icon, title, body, color }) => (
+            {FEATURES.map(({ icon: Icon, k, color }) => (
               <div
-                key={title}
+                key={k}
                 className="group relative rounded-2xl border border-white/[0.07] bg-white/[0.03] p-6 space-y-4 transition-all hover:border-white/[0.15] hover:bg-white/[0.05]"
               >
                 <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${color} shadow-lg`}>
                   <Icon className="h-5 w-5 text-white" />
                 </div>
-                <h3 className="font-semibold text-white text-base">{title}</h3>
-                <p className="text-sm text-slate-400 leading-relaxed">{body}</p>
+                <h3 className="font-semibold text-white text-base">{t(`features.${k}t`)}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">{t(`features.${k}b`)}</p>
               </div>
             ))}
           </ScrollReveal>
 
           <div className="mt-10 text-center">
             <Link href="/features" className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
-              See all features <ChevronRight className="h-4 w-4" />
+              {t("features.seeAll")} <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
@@ -277,19 +232,19 @@ export default function HomePage() {
       <section className="px-4 py-24 border-t border-white/[0.06]" style={{ background: "rgba(255,255,255,0.01)" }}>
         <div className="mx-auto max-w-3xl">
           <div className="text-center mb-14">
-            <Badge>How it works</Badge>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight">Up and running in one afternoon.</h2>
+            <Badge>{t("steps.badge")}</Badge>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight">{t("steps.h2")}</h2>
           </div>
           <div className="relative flex flex-col gap-8">
             <div className="absolute left-5 top-10 bottom-10 w-px bg-gradient-to-b from-indigo-500/60 via-violet-500/40 to-transparent hidden sm:block" />
-            {STEPS.map(({ n, title, body }) => (
+            {STEPS.map(({ n, k }) => (
               <div key={n} className="flex gap-5">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 z-10">
                   {n}
                 </div>
                 <div className="pt-1.5">
-                  <h3 className="font-semibold text-white text-base">{title}</h3>
-                  <p className="mt-1 text-sm text-slate-400">{body}</p>
+                  <h3 className="font-semibold text-white text-base">{t(`steps.${k}t`)}</h3>
+                  <p className="mt-1 text-sm text-slate-400">{t(`steps.${k}b`)}</p>
                 </div>
               </div>
             ))}
@@ -303,21 +258,21 @@ export default function HomePage() {
       <section className="px-4 py-24 border-t border-white/[0.06]">
         <div className="mx-auto max-w-5xl">
           <div className="text-center mb-14">
-            <Badge>Testimonials</Badge>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight">What early users say.</h2>
+            <Badge>{t("testimonials.badge")}</Badge>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight">{t("testimonials.h2")}</h2>
           </div>
           <ScrollReveal stagger className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {TESTIMONIALS.map(({ quote, name, role }) => (
+            {TESTIMONIALS.map(({ name, k }) => (
               <div key={name} className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-6 space-y-4">
                 <div className="flex gap-0.5">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <p className="text-sm text-slate-300 leading-relaxed">"{quote}"</p>
+                <p className="text-sm text-slate-300 leading-relaxed">"{t(`testimonials.q${k}`)}"</p>
                 <div>
                   <p className="text-sm font-semibold text-white">{name}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{role}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{t(`testimonials.r${k}`)}</p>
                 </div>
               </div>
             ))}
@@ -330,26 +285,26 @@ export default function HomePage() {
       ═══════════════════════════════════════════════════════════════════ */}
       <section className="px-4 py-24 border-t border-white/[0.06]" style={{ background: "rgba(255,255,255,0.01)" }}>
         <div className="mx-auto max-w-xl text-center">
-          <Badge>Pricing</Badge>
-          <h2 className="mt-4 text-3xl font-bold tracking-tight">Simple pricing. No surprises.</h2>
+          <Badge>{t("pricing.badge")}</Badge>
+          <h2 className="mt-4 text-3xl font-bold tracking-tight">{t("pricing.h2")}</h2>
           <p className="mt-4 text-slate-400">
-            From <span className="text-indigo-400 font-semibold">{PLAN_PRICES.starter.monthly.sek} kr/month</span>. No per-user fees. No transaction cuts. Cancel any time.
+            {t("pricing.from")} <span className="text-indigo-400 font-semibold">{PLAN_PRICES.starter.monthly.sek} {t("pricing.perMonth")}</span>. {t("pricing.body")}
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/auth/signup"
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-indigo-500/40 hover:scale-[1.02]"
             >
-              Start free trial <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              {t("hero.ctaTrial")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <Link
               href="/pricing"
               className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1"
             >
-              See all plans <ChevronRight className="h-4 w-4" />
+              {t("pricing.seePlans")} <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
-          <p className="mt-4 text-xs text-slate-500">14-day free trial · No credit card required</p>
+          <p className="mt-4 text-xs text-slate-500">{t("pricing.disclaimer")}</p>
         </div>
       </section>
 
@@ -363,30 +318,30 @@ export default function HomePage() {
         </div>
         <div className="relative mx-auto max-w-2xl text-center">
           <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-            Ready to replace Excel?
+            {t("cta.h2")}
           </h2>
           <p className="mt-4 text-lg text-slate-400">
-            Join hundreds of Nordic wholesalers who've moved their operations to Varuflow.
+            {t("cta.sub")}
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/auth/signup"
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-indigo-500/30 transition-all hover:scale-[1.02] hover:shadow-indigo-500/50 active:scale-[0.98]"
             >
-              Start free — no card needed
+              {t("cta.main")}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <Link
               href="/demo"
               className="flex items-center gap-2 rounded-xl border border-white/20 bg-[#1a2234] px-8 py-4 text-sm font-semibold text-slate-300 transition-all hover:bg-[#1e2740] hover:text-white"
             >
-              Book a 20-min demo
+              {t("cta.demo")}
             </Link>
           </div>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-slate-500">
-            {["14-day free trial", "No credit card", "EU data residency", "Cancel any time"].map(t => (
-              <span key={t} className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> {t}
+            {(["c1", "c2", "c3", "c4"] as const).map((k) => (
+              <span key={k} className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> {t(`cta.${k}`)}
               </span>
             ))}
           </div>

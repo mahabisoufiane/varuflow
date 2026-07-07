@@ -1649,5 +1649,86 @@
     "active": "Aktiv",
     "resume_reason_auto_resume": "Auto-återupptagen",
     "resume_reason_manual_resume": "Manuellt återupptagen"
+  },
+  "home": {
+    "hero": {
+      "badge": "Byggt för nordiska grossister",
+      "h1a": "Affärssystemet",
+      "h1b": "nordiska grossister",
+      "h1c": "faktiskt vill använda.",
+      "sub": "Lager, fakturering, kassa och AI-insikter — allt i en plattform. Ersätt Excel, Fortnox-klippande och gissningar med en flik som gör allt.",
+      "ctaTrial": "Starta gratis provperiod",
+      "ctaDemo": "Boka en demo",
+      "disclaimer": "14 dagar gratis · Inget kort krävs · Avsluta när du vill"
+    },
+    "trust": {
+      "gdpr": "GDPR-säkrad",
+      "eu": "Data lagras i EU",
+      "bokforing": "Redo för bokföringslagen",
+      "uptime": "99,9 % drifttid (SLA)"
+    },
+    "features": {
+      "badge": "Funktioner",
+      "h2a": "Allt i en plattform.",
+      "h2b": "Inget du inte behöver.",
+      "sub": "Inga tillägg att installera, inga integrationer att vakta, inga konsulter att ringa. En produkt som gör hela jobbet.",
+      "seeAll": "Se alla funktioner",
+      "f1t": "Lager i realtid",
+      "f1b": "Levande lagersaldo i alla lagerställen. Larm vid lågt saldo innan kunderna hinner märka något. Inleveranser och justeringar på sekunder.",
+      "f2t": "Fakturering enligt svenska regler",
+      "f2b": "25/12/6 % moms inbyggt. PDF-export, betalningsuppföljning och automatisk förfallobevakning — aldrig mer klipp-och-klistra till Fortnox.",
+      "f3t": "Koll på kassaflödet",
+      "f3b": "Åldersanalys visar 30/60/90+ dagar i ett ögonkast. Vet alltid vad som är utestående och vad som har förfallit.",
+      "f4t": "Kassa (POS)",
+      "f4b": "Snabb utcheckning med streckkodsläsning, delade betalningar och automatiskt lageravdrag. Fungerar offline och synkar när du är uppkopplad igen.",
+      "f5t": "AI-rådgivare",
+      "f5b": "Flaggar kassaflödesrisker, föreslår beställningskvantiteter och tar fram utkast till inköpsordrar — innan du ens hunnit fråga.",
+      "f6t": "Efterfrågeprognoser",
+      "f6b": "Se dina snabbrörliga varor och säsongsmönster. Automatiska inköpsordrar baserade på verklig historik."
+    },
+    "steps": {
+      "badge": "Så funkar det",
+      "h2": "Igång på en eftermiddag.",
+      "s1t": "Skapa ditt konto",
+      "s1b": "Registrera dig på 60 sekunder. Inget kort krävs.",
+      "s2t": "Importera din data",
+      "s2b": "Ladda upp produkter, kunder och ingående lager från CSV eller Excel.",
+      "s3t": "Börja sälja",
+      "s3b": "Skicka fakturor, hantera lager och ta betalt — allt i en flik."
+    },
+    "testimonials": {
+      "badge": "Omdömen",
+      "h2": "Vad tidiga användare säger.",
+      "q1": "Äntligen ett alternativ för oss som vuxit ur Excel men inte vill ha ett tungt affärssystem.",
+      "r1": "Livsmedelsgrossist · Göteborg",
+      "q2": "Vi kapade faktureringstiden med 70 %. Bara Fortnox-synken betalade sig första veckan.",
+      "r2": "Byggmaterial · Stockholm",
+      "q3": "AI-rådgivaren flaggade en bristsituation tre veckor före högsäsongen. Det räddade oss.",
+      "r3": "Elektronikdistributör · Malmö"
+    },
+    "pricing": {
+      "badge": "Priser",
+      "h2": "Enkel prissättning. Inga överraskningar.",
+      "from": "Från",
+      "perMonth": "kr/mån",
+      "body": "Inga avgifter per användare. Ingen andel av dina transaktioner. Avsluta när du vill.",
+      "seePlans": "Se alla planer",
+      "disclaimer": "14 dagar gratis · Inget kort krävs"
+    },
+    "cta": {
+      "h2": "Redo att lämna Excel?",
+      "sub": "Gå med hundratals nordiska grossister som flyttat sin verksamhet till Varuflow.",
+      "main": "Kom igång gratis — inget kort behövs",
+      "demo": "Boka 20 min demo",
+      "c1": "14 dagar gratis",
+      "c2": "Inget kort",
+      "c3": "Data i EU",
+      "c4": "Avsluta när som helst"
+    },
+    "nav": {
+      "login": "Logga in",
+      "getStarted": "Kom igång",
+      "goToApp": "Till appen"
+    }
   }
 }

@@ -1649,5 +1649,86 @@
     "active": "Active",
     "resume_reason_auto_resume": "Auto-resumed",
     "resume_reason_manual_resume": "Manually resumed"
+  },
+  "home": {
+    "hero": {
+      "badge": "Built for Nordic wholesalers",
+      "h1a": "The backoffice",
+      "h1b": "Nordic wholesalers",
+      "h1c": "actually want to use.",
+      "sub": "Inventory, invoicing, POS, and AI-driven insights — all in one platform. Replace Excel, Fortnox copy-paste, and guesswork with one tab that does everything.",
+      "ctaTrial": "Start free trial",
+      "ctaDemo": "Book a demo",
+      "disclaimer": "14-day free trial · No credit card required · Cancel any time"
+    },
+    "trust": {
+      "gdpr": "GDPR-compliant",
+      "eu": "EU data residency",
+      "bokforing": "Bokföringslagen ready",
+      "uptime": "99.9 % uptime SLA"
+    },
+    "features": {
+      "badge": "Features",
+      "h2a": "Everything in one platform.",
+      "h2b": "Nothing you don't need.",
+      "sub": "No add-ons to install, no integrations to babysit, no consultants to call. One product that does the whole job.",
+      "seeAll": "See all features",
+      "f1t": "Real-time inventory",
+      "f1b": "Live stock across every warehouse. Low-stock alerts fire before customers notice. Goods-in and adjustment records in seconds.",
+      "f2t": "SE-compliant invoicing",
+      "f2b": "25 / 12 / 6 % VAT baked in. PDF export, payment tracking, automatic overdue detection — no Fortnox copy-paste ever again.",
+      "f3t": "Cash flow visibility",
+      "f3b": "Aging reports show 30 / 60 / 90+ day buckets at a glance. Always know what's outstanding and what's overdue.",
+      "f4t": "Point of sale",
+      "f4b": "Fast checkout with barcode scanning, split payments, and automatic stock deduction. Works offline, syncs when you reconnect.",
+      "f5t": "AI advisor",
+      "f5b": "Flags cash-flow risks, suggests reorder quantities, and drafts purchase orders — before you even think to ask.",
+      "f6t": "Demand forecasting",
+      "f6b": "See your fastest movers and seasonal patterns. Auto-generated POs based on real historical movement data."
+    },
+    "steps": {
+      "badge": "How it works",
+      "h2": "Up and running in one afternoon.",
+      "s1t": "Create your account",
+      "s1b": "Sign up in 60 seconds. No credit card required.",
+      "s2t": "Import your data",
+      "s2b": "Upload products, customers, and opening stock from CSV or Excel.",
+      "s3t": "Start selling",
+      "s3b": "Issue invoices, manage inventory, and accept payments — all in one tab."
+    },
+    "testimonials": {
+      "badge": "Testimonials",
+      "h2": "What early users say.",
+      "q1": "Finally an alternative for those of us who've outgrown Excel but don't want an ERP.",
+      "r1": "Food wholesale · Gothenburg",
+      "q2": "We cut invoice processing time by 70 %. The Fortnox sync alone paid for itself in week one.",
+      "r2": "Building supplies · Stockholm",
+      "q3": "The AI advisor flagged a stockout three weeks before our busiest season. That saved us.",
+      "r3": "Electronics distributor · Malmö"
+    },
+    "pricing": {
+      "badge": "Pricing",
+      "h2": "Simple pricing. No surprises.",
+      "from": "From",
+      "perMonth": "kr/month",
+      "body": "No per-user fees. No transaction cuts. Cancel any time.",
+      "seePlans": "See all plans",
+      "disclaimer": "14-day free trial · No credit card required"
+    },
+    "cta": {
+      "h2": "Ready to replace Excel?",
+      "sub": "Join hundreds of Nordic wholesalers who've moved their operations to Varuflow.",
+      "main": "Start free — no card needed",
+      "demo": "Book a 20-min demo",
+      "c1": "14-day free trial",
+      "c2": "No credit card",
+      "c3": "EU data residency",
+      "c4": "Cancel any time"
+    },
+    "nav": {
+      "login": "Log in",
+      "getStarted": "Get started",
+      "goToApp": "Go to app"
+    }
   }
 }
