@@ -31,7 +31,7 @@ export default function ContactPage() {
                 { icon: <Mail className="h-4 w-4" />, label: "Press", email: "press@varuflow.se" },
               ].map((c) => (
                 <div key={c.label} className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-400">{c.icon}</div>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--vf-brand-primary-soft)] text-[var(--vf-brand-primary-light)]">{c.icon}</div>
                   <div>
                     <p className="vf-text-m text-xs">{c.label}</p>
                     <a href={`mailto:${c.email}`} className="vf-text-1 text-sm hover:underline">{c.email}</a>

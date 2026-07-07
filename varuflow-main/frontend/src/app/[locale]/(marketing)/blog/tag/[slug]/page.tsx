@@ -64,7 +64,7 @@ export default async function TagPage({ params }: { params: Promise<Params> }) {
             {posts.map((post) => (
               <article
                 key={post._id}
-                className="flex flex-col gap-1 rounded-2xl border border-white/8 bg-white/4 p-5 hover:border-indigo-500/20 transition-colors sm:flex-row sm:items-start sm:gap-6"
+                className="flex flex-col gap-1 rounded-2xl border border-white/8 bg-white/4 p-5 hover:border-[var(--vf-brand-border)] transition-colors sm:flex-row sm:items-start sm:gap-6"
               >
                 <div className="flex-1">
                   <p className="mb-1 text-xs text-slate-500">
@@ -72,13 +72,13 @@ export default async function TagPage({ params }: { params: Promise<Params> }) {
                     {new Date(post.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                   </p>
                   <h2 className="vf-text-1 mb-1.5 text-sm font-bold">
-                    <Link href={`/blog/${post.slug}`} className="hover:text-indigo-300">{post.title}</Link>
+                    <Link href={`/blog/${post.slug}`} className="hover:text-white">{post.title}</Link>
                   </h2>
                   <p className="vf-text-2 text-xs leading-relaxed line-clamp-2">{post.excerpt}</p>
                 </div>
                 <Link
                   href={`/blog/${post.slug}`}
-                  className="flex shrink-0 items-center gap-1 self-end text-xs font-medium text-indigo-400 hover:text-indigo-300"
+                  className="flex shrink-0 items-center gap-1 self-end text-xs font-medium text-[var(--vf-brand-primary-light)] hover:text-white"
                 >
                   Read <ArrowRight className="h-3 w-3" />
                 </Link>

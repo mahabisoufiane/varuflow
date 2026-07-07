@@ -46,10 +46,10 @@ const CLIENT_COUNTS = [
 ];
 
 const inputCls =
-  "w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500";
+  "w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-colors focus:border-[var(--vf-brand-primary)] focus:ring-1 focus:ring-[var(--vf-brand-primary)]";
 
 const selectCls =
-  "w-full rounded-xl border border-white/10 bg-[#0f172a] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 appearance-none";
+  "w-full rounded-xl border border-white/10 bg-[#0f172a] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-[var(--vf-brand-primary)] focus:ring-1 focus:ring-[var(--vf-brand-primary)] appearance-none";
 
 export default function PartnerApplicationForm() {
   const [form, setForm] = useState<FormState>(INITIAL);

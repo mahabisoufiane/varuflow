@@ -34,7 +34,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         </span>
         <ChevronDown
           className={cn(
-            "h-4 w-4 shrink-0 transition-transform duration-200 text-indigo-400",
+            "h-4 w-4 shrink-0 transition-transform duration-200 text-[var(--vf-brand-primary-light)]",
             open && "rotate-180"
           )}
         />
@@ -223,7 +223,7 @@ function PlanCard({
                 ? "linear-gradient(135deg, #F59E0B, #D97706)"
                 : badgeStyle === "slate"
                 ? "linear-gradient(135deg, #1E293B, #0F172A)"
-                : "linear-gradient(135deg, #2563EB, #1D4ED8)",
+                : "linear-gradient(135deg, var(--vf-brand-primary), var(--vf-brand-primary-hover))",
             }}
           >
             {badge}
@@ -289,7 +289,7 @@ function PlanCard({
         className={cn(
           "mb-8 flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.01] active:scale-[0.98]",
           ctaStyle === "primary" &&
-            "bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_0_16px_rgba(37,99,235,0.4)]",
+            "bg-gradient-to-br from-[var(--vf-brand-primary)] to-[var(--vf-brand-primary-hover)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_0_16px_rgba(37,99,235,0.4)]",
           ctaStyle === "secondary" &&
             "border text-sm font-semibold",
           ctaStyle === "amber" &&
@@ -395,7 +395,7 @@ export default function PricingPage() {
               className={cn(
                 "rounded-lg px-5 py-2 text-sm font-semibold transition-all duration-200",
                 !yearly
-                  ? "bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] text-white shadow-sm"
+                  ? "bg-gradient-to-br from-[var(--vf-brand-primary)] to-[var(--vf-brand-primary-hover)] text-white shadow-sm"
                   : "text-slate-500 hover:text-slate-300"
               )}
             >
@@ -407,7 +407,7 @@ export default function PricingPage() {
               className={cn(
                 "flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold transition-all duration-200",
                 yearly
-                  ? "bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] text-white shadow-sm"
+                  ? "bg-gradient-to-br from-[var(--vf-brand-primary)] to-[var(--vf-brand-primary-hover)] text-white shadow-sm"
                   : "text-slate-500 hover:text-slate-300"
               )}
             >
@@ -495,7 +495,7 @@ export default function PricingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/auth/signup?plan=professional"
-              className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] px-7 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(37,99,235,0.4)]"
+              className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-br from-[var(--vf-brand-primary)] to-[var(--vf-brand-primary-hover)] px-7 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(37,99,235,0.4)]"
             >
               Get started →
             </Link>

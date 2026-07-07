@@ -48,26 +48,26 @@ export default function ContactForm() {
         <div>
           <label className="vf-text-m mb-1.5 block text-xs font-medium">Your name *</label>
           <input value={form.name} onChange={(e) => set("name", e.target.value)} required placeholder="Jane Smith"
-            className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+            className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]"
             style={{ borderColor: "rgba(255,255,255,0.12)" }} />
         </div>
         <div>
           <label className="vf-text-m mb-1.5 block text-xs font-medium">Email *</label>
           <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} required placeholder="jane@company.com"
-            className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+            className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]"
             style={{ borderColor: "rgba(255,255,255,0.12)" }} />
         </div>
       </div>
       <div>
         <label className="vf-text-m mb-1.5 block text-xs font-medium">Subject</label>
         <input value={form.subject} onChange={(e) => set("subject", e.target.value)} placeholder="How can we help?"
-          className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+          className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]"
           style={{ borderColor: "rgba(255,255,255,0.12)" }} />
       </div>
       <div>
         <label className="vf-text-m mb-1.5 block text-xs font-medium">Message *</label>
         <textarea value={form.message} onChange={(e) => set("message", e.target.value)} required rows={5} placeholder="Tell us what you need…"
-          className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+          className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)] resize-none"
           style={{ borderColor: "rgba(255,255,255,0.12)" }} />
       </div>
       {error && <p className="rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-400">{error}</p>}

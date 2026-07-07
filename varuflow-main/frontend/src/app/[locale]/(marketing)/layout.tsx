@@ -52,12 +52,12 @@ export default function MarketingLayout({
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           {/* Logo — server-rendered, no auth needed */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--vf-brand-primary)] to-[var(--vf-brand-primary-hover)]">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
               </svg>
             </div>
-            <span className="text-[15px] font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+            <span className="text-[15px] font-bold tracking-tight bg-gradient-to-r from-[var(--vf-brand-primary-light)] to-[var(--vf-brand-primary)] bg-clip-text text-transparent">
               Varuflow
             </span>
           </Link>
@@ -91,7 +91,7 @@ function MarketingFooter() {
           {/* Brand + newsletter */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-3">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--vf-brand-primary)] to-[var(--vf-brand-primary-hover)]">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                 </svg>

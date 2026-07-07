@@ -47,7 +47,7 @@ export default async function VsPage(
 
       {/* Hero */}
       <section className="px-4 py-20 text-center">
-        <p className="mb-4 inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-400">
+        <p className="mb-4 inline-block rounded-full border border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-subtle)] px-4 py-1 text-xs font-semibold uppercase tracking-widest text-[var(--vf-brand-primary-light)]">
           {data.angle}
         </p>
         <h1 className="vf-text-1 text-4xl font-extrabold tracking-tight sm:text-5xl">
@@ -83,7 +83,7 @@ export default async function VsPage(
           &ldquo;{data.customerQuote.quote}&rdquo;
         </blockquote>
         <div className="mt-4 flex items-center justify-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--vf-brand-primary)] text-xs font-bold text-white">
             {data.customerQuote.initials}
           </div>
           <p className="vf-text-2 text-sm">

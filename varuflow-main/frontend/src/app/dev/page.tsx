@@ -33,7 +33,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Code({ children }: { children: string }) {
   return (
-    <code className="block overflow-x-auto whitespace-pre rounded-md bg-[var(--vf-bg-inset)] px-3 py-2 font-mono text-[12px] text-[var(--vf-text-primary)]">
+    <code className="block overflow-x-auto whitespace-pre rounded-md bg-[var(--vf-bg-inset)] px-3 py-2 font-mono text-xs text-[var(--vf-text-primary)]">
       {children}
     </code>
   );
@@ -44,9 +44,9 @@ function Row({ k, v, href }: { k: string; v: string; href?: string }) {
     <div className="flex items-baseline justify-between gap-4 border-b border-[var(--vf-divider)] py-1.5 text-sm last:border-0">
       <span className="text-[var(--vf-text-muted)]">{k}</span>
       {href ? (
-        <a href={href} className="font-mono text-[13px] text-[var(--vf-brand-primary)] hover:underline">{v}</a>
+        <a href={href} className="font-mono text-sm text-[var(--vf-brand-primary)] hover:underline">{v}</a>
       ) : (
-        <span className="font-mono text-[13px] text-[var(--vf-text-primary)]">{v}</span>
+        <span className="font-mono text-sm text-[var(--vf-text-primary)]">{v}</span>
       )}
     </div>
   );
@@ -116,7 +116,7 @@ export default function DevHubPage() {
 
       <Section title="Auth modes — how to switch">
         <p className="mb-2 text-sm text-[var(--vf-text-secondary)]">
-          One variable in <span className="font-mono text-[12px]">frontend/.env.local</span> controls everything
+          One variable in <span className="font-mono text-xs">frontend/.env.local</span> controls everything
           (middleware, layout gate, client session guards), then restart the frontend:
         </p>
         <Code>{`# REAL login flow (current: ${AUTH_MODE === "real" ? "THIS" : "not active"})

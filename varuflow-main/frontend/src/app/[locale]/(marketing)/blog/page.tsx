@@ -44,9 +44,9 @@ function PostCard({ post }: { post: Awaited<ReturnType<typeof getAllPosts>>[0] }
   });
 
   return (
-    <article className="group flex flex-col rounded-2xl border border-white/8 bg-white/4 p-6 transition-colors hover:border-indigo-500/30 hover:bg-white/6">
+    <article className="group flex flex-col rounded-2xl border border-white/8 bg-white/4 p-6 transition-colors hover:border-[var(--vf-brand-border)] hover:bg-white/6">
       <div className="mb-3 flex items-center gap-2">
-        <span className="inline-block rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-0.5 text-xs font-semibold text-indigo-400">
+        <span className="inline-block rounded-full border border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-subtle)] px-2.5 py-0.5 text-xs font-semibold text-[var(--vf-brand-primary-light)]">
           {getCategoryTitle(post.category)}
         </span>
         <span className="flex items-center gap-1 text-xs text-slate-500">
@@ -55,7 +55,7 @@ function PostCard({ post }: { post: Awaited<ReturnType<typeof getAllPosts>>[0] }
         </span>
       </div>
 
-      <h2 className="vf-text-1 mb-3 text-base font-bold leading-snug group-hover:text-indigo-300 transition-colors">
+      <h2 className="vf-text-1 mb-3 text-base font-bold leading-snug group-hover:text-white transition-colors">
         <Link href={`/blog/${post.slug}`}>{post.title}</Link>
       </h2>
 
@@ -63,14 +63,14 @@ function PostCard({ post }: { post: Awaited<ReturnType<typeof getAllPosts>>[0] }
 
       <div className="mt-auto flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--vf-brand-primary)] text-[10px] font-bold text-white">
             {post.author.initials}
           </div>
           <span className="text-xs text-slate-500">{post.author.name} · {date}</span>
         </div>
         <Link
           href={`/blog/${post.slug}`}
-          className="text-xs font-medium text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+          className="text-xs font-medium text-[var(--vf-brand-primary-light)] hover:text-white flex items-center gap-1"
         >
           Read <ArrowRight className="h-3 w-3" />
         </Link>
@@ -111,7 +111,7 @@ export default async function BlogIndexPage({ searchParams }: Props) {
       <div className="mx-auto max-w-6xl px-4 py-16">
         {/* Header */}
         <div className="mb-10 text-center">
-          <p className="mb-3 inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-400">
+          <p className="mb-3 inline-block rounded-full border border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-subtle)] px-4 py-1 text-xs font-semibold uppercase tracking-widest text-[var(--vf-brand-primary-light)]">
             Resources
           </p>
           <h1 className="vf-text-1 text-3xl font-extrabold tracking-tight sm:text-4xl">
@@ -128,7 +128,7 @@ export default async function BlogIndexPage({ searchParams }: Props) {
             href="/blog"
             className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors ${
               !category
-                ? "border-indigo-500/40 bg-indigo-500/15 text-indigo-300"
+                ? "border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-soft)] text-[var(--vf-brand-primary-light)]"
                 : "border-white/8 text-slate-400 hover:border-white/20 hover:text-white"
             }`}
           >
@@ -140,7 +140,7 @@ export default async function BlogIndexPage({ searchParams }: Props) {
               href={`/blog?category=${cat.slug}`}
               className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors ${
                 category === cat.slug
-                  ? "border-indigo-500/40 bg-indigo-500/15 text-indigo-300"
+                  ? "border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-soft)] text-[var(--vf-brand-primary-light)]"
                   : "border-white/8 text-slate-400 hover:border-white/20 hover:text-white"
               }`}
             >
@@ -169,7 +169,7 @@ export default async function BlogIndexPage({ searchParams }: Props) {
                 href={`/blog?${category ? `category=${category}&` : ""}page=${p}`}
                 className={`flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-medium transition-colors ${
                   p === page
-                    ? "border-indigo-500/40 bg-indigo-500/20 text-indigo-300"
+                    ? "border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-soft)] text-[var(--vf-brand-primary-light)]"
                     : "border-white/8 text-slate-400 hover:border-white/20 hover:text-white"
                 }`}
               >

@@ -69,7 +69,7 @@ export default function PressPage() {
           </div>
           <p className="vf-text-m mt-3 text-xs">
             Full media kit (ZIP) available on request. Email{" "}
-            <a href="mailto:press@varuflow.se" className="text-indigo-400 hover:underline">press@varuflow.se</a>.
+            <a href="mailto:press@varuflow.se" className="text-[var(--vf-brand-primary-light)] hover:underline">press@varuflow.se</a>.
           </p>
         </section>
 
@@ -78,7 +78,7 @@ export default function PressPage() {
           <h2 className="vf-text-1 mb-3 text-xl font-bold">Press contact</h2>
           <p className="vf-text-2 text-sm">
             For press enquiries, interview requests, and media partnerships:<br />
-            <a href="mailto:press@varuflow.se" className="text-indigo-400 hover:underline">press@varuflow.se</a>
+            <a href="mailto:press@varuflow.se" className="text-[var(--vf-brand-primary-light)] hover:underline">press@varuflow.se</a>
           </p>
         </section>
       </div>

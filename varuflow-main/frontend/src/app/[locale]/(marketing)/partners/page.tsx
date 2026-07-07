@@ -154,12 +154,12 @@ export default function PartnersPage() {
               "radial-gradient(ellipse 60% 40% at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 70%)",
           }}
         />
-        <p className="mb-5 inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-400">
+        <p className="mb-5 inline-block rounded-full border border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-subtle)] px-4 py-1 text-xs font-semibold uppercase tracking-widest text-[var(--vf-brand-primary-light)]">
           For accounting firms
         </p>
         <h1 className="vf-text-1 mx-auto max-w-3xl text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
           Partner with Varuflow and{" "}
-          <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-[var(--vf-brand-primary-light)] to-[var(--vf-brand-primary)] bg-clip-text text-transparent">
             grow your practice
           </span>
         </h1>
@@ -195,8 +195,8 @@ export default function PartnersPage() {
               key={title}
               className="rounded-2xl border border-white/8 bg-white/4 p-6"
             >
-              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10">
-                <Icon className="h-5 w-5 text-indigo-400" />
+              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--vf-brand-primary-subtle)]">
+                <Icon className="h-5 w-5 text-[var(--vf-brand-primary-light)]" />
               </div>
               <h3 className="vf-text-1 mb-2 text-base font-semibold">{title}</h3>
               <p className="vf-text-2 text-sm leading-relaxed">{description}</p>
@@ -222,10 +222,10 @@ export default function PartnersPage() {
               <div key={step.num} className="relative flex flex-col">
                 {/* Connector line (desktop) */}
                 {idx < STEPS.length - 1 && (
-                  <div className="absolute right-0 top-5 hidden h-px w-full translate-x-1/2 border-t border-dashed border-indigo-500/20 lg:block" />
+                  <div className="absolute right-0 top-5 hidden h-px w-full translate-x-1/2 border-t border-dashed border-[var(--vf-brand-border)] lg:block" />
                 )}
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-500/15">
-                  <span className="text-sm font-bold text-indigo-400">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--vf-brand-primary-soft)]">
+                  <span className="text-sm font-bold text-[var(--vf-brand-primary-light)]">
                     {step.num}
                   </span>
                 </div>
@@ -256,7 +256,7 @@ export default function PartnersPage() {
                 &ldquo;{quote}&rdquo;
               </p>
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-bold text-white">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[var(--vf-brand-primary)] to-[var(--vf-brand-primary-hover)] text-xs font-bold text-white">
                   {initials}
                 </div>
                 <div>
@@ -274,7 +274,7 @@ export default function PartnersPage() {
         <div className="mx-auto max-w-xl">
           <div className="rounded-2xl border border-white/10 bg-white/4 p-8">
             <div className="mb-8 text-center">
-              <p className="mb-2 inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-0.5 text-xs font-semibold uppercase tracking-wider text-indigo-400">
+              <p className="mb-2 inline-block rounded-full border border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-subtle)] px-3 py-0.5 text-xs font-semibold uppercase tracking-wider text-[var(--vf-brand-primary-light)]">
                 Apply now
               </p>
               <h2 className="vf-text-1 text-2xl font-bold tracking-tight">

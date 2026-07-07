@@ -28,14 +28,14 @@ export default function TestimonialCarousel({ testimonials }: TestimonialCarouse
 
   return (
     <div className="mx-auto max-w-2xl text-center">
-      <Quote className="mx-auto mb-6 h-8 w-8 text-indigo-500/50" />
+      <Quote className="mx-auto mb-6 h-8 w-8 text-[var(--vf-brand-border)]" />
 
       <blockquote className="vf-text-1 text-xl font-medium leading-relaxed">
         &ldquo;{t.quote}&rdquo;
       </blockquote>
 
       <div className="mt-6 flex items-center justify-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--vf-brand-primary)] text-sm font-bold text-white">
           {t.initials}
         </div>
         <div className="text-left">
@@ -62,7 +62,7 @@ export default function TestimonialCarousel({ testimonials }: TestimonialCarouse
                 key={i}
                 onClick={() => setIdx(i)}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === idx ? "w-6 bg-indigo-500" : "w-1.5 bg-white/20"
+                  i === idx ? "w-6 bg-[var(--vf-brand-primary)]" : "w-1.5 bg-white/20"
                 }`}
                 aria-label={`Go to testimonial ${i + 1}`}
               />

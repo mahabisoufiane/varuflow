@@ -103,7 +103,7 @@ export default function TrialPage() {
         <div className="grid gap-16 lg:grid-cols-2 lg:items-start">
           {/* Left: form */}
           <div>
-            <p className="mb-4 inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-400">
+            <p className="mb-4 inline-block rounded-full border border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-subtle)] px-4 py-1 text-xs font-semibold uppercase tracking-widest text-[var(--vf-brand-primary-light)]">
               14-day trial — no credit card required
             </p>
             <h1 className="vf-text-1 text-3xl font-extrabold tracking-tight sm:text-4xl">
@@ -119,7 +119,7 @@ export default function TrialPage() {
 
             <p className="mt-4 text-center text-xs vf-text-m">
               Already know you need Pro?{" "}
-              <Link href="/pricing" className="text-indigo-400 underline underline-offset-2 hover:text-indigo-300">
+              <Link href="/pricing" className="text-[var(--vf-brand-primary-light)] underline underline-offset-2 hover:text-white">
                 See Pro pricing →
               </Link>
             </p>
@@ -145,12 +145,12 @@ export default function TrialPage() {
             {/* Professional upgrade */}
             <div className="rounded-xl border border-dashed vf-border vf-bg-card p-5">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-400">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--vf-brand-primary-light)]">
                   ⚡ Professional — 1,490 kr/mo
                 </h2>
                 <Link
                   href="/pricing"
-                  className="flex items-center gap-1 rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-500 transition-colors"
+                  className="flex items-center gap-1 rounded-full bg-[var(--vf-brand-primary)] px-3 py-1 text-xs font-semibold text-white hover:bg-[var(--vf-brand-primary-hover)] transition-colors"
                 >
                   See plans <ArrowRight className="h-3 w-3" />
                 </Link>
@@ -158,7 +158,7 @@ export default function TrialPage() {
               <ul className="space-y-2">
                 {PRO_FEATURES.map((item) => (
                   <li key={item} className="flex items-start gap-2.5">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400" />
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--vf-brand-primary-light)]" />
                     <span className="vf-text-2 text-sm">{item}</span>
                   </li>
                 ))}

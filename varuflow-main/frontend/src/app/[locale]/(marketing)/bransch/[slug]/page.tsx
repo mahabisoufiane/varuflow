@@ -80,7 +80,7 @@ export default async function IndustryPage(
       <JsonLd id="jsonld-software" data={softwareApplicationJsonLd(industry.headline)} />
 
       <section className="space-y-6 text-center">
-        <p className="text-xs font-semibold uppercase tracking-widest text-indigo-400">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[var(--vf-brand-primary-light)]">
           För svenska {industry.slug}-företag
         </p>
         <h1 className="text-3xl md:text-5xl font-bold tracking-tight vf-text-1">

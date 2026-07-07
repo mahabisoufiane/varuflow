@@ -78,7 +78,7 @@ export default async function ComparePage(
       <JsonLd id="jsonld-software" data={softwareApplicationJsonLd(data.metaTitle)} />
 
       <section className="space-y-6 text-center">
-        <p className="text-xs font-semibold uppercase tracking-widest text-indigo-400">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[var(--vf-brand-primary-light)]">
           Jämförelse 2026
         </p>
         <h1 className="text-3xl md:text-5xl font-bold tracking-tight vf-text-1">
@@ -116,7 +116,7 @@ export default async function ComparePage(
             Funktion
           </div>
           <div
-            className="px-4 py-3 font-semibold text-indigo-400 text-center"
+            className="px-4 py-3 font-semibold text-[var(--vf-brand-primary-light)] text-center"
             style={{ borderBottom: "1px solid var(--vf-divider)" }}
           >
             Varuflow

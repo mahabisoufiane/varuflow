@@ -14,11 +14,11 @@ import { useTranslations } from "next-intl";
 // Copy lives in messages/*.json under home.features.* (sv is the primary market).
 const FEATURES = [
   { icon: Package,      k: "f1", color: "from-blue-500 to-cyan-500" },
-  { icon: FileText,     k: "f2", color: "from-violet-500 to-indigo-500" },
+  { icon: FileText,     k: "f2", color: "from-[var(--vf-brand-primary-light)] to-[var(--vf-brand-primary)]" },
   { icon: TrendingUp,   k: "f3", color: "from-emerald-500 to-teal-500" },
   { icon: ShoppingCart, k: "f4", color: "from-orange-500 to-amber-500" },
   { icon: Bot,          k: "f5", color: "from-pink-500 to-rose-500" },
-  { icon: BarChart3,    k: "f6", color: "from-indigo-500 to-purple-500" },
+  { icon: BarChart3,    k: "f6", color: "from-[var(--vf-brand-primary)] to-[var(--vf-brand-primary-hover)]" },
 ] as const;
 
 const STEPS = [{ n: "1", k: "s1" }, { n: "2", k: "s2" }, { n: "3", k: "s3" }] as const;
@@ -39,7 +39,7 @@ const TESTIMONIALS = [
 /* ── Reusable badge ───────────────────────────────────────────────────────── */
 function Badge({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs font-semibold tracking-wide text-indigo-400">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-subtle)] px-3 py-1 text-xs font-semibold tracking-wide text-[var(--vf-brand-primary-light)]">
       {children}
     </span>
   );
@@ -58,11 +58,11 @@ export default function HomePage() {
         {/* Background orbs */}
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[900px] rounded-full opacity-20"
-            style={{ background: "radial-gradient(ellipse,#2563EB 0%,transparent 70%)" }} />
+            style={{ background: "radial-gradient(ellipse,var(--vf-brand-primary) 0%,transparent 70%)" }} />
           <div className="absolute top-1/2 -left-32 h-[400px] w-[400px] rounded-full opacity-10"
-            style={{ background: "radial-gradient(circle,#1D4ED8 0%,transparent 70%)" }} />
+            style={{ background: "radial-gradient(circle,var(--vf-brand-primary-hover) 0%,transparent 70%)" }} />
           <div className="absolute bottom-0 right-0 h-[300px] w-[400px] rounded-full opacity-10"
-            style={{ background: "radial-gradient(circle,#7C3AED 0%,transparent 70%)" }} />
+            style={{ background: "radial-gradient(circle,var(--vf-brand-primary) 0%,transparent 70%)" }} />
           {/* Grid overlay */}
           <div className="absolute inset-0 opacity-[0.03]"
             style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "48px 48px" }} />
@@ -77,7 +77,7 @@ export default function HomePage() {
           <h1 className="mt-6 text-5xl font-extrabold leading-tight tracking-tight sm:text-6xl lg:text-7xl">
             {t("hero.h1a")}
             <br />
-            <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[var(--vf-brand-primary-light)] via-[var(--vf-brand-primary-light)] to-[var(--vf-brand-primary)] bg-clip-text text-transparent">
               {t("hero.h1b")}
             </span>
             <br />
@@ -91,7 +91,7 @@ export default function HomePage() {
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/auth/signup"
-              className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98]"
+              className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--vf-brand-primary)] to-[var(--vf-brand-primary-hover)] px-7 py-3.5 text-sm font-bold text-white vf-shadow-brand transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               {t("hero.ctaTrial")}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -123,8 +123,8 @@ export default function HomePage() {
               {/* Fake sidebar */}
               <div className="hidden sm:flex w-[180px] shrink-0 flex-col gap-1 border-r border-white/[0.06] p-3">
                 {["Dashboard","Sales","Inventory","Finance","HR & People","Settings"].map((s, i) => (
-                  <div key={s} className={`flex items-center gap-2 rounded-lg px-3 py-2 text-[11px] font-medium ${i === 0 ? "bg-indigo-500/15 text-indigo-400" : "text-slate-500"}`}>
-                    <div className={`h-2 w-2 rounded-sm ${i === 0 ? "bg-indigo-400" : "bg-slate-700"}`} />
+                  <div key={s} className={`flex items-center gap-2 rounded-lg px-3 py-2 text-[11px] font-medium ${i === 0 ? "bg-[var(--vf-brand-primary-soft)] text-[var(--vf-brand-primary-light)]" : "text-slate-500"}`}>
+                    <div className={`h-2 w-2 rounded-sm ${i === 0 ? "bg-[var(--vf-brand-primary-light)]" : "bg-slate-700"}`} />
                     {s}
                   </div>
                 ))}
@@ -156,7 +156,7 @@ export default function HomePage() {
                     {[85,60,40].map((w, i) => (
                       <div key={i} className="flex items-center gap-2">
                         <div className="h-2 flex-1 rounded-full bg-white/[0.04]">
-                          <div className="h-2 rounded-full bg-indigo-500/50" style={{ width: `${w}%` }} />
+                          <div className="h-2 rounded-full bg-[var(--vf-brand-border)]" style={{ width: `${w}%` }} />
                         </div>
                         <span className="text-[9px] text-slate-600 w-6">{w}%</span>
                       </div>
@@ -168,7 +168,7 @@ export default function HomePage() {
           </div>
           {/* Glow under mockup */}
           <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 h-24 w-3/4 blur-3xl opacity-20"
-            style={{ background: "radial-gradient(ellipse,#2563EB,transparent)" }} />
+            style={{ background: "radial-gradient(ellipse,var(--vf-brand-primary),transparent)" }} />
         </div>
       </section>
 
@@ -219,7 +219,7 @@ export default function HomePage() {
           </ScrollReveal>
 
           <div className="mt-10 text-center">
-            <Link href="/features" className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
+            <Link href="/features" className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--vf-brand-primary-light)] hover:text-white transition-colors">
               {t("features.seeAll")} <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
@@ -236,10 +236,10 @@ export default function HomePage() {
             <h2 className="mt-4 text-3xl font-bold tracking-tight">{t("steps.h2")}</h2>
           </div>
           <div className="relative flex flex-col gap-8">
-            <div className="absolute left-5 top-10 bottom-10 w-px bg-gradient-to-b from-indigo-500/60 via-violet-500/40 to-transparent hidden sm:block" />
+            <div className="absolute left-5 top-10 bottom-10 w-px bg-gradient-to-b from-[var(--vf-brand-primary)]/60 via-[var(--vf-brand-border)] to-transparent hidden sm:block" />
             {STEPS.map(({ n, k }) => (
               <div key={n} className="flex gap-5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 z-10">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--vf-brand-primary)] to-[var(--vf-brand-primary-hover)] text-sm font-bold text-white vf-shadow-brand z-10">
                   {n}
                 </div>
                 <div className="pt-1.5">
@@ -288,18 +288,18 @@ export default function HomePage() {
           <Badge>{t("pricing.badge")}</Badge>
           <h2 className="mt-4 text-3xl font-bold tracking-tight">{t("pricing.h2")}</h2>
           <p className="mt-4 text-slate-400">
-            {t("pricing.from")} <span className="text-indigo-400 font-semibold">{PLAN_PRICES.starter.monthly.sek} {t("pricing.perMonth")}</span>. {t("pricing.body")}
+            {t("pricing.from")} <span className="text-[var(--vf-brand-primary-light)] font-semibold">{PLAN_PRICES.starter.monthly.sek} {t("pricing.perMonth")}</span>. {t("pricing.body")}
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/auth/signup"
-              className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-indigo-500/40 hover:scale-[1.02]"
+              className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--vf-brand-primary)] to-[var(--vf-brand-primary-hover)] px-7 py-3.5 text-sm font-bold text-white vf-shadow-brand transition-all hover:scale-[1.02]"
             >
               {t("hero.ctaTrial")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <Link
               href="/pricing"
-              className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1"
+              className="text-sm font-medium text-[var(--vf-brand-primary-light)] hover:text-white transition-colors flex items-center gap-1"
             >
               {t("pricing.seePlans")} <ChevronRight className="h-4 w-4" />
             </Link>
@@ -314,7 +314,7 @@ export default function HomePage() {
       <section className="relative overflow-hidden px-4 py-28 border-t border-white/[0.06]">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 opacity-20"
-            style={{ background: "radial-gradient(ellipse at center,#2563EB 0%,transparent 70%)" }} />
+            style={{ background: "radial-gradient(ellipse at center,var(--vf-brand-primary) 0%,transparent 70%)" }} />
         </div>
         <div className="relative mx-auto max-w-2xl text-center">
           <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
@@ -326,7 +326,7 @@ export default function HomePage() {
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/auth/signup"
-              className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-indigo-500/30 transition-all hover:scale-[1.02] hover:shadow-indigo-500/50 active:scale-[0.98]"
+              className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--vf-brand-primary)] to-[var(--vf-brand-primary-hover)] px-8 py-4 text-sm font-bold text-white vf-shadow-brand transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               {t("cta.main")}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />

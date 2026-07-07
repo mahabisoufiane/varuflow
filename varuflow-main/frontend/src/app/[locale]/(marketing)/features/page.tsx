@@ -125,7 +125,7 @@ export default function FeaturesPage() {
 
       {/* Hero */}
       <section className="px-4 pb-8 pt-20 text-center">
-        <p className="mb-4 inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-400">
+        <p className="mb-4 inline-block rounded-full border border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-subtle)] px-4 py-1 text-xs font-semibold uppercase tracking-widest text-[var(--vf-brand-primary-light)]">
           100+ features
         </p>
         <h1 className="vf-text-1 text-4xl font-extrabold tracking-tight sm:text-5xl">
@@ -149,7 +149,7 @@ export default function FeaturesPage() {
         <section key={cat.id} id={cat.id} className="px-4 py-16">
           <div className="mx-auto max-w-5xl">
             <div className="mb-8 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-400">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--vf-brand-primary-soft)] text-[var(--vf-brand-primary-light)]">
                 {cat.icon}
               </div>
               <h2 className="vf-text-1 text-2xl font-bold">{cat.title}</h2>

@@ -34,8 +34,8 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
           <li key={item.id} style={{ paddingLeft: item.level === 3 ? "0.75rem" : 0 }}>
             <a
               href={`#${item.id}`}
-              className={`block text-sm transition-colors hover:text-indigo-300 ${
-                active === item.id ? "font-medium text-indigo-400" : "text-slate-400"
+              className={`block text-sm transition-colors hover:text-white ${
+                active === item.id ? "font-medium text-[var(--vf-brand-primary-light)]" : "text-slate-400"
               }`}
             >
               {item.title}

@@ -120,13 +120,13 @@ export default function CompliancePage() {
         {SECTIONS.map((sec) => (
           <section key={sec.id} id={sec.id} className="scroll-mt-20">
             <div className="mb-6 flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-400">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--vf-brand-primary-soft)] text-[var(--vf-brand-primary-light)]">
                 {sec.icon}
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="vf-text-1 text-xl font-bold">{sec.title}</h2>
-                  <span className="rounded-full bg-indigo-500/15 px-2.5 py-0.5 text-xs font-semibold text-indigo-300">
+                  <span className="rounded-full bg-[var(--vf-brand-primary-soft)] px-2.5 py-0.5 text-xs font-semibold text-[var(--vf-brand-primary-light)]">
                     {sec.badge}
                   </span>
                 </div>
@@ -134,7 +134,7 @@ export default function CompliancePage() {
               </div>
             </div>
 
-            <ul className="space-y-3 border-l-2 border-indigo-500/20 pl-6">
+            <ul className="space-y-3 border-l-2 border-[var(--vf-brand-border)] pl-6">
               {sec.points.map((point, i) => (
                 <li key={i} className="vf-text-2 text-sm leading-relaxed">
                   {point}

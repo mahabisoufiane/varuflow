@@ -55,7 +55,7 @@ const PILLARS = [
     icon: <Network className="h-6 w-6" />,
     title: "IP allowlist",
     status: "Enterprise",
-    statusColor: "text-indigo-400 bg-indigo-400/10 border-indigo-400/30",
+    statusColor: "text-[var(--vf-brand-primary-light)] bg-[var(--vf-brand-primary-light)]/10 border-[var(--vf-brand-primary-light)]/30",
     description:
       "Enterprise organisations can restrict API and portal access to a list of approved IP ranges. Useful for office-only access policies. Configurable per organisation.",
   },
@@ -102,7 +102,7 @@ export default function SecurityPage() {
             key={pillar.title}
             className="flex flex-col gap-4 rounded-2xl border border-white/8 bg-white/4 p-6 sm:flex-row sm:items-start"
           >
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-400">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--vf-brand-primary-soft)] text-[var(--vf-brand-primary-light)]">
               {pillar.icon}
             </div>
             <div className="flex-1">
@@ -124,7 +124,7 @@ export default function SecurityPage() {
           <h2 className="vf-text-1 mb-2 text-base font-semibold">Responsible disclosure</h2>
           <p className="vf-text-2 text-sm leading-relaxed">
             Found a vulnerability? Please email{" "}
-            <a href="mailto:security@varuflow.se" className="text-indigo-400 hover:underline">
+            <a href="mailto:security@varuflow.se" className="text-[var(--vf-brand-primary-light)] hover:underline">
               security@varuflow.se
             </a>{" "}
             with a description and proof-of-concept. We aim to respond within 48 hours and patch critical issues within 7 days. We do not take legal action against researchers who follow responsible disclosure.

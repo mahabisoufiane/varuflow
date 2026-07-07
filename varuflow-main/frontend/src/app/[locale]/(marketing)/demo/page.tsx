@@ -20,7 +20,7 @@ export default function DemoPage() {
       <div className="mx-auto max-w-5xl px-4 py-20">
         <div className="grid gap-16 lg:grid-cols-2 lg:items-start">
           <div>
-            <p className="mb-4 inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-400">
+            <p className="mb-4 inline-block rounded-full border border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-subtle)] px-4 py-1 text-xs font-semibold uppercase tracking-widest text-[var(--vf-brand-primary-light)]">
               Live demo
             </p>
             <h1 className="vf-text-1 text-3xl font-extrabold tracking-tight sm:text-4xl">
@@ -36,7 +36,7 @@ export default function DemoPage() {
                 { icon: <CalendarDays className="h-4 w-4" />, text: "Usually available within 1 business day" },
               ].map((item) => (
                 <div key={item.text} className="flex items-center gap-3 text-sm">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-400">{item.icon}</span>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--vf-brand-primary-soft)] text-[var(--vf-brand-primary-light)]">{item.icon}</span>
                   <span className="vf-text-2">{item.text}</span>
                 </div>
               ))}

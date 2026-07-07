@@ -78,12 +78,12 @@ export default function LeadMagnetForm({
 
   return (
     <div
-      className="rounded-2xl border border-indigo-500/20 bg-indigo-500/8 p-6"
+      className="rounded-2xl border border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-subtle)] p-6"
       id="lead-magnet"
     >
       <div className="mb-1 flex items-center gap-2">
-        <Lock className="h-4 w-4 text-indigo-400" />
-        <p className="text-xs font-semibold uppercase tracking-wider text-indigo-400">
+        <Lock className="h-4 w-4 text-[var(--vf-brand-primary-light)]" />
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--vf-brand-primary-light)]">
           Free download
         </p>
       </div>
@@ -96,7 +96,7 @@ export default function LeadMagnetForm({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Your name (optional)"
-          className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+          className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]"
           style={{ borderColor: "rgba(255,255,255,0.12)" }}
         />
         <input
@@ -105,7 +105,7 @@ export default function LeadMagnetForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@email.com"
-          className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+          className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]"
           style={{ borderColor: "rgba(255,255,255,0.12)" }}
         />
         <button

@@ -43,6 +43,13 @@
     --vf-brand-primary-subtle: rgba(47,94,168,0.08);
     --vf-brand-text-on-primary: #ffffff;
 
+    /* Marketing-surface companions (fixed-dark hero sections): a light steel
+       readable on near-black, plus alpha steps that palette/N-suffix classes
+       can't express with CSS vars. */
+    --vf-brand-primary-light: #7FA8DE;
+    --vf-brand-primary-soft:  rgba(47,94,168,0.18);
+    --vf-brand-border:        rgba(47,94,168,0.35);
+
     --vf-brand-secondary:        #0F766E;
     --vf-brand-secondary-hover:  #0D6460;
     --vf-brand-secondary-subtle: rgba(15,118,110,0.08);
@@ -280,6 +287,8 @@
   }
 
   /* Buttons */
+  .vf-shadow-brand { box-shadow: 0 8px 30px rgba(47, 94, 168, 0.30); }
+
   .vf-btn {
     display: inline-flex;
     align-items: center;

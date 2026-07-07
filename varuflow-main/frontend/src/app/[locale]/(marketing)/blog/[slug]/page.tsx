@@ -157,7 +157,7 @@ export default async function ArticlePage({ params }: { params: Promise<Params> 
             {/* Header */}
             <header className="mb-10">
               <div className="mb-4 flex flex-wrap items-center gap-3">
-                <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-0.5 text-xs font-semibold text-indigo-400">
+                <span className="rounded-full border border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-subtle)] px-2.5 py-0.5 text-xs font-semibold text-[var(--vf-brand-primary-light)]">
                   {getCategoryTitle(post.category)}
                 </span>
                 <span className="flex items-center gap-1 text-xs text-slate-500">
@@ -174,7 +174,7 @@ export default async function ArticlePage({ params }: { params: Promise<Params> 
               <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-b border-white/8 py-4">
                 {/* Author */}
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--vf-brand-primary)] text-xs font-bold text-white">
                     {post.author.initials}
                   </div>
                   <div>
@@ -214,19 +214,19 @@ export default async function ArticlePage({ params }: { params: Promise<Params> 
                     prose-p:my-4 prose-p:leading-relaxed
                     prose-ul:my-4 prose-ul:ml-6 prose-li:my-1
                     prose-ol:my-4 prose-ol:ml-6
-                    prose-blockquote:my-6 prose-blockquote:border-l-4 prose-blockquote:border-indigo-500 prose-blockquote:pl-5 prose-blockquote:italic prose-blockquote:text-slate-300
+                    prose-blockquote:my-6 prose-blockquote:border-l-4 prose-blockquote:border-[var(--vf-brand-primary)] prose-blockquote:pl-5 prose-blockquote:italic prose-blockquote:text-slate-300
                     prose-table:my-6 prose-table:w-full prose-table:border-collapse
                     prose-th:border prose-th:border-white/12 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:text-sm prose-th:font-semibold prose-th:text-white prose-th:bg-white/6
                     prose-td:border prose-td:border-white/8 prose-td:px-3 prose-td:py-2 prose-td:text-sm
-                    prose-a:text-indigo-400 prose-a:underline hover:prose-a:text-indigo-300
-                    prose-strong:text-white prose-code:text-indigo-300 prose-code:bg-white/8 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-code:text-xs"
+                    prose-a:text-[var(--vf-brand-primary-light)] prose-a:underline hover:prose-a:text-[var(--vf-brand-primary-light)]
+                    prose-strong:text-white prose-code:text-[var(--vf-brand-primary-light)] prose-code:bg-white/8 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-code:text-xs"
                   dangerouslySetInnerHTML={{ __html: sanitizeArticleHtml(post.bodyHtml) }}
                 />
               )}
             </div>
 
             {/* CTA box at article end */}
-            <div className="mt-12 rounded-2xl border border-indigo-500/20 bg-indigo-500/8 p-6">
+            <div className="mt-12 rounded-2xl border border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-subtle)] p-6">
               <h3 className="vf-text-1 mb-2 text-base font-bold">{post.cta.headline}</h3>
               <p className="vf-text-2 mb-4 text-sm">{post.cta.body}</p>
               <Link
@@ -239,7 +239,7 @@ export default async function ArticlePage({ params }: { params: Promise<Params> 
 
             {/* Author bio */}
             <div className="mt-8 flex items-start gap-4 rounded-2xl border border-white/8 bg-white/4 p-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--vf-brand-primary)] text-sm font-bold text-white">
                 {post.author.initials}
               </div>
               <div>
@@ -294,7 +294,7 @@ export default async function ArticlePage({ params }: { params: Promise<Params> 
                         href={link.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300"
+                        className="flex items-center gap-1 text-xs text-[var(--vf-brand-primary-light)] hover:text-white"
                       >
                         <ArrowRight className="h-3 w-3 shrink-0" />
                         {link.label}
@@ -315,13 +315,13 @@ export default async function ArticlePage({ params }: { params: Promise<Params> 
               {related.map((rel) => (
                 <article
                   key={rel._id}
-                  className="rounded-2xl border border-white/8 bg-white/4 p-5 hover:border-indigo-500/20 transition-colors"
+                  className="rounded-2xl border border-white/8 bg-white/4 p-5 hover:border-[var(--vf-brand-border)] transition-colors"
                 >
                   <p className="mb-1.5 text-xs text-slate-500">
                     <Clock className="inline h-3 w-3 mr-1" />{rel.readingTimeMinutes} min
                   </p>
                   <h3 className="vf-text-1 mb-2 text-sm font-bold leading-snug">
-                    <Link href={`/blog/${rel.slug}`} className="hover:text-indigo-300">
+                    <Link href={`/blog/${rel.slug}`} className="hover:text-white">
                       {rel.title}
                     </Link>
                   </h3>

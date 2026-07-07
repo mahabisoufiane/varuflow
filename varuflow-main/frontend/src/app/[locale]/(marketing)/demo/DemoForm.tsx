@@ -61,13 +61,13 @@ export default function DemoRequestForm() {
         <div>
           <label className="vf-text-m mb-1.5 block text-xs font-medium">Full name *</label>
           <input value={form.name} onChange={(e) => set("name", e.target.value)} required placeholder="Jane Smith"
-            className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+            className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]"
             style={{ borderColor: "rgba(255,255,255,0.12)" }} />
         </div>
         <div>
           <label className="vf-text-m mb-1.5 block text-xs font-medium">Work email *</label>
           <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} required placeholder="jane@company.com"
-            className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+            className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]"
             style={{ borderColor: "rgba(255,255,255,0.12)" }} />
         </div>
       </div>
@@ -75,13 +75,13 @@ export default function DemoRequestForm() {
         <div>
           <label className="vf-text-m mb-1.5 block text-xs font-medium">Company *</label>
           <input value={form.company} onChange={(e) => set("company", e.target.value)} required placeholder="Acme Wholesale AB"
-            className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+            className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]"
             style={{ borderColor: "rgba(255,255,255,0.12)" }} />
         </div>
         <div>
           <label className="vf-text-m mb-1.5 block text-xs font-medium">Company size</label>
           <select value={form.size} onChange={(e) => set("size", e.target.value)}
-            className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+            className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]"
             style={{ borderColor: "rgba(255,255,255,0.12)" }}>
             <option value="">Select…</option>
             <option>1–5 employees</option>
@@ -95,7 +95,7 @@ export default function DemoRequestForm() {
         <label className="vf-text-m mb-1.5 block text-xs font-medium">What are you hoping to see?</label>
         <textarea value={form.message} onChange={(e) => set("message", e.target.value)} rows={3}
           placeholder="Inventory management, B2B portal, ZATCA invoicing…"
-          className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+          className="vf-input w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)] resize-none"
           style={{ borderColor: "rgba(255,255,255,0.12)" }} />
       </div>
       {error && <p className="rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-400">{error}</p>}

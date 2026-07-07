@@ -63,7 +63,7 @@ export default function TrialSignupForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@company.com"
-          className="vf-input w-full rounded-xl border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+          className="vf-input w-full rounded-xl border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]"
           style={{ borderColor: "rgba(255,255,255,0.12)" }}
         />
       </div>
@@ -81,7 +81,7 @@ export default function TrialSignupForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Create a password"
-          className="vf-input w-full rounded-xl border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+          className="vf-input w-full rounded-xl border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]"
           style={{ borderColor: "rgba(255,255,255,0.12)" }}
         />
       </div>

@@ -53,7 +53,7 @@ export default function NewsletterSignup({ compact = false }: { compact?: boolea
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="your@email.com"
-        className="vf-input min-w-0 flex-1 rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+        className="vf-input min-w-0 flex-1 rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--vf-brand-primary)]"
         style={{ borderColor: "rgba(255,255,255,0.12)" }}
       />
       <button

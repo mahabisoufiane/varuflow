@@ -49,7 +49,7 @@ export default async function RegionPage(
       >
         <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 50% -10%, rgba(37,99,235,0.18) 0%, transparent 70%)" }} />
         <div className="relative mx-auto max-w-3xl">
-          <p className="mb-4 inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-400">
+          <p className="mb-4 inline-block rounded-full border border-[var(--vf-brand-border)] bg-[var(--vf-brand-primary-subtle)] px-4 py-1 text-xs font-semibold uppercase tracking-widest text-[var(--vf-brand-primary-light)]">
             {data.eyebrow}
           </p>
           <h1 className="vf-text-1 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">

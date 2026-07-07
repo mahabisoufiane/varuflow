@@ -20,7 +20,7 @@ export default function ComparisonTable({ competitorName, rows }: ComparisonTabl
           <tr className="border-b border-white/10">
             <th className="pb-3 text-left font-medium text-slate-400">Feature</th>
             <th className="pb-3 text-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/15 px-3 py-1 text-xs font-semibold text-indigo-300">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--vf-brand-primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--vf-brand-primary-light)]">
                 Varuflow
               </span>
             </th>
@@ -49,12 +49,12 @@ function renderCell(val: string, positive: boolean) {
   if (isYes)
     return (
       <Check
-        className={`mx-auto h-4 w-4 ${positive ? "text-indigo-400" : "text-slate-500"}`}
+        className={`mx-auto h-4 w-4 ${positive ? "text-[var(--vf-brand-primary-light)]" : "text-slate-500"}`}
       />
     );
   if (isNo) return <Minus className="mx-auto h-4 w-4 text-slate-700" />;
   return (
-    <span className={positive ? "font-medium text-indigo-300" : "text-slate-400"}>
+    <span className={positive ? "font-medium text-[var(--vf-brand-primary-light)]" : "text-slate-400"}>
       {val}
     </span>
   );
