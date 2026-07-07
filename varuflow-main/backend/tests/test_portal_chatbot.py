@@ -307,3 +307,66 @@ async def test_kb_lookup_is_tenant_scoped(bot_fixture, db_session):
     finally:
         await db_session.delete(org_b)
         await db_session.commit()
+
+
+async def test_configured_fallback_message_overrides_default(bot_fixture, db_session):
+    org, customer = bot_fixture["org"], bot_fixture["customer"]
+    config = (await db_session.execute(
+        select(ChatbotConfig).where(ChatbotConfig.org_id == org.id)
+    )).scalars().one()
+    config.fallback_message = "Anpassat svar — vi återkommer inom en timme!"
+    await db_session.commit()
+
+    token = await _login(customer, org, db_session)
+    await _send_chat(token, "xylophone quantum zeppelin?")
+
+    msgs = await _thread(db_session, org.id, customer.id)
+    bot_bodies = [m.body for m in msgs if m.sender_type == "bot"]
+    assert "Anpassat svar — vi återkommer inom en timme!" in bot_bodies
+
+
+async def test_needs_human_reflects_latest_conversation_only(
+    bot_fixture, db_session, client_factory
+):
+    """An old resolved escalation must not flag a newer, clean thread."""
+    from app.features.auth.organization import OrganizationMember, OrgPlan, OrgRole
+
+    org, customer = bot_fixture["org"], bot_fixture["customer"]
+    org.plan = OrgPlan.ENTERPRISE  # portal-admin router requires the module
+    member = OrganizationMember(org_id=org.id, user_id=uuid.uuid4(), role=OrgRole.OWNER)
+    db_session.add(member)
+    # one unread customer message so the customer appears in /unread
+    db_session.add(PortalChatMessage(
+        org_id=org.id, customer_id=customer.id, sender_type="customer", body="hej",
+    ))
+    # old escalated conversation + newer clean one (created_at is naive)
+    db_session.add(ChatbotConversation(
+        org_id=org.id, visitor_id=customer.id, messages=[],
+        created_at=datetime(2026, 1, 1, 12, 0),
+        escalated_at=datetime(2026, 1, 1, 12, 5, tzinfo=UTC),
+    ))
+    newer = ChatbotConversation(
+        org_id=org.id, visitor_id=customer.id, messages=[],
+        created_at=datetime(2026, 6, 1, 12, 0),
+    )
+    db_session.add(newer)
+    await db_session.commit()
+
+    async with client_factory(member) as client:
+        r = await client.get("/api/portal-admin/chat/unread")
+    assert r.status_code == 200, r.text
+    row = next(x for x in r.json() if x["customer_id"] == str(customer.id))
+    assert row["needs_human"] is False
+
+    # Escalate the latest conversation → flag flips on.
+    newer.escalated_at = datetime.now(UTC)
+    await db_session.commit()
+    async with client_factory(member) as client:
+        r = await client.get("/api/portal-admin/chat/unread")
+    row = next(x for x in r.json() if x["customer_id"] == str(customer.id))
+    assert row["needs_human"] is True
+
+    # Delete member before the fixture drops the org — the ORM nulls the
+    # FK otherwise (same ordering the mutation smoke teardown uses).
+    await db_session.delete(member)
+    await db_session.commit()

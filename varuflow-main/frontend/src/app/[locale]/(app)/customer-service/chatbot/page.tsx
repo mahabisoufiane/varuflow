@@ -20,6 +20,7 @@ interface ChatbotConfig {
   escalation_threshold: number;
   knowledge_base_enabled: boolean;
   handoff_email: string;
+  fallback_message: string | null;
 }
 
 interface BotMessage {
@@ -154,6 +155,20 @@ export default function ChatbotPage() {
                 />
                 Use Knowledge Base for answers
               </label>
+
+              <div>
+                <label className="text-xs text-muted-foreground block mb-1">
+                  Fallback Message (sent when the bot can&apos;t answer — leave empty for the built-in Swedish default)
+                </label>
+                <textarea
+                  className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  placeholder="Jag hittade tyvärr inget svar på det i våra hjälpartiklar…"
+                  value={config.fallback_message ?? ""}
+                  onChange={(e) =>
+                    setConfig((c) => c ? { ...c, fallback_message: e.target.value || null } : c)
+                  }
+                />
+              </div>
 
               <div>
                 <label className="text-xs text-muted-foreground block mb-1">Handoff Email</label>

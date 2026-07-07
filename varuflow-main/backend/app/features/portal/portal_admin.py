@@ -41,17 +41,33 @@ async def chat_unread(member=Depends(get_current_member), db: AsyncSession = Dep
             .group_by(PortalChatMessage.customer_id)
             .order_by(func.max(PortalChatMessage.created_at).desc())
         )).all()
-        # Customers whose active bot conversation escalated to a human
+        # Customers whose LATEST bot conversation is escalated
         # (portal_chatbot sets escalated_at with visitor_id = customer_id).
+        # Only the newest conversation counts — an old resolved escalation
+        # must not flag a later, cleanly-answered thread.
         from app.features.ai.model_chatbot import ChatbotConversation
-        escalated = set((await db.execute(
-            select(ChatbotConversation.visitor_id)
-            .where(
-                ChatbotConversation.org_id == org_id,
-                ChatbotConversation.escalated_at.is_not(None),
-                ChatbotConversation.visitor_id.in_([r.customer_id for r in rows]),
+        escalated: set = set()
+        if rows:
+            latest = (
+                select(
+                    ChatbotConversation.visitor_id,
+                    ChatbotConversation.escalated_at,
+                    func.row_number().over(
+                        partition_by=ChatbotConversation.visitor_id,
+                        order_by=ChatbotConversation.created_at.desc(),
+                    ).label("rn"),
+                )
+                .where(
+                    ChatbotConversation.org_id == org_id,
+                    ChatbotConversation.visitor_id.in_([r.customer_id for r in rows]),
+                )
+                .subquery()
             )
-        )).scalars().all()) if rows else set()
+            escalated = set((await db.execute(
+                select(latest.c.visitor_id).where(
+                    latest.c.rn == 1, latest.c.escalated_at.is_not(None)
+                )
+            )).scalars().all())
         return [{"customer_id": str(r.customer_id), "unread_count": r.unread_count, "last_message_at": r.last_msg.isoformat() if r.last_msg else None, "needs_human": r.customer_id in escalated} for r in rows]
     except HTTPException:
         raise

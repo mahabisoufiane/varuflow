@@ -38,6 +38,9 @@ class ChatbotConfig(Base):
         Boolean, nullable=False, server_default="true"
     )
     handoff_email: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    # Bot reply when no KB/LLM answer is found; None → built-in default
+    # (services/portal_chatbot.FALLBACK_REPLY).
+    fallback_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(), nullable=False
     )

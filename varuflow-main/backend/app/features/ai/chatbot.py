@@ -33,6 +33,7 @@ class ChatbotConfigOut(BaseModel):
     escalation_threshold: int
     knowledge_base_enabled: bool
     handoff_email: Optional[str]
+    fallback_message: Optional[str] = None
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 
@@ -46,6 +47,7 @@ class UpsertConfigIn(BaseModel):
     escalation_threshold: int = Field(default=3, ge=1)
     knowledge_base_enabled: bool = True
     handoff_email: Optional[str] = Field(default=None, max_length=200)
+    fallback_message: Optional[str] = Field(default=None, max_length=2000)
 
 
 class ChatbotConversationOut(BaseModel):
@@ -105,6 +107,7 @@ async def get_chatbot_config(
                 escalation_threshold=3,
                 knowledge_base_enabled=True,
                 handoff_email=None,
+                fallback_message=None,
                 created_at=None,
                 updated_at=None,
             )
@@ -133,6 +136,7 @@ async def upsert_chatbot_config(
                 escalation_threshold=body.escalation_threshold,
                 knowledge_base_enabled=body.knowledge_base_enabled,
                 handoff_email=body.handoff_email,
+                fallback_message=body.fallback_message,
             )
             .on_conflict_do_update(
                 constraint="uq_chatbot_configs_org",
@@ -142,6 +146,7 @@ async def upsert_chatbot_config(
                     "escalation_threshold": body.escalation_threshold,
                     "knowledge_base_enabled": body.knowledge_base_enabled,
                     "handoff_email": body.handoff_email,
+                    "fallback_message": body.fallback_message,
                     # chatbot_configs.updated_at is timestamp WITHOUT
                     # time zone — asyncpg rejects aware datetimes here.
                     "updated_at": datetime.now(timezone.utc).replace(tzinfo=None),

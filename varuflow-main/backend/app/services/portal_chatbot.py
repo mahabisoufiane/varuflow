@@ -45,9 +45,14 @@ HUMAN_ACTIVE_WINDOW = timedelta(minutes=30)
 # The LLM is instructed to output exactly this when the KB can't answer.
 _ESCALATE_SENTINEL = "ESCALATE"
 
+# Default when the org hasn't configured ChatbotConfig.fallback_message.
+# Swedish-first (the product's primary market), with a short English tail
+# so non-Swedish customers aren't left guessing.
 FALLBACK_REPLY = (
-    "I couldn't find an answer to that in our help articles. "
-    "I've notified the team — a real person will follow up here shortly."
+    "Jag hittade tyvärr inget svar på det i våra hjälpartiklar. "
+    "Jag har meddelat teamet — en medarbetare återkommer till dig här. "
+    "(I couldn't find an answer — the team has been notified and will "
+    "follow up here.)"
 )
 
 # Tiny bilingual stopword set — enough to stop "how do I ..." / "hur gör
@@ -291,7 +296,7 @@ async def _run_bot_turn_inner(
             await _org_name(db, org_id), message_body, scored
         )
     if answer is None and not escalation_pending:
-        answer = FALLBACK_REPLY
+        answer = (config.fallback_message or "").strip() or FALLBACK_REPLY
         escalation_turn = True
     if answer is not None:
         replies.append(answer)
