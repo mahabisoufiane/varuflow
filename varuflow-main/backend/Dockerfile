@@ -3,7 +3,7 @@
 # fully reproducible builds, replace both occurrences below with:
 #   FROM python:3.11-slim@sha256:<digest>
 # Get the current digest: docker inspect python:3.11-slim | jq -r '.[0].RepoDigests[0]'
-FROM python:3.11-slim AS builder
+FROM python:3.14-slim AS builder
 
 # L-1: upgrade pip in the build stage to mitigate PYSEC-2026-196 path-traversal
 # CVE (affects pip install, not runtime). Pin pip version so the builder is
@@ -15,7 +15,7 @@ WORKDIR /build
 COPY pyproject.toml poetry.lock* ./
 RUN poetry export -f requirements.txt -o requirements.txt --without dev
 
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 WORKDIR /app
 
