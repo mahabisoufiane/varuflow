@@ -777,7 +777,19 @@
     "camera": "Kamera",
     "closeRegister": "Stäng kassan",
     "sales": "köp",
-    "revenue": "Omsättning"
+    "revenue": "Omsättning",
+    "back": "Till översikten",
+    "todaysSales": "Dagens köp",
+    "noSalesYet": "Inga köp ännu i denna session",
+    "refund": "Återköp",
+    "confirmRefund": "Bekräfta återköp",
+    "refunded": "Återköpt",
+    "refundFailed": "Återköpet misslyckades",
+    "confirmCloseTitle": "Stäng kassan?",
+    "cancel": "Avbryt",
+    "registerClosed": "Kassan stängd",
+    "zReport": "Z-rapport",
+    "closeFailed": "Kunde inte stänga kassan"
   },
   "quickActions": {
     "sheet_title": "Snabbåtgärder",

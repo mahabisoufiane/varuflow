@@ -777,7 +777,19 @@
     "camera": "Camera",
     "closeRegister": "Close register",
     "sales": "sales",
-    "revenue": "Revenue"
+    "revenue": "Revenue",
+    "back": "Back to overview",
+    "todaysSales": "Today's sales",
+    "noSalesYet": "No sales in this session yet",
+    "refund": "Refund",
+    "confirmRefund": "Confirm refund",
+    "refunded": "Refunded",
+    "refundFailed": "Refund failed",
+    "confirmCloseTitle": "Close the register?",
+    "cancel": "Cancel",
+    "registerClosed": "Register closed",
+    "zReport": "Z-report",
+    "closeFailed": "Could not close the register"
   },
   "quickActions": {
     "sheet_title": "Quick actions",

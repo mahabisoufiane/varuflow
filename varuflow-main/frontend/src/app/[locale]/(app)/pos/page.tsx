@@ -8,10 +8,11 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Banknote, Camera, CheckCircle2, CreditCard, Loader2, Minus, Plus,
-  Printer, ScanLine, Search, Smartphone, Trash2, X,
+  ArrowLeft, Banknote, Camera, CheckCircle2, CreditCard, History, Loader2,
+  Lock, Minus, Plus, Printer, ScanLine, Search, Smartphone, Trash2, X, Zap,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
 import { useBarcodeListener } from "@/components/barcode/useBarcodeListener";
 
@@ -31,6 +32,11 @@ interface SaleOut {
   total: string; change_due: string | null;
 }
 interface CartLine { product: PosProduct; qty: number }
+interface SaleRow {
+  id: string; sale_number: string; total: string; payment_method: string;
+  is_refunded: boolean; created_at: string;
+}
+interface QuickButton { id: string; product_id: string; label: string; color: string | null; quantity: string }
 
 const SEK = new Intl.NumberFormat("sv-SE", { style: "currency", currency: "SEK" });
 const fmt = (n: number) => SEK.format(n);
@@ -64,6 +70,12 @@ export default function PosPage() {
   const [sale, setSale] = useState<SaleOut | null>(null);
   const [toast, setToast] = useState<{ text: string; kind: "ok" | "err" } | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const [salesOpen, setSalesOpen] = useState(false);
+  const [sales, setSales] = useState<SaleRow[]>([]);
+  const [refundArm, setRefundArm] = useState<string | null>(null);
+  const [closeArm, setCloseArm] = useState(false);
+  const [closedSummary, setClosedSummary] = useState<PosSession | null>(null);
+  const [quickButtons, setQuickButtons] = useState<QuickButton[]>([]);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const audioCtx = useRef<AudioContext | null>(null);
 
@@ -115,6 +127,43 @@ export default function PosPage() {
     }, 250);
     return () => clearTimeout(h);
   }, [q]);
+
+  useEffect(() => {
+    api.get<QuickButton[]>("/api/pos/quick-buttons").then(setQuickButtons).catch(() => {});
+  }, []);
+
+  const loadSales = useCallback(() => {
+    if (!session) return;
+    api.get<SaleRow[]>(`/api/pos/sessions/${session.id}/sales`)
+      .then((rows) => setSales([...rows].reverse()))
+      .catch(() => {});
+  }, [session]);
+  useEffect(() => { if (salesOpen) loadSales(); }, [salesOpen, loadSales]);
+
+  const refundSale = async (saleId: string) => {
+    try {
+      await api.post(`/api/pos/sales/${saleId}/refund`, {});
+      setRefundArm(null);
+      loadSales();
+      flash(t("refunded"), "ok");
+    } catch {
+      flash(t("refundFailed"), "err");
+    }
+  };
+
+  const closeRegister = async () => {
+    if (!session) return;
+    try {
+      const closed = await api.patch<PosSession>(`/api/pos/sessions/${session.id}/close`, {});
+      setCloseArm(false);
+      setClosedSummary(closed);
+      setSession(null);
+      setCart([]); setPayMode(null); setTendered("");
+    } catch {
+      setCloseArm(false);
+      flash(t("closeFailed"), "err");
+    }
+  };
 
   // ── Cart ──
   const add = useCallback((p: PosProduct) => {
@@ -203,6 +252,31 @@ export default function PosPage() {
     );
   }
 
+  if (!session && closedSummary) {
+    return (
+      <div className="flex h-[100dvh] items-center justify-center p-6" style={{ background: "var(--vf-bg-primary)" }}>
+        <div className="w-full max-w-sm rounded-2xl border p-8 text-center space-y-4"
+          style={{ background: "var(--vf-bg-surface)", borderColor: "var(--vf-border)" }}>
+          <CheckCircle2 className="mx-auto h-14 w-14 text-emerald-500" />
+          <div>
+            <h2 className="text-xl font-bold vf-text-1">{t("registerClosed")}</h2>
+            <p className="mt-1 text-sm vf-text-2">
+              {closedSummary.sale_count} {t("sales")} · {fmt(parseFloat(closedSummary.total_revenue))}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 pt-2">
+            <Link href="/pos/zreport" className="vf-btn-secondary flex items-center justify-center py-2.5 text-sm">
+              {t("zReport")}
+            </Link>
+            <button onClick={() => { setClosedSummary(null); openRegister(); }} className="vf-btn justify-center py-2.5 text-sm">
+              {t("openBtn")}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!session) {
     return (
       <div className="flex h-[100dvh] items-center justify-center p-6" style={{ background: "var(--vf-bg-primary)" }}>
@@ -230,6 +304,9 @@ export default function PosPage() {
       {/* ── Top bar ── */}
       <header className="flex items-center gap-3 border-b px-4 py-2.5"
         style={{ borderColor: "var(--vf-border)", background: "var(--vf-bg-surface)" }}>
+        <Link href="/dashboard" title={t("back")} className="vf-btn-secondary flex h-9 w-9 items-center justify-center rounded-lg p-0 shrink-0">
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
         <h1 className="text-base font-bold vf-text-1">{t("title")}</h1>
         <span className="hidden sm:flex items-center gap-1.5 text-xs vf-text-3">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -244,14 +321,36 @@ export default function PosPage() {
           className="vf-btn-secondary flex items-center gap-2 px-3 py-2 text-sm shrink-0">
           <Camera className="h-4 w-4" /><span className="hidden md:inline">{t("camera")}</span>
         </button>
-        <span className="hidden lg:block text-xs vf-text-3 shrink-0">
-          {session.sale_count} {t("sales")} · {fmt(parseFloat(session.total_revenue))}
-        </span>
+        <button onClick={() => setSalesOpen(true)} title={t("todaysSales")}
+          className="vf-btn-secondary flex items-center gap-2 px-3 py-2 text-sm shrink-0">
+          <History className="h-4 w-4" /><span className="hidden md:inline">{t("todaysSales")}</span>
+        </button>
+        <button onClick={() => setCloseArm(true)} title={t("closeRegister")}
+          className="vf-btn-secondary flex items-center gap-2 px-3 py-2 text-sm shrink-0">
+          <Lock className="h-4 w-4" /><span className="hidden xl:inline">{t("closeRegister")}</span>
+        </button>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Product grid ── */}
         <main className="flex-1 overflow-y-auto p-3">
+          {quickButtons.length > 0 && (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {quickButtons.map((b) => {
+                const p = products.find((x) => x.id === b.product_id);
+                if (!p) return null;
+                return (
+                  <button key={b.id}
+                    onClick={() => { for (let i = 0; i < Math.max(1, Math.round(parseFloat(b.quantity))); i++) add(p); tone(880, 60); }}
+                    className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold"
+                    style={{ borderColor: b.color ?? "var(--vf-border)", color: "var(--vf-text-primary)", background: "var(--vf-bg-surface)" }}>
+                    <Zap className="h-3.5 w-3.5" style={{ color: b.color ?? "var(--vf-brand-primary)" }} />
+                    {b.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {products.map((p) => (
               <button key={p.id} onClick={() => { add(p); tone(880, 60); }}
@@ -388,6 +487,77 @@ export default function PosPage() {
           </div>
         </div>
       )}
+
+      {/* ── Today's sales panel ── */}
+      {salesOpen && (
+        <div className="fixed inset-0 z-40 flex justify-end bg-black/50" onClick={() => setSalesOpen(false)}>
+          <div className="flex h-full w-full max-w-md flex-col border-l"
+            style={{ background: "var(--vf-bg-surface)", borderColor: "var(--vf-border)" }}
+            onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b px-4 py-3" style={{ borderColor: "var(--vf-border)" }}>
+              <h2 className="text-base font-bold vf-text-1">{t("todaysSales")}</h2>
+              <button onClick={() => setSalesOpen(false)} className="vf-text-2"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {sales.length === 0 && <p className="py-12 text-center text-sm vf-text-3">{t("noSalesYet")}</p>}
+              {sales.map((sl) => (
+                <div key={sl.id} className="rounded-lg border p-3"
+                  style={{ borderColor: "var(--vf-border)", background: "var(--vf-bg-primary)", opacity: sl.is_refunded ? 0.55 : 1 }}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold vf-text-1">{sl.sale_number}</p>
+                      <p className="text-xs vf-text-3">
+                        {new Date(sl.created_at).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })} · {t(sl.payment_method.toLowerCase() as "cash" | "card" | "swish") ?? sl.payment_method}
+                      </p>
+                    </div>
+                    <p className="text-base font-bold vf-text-1">{fmt(parseFloat(sl.total))}</p>
+                  </div>
+                  <div className="mt-2 flex items-center justify-end gap-2">
+                    <button onClick={() => api.downloadBlob(`/api/pos/sales/${sl.id}/receipt`, `kvitto-${sl.sale_number}.pdf`)}
+                      className="vf-btn-secondary flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                      <Printer className="h-3.5 w-3.5" />{t("receiptPdf")}
+                    </button>
+                    {sl.is_refunded ? (
+                      <span className="rounded-full px-2.5 py-1 text-xs font-semibold"
+                        style={{ background: "var(--vf-danger-bg)", color: "var(--vf-danger)" }}>{t("refunded")}</span>
+                    ) : refundArm === sl.id ? (
+                      <button onClick={() => refundSale(sl.id)}
+                        className="rounded-lg px-2.5 py-1.5 text-xs font-bold text-white" style={{ background: "var(--vf-danger)" }}>
+                        {t("confirmRefund")}
+                      </button>
+                    ) : (
+                      <button onClick={() => setRefundArm(sl.id)} className="vf-btn-secondary px-2.5 py-1.5 text-xs">
+                        {t("refund")}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Close-register confirm ── */}
+      {closeArm && session && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-sm rounded-2xl border p-6 text-center space-y-4"
+            style={{ background: "var(--vf-bg-surface)", borderColor: "var(--vf-border)" }}>
+            <Lock className="mx-auto h-10 w-10" style={{ color: "var(--vf-brand-primary)" }} />
+            <div>
+              <h2 className="text-lg font-bold vf-text-1">{t("confirmCloseTitle")}</h2>
+              <p className="mt-1 text-sm vf-text-2">
+                {session.sale_count} {t("sales")} · {fmt(parseFloat(session.total_revenue))}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => setCloseArm(false)} className="vf-btn-secondary justify-center py-2.5">{t("cancel")}</button>
+              <button onClick={closeRegister} className="vf-btn justify-center py-2.5">{t("closeRegister")}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* ── Sale complete overlay ── */}
       {sale && (

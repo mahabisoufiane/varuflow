@@ -17,7 +17,7 @@ import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { BrandingProvider } from "@/lib/branding";
 import { RoleProvider } from "@/components/app/RoleContext";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { DevToolbar } from "@/components/app/DevToolbar";
@@ -149,6 +149,14 @@ function ConsoleShellInner({ children }: { children: React.ReactNode }) {
 }
 
 export default function ConsoleShell({ children }: { children: React.ReactNode }) {
+  // The cash register runs distraction-free: no header, tree, or drawer —
+  // a till shows the till. usePathname from @/i18n/navigation is already
+  // locale-stripped ("/pos", not "/sv/pos"). Exact match only: /pos/zreport
+  // and other sub-pages keep the normal console chrome.
+  const pathname = usePathname();
+  if (pathname === "/pos") {
+    return <div className="h-dvh">{children}</div>;
+  }
   return (
     <BrandingProvider>
       <RoleProvider>
