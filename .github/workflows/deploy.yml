@@ -1,8 +1,13 @@
 name: Deploy
 
 on:
-  push:
+  # Only run after the CI workflow completes successfully on main.
+  # This prevents a broken build from reaching Railway even if someone
+  # pushes directly to main without a PR.
+  workflow_run:
+    workflows: ["CI"]
     branches: [main]
+    types: [completed]
 
 env:
   REGISTRY: ghcr.io
@@ -12,6 +17,7 @@ jobs:
   build-backend:
     name: Build + push backend image
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     permissions:
       contents: read
       packages: write
@@ -29,7 +35,7 @@ jobs:
       - name: Build and push backend
         uses: docker/build-push-action@v5
         with:
-          context: ./backend
+          context: ./varuflow-main/backend
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:latest
@@ -38,6 +44,7 @@ jobs:
   build-frontend:
     name: Build + push frontend image
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     permissions:
       contents: read
       packages: write
@@ -55,7 +62,7 @@ jobs:
       - name: Build and push frontend
         uses: docker/build-push-action@v5
         with:
-          context: ./frontend
+          context: ./varuflow-main/frontend
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:latest

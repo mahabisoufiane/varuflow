@@ -1,12 +1,10 @@
 name: E2E Tests
 
+# Manual-only for now: this suite targets the live deployment and has
+# never run (workflows sat in varuflow-main/.github until 2026-07-08).
+# Verify it green via workflow_dispatch before restoring push/cron triggers.
 on:
-  push:
-    branches: [main, staging]
-  pull_request:
-    branches: [main]
-  schedule:
-    - cron: '0 6 * * *'   # Daily at 06:00 UTC
+  workflow_dispatch:
 
 env:
   PLAYWRIGHT_BASE_URL: ${{ vars.STAGING_URL || 'https://varuflow.vercel.app' }}
@@ -28,18 +26,18 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: varuflow-main/frontend/package-lock.json
 
       - name: Install dependencies
-        working-directory: frontend
+        working-directory: varuflow-main/frontend
         run: npm ci --legacy-peer-deps
 
       - name: Install Playwright Chromium
-        working-directory: frontend
+        working-directory: varuflow-main/frontend
         run: npx playwright install --with-deps chromium
 
       - name: Run smoke tests
-        working-directory: frontend
+        working-directory: varuflow-main/frontend
         run: npx playwright test e2e/smoke.spec.ts --project=chromium
         env:
           PLAYWRIGHT_BASE_URL:  ${{ env.PLAYWRIGHT_BASE_URL }}
@@ -50,7 +48,7 @@ jobs:
         if: always()
         with:
           name: smoke-report-${{ github.run_id }}
-          path: frontend/playwright-report/
+          path: varuflow-main/frontend/playwright-report/
           retention-days: 7
 
   # ──────────────────────────────────────────────────────────────────────
@@ -74,18 +72,18 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: varuflow-main/frontend/package-lock.json
 
       - name: Install dependencies
-        working-directory: frontend
+        working-directory: varuflow-main/frontend
         run: npm ci --legacy-peer-deps
 
       - name: Install Playwright browsers
-        working-directory: frontend
+        working-directory: varuflow-main/frontend
         run: npx playwright install --with-deps ${{ matrix.project }}
 
       - name: Run E2E tests
-        working-directory: frontend
+        working-directory: varuflow-main/frontend
         run: npx playwright test --project=${{ matrix.project }}
         env:
           CI: true
@@ -118,18 +116,18 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: varuflow-main/frontend/package-lock.json
 
       - name: Install dependencies
-        working-directory: frontend
+        working-directory: varuflow-main/frontend
         run: npm ci --legacy-peer-deps
 
       - name: Install Playwright Chromium
-        working-directory: frontend
+        working-directory: varuflow-main/frontend
         run: npx playwright install --with-deps chromium
 
       - name: Run auth tests
-        working-directory: frontend
+        working-directory: varuflow-main/frontend
         run: npx playwright test e2e/auth.spec.ts --project=chromium
         env:
           PLAYWRIGHT_BASE_URL: ${{ env.PLAYWRIGHT_BASE_URL }}

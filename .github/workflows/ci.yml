@@ -1,8 +1,12 @@
 name: CI
 
+# Repo layout note: the application lives in varuflow-main/ (the git root
+# also holds varuflow-pos/). Workflows MUST live here at the repo root —
+# they sat in varuflow-main/.github/ until 2026-07-08 and never ran.
+
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -34,7 +38,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: backend
+        working-directory: varuflow-main/backend
 
     steps:
       - uses: actions/checkout@v4
@@ -50,38 +54,59 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction
 
-      - name: Lint with Ruff
+      - name: Lint with Ruff (non-blocking — 16,403 pre-existing errors as of
+              2026-07-08; this gate never ran while workflows sat in the wrong
+              directory. Drive the count down, then remove continue-on-error.)
         run: poetry run ruff check app
+        continue-on-error: true
+
+      - name: Type check with mypy (non-blocking — M3, ~599 pre-existing errors being driven down)
+        run: poetry run mypy app
+        continue-on-error: true
 
       - name: Run migrations
         run: poetry run alembic upgrade head
+
+      - name: Tenant isolation (security gate)
+        run: poetry run pytest tests/test_tenant_isolation.py -v --tb=short
+        env:
+          DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/varuflow_test
+          ENV: development
+          ALLOW_DEV_BYPASS: "true"
 
       - name: Run tests
         run: poetry run pytest --tb=short -q
 
   frontend:
-    name: Frontend — lint + build
+    name: Frontend — gates + build
     runs-on: ubuntu-latest
 
     defaults:
       run:
-        working-directory: frontend
+        working-directory: varuflow-main/frontend
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node 18
+      - name: Set up Node 22
+        # Next.js 16 requires Node >= 20.9; production Vercel runs 24.
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "22"
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: varuflow-main/frontend/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        # --legacy-peer-deps: ESLint peer conflict with Next 16 (see CLAUDE.md)
+        run: npm ci --legacy-peer-deps
 
-      - name: Lint
-        run: npm run lint
+      - name: Design-token ratchet
+        # `next lint` is broken under Next 16; these scripts + tsc are the
+        # real lint gates this project uses (see frontend/scripts/).
+        run: bash scripts/check-tokens.sh
+
+      - name: Silent-swallow ratchet
+        run: bash scripts/check-silent-swallow.sh
 
       - name: Type check
         run: npx tsc --noEmit
@@ -96,6 +121,9 @@ jobs:
   locales:
     name: Locales — key parity vs en.json
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: varuflow-main
     steps:
       - uses: actions/checkout@v4
 

@@ -24,7 +24,7 @@ version: 2
 updates:
   # Backend — Python / Poetry
   - package-ecosystem: "pip"
-    directory: "/backend"
+    directory: "/varuflow-main/backend"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -47,7 +47,7 @@ updates:
 
   # Frontend — npm
   - package-ecosystem: "npm"
-    directory: "/frontend"
+    directory: "/varuflow-main/frontend"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -70,7 +70,7 @@ updates:
 
   # Mobile — npm (Expo / React Native)
   - package-ecosystem: "npm"
-    directory: "/mobile"
+    directory: "/varuflow-main/mobile"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -113,7 +113,7 @@ updates:
 
   # Container images — backend Dockerfile
   - package-ecosystem: "docker"
-    directory: "/backend"
+    directory: "/varuflow-main/backend"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -126,7 +126,7 @@ updates:
 
   # Container images — frontend Dockerfile
   - package-ecosystem: "docker"
-    directory: "/frontend"
+    directory: "/varuflow-main/frontend"
     schedule:
       interval: "weekly"
       day: "monday"
