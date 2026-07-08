@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#3E2C23"/><stop offset="1" stop-color="#241811"/></linearGradient>
+  <linearGradient id="bag" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8B5A3C"/><stop offset="1" stop-color="#6B4226"/></linearGradient></defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <path d="M120 110 h160 l14 210 a16 16 0 0 1-16 17 H122 a16 16 0 0 1-16-17z" fill="url(#bag)"/>
+  <path d="M120 110 h160 l-14 26 H134z" fill="#5A371F"/>
+  <rect x="150" y="70" width="100" height="40" rx="8" fill="#4A2E1A"/>
+  <rect x="138" y="196" width="124" height="76" rx="10" fill="#F5EDE4"/>
+  <text x="200" y="228" font-family="Georgia,serif" font-size="21" font-weight="bold" fill="#3E2C23" text-anchor="middle">BRYGG</text>
+  <text x="200" y="254" font-family="Georgia,serif" font-size="14" fill="#8B5A3C" text-anchor="middle">MELLANROST</text>
+  <ellipse cx="200" cy="352" rx="96" ry="10" fill="#000" opacity="0.25"/>
+</svg>

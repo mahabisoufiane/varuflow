@@ -11,7 +11,6 @@ from .models import (
     StockMovementType,
 )
 
-
 # ── Shared ────────────────────────────────────────────────────────────────────
 
 PositiveDecimal = Annotated[Decimal, Field(gt=0, le=Decimal("1000000"))]
@@ -29,6 +28,12 @@ class ProductCreate(BaseModel):
     sell_price: PositiveDecimal
     tax_rate: Decimal = Field(Decimal("25.00"), ge=0, le=100)
     description: str | None = Field(None, max_length=2000)
+    # EAN-13/EAN-8/Code128. Columns existed on the model since v1 but were
+    # never exposed here — every barcode scanned in the product form was
+    # silently dropped on save, which is why POS barcode lookup found
+    # nothing. Same for image_url (product photos / POS tiles).
+    barcode: str | None = Field(None, max_length=50)
+    image_url: str | None = Field(None, max_length=2048)
     # The daily low-stock email and the weekly digest filter on
     # `reorder_level > 0`. Until this field was exposed on the API,
     # every tenant's products sat at the 0 default and no alerts
@@ -45,6 +50,8 @@ class ProductUpdate(BaseModel):
     sell_price: PositiveDecimal | None = None
     tax_rate: Decimal | None = Field(None, ge=0, le=100)
     description: str | None = Field(None, max_length=2000)
+    barcode: str | None = Field(None, max_length=50)
+    image_url: str | None = Field(None, max_length=2048)
     reorder_level: int | None = Field(None, ge=0, le=1_000_000)
     is_active: bool | None = None
     # v38 (Item 16) — per-product auto-reorder overrides. All optional so
@@ -67,6 +74,8 @@ class ProductOut(BaseModel):
     sell_price: Decimal
     tax_rate: Decimal
     description: str | None
+    barcode: str | None = None
+    image_url: str | None = None
     reorder_level: int
     is_active: bool
     # v38 (Item 16) — surface auto-reorder fields on the list / detail
