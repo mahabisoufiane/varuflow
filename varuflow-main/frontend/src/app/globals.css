@@ -79,19 +79,19 @@
     --card-foreground:        20 14% 10%;
     --popover:                36 30% 99%;
     --popover-foreground:     20 14% 10%;
-    --primary:                221 83% 53%;
+    --primary:                217 56% 42%;
     --primary-foreground:     0 0% 100%;
     --secondary:              36 15% 93%;
     --secondary-foreground:   20 14% 25%;
     --muted:                  36 15% 91%;
     --muted-foreground:       25 10% 47%;
-    --accent:                 221 83% 53%;
+    --accent:                 217 56% 42%;
     --accent-foreground:      0 0% 100%;
     --destructive:            0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     --border:                 32 14% 87%;
     --input:                  32 14% 87%;
-    --ring:                   221 83% 53%;
+    --ring:                   217 56% 42%;
     --radius:                 0.5rem;
 
     /* Motion tokens — single source of truth for durations + easings.
@@ -147,30 +147,30 @@
     --vf-info-bg:    rgba(127,168,222,0.12);
 
     --chart-grid:           rgba(255,255,255,0.06);
-    --chart-tick:           #475569;
+    --chart-tick:           #71717A;
     --chart-tooltip-bg:     #1A1D27;
     --chart-tooltip-border: rgba(255,255,255,0.10);
     --chart-tooltip-text:   #F1F5F9;
 
-    --background:             215 28% 9%;
-    --foreground:             210 40% 98%;
-    --card:                   215 25% 12%;
-    --card-foreground:        210 40% 98%;
-    --popover:                215 25% 12%;
-    --popover-foreground:     210 40% 98%;
-    --primary:                221 83% 53%;
+    --background:             228 21% 7%;
+    --foreground:             220 14% 96%;
+    --card:                   226 20% 13%;
+    --card-foreground:        220 14% 96%;
+    --popover:                226 20% 13%;
+    --popover-foreground:     220 14% 96%;
+    --primary:                216 60% 60%;
     --primary-foreground:     0 0% 100%;
-    --secondary:              215 25% 16%;
-    --secondary-foreground:   210 40% 98%;
-    --muted:                  215 25% 16%;
-    --muted-foreground:       215 20% 50%;
-    --accent:                 221 83% 53%;
+    --secondary:              226 16% 16%;
+    --secondary-foreground:   220 14% 96%;
+    --muted:                  226 16% 16%;
+    --muted-foreground:       222 10% 58%;
+    --accent:                 216 60% 60%;
     --accent-foreground:      0 0% 100%;
     --destructive:            0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border:                 215 20% 16%;
-    --input:                  215 20% 16%;
-    --ring:                   221 83% 53%;
+    --border:                 226 14% 18%;
+    --input:                  226 14% 18%;
+    --ring:                   216 60% 60%;
 
     color-scheme: dark;
   }
@@ -490,39 +490,39 @@
 /* 200+ app pages use raw bg-gray-* / text-gray-* classes without dark: prefix.
    These overrides fix all of them in one place without touching individual files. */
 .dark .bg-white                   { background-color: var(--vf-bg-surface) !important; }
-.dark .bg-gray-50                  { background-color: #1E293B !important; }
-.dark .bg-gray-100                 { background-color: #263244 !important; }
-.dark .bg-gray-200                 { background-color: #334155 !important; }
-.dark .hover\:bg-gray-50:hover     { background-color: #1E293B !important; }
-.dark .hover\:bg-gray-100:hover    { background-color: #263244 !important; }
+.dark .bg-gray-50                  { background-color: #1F222A !important; }
+.dark .bg-gray-100                 { background-color: #262932 !important; }
+.dark .bg-gray-200                 { background-color: #2F333D !important; }
+.dark .hover\:bg-gray-50:hover     { background-color: #1F222A !important; }
+.dark .hover\:bg-gray-100:hover    { background-color: #262932 !important; }
 .dark .hover\:bg-white:hover       { background-color: var(--vf-bg-elevated) !important; }
 
-.dark .text-gray-900               { color: #F8FAFC !important; }
-.dark .text-gray-800               { color: #E2E8F0 !important; }
-.dark .text-gray-700               { color: #CBD5E1 !important; }
-.dark .text-gray-600               { color: #94A3B8 !important; }
-.dark .text-gray-500               { color: #64748B !important; }
-.dark .text-black                  { color: #F8FAFC !important; }
+.dark .text-gray-900               { color: #F4F4F5 !important; }
+.dark .text-gray-800               { color: #E4E4E7 !important; }
+.dark .text-gray-700               { color: #D4D4D8 !important; }
+.dark .text-gray-600               { color: #A1A1AA !important; }
+.dark .text-gray-500               { color: #7B7B84 !important; }
+.dark .text-black                  { color: #F4F4F5 !important; }
 
-.dark .border-gray-100             { border-color: #1E293B !important; }
-.dark .border-gray-200             { border-color: #263244 !important; }
-.dark .border-gray-300             { border-color: #334155 !important; }
-.dark .divide-gray-100 > * + *     { border-color: #1E293B !important; }
-.dark .divide-gray-200 > * + *     { border-color: #263244 !important; }
+.dark .border-gray-100             { border-color: #23262E !important; }
+.dark .border-gray-200             { border-color: #2A2E37 !important; }
+.dark .border-gray-300             { border-color: #343943 !important; }
+.dark .divide-gray-100 > * + *     { border-color: #23262E !important; }
+.dark .divide-gray-200 > * + *     { border-color: #2A2E37 !important; }
 
 /* Status badge backgrounds — light pastel → dark tint */
-.dark .bg-blue-100                 { background-color: rgba(59,130,246,0.15) !important; }
+.dark .bg-blue-100                 { background-color: rgba(91,141,214,0.16) !important; }
 .dark .bg-green-100                { background-color: rgba(34,197,94,0.15) !important; }
 .dark .bg-red-100                  { background-color: rgba(239,68,68,0.15) !important; }
 .dark .bg-yellow-100               { background-color: rgba(234,179,8,0.15) !important; }
 .dark .bg-purple-100               { background-color: rgba(168,85,247,0.15) !important; }
 .dark .bg-orange-100               { background-color: rgba(249,115,22,0.15) !important; }
 .dark .bg-pink-100                 { background-color: rgba(236,72,153,0.15) !important; }
-.dark .bg-indigo-100               { background-color: rgba(37,99,235,0.15) !important; }
+.dark .bg-indigo-100               { background-color: rgba(91,141,214,0.16) !important; }
 .dark .bg-teal-100                 { background-color: rgba(20,184,166,0.15) !important; }
 
 /* Status badge text — dark color → light readable */
-.dark .text-blue-800               { color: #93C5FD !important; }
+.dark .text-blue-800               { color: #A3C4EC !important; }
 .dark .text-green-800              { color: #86EFAC !important; }
 .dark .text-red-800                { color: #FCA5A5 !important; }
 .dark .text-yellow-800             { color: #FDE047 !important; }

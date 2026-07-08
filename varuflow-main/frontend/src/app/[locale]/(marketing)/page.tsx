@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { PLAN_PRICES } from "@/lib/plan";
 import {
@@ -119,52 +120,17 @@ export default function HomePage() {
               <div className="h-3 w-3 rounded-full bg-green-500/70" />
               <div className="ml-4 h-5 w-48 rounded-md bg-white/[0.04]" />
             </div>
-            <div className="flex">
-              {/* Fake sidebar */}
-              <div className="hidden sm:flex w-[180px] shrink-0 flex-col gap-1 border-r border-white/[0.06] p-3">
-                {["Dashboard","Sales","Inventory","Finance","HR & People","Settings"].map((s, i) => (
-                  <div key={s} className={`flex items-center gap-2 rounded-lg px-3 py-2 text-[11px] font-medium ${i === 0 ? "bg-[var(--vf-brand-primary-soft)] text-[var(--vf-brand-primary-light)]" : "text-slate-500"}`}>
-                    <div className={`h-2 w-2 rounded-sm ${i === 0 ? "bg-[var(--vf-brand-primary-light)]" : "bg-slate-700"}`} />
-                    {s}
-                  </div>
-                ))}
-              </div>
-              {/* Fake content */}
-              <div className="flex-1 p-5 space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {["Total Revenue","Open Invoices","Stock Value","Low Stock"].map((label, i) => (
-                    <div key={label} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 space-y-2">
-                      <p className="text-[10px] text-slate-500 uppercase tracking-wider">{label}</p>
-                      <div className="h-5 w-20 rounded bg-white/[0.06]" />
-                      <div className={`h-2.5 w-12 rounded text-[8px] flex items-center gap-1 ${i % 2 === 0 ? "text-emerald-500" : "text-slate-500"}`}>
-                        <div className={`h-2 w-10 rounded ${i % 2 === 0 ? "bg-emerald-500/30" : "bg-slate-700"}`} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 h-28 flex flex-col gap-2">
-                    <div className="h-3 w-24 rounded bg-white/[0.06]" />
-                    <div className="flex-1 flex items-end gap-1 pt-2">
-                      {[40,65,45,80,55,90,70,85,60,95,75,88].map((h, i) => (
-                        <div key={i} className="flex-1 rounded-t" style={{ height: `${h}%`, background: `hsl(${240 + i * 3},70%,60%,0.5)` }} />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 h-28 space-y-2">
-                    <div className="h-3 w-24 rounded bg-white/[0.06]" />
-                    {[85,60,40].map((w, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <div className="h-2 flex-1 rounded-full bg-white/[0.04]">
-                          <div className="h-2 rounded-full bg-[var(--vf-brand-border)]" style={{ width: `${w}%` }} />
-                        </div>
-                        <span className="text-[9px] text-slate-600 w-6">{w}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Real console screenshot (dark graphite theme, seeded demo data).
+                Captured via Playwright — regenerate with the shoot script when
+                the dashboard changes materially. */}
+            <Image
+              src="/screenshots/dashboard-dark.png"
+              alt="Varuflow dashboard"
+              width={1600}
+              height={880}
+              priority
+              className="w-full h-auto"
+            />
           </div>
           {/* Glow under mockup */}
           <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 h-24 w-3/4 blur-3xl opacity-20"
