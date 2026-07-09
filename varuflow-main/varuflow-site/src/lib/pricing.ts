@@ -41,7 +41,7 @@ export const TIERS: Tier[] = [
     monthly: { sek: 499, eur: 49 },
     yearlyPerMonth: { sek: 399, eur: 39 },
     annual: { sek: 4788, eur: 468 },
-    limits: { maxProducts: 500, maxCustomers: 150, maxInvoicesPerMonth: 200, maxSeats: 5 },
+    limits: { maxProducts: 2000, maxCustomers: 500, maxInvoicesPerMonth: 200, maxSeats: 5 },
     flags: {
       mobileApp: false, advancedAnalytics: false, apiAccess: false,
       prioritySupport: false, customIntegrations: false, fortnoxIntegration: true,
@@ -52,7 +52,7 @@ export const TIERS: Tier[] = [
     monthly: { sek: 1490, eur: 149 },
     yearlyPerMonth: { sek: 1190, eur: 119 },
     annual: { sek: 14280, eur: 1428 },
-    limits: { maxProducts: 10000, maxCustomers: null, maxInvoicesPerMonth: null, maxSeats: 20 },
+    limits: { maxProducts: 25000, maxCustomers: null, maxInvoicesPerMonth: null, maxSeats: 20 },
     flags: {
       mobileApp: true, advancedAnalytics: true, apiAccess: false,
       prioritySupport: true, customIntegrations: false, fortnoxIntegration: true,

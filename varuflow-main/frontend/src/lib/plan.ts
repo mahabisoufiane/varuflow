@@ -6,8 +6,8 @@ export type Plan = "starter" | "professional" | "enterprise";
 
 export const PLAN_FEATURES = {
   starter: {
-    maxProducts: 500,
-    maxCustomers: 150,
+    maxProducts: 2000,
+    maxCustomers: 500,
     maxInvoicesPerMonth: 200,
     maxSeats: 5,
     mobileApp: false,
@@ -19,7 +19,7 @@ export const PLAN_FEATURES = {
     fortnoxIntegration: true,
   },
   professional: {
-    maxProducts: 10000,
+    maxProducts: 25000,
     maxCustomers: Infinity,
     maxInvoicesPerMonth: Infinity,
     maxSeats: 20,

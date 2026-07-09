@@ -78,7 +78,7 @@ _STARTER: dict[str, int] = {
 _PRO: dict[str, int] = {
     RESOURCE_USERS:              20,
     RESOURCE_WAREHOUSES:          5,
-    RESOURCE_PRODUCTS:        10_000,
+    RESOURCE_PRODUCTS:        25_000,
     RESOURCE_INVOICES_PER_MONTH: _UNLIMITED,
     RESOURCE_CUSTOMERS:        _UNLIMITED,
     RESOURCE_STORAGE_GB:          20,
