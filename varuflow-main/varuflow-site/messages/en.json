@@ -1,0 +1,193 @@
+{
+  "nav": {
+    "modules": "Modules",
+    "solutions": "Solutions",
+    "pricing": "Pricing",
+    "cta": "Start free trial",
+    "ctaShort": "Get started"
+  },
+  "footer": {
+    "tagline": "The business OS for Nordic wholesalers.",
+    "product": "Product",
+    "company": "Company",
+    "legal": "Legal",
+    "copyright": "All rights reserved."
+  },
+  "home": {
+    "hero": {
+      "h1": "Stop running your company in spreadsheets.",
+      "sub": "Varuflow brings inventory, invoicing, point of sale and forecasting into one system built for Nordic SMBs. One browser tab instead of five tools and a spreadsheet nobody dares to touch.",
+      "ctaPrimary": "Start free trial",
+      "ctaSecondary": "Book a demo",
+      "trialNote": "14 days free · No credit card required"
+    },
+    "mockup": {
+      "revenue": "Invoiced this month",
+      "stock": "Stock value",
+      "orders": "Open orders"
+    },
+    "modules": {
+      "title": "Everything your business needs. Nothing it doesn't.",
+      "sub": "Six modules sharing the same data — switch on what you use, the rest can wait."
+    },
+    "trust": {
+      "gdpr": "Built with GDPR in focus",
+      "gdprDesc": "Personal data is encrypted and can be deleted or exported on request.",
+      "hosting": "Built for Swedish rules",
+      "hostingDesc": "Swedish VAT, OCR numbers and Peppol e-invoicing — built in, not bolted on.",
+      "encryption": "Encryption at rest and in transit",
+      "encryptionDesc": "Sensitive fields stay encrypted — even inside the database.",
+      "export": "Export your data anytime",
+      "exportDesc": "No lock-in. Your data is yours."
+    },
+    "verticals": {
+      "title": "Built for your industry",
+      "sub": "The same platform, shaped around how your business actually works.",
+      "cta": "Learn more"
+    },
+    "pricing": {
+      "title": "Pricing without surprises",
+      "sub": "Start with 14 days free, grow when you are ready. All prices exclude VAT.",
+      "perMonth": "/mo",
+      "billedMonthly": "billed monthly",
+      "highlight": "Most popular",
+      "cta": "See full pricing and features",
+      "tierNames": {
+        "starter": "Starter",
+        "professional": "Professional",
+        "enterprise": "Enterprise"
+      },
+      "features": {
+        "products": "{n} products",
+        "productsUnlimited": "Unlimited products",
+        "seats": "{n} seats",
+        "seatsUnlimited": "Unlimited seats",
+        "invoices": "{n} invoices per month",
+        "invoicesUnlimited": "Unlimited invoices",
+        "fortnox": "Fortnox integration",
+        "mobileApp": "Mobile app",
+        "apiAccess": "API access"
+      }
+    },
+    "journey": {
+      "title": "Live in days, not quarters",
+      "s1t": "Sign up",
+      "s1d": "Create your account with an email — done in two minutes.",
+      "s2t": "Import your data",
+      "s2d": "Products and customers via CSV or straight from Fortnox.",
+      "s3t": "Configure modules",
+      "s3d": "Switch on what you need: inventory, POS, invoicing, AI.",
+      "s4t": "Go live",
+      "s4d": "Send your first invoice the same day."
+    },
+    "finalCta": {
+      "h": "Ready to leave the spreadsheets behind?",
+      "sub": "Start a free 14-day trial. No credit card, no lock-in.",
+      "cta": "Start free trial"
+    },
+    "meta": {
+      "title": "Varuflow — The business OS for Nordic wholesalers",
+      "description": "Inventory, invoicing, point of sale and AI forecasting in one platform. Built for Nordic SMBs. 14 days free."
+    }
+  },
+  "localeSwitcher": {
+    "sv": "Svenska",
+    "en": "English"
+  },
+  "pricingPage": {
+    "title": "Pricing",
+    "sub": "Three plans, every module in all of them. Grow without switching systems. All prices exclude VAT.",
+    "perMonth": "/mo",
+    "yearlyNote": "{price} when billed yearly",
+    "cta": "Start free trial",
+    "trialNote": "14 days free · No credit card required",
+    "allModulesNote": "All six modules are included in every plan — plans differ in limits and platform features.",
+    "table": {
+      "feature": "Feature",
+      "usage": "Limits",
+      "modules": "Modules",
+      "platform": "Platform",
+      "products": "Products",
+      "seats": "Seats",
+      "invoices": "Invoices per month",
+      "customers": "Customers",
+      "mobileApp": "Mobile app",
+      "advancedAnalytics": "Advanced analytics",
+      "apiAccess": "API access",
+      "prioritySupport": "Priority support",
+      "customIntegrations": "Custom integrations",
+      "fortnoxIntegration": "Fortnox integration",
+      "unlimited": "Unlimited",
+      "included": "Included",
+      "notIncluded": "Not included"
+    },
+    "billing": {
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "billedMonthly": "billed monthly",
+      "billedYearly": "per month, billed yearly",
+      "annualTotal": "{price} invoiced once per year"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "q1": "How long is the trial?",
+      "a1": "14 days with full access to every module. No credit card required, and the trial ends automatically unless you pick a plan.",
+      "q2": "Where is our data hosted?",
+      "a2": "Authentication and file storage are hosted in Stockholm. Full data-residency documentation will be published together with the privacy policy.",
+      "q3": "Can we cancel anytime?",
+      "a3": "Yes. Monthly plans have no lock-in and can be cancelled at any time. You can export all of your data whenever you want — it is yours.",
+      "q4": "Do we get help migrating from our current system?",
+      "a4": "You import products and customers via CSV, or pull them straight in through the Fortnox integration. Bulk import is included in every plan.",
+      "q5": "Which currency are we billed in?",
+      "a5": "You choose SEK or EUR. Payment is by card via Stripe, and all prices exclude VAT."
+    }
+  },
+  "moduleTemplate": {
+    "capabilities": "What this module does",
+    "screenshotAlt": "Product view",
+    "worksWith": "Works well with",
+    "ctaTitle": "Try {module} free for 14 days",
+    "ctaSub": "Every module is included in the trial. No credit card required.",
+    "cta": "Start free trial"
+  },
+  "solutionTemplate": {
+    "painsTitle": "Sound familiar?",
+    "solvedWith": "Solved with",
+    "firstCustomer": "Be one of our first {vertical} customers",
+    "firstCustomerSub": "We build close to our early customers — you get a direct line to the team and a say in what gets built next.",
+    "verticalNames": {
+      "wholesale": "wholesale",
+      "retail": "retail",
+      "restaurants": "restaurant"
+    },
+    "cta": "Start free trial",
+    "ctaSecondary": "Book a demo"
+  },
+  "demo": {
+    "title": "Book a demo",
+    "sub": "30 minutes, focused on your setup. We show how Varuflow works for your business — no sales tricks.",
+    "name": "Name",
+    "company": "Company",
+    "email": "Email",
+    "size": "Company size",
+    "sizePlaceholder": "Select size",
+    "message": "What would you like to see? (optional)",
+    "submit": "Send request",
+    "submitting": "Sending…",
+    "success": "Thanks! We'll get back to you within one business day.",
+    "error": "Something went wrong. Try again or email us.",
+    "metaTitle": "Book a demo",
+    "metaDescription": "Book a 30-minute Varuflow demo — inventory, invoicing, POS and AI in one platform for Nordic SMBs."
+  },
+  "consent": {
+    "text": "We'd like to use anonymous analytics to improve this site. No tracking until you accept.",
+    "accept": "Accept",
+    "decline": "Decline"
+  },
+  "legal": {
+    "privacyTitle": "Privacy policy",
+    "termsTitle": "Terms of service",
+    "underReview": "This document is under legal review and will be published here shortly. In the meantime, you are welcome to contact us with any questions about personal data or terms.",
+    "backHome": "Back to the start page"
+  }
+}

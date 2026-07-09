@@ -1,0 +1,193 @@
+{
+  "nav": {
+    "modules": "Moduler",
+    "solutions": "Lösningar",
+    "pricing": "Priser",
+    "cta": "Starta gratis provperiod",
+    "ctaShort": "Kom igång"
+  },
+  "footer": {
+    "tagline": "Affärssystemet för nordiska grossister.",
+    "product": "Produkt",
+    "company": "Företag",
+    "legal": "Juridik",
+    "copyright": "Alla rättigheter förbehållna."
+  },
+  "home": {
+    "hero": {
+      "h1": "Sluta driva företaget i kalkylblad.",
+      "sub": "Varuflow samlar lager, fakturering, kassa och prognoser i ett system byggt för nordiska små och medelstora företag. En flik i webbläsaren i stället för fem program och ett Excel-ark som ingen vågar röra.",
+      "ctaPrimary": "Starta gratis provperiod",
+      "ctaSecondary": "Boka en demo",
+      "trialNote": "14 dagar gratis · Inget betalkort behövs"
+    },
+    "mockup": {
+      "revenue": "Fakturerat i månaden",
+      "stock": "Lagervärde",
+      "orders": "Öppna ordrar"
+    },
+    "modules": {
+      "title": "Allt ditt företag behöver. Inget det inte behöver.",
+      "sub": "Sex moduler som delar samma data — slå på dem du använder, resten väntar."
+    },
+    "trust": {
+      "gdpr": "Byggd med GDPR i fokus",
+      "gdprDesc": "Personuppgifter krypteras och kan raderas eller exporteras på begäran.",
+      "hosting": "Byggt för svenska regler",
+      "hostingDesc": "Svensk moms, OCR-nummer och e-faktura via Peppol — inbyggt, inte tillagt.",
+      "encryption": "Kryptering i vila och under överföring",
+      "encryptionDesc": "Känsliga uppgifter krypteras alltid — även i databasen.",
+      "export": "Exportera din data när som helst",
+      "exportDesc": "Ingen inlåsning. Din data är din."
+    },
+    "verticals": {
+      "title": "Byggt för din bransch",
+      "sub": "Samma plattform, anpassad efter hur just din verksamhet fungerar.",
+      "cta": "Läs mer"
+    },
+    "pricing": {
+      "title": "Priser utan överraskningar",
+      "sub": "Börja med 14 dagar gratis, väx när du är redo. Alla priser exklusive moms.",
+      "perMonth": "/mån",
+      "billedMonthly": "vid månadsbetalning",
+      "highlight": "Populärast",
+      "cta": "Se alla priser och funktioner",
+      "tierNames": {
+        "starter": "Starter",
+        "professional": "Professional",
+        "enterprise": "Enterprise"
+      },
+      "features": {
+        "products": "{n} produkter",
+        "productsUnlimited": "Obegränsat antal produkter",
+        "seats": "{n} användare",
+        "seatsUnlimited": "Obegränsat antal användare",
+        "invoices": "{n} fakturor per månad",
+        "invoicesUnlimited": "Obegränsat antal fakturor",
+        "fortnox": "Fortnox-integration",
+        "mobileApp": "Mobilapp",
+        "apiAccess": "API-åtkomst"
+      }
+    },
+    "journey": {
+      "title": "Igång på dagar, inte kvartal",
+      "s1t": "Skapa konto",
+      "s1d": "Registrera dig med e-post — klart på två minuter.",
+      "s2t": "Importera din data",
+      "s2d": "Produkter och kunder via CSV eller direkt från Fortnox.",
+      "s3t": "Välj dina moduler",
+      "s3d": "Slå på det du behöver: lager, kassa, fakturering, AI.",
+      "s4t": "Kör igång",
+      "s4d": "Skicka första fakturan samma dag."
+    },
+    "finalCta": {
+      "h": "Redo att lämna kalkylbladen?",
+      "sub": "Starta en gratis provperiod på 14 dagar. Inget betalkort, ingen bindningstid.",
+      "cta": "Starta gratis provperiod"
+    },
+    "meta": {
+      "title": "Varuflow — Affärssystemet för nordiska grossister",
+      "description": "Lager, fakturering, kassa och AI-prognoser i en plattform. Byggt för nordiska små och medelstora företag. 14 dagar gratis."
+    }
+  },
+  "localeSwitcher": {
+    "sv": "Svenska",
+    "en": "English"
+  },
+  "pricingPage": {
+    "title": "Priser",
+    "sub": "Tre planer, alla moduler i samtliga. Väx utan att byta system. Alla priser exklusive moms.",
+    "perMonth": "/mån",
+    "yearlyNote": "{price} vid årsbetalning",
+    "cta": "Starta gratis provperiod",
+    "trialNote": "14 dagar gratis · Inget betalkort behövs",
+    "allModulesNote": "Alla sex moduler ingår i varje plan — planerna skiljer sig i gränser och plattformsfunktioner.",
+    "table": {
+      "feature": "Funktion",
+      "usage": "Gränser",
+      "modules": "Moduler",
+      "platform": "Plattform",
+      "products": "Produkter",
+      "seats": "Användare",
+      "invoices": "Fakturor per månad",
+      "customers": "Kunder",
+      "mobileApp": "Mobilapp",
+      "advancedAnalytics": "Avancerad analys",
+      "apiAccess": "API-åtkomst",
+      "prioritySupport": "Prioriterad support",
+      "customIntegrations": "Egna integrationer",
+      "fortnoxIntegration": "Fortnox-integration",
+      "unlimited": "Obegränsat",
+      "included": "Ingår",
+      "notIncluded": "Ingår ej"
+    },
+    "billing": {
+      "monthly": "Månadsvis",
+      "yearly": "Årsvis",
+      "billedMonthly": "vid månadsbetalning",
+      "billedYearly": "per månad vid årsbetalning",
+      "annualTotal": "{price} faktureras en gång per år"
+    },
+    "faq": {
+      "title": "Vanliga frågor",
+      "q1": "Hur lång är provperioden?",
+      "a1": "14 dagar med full tillgång till alla moduler. Inget betalkort behövs, och provperioden avslutas automatiskt om du inte väljer en plan.",
+      "q2": "Var lagras vår data?",
+      "a2": "Autentisering och fillagring ligger i Stockholm. Fullständig dokumentation om datalagring publiceras tillsammans med integritetspolicyn.",
+      "q3": "Kan vi säga upp när som helst?",
+      "a3": "Ja. Månadsplaner har ingen bindningstid och kan sägas upp när som helst. Du kan exportera all din data när du vill — den är din.",
+      "q4": "Får vi hjälp att flytta från vårt nuvarande system?",
+      "a4": "Du importerar produkter och kunder via CSV eller hämtar dem direkt via Fortnox-integrationen. Bulkimport ingår i alla planer.",
+      "q5": "Vilken valuta faktureras vi i?",
+      "a5": "Du väljer SEK eller EUR. Betalning sker med kort via Stripe och alla priser är exklusive moms."
+    }
+  },
+  "moduleTemplate": {
+    "capabilities": "Det här gör modulen",
+    "screenshotAlt": "Produktvy",
+    "worksWith": "Fungerar bra med",
+    "ctaTitle": "Prova {module} gratis i 14 dagar",
+    "ctaSub": "Alla moduler ingår i provperioden. Inget betalkort behövs.",
+    "cta": "Starta gratis provperiod"
+  },
+  "solutionTemplate": {
+    "painsTitle": "Känner du igen dig?",
+    "solvedWith": "Löses med",
+    "firstCustomer": "Bli en av våra första kunder inom {vertical}",
+    "firstCustomerSub": "Vi bygger nära våra tidiga kunder — ni får direktkontakt med teamet och påverkar vad som byggs härnäst.",
+    "verticalNames": {
+      "wholesale": "grossist",
+      "retail": "detaljhandel",
+      "restaurants": "restaurang"
+    },
+    "cta": "Starta gratis provperiod",
+    "ctaSecondary": "Boka en demo"
+  },
+  "demo": {
+    "title": "Boka en demo",
+    "sub": "30 minuter, ditt eget upplägg i fokus. Vi visar hur Varuflow fungerar för just din verksamhet — inga säljtrick.",
+    "name": "Namn",
+    "company": "Företag",
+    "email": "E-post",
+    "size": "Antal anställda",
+    "sizePlaceholder": "Välj storlek",
+    "message": "Vad vill du se? (valfritt)",
+    "submit": "Skicka förfrågan",
+    "submitting": "Skickar…",
+    "success": "Tack! Vi hör av oss inom en arbetsdag.",
+    "error": "Något gick fel. Försök igen eller mejla oss.",
+    "metaTitle": "Boka en demo",
+    "metaDescription": "Boka en 30-minuters demo av Varuflow — lager, fakturering, kassa och AI i en plattform för nordiska SMB."
+  },
+  "consent": {
+    "text": "Vi vill använda anonym analys för att förbättra sajten. Inga spårningscookies förrän du godkänner.",
+    "accept": "Godkänn",
+    "decline": "Avböj"
+  },
+  "legal": {
+    "privacyTitle": "Integritetspolicy",
+    "termsTitle": "Användarvillkor",
+    "underReview": "Det här dokumentet är under juridisk granskning och publiceras här inom kort. Under tiden är du välkommen att kontakta oss med frågor om personuppgifter eller villkor.",
+    "backHome": "Tillbaka till startsidan"
+  }
+}
